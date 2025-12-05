@@ -16,9 +16,9 @@ let (_,_, getResult) = await valkeyClient.execute(
     INCR(key: "foo")
     GET(key: "foo")
 )
-// get returns an optional ByteBuffer
-if let result = try getResult.get().map({ String(buffer: $0) }) {
-    print(result) // should print 101
+// get returns an optional RESPBulkString
+if let result = try getResult.get() {
+    print(String(result)) // should print 101
 }
 ```
 

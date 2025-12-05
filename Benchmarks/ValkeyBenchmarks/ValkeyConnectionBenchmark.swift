@@ -81,7 +81,7 @@ func makeConnectionGETBenchmark() -> Benchmark? {
             benchmark.startMeasurement()
             for _ in benchmark.scaledIterations {
                 let foo = try await connection.get("foo")
-                precondition(foo.map { String(buffer: $0) } == "Bar")
+                precondition(foo.map { String($0) } == "Bar")
             }
             benchmark.stopMeasurement()
         }
@@ -112,7 +112,7 @@ func makeConnectionGETNoOpTracerBenchmark() -> Benchmark? {
             benchmark.startMeasurement()
             for _ in benchmark.scaledIterations {
                 let foo = try await connection.get("foo")
-                precondition(foo.map { String(buffer: $0) } == "Bar")
+                precondition(foo.map { String($0) } == "Bar")
             }
             benchmark.stopMeasurement()
         }
@@ -145,7 +145,7 @@ func makeConnectionPipelineBenchmark() -> Benchmark? {
                     GET("foo"),
                     GET("foo")
                 )
-                let result = try foo.2.get().map { String(buffer: $0) }
+                let result = try foo.2.get().map { String($0) }
                 precondition(result == "Bar")
             }
             benchmark.stopMeasurement()

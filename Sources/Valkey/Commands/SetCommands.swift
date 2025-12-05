@@ -33,7 +33,7 @@ public struct SADD<Member: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SADD", key, members.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("SADD", key, members.map { RESPRenderableBulkString($0) })
     }
 }
 
@@ -191,7 +191,7 @@ public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SISMEMBER", key, RESPBulkString(member))
+        commandEncoder.encodeArray("SISMEMBER", key, RESPRenderableBulkString(member))
     }
 }
 
@@ -237,7 +237,7 @@ public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SMISMEMBER", key, members.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("SMISMEMBER", key, members.map { RESPRenderableBulkString($0) })
     }
 }
 
@@ -261,7 +261,7 @@ public struct SMOVE<Member: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: [ValkeyKey] { [source, destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SMOVE", source, destination, RESPBulkString(member))
+        commandEncoder.encodeArray("SMOVE", source, destination, RESPRenderableBulkString(member))
     }
 }
 
@@ -329,7 +329,7 @@ public struct SREM<Member: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SREM", key, members.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("SREM", key, members.map { RESPRenderableBulkString($0) })
     }
 }
 

@@ -12,7 +12,7 @@ extension SCAN {
         public let cursor: Int
         public let keys: RESPToken.Array
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             (self.cursor, self.keys) = try token.decodeArrayElements(as: (Int, RESPToken.Array).self)
         }
     }

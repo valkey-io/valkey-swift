@@ -101,9 +101,9 @@ struct ClientIntegratedTests {
         try await ValkeyConnection.withConnection(address: .hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 try await connection.set(key, value: "Hello")
-                let response = try await connection.get(key).map { String(buffer: $0) }
+                let response = try await connection.get(key).map { String($0) }
                 #expect(response == "Hello")
-                let response2 = try await connection.get("sdf65fsdf").map { String(buffer: $0) }
+                let response2 = try await connection.get("sdf65fsdf").map { String($0) }
                 #expect(response2 == nil)
             }
         }
@@ -117,9 +117,9 @@ struct ClientIntegratedTests {
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 try await connection.set(key, value: "Hello")
-                let response = try await connection.get(key).map { String(buffer: $0) }
+                let response = try await connection.get(key).map { String($0) }
                 #expect(response == "Hello")
-                let response2 = try await connection.get("sdf65fsdf").map { String(buffer: $0) }
+                let response2 = try await connection.get("sdf65fsdf").map { String($0) }
                 #expect(response2 == nil)
             }
         }
@@ -132,9 +132,9 @@ struct ClientIntegratedTests {
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { valkeyClient in
             try await valkeyClient.set("sdf", value: "Hello")
-            let response = try await valkeyClient.get("sdf").map { String(buffer: $0) }
+            let response = try await valkeyClient.get("sdf").map { String($0) }
             #expect(response == "Hello")
-            let response2 = try await valkeyClient.get("sdf65fsdf").map { String(buffer: $0) }
+            let response2 = try await valkeyClient.get("sdf65fsdf").map { String($0) }
             #expect(response2 == nil)
         }
     }
@@ -149,7 +149,7 @@ struct ClientIntegratedTests {
                 let buffer = ByteBuffer(repeating: 12, count: 256)
                 try await connection.set(key, value: buffer)
                 let response = try await connection.get(key)
-                #expect(response == buffer)
+                #expect(response?.elementsEqual(buffer.readableBytesView) == true)
             }
         }
     }
@@ -178,7 +178,7 @@ struct ClientIntegratedTests {
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 try await connection.set(key, value: "Hello", expiration: .unixTimeMilliseconds(.now + 1))
-                let response = try await connection.get(key).map { String(buffer: $0) }
+                let response = try await connection.get(key).map { String($0) }
                 #expect(response == "Hello")
                 try await Task.sleep(for: .seconds(2))
                 let response2 = try await connection.get(key)
@@ -198,7 +198,7 @@ struct ClientIntegratedTests {
                     SET(key, value: "Pipelined Hello"),
                     GET(key)
                 )
-                try #expect(responses.1.get().map { String(buffer: $0) } == "Pipelined Hello")
+                try #expect(responses.1.get().map { String($0) } == "Pipelined Hello")
             }
         }
     }
@@ -233,7 +233,7 @@ struct ClientIntegratedTests {
                     SET(key, value: "Pipelined Hello"),
                     GET(key)
                 )
-                try #expect(responses.1.get().map { String(buffer: $0) } == "Pipelined Hello")
+                try #expect(responses.1.get().map { String($0) } == "Pipelined Hello")
             }
         }
     }
@@ -284,7 +284,7 @@ struct ClientIntegratedTests {
                     INCR(key),
                     GET(key)
                 )
-                #expect(try responses.2.get().map { String(buffer: $0) } == "101")
+                #expect(try responses.2.get().map { String($0) } == "101")
             }
         }
     }
@@ -307,7 +307,7 @@ struct ClientIntegratedTests {
                 }
                 #expect(lpushError?.errorCode == .commandError)
                 #expect(lpushError?.message?.hasPrefix("WRONGTYPE") == true)
-                let result = try responses.2.get().map { String(buffer: $0) }
+                let result = try responses.2.get().map { String($0) }
                 #expect(result == "101")
             }
         }
@@ -482,7 +482,7 @@ struct ClientIntegratedTests {
                                 SET(key, value: value),
                                 GET(key)
                             )
-                            try #expect(responses.1.get().map { String(buffer: $0) } == value)
+                            try #expect(responses.1.get().map { String($0) } == value)
                         }
                     }
                 }
@@ -505,7 +505,7 @@ struct ClientIntegratedTests {
             logger: logger
         ) { connection in
             let user = try await connection.aclWhoami()
-            #expect(String(buffer: user) == "johnsmith")
+            #expect(String(user) == "johnsmith")
         }
     }
 
@@ -549,7 +549,7 @@ struct ClientIntegratedTests {
                     }
                     try await group.waitForAll()
                     try await valkeyClient.withConnection { connection in
-                        let value = try await connection.get(key).map { String(buffer: $0) }
+                        let value = try await connection.get(key).map { String($0) }
                         #expect(value == "1000")
                         try await connection.del(keys: [key])
                     }
@@ -587,7 +587,7 @@ struct ClientIntegratedTests {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
-            let clients = try await String(buffer: client.clientList())
+            let clients = String(try await client.clientList())
             #expect(clients.firstRange(of: "lib-name=\(valkeySwiftLibraryName)") != nil)
             #expect(clients.firstRange(of: "lib-ver=\(valkeySwiftLibraryVersion)") != nil)
         }
@@ -603,21 +603,21 @@ struct ClientIntegratedTests {
             let clientConfig: ValkeyClientConfiguration = .init(databaseNumber: dbNum)
             try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), configuration: clientConfig, logger: logger) { connection in
                 // Verify ClientInfo contains dbNum
-                let clientInfo = String(buffer: try await connection.clientInfo())
+                let clientInfo = String(try await connection.clientInfo())
                 #expect(clientInfo.contains("db=\(dbNum)"))
 
                 // Verify via setting and getting keys on all the DBs
                 let key = "key-\(dbNum)"
                 let value = "value-\(dbNum)"
                 try await connection.set(ValkeyKey(key), value: value)
-                let response = try await connection.get(ValkeyKey(key)).map { String(buffer: $0) }
+                let response = try await connection.get(ValkeyKey(key)).map { String($0) }
                 #expect(response == value)
 
                 // Verify key belonging to other DBs don't exist in this DB
                 for otherDbNum in 0...15 {
                     let otherKey = "key-\(otherDbNum)"
                     if otherDbNum == dbNum { continue }
-                    let otherResponse = try await connection.get(ValkeyKey(otherKey)).map { String(buffer: $0) }
+                    let otherResponse = try await connection.get(ValkeyKey(otherKey)).map { String($0) }
                     #expect(otherResponse == nil)
                 }
 

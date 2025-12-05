@@ -42,7 +42,7 @@ func makeClientGETSequentialBenchmark() -> Benchmark? {
             benchmark.startMeasurement()
             for _ in benchmark.scaledIterations {
                 let foo = try await client.get("foo")
-                precondition(foo.map { String(buffer: $0) } == "Bar")
+                precondition(foo.map { String($0) } == "Bar")
             }
             benchmark.stopMeasurement()
 
@@ -87,7 +87,7 @@ func makeClient20ConcurrentGETBenchmark() -> Benchmark? {
                 group.addTask {
                     for _ in 0..<iterationsPerConnection {
                         let foo = try await client.get("foo")
-                        precondition(foo.map { String(buffer: $0) } == "Bar")
+                        precondition(foo.map { String($0) } == "Bar")
                     }
                 }
             }
@@ -138,7 +138,7 @@ func makeClient50Concurrent20ConnectionGETBenchmark() -> Benchmark? {
                 group.addTask {
                     for _ in 0..<iterationsPerConnection {
                         let foo = try await client.get("foo")
-                        precondition(foo.map { String(buffer: $0) } == "Bar")
+                        precondition(foo.map { String($0) } == "Bar")
                     }
                 }
             }

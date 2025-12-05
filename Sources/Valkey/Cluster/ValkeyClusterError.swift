@@ -59,6 +59,6 @@ public struct ValkeyClusterError: Error, Equatable {
     /// Wait for discovery failed three times after receiving a MOVED error
     static public var waitedForDiscoveryAfterMovedErrorThreeTimes: Self { .init(.waitedForDiscoveryAfterMovedErrorThreeTimes) }
     /// Pipelined result not returned. If you receive this, it is an internal error and should be reported as a bug
-    static public var pipelinedResultNotReturned: Self { .init(.waitedForDiscoveryAfterMovedErrorThreeTimes) }
+    static public var pipelinedResultNotReturned: Self { .init(.pipelinedResultNotReturned) }
 
 }

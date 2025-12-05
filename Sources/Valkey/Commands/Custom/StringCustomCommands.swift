@@ -17,7 +17,7 @@ extension LCS {
             public let first: ClosedRange<Int>
             public let second: ClosedRange<Int>
 
-            public init(fromRESP token: RESPToken) throws {
+            public init(_ token: RESPToken) throws {
                 (self.first, self.second) = try token.decodeArrayElements()
             }
         }
@@ -26,15 +26,15 @@ extension LCS {
             public let matches: [Match]
             public let length: Int64
 
-            public init(fromRESP token: RESPToken) throws {
+            public init(_ token: RESPToken) throws {
                 switch token.value {
                 case .map(let map):
                     var matches: [Match]?
                     var length: Int64?
                     for entry in map {
-                        switch try String(fromRESP: entry.key) {
-                        case "len": length = try .init(fromRESP: entry.value)
-                        case "matches": matches = try .init(fromRESP: entry.value)
+                        switch try String(entry.key) {
+                        case "len": length = try .init(entry.value)
+                        case "matches": matches = try .init(entry.value)
                         default: break
                         }
                     }
@@ -50,7 +50,7 @@ extension LCS {
 
         let token: RESPToken
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             self.token = token
         }
 
@@ -60,7 +60,7 @@ extension LCS {
         /// - Throws: RESPDecodeError
         /// - Returns: sub-sequence string
         public func longestMatch() throws -> String {
-            try String(fromRESP: self.token)
+            try String(self.token)
         }
 
         ///  Return length of longest common sub-sequence
@@ -69,7 +69,7 @@ extension LCS {
         /// - Throws: RESPDecodeError
         /// - Returns: Length of sub-sequence string
         public func longestMatchLength() throws -> Int {
-            try Int(fromRESP: self.token)
+            try Int(self.token)
         }
 
         ///  Return length and range in each string of each match
@@ -78,7 +78,7 @@ extension LCS {
         /// - Throws: RESPDecodeError
         /// - Returns: Length of sub-sequence string
         public func matches() throws -> Matches {
-            try Matches(fromRESP: self.token)
+            try Matches(self.token)
         }
     }
 }

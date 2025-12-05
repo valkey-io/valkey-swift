@@ -50,14 +50,14 @@ public enum ACL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "DELUSER", usernames.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("ACL", "DELUSER", usernames.map { RESPRenderableBulkString($0) })
         }
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
     @_documentation(visibility: internal)
     public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = ByteBuffer?
+        public typealias Response = RESPBulkString?
 
         @inlinable public static var name: String { "ACL DRYRUN" }
 
@@ -72,14 +72,14 @@ public enum ACL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "DRYRUN", RESPBulkString(username), RESPBulkString(command), args)
+            commandEncoder.encodeArray("ACL", "DRYRUN", RESPRenderableBulkString(username), RESPRenderableBulkString(command), args)
         }
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
     @_documentation(visibility: internal)
     public struct GENPASS: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "ACL GENPASS" }
 
@@ -108,7 +108,7 @@ public enum ACL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "GETUSER", RESPBulkString(username))
+            commandEncoder.encodeArray("ACL", "GETUSER", RESPRenderableBulkString(username))
         }
     }
 
@@ -220,7 +220,7 @@ public enum ACL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "SETUSER", RESPBulkString(username), rules)
+            commandEncoder.encodeArray("ACL", "SETUSER", RESPRenderableBulkString(username), rules)
         }
     }
 
@@ -242,7 +242,7 @@ public enum ACL {
     /// Returns the authenticated username of the current connection.
     @_documentation(visibility: internal)
     public struct WHOAMI: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "ACL WHOAMI" }
 
@@ -306,7 +306,7 @@ extension COMMAND {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("COMMAND", "GETKEYS", RESPBulkString(command), args)
+            commandEncoder.encodeArray("COMMAND", "GETKEYS", RESPRenderableBulkString(command), args)
         }
     }
 
@@ -326,7 +326,7 @@ extension COMMAND {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", RESPBulkString(command), args)
+            commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", RESPRenderableBulkString(command), args)
         }
     }
 
@@ -548,7 +548,7 @@ public enum CONFIG {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CONFIG", "GET", parameters.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("CONFIG", "GET", parameters.map { RESPRenderableBulkString($0) })
         }
     }
 
@@ -608,13 +608,13 @@ public enum CONFIG {
 
             @inlinable
             public var respEntries: Int {
-                RESPBulkString(parameter).respEntries + RESPBulkString(value).respEntries
+                RESPRenderableBulkString(parameter).respEntries + RESPRenderableBulkString(value).respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                RESPBulkString(parameter).encode(into: &commandEncoder)
-                RESPBulkString(value).encode(into: &commandEncoder)
+                RESPRenderableBulkString(parameter).encode(into: &commandEncoder)
+                RESPRenderableBulkString(value).encode(into: &commandEncoder)
             }
         }
         @inlinable public static var name: String { "CONFIG SET" }
@@ -638,7 +638,7 @@ public enum LATENCY {
     /// Returns a human-readable latency analysis report.
     @_documentation(visibility: internal)
     public struct DOCTOR: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "LATENCY DOCTOR" }
 
@@ -653,7 +653,7 @@ public enum LATENCY {
     /// Returns a latency graph for an event.
     @_documentation(visibility: internal)
     public struct GRAPH<Event: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "LATENCY GRAPH" }
 
@@ -664,7 +664,7 @@ public enum LATENCY {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("LATENCY", "GRAPH", RESPBulkString(event))
+            commandEncoder.encodeArray("LATENCY", "GRAPH", RESPRenderableBulkString(event))
         }
     }
 
@@ -715,7 +715,7 @@ public enum LATENCY {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("LATENCY", "HISTORY", RESPBulkString(event))
+            commandEncoder.encodeArray("LATENCY", "HISTORY", RESPRenderableBulkString(event))
         }
     }
 
@@ -760,7 +760,7 @@ public enum MEMORY {
     /// Outputs a memory problems report.
     @_documentation(visibility: internal)
     public struct DOCTOR: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "MEMORY DOCTOR" }
 
@@ -790,7 +790,7 @@ public enum MEMORY {
     /// Returns the allocator statistics.
     @_documentation(visibility: internal)
     public struct MALLOCSTATS: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "MEMORY MALLOC-STATS" }
 
@@ -903,7 +903,7 @@ public enum MODULE {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "LOAD", RESPBulkString(path), args)
+            commandEncoder.encodeArray("MODULE", "LOAD", RESPRenderableBulkString(path), args)
         }
     }
 
@@ -944,7 +944,13 @@ public enum MODULE {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "LOADEX", RESPBulkString(path), RESPArrayWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
+            commandEncoder.encodeArray(
+                "MODULE",
+                "LOADEX",
+                RESPRenderableBulkString(path),
+                RESPArrayWithToken("CONFIG", configs),
+                RESPWithToken("ARGS", args)
+            )
         }
     }
 
@@ -960,7 +966,7 @@ public enum MODULE {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "UNLOAD", RESPBulkString(name))
+            commandEncoder.encodeArray("MODULE", "UNLOAD", RESPRenderableBulkString(name))
         }
     }
 
@@ -1035,7 +1041,7 @@ public enum SLOWLOG {
 /// Asynchronously rewrites the append-only file to disk.
 @_documentation(visibility: internal)
 public struct BGREWRITEAOF: ValkeyCommand {
-    public typealias Response = ByteBuffer
+    public typealias Response = RESPBulkString
 
     @inlinable public static var name: String { "BGREWRITEAOF" }
 
@@ -1219,7 +1225,7 @@ public struct FLUSHDB: ValkeyCommand {
 /// Returns information and statistics about the server.
 @_documentation(visibility: internal)
 public struct INFO: ValkeyCommand {
-    public typealias Response = ByteBuffer
+    public typealias Response = RESPBulkString
 
     @inlinable public static var name: String { "INFO" }
 
@@ -1252,7 +1258,7 @@ public struct LASTSAVE: ValkeyCommand {
 /// Displays computer art and the server version
 @_documentation(visibility: internal)
 public struct LOLWUT: ValkeyCommand {
-    public typealias Response = ByteBuffer
+    public typealias Response = RESPBulkString
 
     @inlinable public static var name: String { "LOLWUT" }
 
@@ -1296,7 +1302,7 @@ public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PSYNC", RESPBulkString(replicationid), offset)
+        commandEncoder.encodeArray("PSYNC", RESPRenderableBulkString(replicationid), offset)
     }
 }
 
@@ -1361,7 +1367,7 @@ public struct REPLICAOF: ValkeyCommand {
             }
         }
     }
-    public typealias Response = ByteBuffer
+    public typealias Response = RESPBulkString
 
     @inlinable public static var name: String { "REPLICAOF" }
 
@@ -1551,7 +1557,7 @@ public struct SLAVEOF: ValkeyCommand {
             }
         }
     }
-    public typealias Response = ByteBuffer
+    public typealias Response = RESPBulkString
 
     @inlinable public static var name: String { "SLAVEOF" }
 
@@ -1654,7 +1660,7 @@ extension ValkeyClientProtocol {
         username: Username,
         command: Command,
         args: [String] = []
-    ) async throws -> ByteBuffer? {
+    ) async throws -> RESPBulkString? {
         try await execute(ACL.DRYRUN(username: username, command: command, args: args))
     }
 
@@ -1666,7 +1672,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: Pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
     @discardableResult
-    public func aclGenpass(bits: Int? = nil) async throws -> ByteBuffer {
+    public func aclGenpass(bits: Int? = nil) async throws -> RESPBulkString {
         try await execute(ACL.GENPASS(bits: bits))
     }
 
@@ -1780,7 +1786,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The username of the current connection.
     @inlinable
     @discardableResult
-    public func aclWhoami() async throws -> ByteBuffer {
+    public func aclWhoami() async throws -> RESPBulkString {
         try await execute(ACL.WHOAMI())
     }
 
@@ -1792,7 +1798,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: A simple string reply indicating that the rewriting started or is about to start ASAP
     @inlinable
     @discardableResult
-    public func bgrewriteaof() async throws -> ByteBuffer {
+    public func bgrewriteaof() async throws -> RESPBulkString {
         try await execute(BGREWRITEAOF())
     }
 
@@ -2069,7 +2075,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: A map of info fields, one field per line in the form of <field>:<value> where the value can be a comma separated map like <key>=<val>. Also contains section header lines starting with `#` and blank lines.
     @inlinable
     @discardableResult
-    public func info(sections: [String] = []) async throws -> ByteBuffer {
+    public func info(sections: [String] = []) async throws -> RESPBulkString {
         try await execute(INFO(sections: sections))
     }
 
@@ -2093,7 +2099,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: A human readable latency analysis report.
     @inlinable
     @discardableResult
-    public func latencyDoctor() async throws -> ByteBuffer {
+    public func latencyDoctor() async throws -> RESPBulkString {
         try await execute(LATENCY.DOCTOR())
     }
 
@@ -2105,7 +2111,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: Latency graph
     @inlinable
     @discardableResult
-    public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> ByteBuffer {
+    public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> RESPBulkString {
         try await execute(LATENCY.GRAPH(event: event))
     }
 
@@ -2175,7 +2181,7 @@ extension ValkeyClientProtocol {
     /// - Available: 5.0.0
     /// - Response: [String]: String containing the generative computer art, and a text with the server version.
     @inlinable
-    public func lolwut(version: Int? = nil) async throws -> ByteBuffer {
+    public func lolwut(version: Int? = nil) async throws -> RESPBulkString {
         try await execute(LOLWUT(version: version))
     }
 
@@ -2187,7 +2193,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: Memory problems report.
     @inlinable
     @discardableResult
-    public func memoryDoctor() async throws -> ByteBuffer {
+    public func memoryDoctor() async throws -> RESPBulkString {
         try await execute(MEMORY.DOCTOR())
     }
 
@@ -2211,7 +2217,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The memory allocator's internal statistics report.
     @inlinable
     @discardableResult
-    public func memoryMallocStats() async throws -> ByteBuffer {
+    public func memoryMallocStats() async throws -> RESPBulkString {
         try await execute(MEMORY.MALLOCSTATS())
     }
 
@@ -2332,7 +2338,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: ReplicaOf status.
     @inlinable
     @discardableResult
-    public func replicaof(args: REPLICAOF.Args) async throws -> ByteBuffer {
+    public func replicaof(args: REPLICAOF.Args) async throws -> RESPBulkString {
         try await execute(REPLICAOF(args: args))
     }
 
@@ -2380,7 +2386,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: SlaveOf status.
     @inlinable
     @discardableResult
-    public func slaveof(args: SLAVEOF.Args) async throws -> ByteBuffer {
+    public func slaveof(args: SLAVEOF.Args) async throws -> RESPBulkString {
         try await execute(SLAVEOF(args: args))
     }
 

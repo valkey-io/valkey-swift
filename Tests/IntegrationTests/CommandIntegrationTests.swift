@@ -115,8 +115,8 @@ struct CommandIntegratedTests {
                     let list2Before = try await client.lrange(key2, start: 0, stop: -1).decode(as: [String].self)
                     #expect(list2Before == [])
                     for expectedValue in ["a", "b", "c", "d"] {
-                        var rt = try #require(try await client.lmove(source: key, destination: key2, wherefrom: .right, whereto: .left))
-                        let value = rt.readString(length: 1)
+                        let rt = try #require(try await client.lmove(source: key, destination: key2, wherefrom: .right, whereto: .left))
+                        let value = String(rt)
                         #expect(value == expectedValue)
                     }
                     let list1After = try await client.lrange(key, start: 0, stop: -1).decode(as: [String].self)
@@ -248,7 +248,7 @@ struct CommandIntegratedTests {
                 response = try await client.hrandfield(key)
                 singleField = try response.singleField()
                 #expect(singleField != nil)
-                let fieldName = String(buffer: singleField!)
+                let fieldName = String(singleField!)
                 #expect(["field1", "field2", "field3"].contains(fieldName))
 
                 // Get multiple fields
@@ -258,7 +258,7 @@ struct CommandIntegratedTests {
                 #expect(multipleFields != nil)
                 if let unwrappedFields = multipleFields {
                     #expect(unwrappedFields.count == 2)
-                    let fieldNames = unwrappedFields.map { String(buffer: $0) }
+                    let fieldNames = unwrappedFields.map { String($0) }
                     for fieldName in fieldNames {
                         #expect(["field1", "field2", "field3"].contains(fieldName))
                     }
@@ -276,7 +276,7 @@ struct CommandIntegratedTests {
                     #expect(unwrappedFieldValuePairs.count == 3)
                     var expectedPairs: [String: String] = [:]
                     for pair in unwrappedFieldValuePairs {
-                        expectedPairs[String(buffer: pair.field)] = String(buffer: pair.value)
+                        expectedPairs[String(pair.field)] = String(pair.value)
                     }
                     #expect(expectedPairs["field1"] == "value1")
                     #expect(expectedPairs["field2"] == "value2")

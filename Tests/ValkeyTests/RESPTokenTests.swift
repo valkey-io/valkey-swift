@@ -448,6 +448,22 @@ struct RESPTokenTests {
             ]
         )
     }
+
+    @Test
+    func testBulkStringConversion() throws {
+        let buffer = ByteBuffer(string: "Hello, world!")
+        let bulkString = RESPBulkString(buffer)
+        #expect(String(bulkString) == "Hello, world!")
+    }
+
+    @Test
+    func testBulkStringAsCollection() throws {
+        let buffer = ByteBuffer(string: "Hello, world!")
+        let bulkString = RESPBulkString(buffer)
+        #expect(bulkString[1] == 101)
+        let world = bulkString[7...11]
+        #expect(world[world.startIndex] == 119)
+    }
 }
 
 extension RESPToken {

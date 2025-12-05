@@ -56,7 +56,7 @@ public struct ValkeyKey: Sendable, Equatable, Hashable {
 
 extension ValkeyKey: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer), .bulkString(let buffer):
             self._storage = .buffer(buffer)
@@ -96,6 +96,15 @@ extension ValkeyKey: ExpressibleByStringLiteral {
     @inlinable
     public init(stringLiteral string: String) {
         self.init(string)
+    }
+}
+
+extension ValkeyKey {
+    ///  Initialize ValkeyKey from RESPBulkString
+    /// - Parameter bulkString: bulkString
+    @inlinable
+    public init(_ bulkString: RESPBulkString) {
+        self = .init(bulkString.buffer)
     }
 }
 

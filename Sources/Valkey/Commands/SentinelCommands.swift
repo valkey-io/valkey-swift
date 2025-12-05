@@ -21,7 +21,7 @@ public enum SENTINEL {
     /// Checks for a Sentinel quorum.
     @_documentation(visibility: internal)
     public struct CKQUORUM<PrimaryName: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "SENTINEL CKQUORUM" }
 
@@ -32,7 +32,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "CKQUORUM", RESPBulkString(primaryName))
+            commandEncoder.encodeArray("SENTINEL", "CKQUORUM", RESPRenderableBulkString(primaryName))
         }
     }
 
@@ -148,7 +148,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "FAILOVER", RESPBulkString(primaryName), RESPPureToken("COORDINATED", coordinated))
+            commandEncoder.encodeArray("SENTINEL", "FAILOVER", RESPRenderableBulkString(primaryName), RESPPureToken("COORDINATED", coordinated))
         }
     }
 
@@ -179,7 +179,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "GET-MASTER-ADDR-BY-NAME", RESPBulkString(primaryName))
+            commandEncoder.encodeArray("SENTINEL", "GET-MASTER-ADDR-BY-NAME", RESPRenderableBulkString(primaryName))
         }
     }
 
@@ -197,7 +197,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "GET-PRIMARY-ADDR-BY-NAME", RESPBulkString(primaryName))
+            commandEncoder.encodeArray("SENTINEL", "GET-PRIMARY-ADDR-BY-NAME", RESPRenderableBulkString(primaryName))
         }
     }
 
@@ -230,7 +230,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "INFO-CACHE", nodenames.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("SENTINEL", "INFO-CACHE", nodenames.map { RESPRenderableBulkString($0) })
         }
     }
 
@@ -254,7 +254,14 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "IS-MASTER-DOWN-BY-ADDR", RESPBulkString(ip), port, currentEpoch, RESPBulkString(runid))
+            commandEncoder.encodeArray(
+                "SENTINEL",
+                "IS-MASTER-DOWN-BY-ADDR",
+                RESPRenderableBulkString(ip),
+                port,
+                currentEpoch,
+                RESPRenderableBulkString(runid)
+            )
         }
     }
 
@@ -278,7 +285,14 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "IS-PRIMARY-DOWN-BY-ADDR", RESPBulkString(ip), port, currentEpoch, RESPBulkString(runid))
+            commandEncoder.encodeArray(
+                "SENTINEL",
+                "IS-PRIMARY-DOWN-BY-ADDR",
+                RESPRenderableBulkString(ip),
+                port,
+                currentEpoch,
+                RESPRenderableBulkString(runid)
+            )
         }
     }
 
@@ -296,7 +310,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "MASTER", RESPBulkString(primaryName))
+            commandEncoder.encodeArray("SENTINEL", "MASTER", RESPRenderableBulkString(primaryName))
         }
     }
 
@@ -333,14 +347,14 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "MONITOR", RESPBulkString(name), RESPBulkString(ip), port, quorum)
+            commandEncoder.encodeArray("SENTINEL", "MONITOR", RESPRenderableBulkString(name), RESPRenderableBulkString(ip), port, quorum)
         }
     }
 
     /// Returns the Sentinel instance ID.
     @_documentation(visibility: internal)
     public struct MYID: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "SENTINEL MYID" }
 
@@ -396,7 +410,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "PRIMARY", RESPBulkString(primaryName))
+            commandEncoder.encodeArray("SENTINEL", "PRIMARY", RESPRenderableBulkString(primaryName))
         }
     }
 
@@ -412,7 +426,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "REMOVE", RESPBulkString(primaryName))
+            commandEncoder.encodeArray("SENTINEL", "REMOVE", RESPRenderableBulkString(primaryName))
         }
     }
 
@@ -430,7 +444,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "REPLICAS", RESPBulkString(primaryName))
+            commandEncoder.encodeArray("SENTINEL", "REPLICAS", RESPRenderableBulkString(primaryName))
         }
     }
 
@@ -466,7 +480,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "SENTINELS", RESPBulkString(primaryName))
+            commandEncoder.encodeArray("SENTINEL", "SENTINELS", RESPRenderableBulkString(primaryName))
         }
     }
 
@@ -485,13 +499,13 @@ public enum SENTINEL {
 
             @inlinable
             public var respEntries: Int {
-                RESPBulkString(option).respEntries + RESPBulkString(value).respEntries
+                RESPRenderableBulkString(option).respEntries + RESPRenderableBulkString(value).respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                RESPBulkString(option).encode(into: &commandEncoder)
-                RESPBulkString(value).encode(into: &commandEncoder)
+                RESPRenderableBulkString(option).encode(into: &commandEncoder)
+                RESPRenderableBulkString(value).encode(into: &commandEncoder)
             }
         }
         @inlinable public static var name: String { "SENTINEL SET" }
@@ -505,7 +519,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "SET", RESPBulkString(primaryName), data)
+            commandEncoder.encodeArray("SENTINEL", "SET", RESPRenderableBulkString(primaryName), data)
         }
     }
 
@@ -558,7 +572,7 @@ public enum SENTINEL {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "SLAVES", RESPBulkString(primaryName))
+            commandEncoder.encodeArray("SENTINEL", "SLAVES", RESPRenderableBulkString(primaryName))
         }
     }
 
@@ -573,7 +587,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: Returns OK if the current Sentinel configuration is able to reach the quorum needed to failover a primary, and the majority needed to authorize the failover.
     @inlinable
     @discardableResult
-    public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> ByteBuffer {
+    public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPBulkString {
         try await execute(SENTINEL.CKQUORUM(primaryName: primaryName))
     }
 
@@ -762,7 +776,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: Node ID of the sentinel instance.
     @inlinable
     @discardableResult
-    public func sentinelMyid() async throws -> ByteBuffer {
+    public func sentinelMyid() async throws -> RESPBulkString {
         try await execute(SENTINEL.MYID())
     }
 

@@ -16,7 +16,7 @@ extension ROLE {
                 public let port: Int
                 public let replicationOffset: Int
 
-                public init(fromRESP token: RESPToken) throws {
+                public init(_ token: RESPToken) throws {
                     (self.ip, self.port, self.replicationOffset) = try token.decodeArrayElements()
                 }
             }
@@ -27,8 +27,8 @@ extension ROLE {
                 guard let replicationOffsetToken = arrayIterator.next(), let replicasToken = arrayIterator.next() else {
                     throw MissingValueDecodeError(expectedNumberOfValues: 2)
                 }
-                self.replicationOffset = try .init(fromRESP: replicationOffsetToken)
-                self.replicas = try .init(fromRESP: replicasToken)
+                self.replicationOffset = try .init(replicationOffsetToken)
+                self.replicas = try .init(replicasToken)
             }
         }
         public struct Replica: Sendable {
@@ -38,8 +38,8 @@ extension ROLE {
                 case sync
                 case connected
 
-                public init(fromRESP token: RESPToken) throws {
-                    let string = try String(fromRESP: token)
+                public init(_ token: RESPToken) throws {
+                    let string = try String(token)
                     guard let state = State(rawValue: string) else {
                         throw RESPDecodeError(.unexpectedToken, token: token)
                     }
@@ -59,10 +59,10 @@ extension ROLE {
                 else {
                     throw MissingValueDecodeError(expectedNumberOfValues: 4)
                 }
-                self.primaryIP = try .init(fromRESP: primaryIPToken)
-                self.primaryPort = try .init(fromRESP: primaryPortToken)
-                self.state = try .init(fromRESP: stateToken)
-                self.replicationOffset = try .init(fromRESP: replicationToken)
+                self.primaryIP = try .init(primaryIPToken)
+                self.primaryPort = try .init(primaryPortToken)
+                self.state = try .init(stateToken)
+                self.replicationOffset = try .init(replicationToken)
             }
         }
         public struct Sentinel: Sendable {
@@ -70,14 +70,14 @@ extension ROLE {
 
             init(arrayIterator: inout RESPToken.Array.Iterator) throws {
                 guard let primaryNamesToken = arrayIterator.next() else { throw MissingValueDecodeError(expectedNumberOfValues: 1) }
-                self.primaryNames = try .init(fromRESP: primaryNamesToken)
+                self.primaryNames = try .init(primaryNamesToken)
             }
         }
         case primary(Primary)
         case replica(Replica)
         case sentinel(Sentinel)
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             switch token.value {
             case .array(let array):
                 do {
@@ -85,7 +85,7 @@ extension ROLE {
                     guard let roleToken = iterator.next() else {
                         throw RESPDecodeError.invalidArraySize(array, expectedSize: 1)
                     }
-                    let role = try String(fromRESP: roleToken)
+                    let role = try String(roleToken)
                     switch role {
                     case "master":
                         let primary = try Primary(arrayIterator: &iterator)
