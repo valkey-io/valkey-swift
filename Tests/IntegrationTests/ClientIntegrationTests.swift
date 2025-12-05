@@ -638,11 +638,13 @@ struct ClientIntegratedTests {
             try await Task.sleep(for: .milliseconds(100))
             client.node.triggerGracefulShutdown()
             try await Task.sleep(for: .milliseconds(100))
+            // verify command sent after triggerGracefulShutdown fails
             do {
                 _ = try await client.hello()
             } catch let error as ConnectionPoolError where error == .poolShutdown {
 
             }
+            // verify command sent before triggerGracefulShutdown is completed
             let response = try await result
             #expect(response == nil)
         }
