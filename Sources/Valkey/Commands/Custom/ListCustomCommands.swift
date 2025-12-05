@@ -71,7 +71,7 @@ public struct ListPopResponse: RESPTokenDecodable, Sendable, Hashable {
 
     private let token: RESPToken
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         self.token = token
     }
 
@@ -82,13 +82,13 @@ public struct ListPopResponse: RESPTokenDecodable, Sendable, Hashable {
         if token.value == .null {
             return nil
         }
-        return try ByteBuffer(fromRESP: token)
+        return try ByteBuffer(token)
     }
 
     /// Gets the multiple elements when count was provided
     /// - Returns: Array of ByteBuffer if multiple elements were returned, nil otherwise
     public func elements() throws -> [ByteBuffer]? {
-        try [ByteBuffer]?(fromRESP: token)
+        try [ByteBuffer]?(token)
     }
     
 }
