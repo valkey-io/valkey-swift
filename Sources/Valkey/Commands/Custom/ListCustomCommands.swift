@@ -100,8 +100,7 @@ public struct ListPopResponse: RESPTokenDecodable, Sendable, Hashable {
             self._elements = nil
         case .array(let array):
             self._element = nil
-            let decodedElements = try array.decode(as: [ByteBuffer].self)
-            self._elements = decodedElements
+            self._elements = try array.decode(as: [ByteBuffer].self)
         default:
             throw RESPDecodeError.tokenMismatch(expected: [.null, .bulkString, .array], token: token)
         }
