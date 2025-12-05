@@ -614,7 +614,7 @@ extension PoolStateMachine {
 
         mutating func triggerForceShutdown(_ cleanup: inout ConnectionAction.Shutdown) {
             for var connectionState in self.connections {
-                guard let closeAction = connectionState.close() else {
+                guard let closeAction = connectionState.close(graceful: false) else {
                     continue
                 }
 
@@ -625,6 +625,21 @@ extension PoolStateMachine {
             }
 
             self.connections = []
+        }
+
+        mutating func triggerGracefulShutdown(_ cleanup: inout ConnectionAction.Shutdown) {
+            for var connectionState in self.connections {
+                guard let closeAction = connectionState.close(graceful: true) else {
+                    continue
+                }
+
+                if let connection = closeAction.connection {
+                    cleanup.connections.append(connection)
+                }
+                cleanup.timersToCancel.append(contentsOf: closeAction.cancelTimers)
+            }
+
+            self.connections = self.connections.filter { $0.isLeased }
         }
 
         // MARK: - Private functions -
