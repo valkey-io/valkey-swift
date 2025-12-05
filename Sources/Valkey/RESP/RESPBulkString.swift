@@ -105,8 +105,8 @@ extension RESPBulkString {
 
 extension RESPBulkString: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
-        self.buffer = try .init(fromRESP: token)
+    public init(_ token: RESPToken) throws {
+        self.buffer = try .init(token)
         self.range = buffer.readerIndex..<buffer.writerIndex
     }
 }

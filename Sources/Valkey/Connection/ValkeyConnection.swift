@@ -202,7 +202,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             } onCancel: {
                 self.cancel(requestID: requestID)
             }
-            return try .init(fromRESP: token)
+            return try .init(token)
         } catch let error as ValkeyClientError {
             #if DistributedTracingSupport
             if let span {
@@ -810,7 +810,7 @@ extension Result where Success == RESPToken, Failure == any Error {
     func convertFromRESP<Response: RESPTokenDecodable>(to: Response.Type) -> Result<Response, Error> {
         self.flatMap {
             do {
-                return try .success(Response(fromRESP: $0))
+                return try .success(Response($0))
             } catch {
                 return .failure(error)
             }

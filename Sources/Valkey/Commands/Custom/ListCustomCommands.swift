@@ -14,7 +14,7 @@ public struct ListEntry: RESPTokenDecodable, Sendable {
     public let key: ValkeyKey
     public let value: RESPBulkString
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         (self.key, self.value) = try token.decodeArrayElements()
     }
 }
@@ -31,7 +31,7 @@ extension LMPOP {
         public let key: ValkeyKey
         public let values: RESPToken.Array
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             switch token.value {
             case .array(let array):
                 (self.key, self.values) = try array.decodeElements()
