@@ -78,7 +78,9 @@ public struct RESPBulkString: Sendable, Equatable, Hashable, RandomAccessCollect
     }
     #endif
 
-    // These are implemented as no-ops for performance reasons.
+    // These are implemented as no-ops for performance reasons. The range check will be performed
+    // when the slice is indexed with an index and not a range.
+    // See https://github.com/swiftlang/swift/blob/153dd02cd8709f8c6afcda5f173237320a3eec87/stdlib/public/core/Collection.swift#L638
     @inlinable
     public func _failEarlyRangeCheck(_ index: Index, bounds: Range<Index>) {}
 
