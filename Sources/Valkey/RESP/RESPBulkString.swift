@@ -126,7 +126,7 @@ extension RESPBulkString: RESPStringRenderable {
 }
 
 extension String {
-    /// Create String from `RESPBulkString`
+    /// Initialize String from `RESPBulkString`
     /// - Parameter bulkString: Source bulk string
     @inlinable
     public init(_ bulkString: RESPBulkString) {
@@ -135,7 +135,7 @@ extension String {
 }
 
 extension ByteBuffer {
-    /// Create ByteBuffer from `RESPBulkString`
+    /// Initialize ByteBuffer from `RESPBulkString`
     ///
     /// This method returns the internal buffer used by `RESPBulkString` so does not perform any copies.
     ///

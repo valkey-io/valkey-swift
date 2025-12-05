@@ -100,6 +100,8 @@ extension ValkeyKey: ExpressibleByStringLiteral {
 }
 
 extension ValkeyKey {
+    ///  Initialize ValkeyKey from RESPBulkString
+    /// - Parameter bulkString: bulkString
     @inlinable
     public init(_ bulkString: RESPBulkString) {
         self = .init(bulkString.buffer)
