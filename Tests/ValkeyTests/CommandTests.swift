@@ -300,12 +300,19 @@ struct CommandTests {
                 var lpopResponse = try await connection.lpop("key1")
                 #expect(lpopResponse != nil)
                 #expect(try lpopResponse!.element() == ByteBuffer(string: "one"))
-                #expect(try lpopResponse!.elements() == nil)
+                #expect(try lpopResponse!.elements() == [ByteBuffer(string: "one")])
 
                 // Test multiple elements LPOP with count
                 lpopResponse = try await connection.lpop("key1", count: 3)
                 #expect(lpopResponse != nil)
-                #expect(try lpopResponse!.element() == nil)
+                do {
+                    _ = try lpopResponse!.element()
+                    Issue.record("Expected RESPDecodeError.tokenMismatch to be thrown")
+                } catch let error as RESPDecodeError {
+                    #expect(error.errorCode == .tokenMismatch)
+                } catch {
+                    Issue.record("Unexpected error type: \(error)")
+                }
                 #expect(try lpopResponse!.elements() == [ByteBuffer(string: "two"), ByteBuffer(string: "three"), ByteBuffer(string: "four")])
             }
         }
