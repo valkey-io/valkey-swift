@@ -13,13 +13,11 @@ extension ValkeyClient {
     /// Run operation with the valkey subscription connection
     ///
     /// - Parameters:
-    ///   - isolation: Actor isolation
     ///   - operation: Closure to run with subscription connection
     @inlinable
     func withSubscriptionConnection<Value>(
-        isolation: isolated (any Actor)? = #isolation,
-        _ operation: (ValkeyConnection) async throws -> sending Value
-    ) async throws -> sending Value {
+        _ operation: (ValkeyConnection) async throws -> Value
+    ) async throws -> Value {
         let node = self.node
         let id = node.subscriptionConnectionIDGenerator.next()
 
@@ -49,16 +47,14 @@ extension ValkeyClient {
     /// all subscriptions.
     ///
     /// - Parameters:
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with async sequence of key invalidations and the client id
     ///         of the connection the subscription is running on.
     /// - Returns: Return value of closure
     @inlinable
     public func subscribeKeyInvalidations<Value>(
-        isolation: isolated (any Actor)? = #isolation,
-        process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>, Int) async throws -> sending Value
-    ) async throws -> sending Value {
-        try await withSubscriptionConnection { connection in
+        process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>, Int) async throws -> Value
+    ) async throws -> Value {
+        try await self.withSubscriptionConnection { connection in
             let id = try await connection.clientId()
             return try await connection.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in
                 let keys = subscription.map { ValkeyKey($0.message) }
@@ -71,16 +67,15 @@ extension ValkeyClient {
     /// AsyncSequence
     ///
     /// This should not be called directly, used the related commands
-    /// ``ValkeyClient/subscribe(to:isolation:process:)`` or
-    /// ``ValkeyClient/psubscribe(to:isolation:process:)``
+    /// ``ValkeyClient/subscribe(to:process:)`` or
+    /// ``ValkeyClient/psubscribe(to:process:)``
     @inlinable
     public func _subscribe<Value>(
         command: some ValkeySubscribeCommand,
-        isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
+        process: (ValkeySubscription) async throws -> Value
+    ) async throws -> Value {
         try await self.withSubscriptionConnection { connection in
-            try await connection._subscribe(command: command, isolation: isolation, process: process)
+            try await connection._subscribe(command: command, process: process)
         }
     }
 }

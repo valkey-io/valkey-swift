@@ -463,20 +463,18 @@ public final class ValkeyClusterClient: Sendable {
     /// - Parameters:
     ///   - keys: Keys affected by operation. This is used to choose the cluster node
     ///   - readOnly: Is this connection only going to be used with readonly commands
-    ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Value returned by closure
     @inlinable
     public func withConnection<Value>(
         forKeys keys: some Collection<ValkeyKey>,
         readOnly: Bool = false,
-        isolation: isolated (any Actor)? = #isolation,
-        operation: (ValkeyConnection) async throws -> sending Value
+        operation: (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
         let hashSlots = keys.compactMap { HashSlot(key: $0) }
         let nodeSelection = getNodeSelection(readOnly: readOnly)
         let node = try await self.nodeClient(for: hashSlots, nodeSelection: nodeSelection)
-        return try await node.withConnection(isolation: isolation, operation: operation)
+        return try await node.withConnection(operation: operation)
     }
 
     @inlinable

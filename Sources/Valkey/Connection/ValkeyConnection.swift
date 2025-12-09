@@ -80,7 +80,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// connection.
     ///
     /// To avoid the cost of acquiring the connection and then closing it, it is always
-    /// preferable to use ``ValkeyClient/withConnection(isolation:operation:)`` which
+    /// preferable to use ``ValkeyClient/withConnection(operation:)`` which
     /// uses a persistent connection pool to provide connections to your Valkey database.
     ///
     /// - Parameters:
@@ -88,7 +88,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ///   - configuration: Configuration of Valkey connection
     ///   - eventLoop: EventLoop to run connection on
     ///   - logger: Logger for connection
-    ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Return value of operation closure
     public static func withConnection<Value>(
@@ -96,7 +95,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         configuration: ValkeyConnectionConfiguration = .init(),
         eventLoop: any EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
         logger: Logger,
-        isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> sending Value {
         let connection = try await connect(
