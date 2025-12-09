@@ -80,9 +80,9 @@ extension ValkeyConnection {
     /// ``ValkeyConnection/subscribe(to:process:)`` or
     /// ``ValkeyConnection/psubscribe(to:process:)``
     @inlinable
-    public nonisolated(nonsending) func _subscribe<Value>(
+    public nonisolated func _subscribe<Value>(
         command: some ValkeySubscribeCommand,
-        process: nonisolated(nonsending) (ValkeySubscription) async throws -> Value
+        process: (ValkeySubscription) async throws -> Value
     ) async throws -> Value {
         let (id, stream) = try await self.subscribe(command: command, filters: command.filters)
         let value: Value

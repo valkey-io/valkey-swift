@@ -11,6 +11,5 @@ jobs:
     with:
       api_breakage_check_container_image: swift:latest
       docs_check_container_image: swift:latest
-      # 6.2 does not understand `nonisolated(nonsending)` correctly
-      format_check_container_image: swiftlang/swift:nightly-main-noble
+      format_check_container_image: swiftlang/swift:nightly-6.2-noble
       unacceptable_language_check_enabled: false  # Valkey commands contain unacceptable language
