@@ -100,6 +100,8 @@ public struct RESPBulkString: Sendable, Equatable, Hashable, RandomAccessCollect
 #if compiler(>=6.2)
 extension RESPBulkString {
     /// Provides high performance read only access to the contents of the RESPBulkString
+    @inlinable
+    @available(macOS 10.14.4, iOS 12.2, watchOS 5.2, tvOS 12.2, visionOS 1.0, *)
     public var bytes: RawSpan {
         @_lifetime(borrow self)
         borrowing get {

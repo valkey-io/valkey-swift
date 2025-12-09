@@ -23,7 +23,6 @@ defaultSwiftSettings.append(
 
 let package = Package(
     name: "valkey-swift",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13)],
     products: [
         .library(name: "Valkey", targets: ["Valkey"]),
         .library(name: "ValkeyBloom", targets: ["ValkeyBloom"]),
