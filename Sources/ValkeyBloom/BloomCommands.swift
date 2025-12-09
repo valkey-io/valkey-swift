@@ -34,7 +34,7 @@ public enum BF {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("BF.ADD", key, RESPBulkString(value))
+            commandEncoder.encodeArray("BF.ADD", key, RESPRenderableBulkString(value))
         }
     }
 
@@ -72,7 +72,7 @@ public enum BF {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("BF.EXISTS", key, RESPBulkString(value))
+            commandEncoder.encodeArray("BF.EXISTS", key, RESPRenderableBulkString(value))
         }
     }
 
@@ -196,7 +196,7 @@ public enum BF {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("BF.LOAD", key, RESPBulkString(dump))
+            commandEncoder.encodeArray("BF.LOAD", key, RESPRenderableBulkString(dump))
         }
     }
 
@@ -216,7 +216,7 @@ public enum BF {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("BF.MADD", key, values.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("BF.MADD", key, values.map { RESPRenderableBulkString($0) })
         }
     }
 
@@ -236,7 +236,7 @@ public enum BF {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("BF.MEXISTS", key, values.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("BF.MEXISTS", key, values.map { RESPRenderableBulkString($0) })
         }
     }
 

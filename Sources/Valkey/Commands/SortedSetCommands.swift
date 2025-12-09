@@ -145,13 +145,13 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            score.respEntries + RESPBulkString(member).respEntries
+            score.respEntries + RESPRenderableBulkString(member).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             score.encode(into: &commandEncoder)
-            RESPBulkString(member).encode(into: &commandEncoder)
+            RESPRenderableBulkString(member).encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken?
@@ -302,7 +302,7 @@ public struct ZINCRBY<Member: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZINCRBY", key, increment, RESPBulkString(member))
+        commandEncoder.encodeArray("ZINCRBY", key, increment, RESPRenderableBulkString(member))
     }
 }
 
@@ -452,7 +452,7 @@ public struct ZLEXCOUNT<Min: RESPStringRenderable, Max: RESPStringRenderable>: V
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZLEXCOUNT", key, RESPBulkString(min), RESPBulkString(max))
+        commandEncoder.encodeArray("ZLEXCOUNT", key, RESPRenderableBulkString(min), RESPRenderableBulkString(max))
     }
 }
 
@@ -513,7 +513,7 @@ public struct ZMSCORE<Member: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZMSCORE", key, members.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("ZMSCORE", key, members.map { RESPRenderableBulkString($0) })
     }
 }
 
@@ -679,8 +679,8 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
         commandEncoder.encodeArray(
             "ZRANGE",
             key,
-            RESPBulkString(start),
-            RESPBulkString(stop),
+            RESPRenderableBulkString(start),
+            RESPRenderableBulkString(stop),
             sortby,
             RESPPureToken("REV", rev),
             RESPWithToken("LIMIT", limit),
@@ -734,7 +734,7 @@ public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>:
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZRANGEBYLEX", key, RESPBulkString(min), RESPBulkString(max), RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZRANGEBYLEX", key, RESPRenderableBulkString(min), RESPRenderableBulkString(max), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -857,8 +857,8 @@ public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>:
             "ZRANGESTORE",
             dst,
             src,
-            RESPBulkString(min),
-            RESPBulkString(max),
+            RESPRenderableBulkString(min),
+            RESPRenderableBulkString(max),
             sortby,
             RESPPureToken("REV", rev),
             RESPWithToken("LIMIT", limit)
@@ -888,7 +888,7 @@ public struct ZRANK<Member: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZRANK", key, RESPBulkString(member), RESPPureToken("WITHSCORE", withscore))
+        commandEncoder.encodeArray("ZRANK", key, RESPRenderableBulkString(member), RESPPureToken("WITHSCORE", withscore))
     }
 }
 
@@ -910,7 +910,7 @@ public struct ZREM<Member: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZREM", key, members.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("ZREM", key, members.map { RESPRenderableBulkString($0) })
     }
 }
 
@@ -934,7 +934,7 @@ public struct ZREMRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderabl
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZREMRANGEBYLEX", key, RESPBulkString(min), RESPBulkString(max))
+        commandEncoder.encodeArray("ZREMRANGEBYLEX", key, RESPRenderableBulkString(min), RESPRenderableBulkString(max))
     }
 }
 
@@ -1059,7 +1059,7 @@ public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderabl
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZREVRANGEBYLEX", key, RESPBulkString(max), RESPBulkString(min), RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZREVRANGEBYLEX", key, RESPRenderableBulkString(max), RESPRenderableBulkString(min), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -1136,7 +1136,7 @@ public struct ZREVRANK<Member: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZREVRANK", key, RESPBulkString(member), RESPPureToken("WITHSCORE", withscore))
+        commandEncoder.encodeArray("ZREVRANK", key, RESPRenderableBulkString(member), RESPPureToken("WITHSCORE", withscore))
     }
 }
 
@@ -1195,7 +1195,7 @@ public struct ZSCORE<Member: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZSCORE", key, RESPBulkString(member))
+        commandEncoder.encodeArray("ZSCORE", key, RESPRenderableBulkString(member))
     }
 }
 

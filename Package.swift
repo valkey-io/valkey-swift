@@ -3,14 +3,23 @@
 
 import PackageDescription
 
-let defaultSwiftSettings: [SwiftSetting] =
+var defaultSwiftSettings: [SwiftSetting] =
     [
         .swiftLanguageMode(.v6),
         .enableExperimentalFeature("AvailabilityMacro=valkeySwift 1.0:macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0"),
 
         // https://github.com/swiftlang/swift-evolution/blob/main/proposals/0444-member-import-visibility.md
         .enableUpcomingFeature("MemberImportVisibility"),
+
+        // https://forums.swift.org/t/experimental-support-for-lifetime-dependencies-in-swift-6-2-and-beyond/78638
+        .enableExperimentalFeature("Lifetimes"),
     ]
+
+#if compiler(>=6.2)
+defaultSwiftSettings.append(
+    .enableUpcomingFeature("NonisolatedNonsendingByDefault")
+)
+#endif
 
 let package = Package(
     name: "valkey-swift",
@@ -29,7 +38,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.4"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.6.3"),
         .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.3.0"),
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.81.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.90.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.26.0"),
         .package(url: "https://github.com/swift-server/swift-service-lifecycle.git", from: "2.8.0"),

@@ -180,7 +180,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster description from the response token you provide.
     /// - Parameter respToken: The response token.
-    public init(fromRESP respToken: RESPToken) throws {
+    public init(_ respToken: RESPToken) throws {
         self = try Self.makeClusterDescription(respToken: respToken)
     }
 
@@ -264,7 +264,7 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster link from the response token you provide.
     /// - Parameter respToken: The response token.
-    public init(fromRESP respToken: RESPToken) throws {
+    public init(_ respToken: RESPToken) throws {
         self = try Self.makeClusterLink(respToken: respToken)
     }
 
@@ -275,7 +275,7 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
 
         case .map(let map):
             let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
-                if let key = try? String(fromRESP: keyNode) {
+                if let key = try? String(keyNode) {
                     return (key, value)
                 } else {
                     return nil
@@ -302,7 +302,7 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
         for (key, value) in sequence {
             switch key {
             case "direction":
-                guard let directionString = try? String(fromRESP: value),
+                guard let directionString = try? String(value),
                     let directionValue = ValkeyClusterLink.Direction(rawValue: directionString)
                 else {
                     throw RESPDecodeError.missingToken(key: "direction", token: respToken)
@@ -310,19 +310,19 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
                 direction = directionValue
 
             case "node":
-                node = try? String(fromRESP: value)
+                node = try? String(value)
 
             case "create-time":
-                createTime = try? Int64(fromRESP: value)
+                createTime = try? Int64(value)
 
             case "events":
-                events = try? String(fromRESP: value)
+                events = try? String(value)
 
             case "send-buffer-allocated":
-                sendBufferAllocated = try? Int64(fromRESP: value)
+                sendBufferAllocated = try? Int64(value)
 
             case "send-buffer-used":
-                sendBufferUsed = try? Int64(fromRESP: value)
+                sendBufferUsed = try? Int64(value)
 
             default:
                 // ignore unexpected keys for forward compatibility
@@ -379,7 +379,7 @@ public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster slot stats from the response token you provide.
     /// - Parameter respToken: The response token.
-    public init(fromRESP respToken: RESPToken) throws {
+    public init(_ respToken: RESPToken) throws {
         self = try Self.makeClusterSlotStats(respToken: respToken)
     }
 
@@ -419,7 +419,7 @@ public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
         case .map(let map):
             // For RESP3, handle RESPToken stats as map
             let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
-                if let key = try? String(fromRESP: keyNode) {
+                if let key = try? String(keyNode) {
                     return (key, value)
                 } else {
                     return nil
@@ -428,16 +428,16 @@ public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
             for (key, value) in mapped {
                 switch key {
                 case "key-count":
-                    keyCount = try? Int64(fromRESP: value)
+                    keyCount = try? Int64(value)
 
                 case "cpu-usec":
-                    cpuUsec = try? Int64(fromRESP: value)
+                    cpuUsec = try? Int64(value)
 
                 case "network-bytes-in":
-                    networkBytesIn = try? Int64(fromRESP: value)
+                    networkBytesIn = try? Int64(value)
 
                 case "network-bytes-out":
-                    networkBytesOut = try? Int64(fromRESP: value)
+                    networkBytesOut = try? Int64(value)
 
                 default:
                     // ignore unexpected keys for forward compatibility
@@ -451,16 +451,16 @@ public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
             for (key, valueToken) in mapArray {
                 switch key {
                 case "key-count":
-                    keyCount = try? Int64(fromRESP: valueToken)
+                    keyCount = try? Int64(valueToken)
 
                 case "cpu-usec":
-                    cpuUsec = try? Int64(fromRESP: valueToken)
+                    cpuUsec = try? Int64(valueToken)
 
                 case "network-bytes-in":
-                    networkBytesIn = try? Int64(fromRESP: valueToken)
+                    networkBytesIn = try? Int64(valueToken)
 
                 case "network-bytes-out":
-                    networkBytesOut = try? Int64(fromRESP: valueToken)
+                    networkBytesOut = try? Int64(valueToken)
 
                 default:
                     // ignore unexpected keys for forward compatibility
@@ -536,7 +536,7 @@ public struct ValkeyClusterSlotRange: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster slot range from the response token you provide.
     /// - Parameter respToken: The response token.
-    public init(fromRESP respToken: RESPToken) throws {
+    public init(_ respToken: RESPToken) throws {
         self = try Self.makeClusterSlotRange(respToken: respToken)
     }
 
@@ -639,7 +639,7 @@ extension ValkeyClusterDescription.Shard {
 
         case .map(let map):
             let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
-                if let key = try? String(fromRESP: keyNode) {
+                if let key = try? String(keyNode) {
                     return (key, value)
                 } else {
                     return nil
@@ -692,7 +692,7 @@ extension ValkeyClusterDescription.Node {
 
         case .map(let map):
             let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
-                if let key = try? String(fromRESP: keyNode) {
+                if let key = try? String(keyNode) {
                     return (key, value)
                 } else {
                     return nil
@@ -736,27 +736,27 @@ extension ValkeyClusterDescription.Node {
         while let (key, nodeVal) = nodeIterator.next() {
             switch key {
             case "id":
-                id = try? String(fromRESP: nodeVal)
+                id = try? String(nodeVal)
             case "port":
-                port = try? Int64(fromRESP: nodeVal)
+                port = try? Int64(nodeVal)
             case "tls-port":
-                tlsPort = try? Int64(fromRESP: nodeVal)
+                tlsPort = try? Int64(nodeVal)
             case "ip":
-                ip = try? String(fromRESP: nodeVal)
+                ip = try? String(nodeVal)
             case "hostname":
-                hostname = try? String(fromRESP: nodeVal)
+                hostname = try? String(nodeVal)
             case "endpoint":
-                endpoint = try? String(fromRESP: nodeVal)
+                endpoint = try? String(nodeVal)
             case "role":
-                guard let roleString = try? String(fromRESP: nodeVal), let roleValue = ValkeyClusterDescription.Node.Role(rawValue: roleString) else {
+                guard let roleString = try? String(nodeVal), let roleValue = ValkeyClusterDescription.Node.Role(rawValue: roleString) else {
                     throw .decodeError(RESPDecodeError(.unexpectedToken, token: nodeVal, message: "Invalid Role String"))
                 }
                 role = roleValue
 
             case "replication-offset":
-                replicationOffset = try? Int64(fromRESP: nodeVal)
+                replicationOffset = try? Int64(nodeVal)
             case "health":
-                guard let healthString = try? String(fromRESP: nodeVal),
+                guard let healthString = try? String(nodeVal),
                     let healthValue = ValkeyClusterDescription.Node.Health(rawValue: healthString)
                 else {
                     throw .decodeError(RESPDecodeError(.unexpectedToken, token: nodeVal, message: "Invalid Node Health String"))
@@ -808,7 +808,7 @@ extension ValkeyClusterSlotRange.Node {
 
         // First element: IP address
         guard let ipToken = iterator.next(),
-            let ip = try? String(fromRESP: ipToken)
+            let ip = try? String(ipToken)
         else {
             throw RESPDecodeError.missingToken(key: "ip", token: respToken)
         }
@@ -823,7 +823,7 @@ extension ValkeyClusterSlotRange.Node {
 
         // Third element: node ID
         guard let nodeIdToken = iterator.next(),
-            let nodeId = try? String(fromRESP: nodeIdToken)
+            let nodeId = try? String(nodeIdToken)
         else {
             throw RESPDecodeError.missingToken(key: "node id", token: respToken)
         }
@@ -836,8 +836,8 @@ extension ValkeyClusterSlotRange.Node {
             case .map(let map):
                 // Handle metadata as a map
                 for (keyToken, valueToken) in map {
-                    if let key = try? String(fromRESP: keyToken),
-                        let value = try? String(fromRESP: valueToken)
+                    if let key = try? String(keyToken),
+                        let value = try? String(valueToken)
                     {
                         metadata[key] = value
                     }
@@ -849,7 +849,7 @@ extension ValkeyClusterSlotRange.Node {
                 // Handle metadata as key-value pairs in array format (using MapStyleArray)
                 let mapArray = MapStyleArray(underlying: array)
                 for (key, valueToken) in mapArray {
-                    if let value = try? String(fromRESP: valueToken) {
+                    if let value = try? String(valueToken) {
                         metadata[key] = value
                     }
                 }
@@ -879,7 +879,7 @@ struct MapStyleArray: Sequence {
 
         mutating func next() -> (String, RESPToken)? {
             guard let nodeKey = self.underlying.next(),
-                let key = try? String(fromRESP: nodeKey),
+                let key = try? String(nodeKey),
                 let nodeVal = self.underlying.next()
             else {
                 return nil

@@ -11,18 +11,18 @@ import NIOCore
 public struct ValkeySubscriptionMessage: Sendable, Equatable {
     /// The messages channel.
     public let channel: String
-    /// The byte buffer of the message.
-    public let message: ByteBuffer
+    /// The bulk string of the message.
+    public let message: RESPBulkString
 
     package init(channel: String, message: ByteBuffer) {
         self.channel = channel
-        self.message = message
+        self.message = RESPBulkString(message)
     }
 
     /// helper function used by tests
     package init(channel: String, message: String) {
         self.channel = channel
-        self.message = ByteBuffer(string: message)
+        self.message = RESPBulkString(ByteBuffer(string: message))
     }
 }
 
@@ -51,8 +51,19 @@ public struct ValkeySubscription: AsyncSequence, Sendable {
     public struct AsyncIterator: AsyncIteratorProtocol {
         var base: BaseAsyncSequence.AsyncIterator
 
+        #if compiler(>=6.2)
+        @concurrent
         public mutating func next() async throws -> Element? {
             try await self.base.next()
+        }
+        #else
+        public mutating func next() async throws -> Element? {
+            try await self.base.next()
+        }
+        #endif
+
+        public mutating func next(isolation actor: isolated (any Actor)?) async throws(any Error) -> ValkeySubscriptionMessage? {
+            try await self.base.next(isolation: actor)
         }
     }
 }
