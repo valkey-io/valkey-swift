@@ -72,7 +72,6 @@ extension ValkeyConnection {
         }
     }
 
-    #if compiler(>=6.2)
     /// Execute subscribe command and run closure using related ``ValkeySubscription``
     /// AsyncSequence
     ///
@@ -102,37 +101,6 @@ extension ValkeyConnection {
         }.value
         return value
     }
-    #else
-    /// Execute subscribe command and run closure using related ``ValkeySubscription``
-    /// AsyncSequence
-    ///
-    /// This should not be called directly, used the related commands
-    /// ``ValkeyConnection/subscribe(to:process:)`` or
-    /// ``ValkeyConnection/psubscribe(to:process:)``
-    @inlinable
-    public nonisolated func _subscribe<Value>(
-        command: some ValkeySubscribeCommand,
-        process: (ValkeySubscription) async throws -> Value
-    ) async throws -> Value {
-        let (id, stream) = try await self.subscribe(command: command, filters: command.filters)
-        let value: Value
-        do {
-            value = try await process(stream)
-            try Task.checkCancellation()
-        } catch {
-            // call unsubscribe in unstructured Task to avoid it being cancelled
-            _ = await Task {
-                try await unsubscribe(id: id)
-            }.result
-            throw error
-        }
-        // call unsubscribe in unstructured Task to avoid it being cancelled
-        _ = try await Task {
-            try await unsubscribe(id: id)
-        }.value
-        return value
-    }
-    #endif
 
     @usableFromInline
     func subscribe(
