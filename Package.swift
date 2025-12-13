@@ -27,6 +27,7 @@ let package = Package(
         .library(name: "Valkey", targets: ["Valkey"]),
         .library(name: "ValkeyBloom", targets: ["ValkeyBloom"]),
         .library(name: "ValkeyJSON", targets: ["ValkeyJSON"]),
+        .library(name: "ValkeySearch", targets: ["ValkeySearch"]),
     ],
     traits: [
         .trait(name: "ServiceLifecycleSupport"),
@@ -70,6 +71,11 @@ let package = Package(
             swiftSettings: defaultSwiftSettings
         ),
         .target(
+            name: "ValkeySearch",
+            dependencies: ["Valkey"],
+            swiftSettings: defaultSwiftSettings
+        ),
+        .target(
             name: "_ValkeyConnectionPool",
             dependencies: [
                 .product(name: "Atomics", package: "swift-atomics"),
@@ -102,6 +108,7 @@ let package = Package(
             name: "ValkeyTests",
             dependencies: [
                 "Valkey",
+                "ValkeySearch",
                 .product(name: "NIOTestUtils", package: "swift-nio"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOEmbedded", package: "swift-nio"),
