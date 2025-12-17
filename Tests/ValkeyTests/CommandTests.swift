@@ -1184,6 +1184,554 @@ struct CommandTests {
 
         @Test
         @available(valkeySwift 1.0, *)
+        func ftAggregate_verbatim() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["FT.AGGREGATE", "idx:testIndex", "hello", "VERBATIM"]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "hello",
+                    verbatim: true
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_load_withAlias() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "*",
+                        "LOAD", "1",
+                        "@title", "AS", "title",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*",
+                    load: .init(
+                        nargs: 1,
+                        items: [
+                            .init(identifier: "@title", alias: .init(property: "title"))
+                        ]
+                    )
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_load_multipleItems_mixedAlias() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "*",
+                        "LOAD", "2",
+                        "@title", "AS", "title",
+                        "@body",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*",
+                    load: .init(
+                        nargs: 2,
+                        items: [
+                            .init(identifier: "@title", alias: .init(property: "title")),
+                            .init(identifier: "@body"),
+                        ]
+                    )
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_timeout() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "*",
+                        "TIMEOUT", "100",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*",
+                    timeout: .init(milliseconds: 100)
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_params() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "@loc:[$lon $lat 10 km]",
+                        "PARAMS", "4",
+                        "lon", "29.69465",
+                        "lat", "34.95126",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "@loc:[$lon $lat 10 km]",
+                    params: .init(nargs: 4, parameters: ["lon", "29.69465", "lat", "34.95126"])
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_dialect() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "*",
+                        "DIALECT", "2",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*",
+                    dialect: .init(dialectVersion: 2)
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_scorer_addscores() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "hello",
+                        "SCORER", "BM25",
+                        "ADDSCORES",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "hello",
+                    scorer: .init(scorer: "BM25"),
+                    addscores: true
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_sortby_withcount() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "hello",
+                        "SORTBY", "4", "@foo", "ASC", "@bar", "DESC",
+                        "WITHCOUNT",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "hello",
+                    sortby: .init(
+                        nargs: 4,
+                        sortParams: ["@foo", "ASC", "@bar", "DESC"],
+                        withcount: true
+                    )
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_sortby_max() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "hello",
+                        "SORTBY", "2", "@foo", "DESC",
+                        "MAX", "100",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "hello",
+                    sortby: .init(
+                        nargs: 2,
+                        sortParams: ["@foo", "DESC"],
+                        max: .init(num: 100)
+                    )
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_apply_multiple() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "*",
+                        "APPLY", "sqrt(@foo)", "AS", "foo_sqrt",
+                        "APPLY", "(@bar*2)", "AS", "bar2",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*",
+                    applys: [
+                        .init(expr: "sqrt(@foo)", name: "foo_sqrt"),
+                        .init(expr: "(@bar*2)", name: "bar2"),
+                    ]
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_limit() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "*",
+                        "LIMIT", "10", "20",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*",
+                    limit: .init(offset: 10, num: 20)
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_filter_multiple() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "*",
+                        "FILTER", "@foo > 10",
+                        "FILTER", "@bar < 20",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*",
+                    filters: [
+                        .init(expr: "@foo > 10"),
+                        .init(expr: "@bar < 20"),
+                    ]
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_withcursor_count_maxidle() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "*",
+                        "WITHCURSOR",
+                        "COUNT", "500",
+                        "MAXIDLE", "10000",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*",
+                    withcursor: .init(
+                        count: .init(readSize: 500),
+                        maxidle: .init(idleTime: 10000)
+                    )
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_groupby_reduce_sum_as() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "*",
+                        "GROUPBY", "1", "@category",
+                        "REDUCE", "SUM", "1", "@price", "AS", "total_revenue",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*",
+                    groupbys: [
+                        .init(
+                            nargs: 1,
+                            groupFields: ["@category"],
+                        )
+                    ],
+                    reduces: [
+                        .init(
+                            function: .sum,
+                            nargs: 1,
+                            identifiers: ["@price"],
+                            alias: .init(identifier: "total_revenue")
+
+                        )
+                    ]
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate_groupby_countDistinct() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.AGGREGATE", "idx:testIndex", "*",
+                        "GROUPBY", "2", "@category", "@brand",
+                        "REDUCE", "COUNT_DISTINCT", "1", "@user", "AS", "uniq_users",
+                    ]),
+                    response: .array([.number(0)])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*",
+                    groupbys: [
+                        .init(
+                            nargs: 2,
+                            groupFields: ["@category", "@brand"],
+                        )
+                    ],
+                    reduces: [
+                        .init(
+                            function: .countDistinct,
+                            nargs: 1,
+                            identifiers: ["@user"],
+                            alias: .init(identifier: "uniq_users")
+
+                        )
+                    ]
+                )
+
+                guard case .array(let arr) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+                let items = Array(arr)
+                #expect(items.count == 1)
+                guard case .number(let n) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(n == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func ftCreate_onJson_withTextAlias() async throws {
             try await testCommandEncodesDecodes(
                 (

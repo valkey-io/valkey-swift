@@ -21,20 +21,499 @@ public enum FT {
     /// Performs a search of the specified index. The keys which match the query expression are subjected to further processing as specified
     @_documentation(visibility: internal)
     public struct AGGREGATE<Query: RESPStringRenderable>: ValkeyCommand {
+        public struct LoadItemsAlias: RESPRenderable, Sendable, Hashable {
+            public var property: String
+
+            @inlinable
+            public init(property: String) {
+                self.property = property
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "AS".respEntries + property.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "AS".encode(into: &commandEncoder)
+                property.encode(into: &commandEncoder)
+            }
+        }
+        public struct LoadItems: RESPRenderable, Sendable, Hashable {
+            public var identifier: String
+            public var alias: LoadItemsAlias?
+
+            @inlinable
+            public init(identifier: String, alias: LoadItemsAlias? = nil) {
+                self.identifier = identifier
+                self.alias = alias
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                identifier.respEntries + alias.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                identifier.encode(into: &commandEncoder)
+                alias.encode(into: &commandEncoder)
+            }
+        }
+        public struct Load: RESPRenderable, Sendable, Hashable {
+            public var nargs: Int
+            public var items: [LoadItems]
+
+            @inlinable
+            public init(nargs: Int, items: [LoadItems]) {
+                self.nargs = nargs
+                self.items = items
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "LOAD".respEntries + nargs.respEntries + items.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "LOAD".encode(into: &commandEncoder)
+                nargs.encode(into: &commandEncoder)
+                items.encode(into: &commandEncoder)
+            }
+        }
+        public struct Groupby: RESPRenderable, Sendable, Hashable {
+            public var nargs: Int
+            public var groupFields: [String]
+
+            @inlinable
+            public init(nargs: Int, groupFields: [String]) {
+                self.nargs = nargs
+                self.groupFields = groupFields
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "GROUPBY".respEntries + nargs.respEntries + groupFields.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "GROUPBY".encode(into: &commandEncoder)
+                nargs.encode(into: &commandEncoder)
+                groupFields.encode(into: &commandEncoder)
+            }
+        }
+        public enum ReduceFunction: RESPRenderable, Sendable, Hashable {
+            case count
+            case countDistinct
+            case countDistinctish
+            case sum
+            case min
+            case max
+            case avg
+            case stddev
+            case quantile
+            case tolist
+            case firstValue
+            case randomSample
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .count: "COUNT".encode(into: &commandEncoder)
+                case .countDistinct: "COUNT_DISTINCT".encode(into: &commandEncoder)
+                case .countDistinctish: "COUNT_DISTINCT_ISH".encode(into: &commandEncoder)
+                case .sum: "SUM".encode(into: &commandEncoder)
+                case .min: "MIN".encode(into: &commandEncoder)
+                case .max: "MAX".encode(into: &commandEncoder)
+                case .avg: "AVG".encode(into: &commandEncoder)
+                case .stddev: "STDDEV".encode(into: &commandEncoder)
+                case .quantile: "QUANTILE".encode(into: &commandEncoder)
+                case .tolist: "TOLIST".encode(into: &commandEncoder)
+                case .firstValue: "FIRST_VALUE".encode(into: &commandEncoder)
+                case .randomSample: "RANDOM_SAMPLE".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public struct ReduceAlias: RESPRenderable, Sendable, Hashable {
+            public var identifier: String
+
+            @inlinable
+            public init(identifier: String) {
+                self.identifier = identifier
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "AS".respEntries + identifier.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "AS".encode(into: &commandEncoder)
+                identifier.encode(into: &commandEncoder)
+            }
+        }
+        public struct Reduce: RESPRenderable, Sendable, Hashable {
+            public var function: ReduceFunction
+            public var nargs: Int
+            public var identifiers: [String]
+            public var alias: ReduceAlias?
+
+            @inlinable
+            public init(function: ReduceFunction, nargs: Int, identifiers: [String], alias: ReduceAlias? = nil) {
+                self.function = function
+                self.nargs = nargs
+                self.identifiers = identifiers
+                self.alias = alias
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "REDUCE".respEntries + function.respEntries + nargs.respEntries + identifiers.respEntries + alias.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "REDUCE".encode(into: &commandEncoder)
+                function.encode(into: &commandEncoder)
+                nargs.encode(into: &commandEncoder)
+                identifiers.encode(into: &commandEncoder)
+                alias.encode(into: &commandEncoder)
+            }
+        }
+        public struct SortbyMax: RESPRenderable, Sendable, Hashable {
+            public var num: Int
+
+            @inlinable
+            public init(num: Int) {
+                self.num = num
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "MAX".respEntries + num.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "MAX".encode(into: &commandEncoder)
+                num.encode(into: &commandEncoder)
+            }
+        }
+        public struct Sortby: RESPRenderable, Sendable, Hashable {
+            public var nargs: Int
+            public var sortParams: [String]
+            public var max: SortbyMax?
+            public var withcount: Bool
+
+            @inlinable
+            public init(nargs: Int, sortParams: [String], max: SortbyMax? = nil, withcount: Bool = false) {
+                self.nargs = nargs
+                self.sortParams = sortParams
+                self.max = max
+                self.withcount = withcount
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "SORTBY".respEntries + nargs.respEntries + sortParams.respEntries + max.respEntries
+                    + RESPPureToken("WITHCOUNT", withcount).respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "SORTBY".encode(into: &commandEncoder)
+                nargs.encode(into: &commandEncoder)
+                sortParams.encode(into: &commandEncoder)
+                max.encode(into: &commandEncoder)
+                RESPPureToken("WITHCOUNT", withcount).encode(into: &commandEncoder)
+            }
+        }
+        public struct Apply: RESPRenderable, Sendable, Hashable {
+            public var expr: String
+            public var name: String
+
+            @inlinable
+            public init(expr: String, name: String) {
+                self.expr = expr
+                self.name = name
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "APPLY".respEntries + expr.respEntries + "AS".respEntries + name.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "APPLY".encode(into: &commandEncoder)
+                expr.encode(into: &commandEncoder)
+                "AS".encode(into: &commandEncoder)
+                name.encode(into: &commandEncoder)
+            }
+        }
+        public struct Limit: RESPRenderable, Sendable, Hashable {
+            public var offset: Int
+            public var num: Int
+
+            @inlinable
+            public init(offset: Int, num: Int) {
+                self.offset = offset
+                self.num = num
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "LIMIT".respEntries + offset.respEntries + num.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "LIMIT".encode(into: &commandEncoder)
+                offset.encode(into: &commandEncoder)
+                num.encode(into: &commandEncoder)
+            }
+        }
+        public struct Filter: RESPRenderable, Sendable, Hashable {
+            public var expr: String
+
+            @inlinable
+            public init(expr: String) {
+                self.expr = expr
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "FILTER".respEntries + expr.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "FILTER".encode(into: &commandEncoder)
+                expr.encode(into: &commandEncoder)
+            }
+        }
+        public struct WithcursorCount: RESPRenderable, Sendable, Hashable {
+            public var readSize: Int
+
+            @inlinable
+            public init(readSize: Int) {
+                self.readSize = readSize
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "COUNT".respEntries + readSize.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "COUNT".encode(into: &commandEncoder)
+                readSize.encode(into: &commandEncoder)
+            }
+        }
+        public struct WithcursorMaxidle: RESPRenderable, Sendable, Hashable {
+            public var idleTime: Int
+
+            @inlinable
+            public init(idleTime: Int) {
+                self.idleTime = idleTime
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "MAXIDLE".respEntries + idleTime.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "MAXIDLE".encode(into: &commandEncoder)
+                idleTime.encode(into: &commandEncoder)
+            }
+        }
+        public struct Withcursor: RESPRenderable, Sendable, Hashable {
+            public var count: WithcursorCount
+            public var maxidle: WithcursorMaxidle?
+
+            @inlinable
+            public init(count: WithcursorCount, maxidle: WithcursorMaxidle? = nil) {
+                self.count = count
+                self.maxidle = maxidle
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "WITHCURSOR".respEntries + count.respEntries + maxidle.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "WITHCURSOR".encode(into: &commandEncoder)
+                count.encode(into: &commandEncoder)
+                maxidle.encode(into: &commandEncoder)
+            }
+        }
+        public struct Timeout: RESPRenderable, Sendable, Hashable {
+            public var milliseconds: Int
+
+            @inlinable
+            public init(milliseconds: Int) {
+                self.milliseconds = milliseconds
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "TIMEOUT".respEntries + milliseconds.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "TIMEOUT".encode(into: &commandEncoder)
+                milliseconds.encode(into: &commandEncoder)
+            }
+        }
+        public struct Params: RESPRenderable, Sendable, Hashable {
+            public var nargs: Int
+            public var parameters: [String]
+
+            @inlinable
+            public init(nargs: Int, parameters: [String]) {
+                self.nargs = nargs
+                self.parameters = parameters
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                nargs.respEntries + parameters.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                nargs.encode(into: &commandEncoder)
+                parameters.encode(into: &commandEncoder)
+            }
+        }
+        public struct Scorer: RESPRenderable, Sendable, Hashable {
+            public var scorer: String
+
+            @inlinable
+            public init(scorer: String) {
+                self.scorer = scorer
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "SCORER".respEntries + scorer.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "SCORER".encode(into: &commandEncoder)
+                scorer.encode(into: &commandEncoder)
+            }
+        }
+        public struct Dialect: RESPRenderable, Sendable, Hashable {
+            public var dialectVersion: Int
+
+            @inlinable
+            public init(dialectVersion: Int) {
+                self.dialectVersion = dialectVersion
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "DIALECT".respEntries + dialectVersion.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "DIALECT".encode(into: &commandEncoder)
+                dialectVersion.encode(into: &commandEncoder)
+            }
+        }
         @inlinable public static var name: String { "FT.AGGREGATE" }
 
         public var index: ValkeyKey
         public var query: Query
+        public var verbatim: Bool
+        public var load: Load?
+        public var groupbys: [Groupby]
+        public var reduces: [Reduce]
+        public var sortby: Sortby?
+        public var applys: [Apply]
+        public var limit: Limit?
+        public var filters: [Filter]
+        public var withcursor: Withcursor?
+        public var timeout: Timeout?
+        public var params: Params?
+        public var scorer: Scorer?
+        public var addscores: Bool
+        public var dialect: Dialect?
 
-        @inlinable public init(index: ValkeyKey, query: Query) {
+        @inlinable public init(
+            index: ValkeyKey,
+            query: Query,
+            verbatim: Bool = false,
+            load: Load? = nil,
+            groupbys: [Groupby] = [],
+            reduces: [Reduce] = [],
+            sortby: Sortby? = nil,
+            applys: [Apply] = [],
+            limit: Limit? = nil,
+            filters: [Filter] = [],
+            withcursor: Withcursor? = nil,
+            timeout: Timeout? = nil,
+            params: Params? = nil,
+            scorer: Scorer? = nil,
+            addscores: Bool = false,
+            dialect: Dialect? = nil
+        ) {
             self.index = index
             self.query = query
+            self.verbatim = verbatim
+            self.load = load
+            self.groupbys = groupbys
+            self.reduces = reduces
+            self.sortby = sortby
+            self.applys = applys
+            self.limit = limit
+            self.filters = filters
+            self.withcursor = withcursor
+            self.timeout = timeout
+            self.params = params
+            self.scorer = scorer
+            self.addscores = addscores
+            self.dialect = dialect
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(index) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("FT.AGGREGATE", index, RESPBulkString(query))
+            commandEncoder.encodeArray(
+                "FT.AGGREGATE",
+                index,
+                RESPBulkString(query),
+                RESPPureToken("VERBATIM", verbatim),
+                load,
+                groupbys,
+                reduces,
+                sortby,
+                applys,
+                limit,
+                filters,
+                withcursor,
+                timeout,
+                params,
+                scorer,
+                RESPPureToken("ADDSCORES", addscores),
+                dialect
+            )
         }
     }
 
@@ -702,8 +1181,44 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(log N)
     @inlinable
     @discardableResult
-    public func ftAggregate<Query: RESPStringRenderable>(index: ValkeyKey, query: Query) async throws -> RESPToken {
-        try await execute(FT.AGGREGATE(index: index, query: query))
+    public func ftAggregate<Query: RESPStringRenderable>(
+        index: ValkeyKey,
+        query: Query,
+        verbatim: Bool = false,
+        load: FT.AGGREGATE<Query>.Load? = nil,
+        groupbys: [FT.AGGREGATE<Query>.Groupby] = [],
+        reduces: [FT.AGGREGATE<Query>.Reduce] = [],
+        sortby: FT.AGGREGATE<Query>.Sortby? = nil,
+        applys: [FT.AGGREGATE<Query>.Apply] = [],
+        limit: FT.AGGREGATE<Query>.Limit? = nil,
+        filters: [FT.AGGREGATE<Query>.Filter] = [],
+        withcursor: FT.AGGREGATE<Query>.Withcursor? = nil,
+        timeout: FT.AGGREGATE<Query>.Timeout? = nil,
+        params: FT.AGGREGATE<Query>.Params? = nil,
+        scorer: FT.AGGREGATE<Query>.Scorer? = nil,
+        addscores: Bool = false,
+        dialect: FT.AGGREGATE<Query>.Dialect? = nil
+    ) async throws -> RESPToken {
+        try await execute(
+            FT.AGGREGATE(
+                index: index,
+                query: query,
+                verbatim: verbatim,
+                load: load,
+                groupbys: groupbys,
+                reduces: reduces,
+                sortby: sortby,
+                applys: applys,
+                limit: limit,
+                filters: filters,
+                withcursor: withcursor,
+                timeout: timeout,
+                params: params,
+                scorer: scorer,
+                addscores: addscores,
+                dialect: dialect
+            )
+        )
     }
 
     /// Creates an empty search index and initiates the backfill process
