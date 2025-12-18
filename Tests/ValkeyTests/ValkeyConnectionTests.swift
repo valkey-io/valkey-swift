@@ -735,7 +735,7 @@ struct ConnectionTests {
             #expect(span.status?.code == .error)
         }
 
-        @Test(.disabled("Pipeline support not implemented yet"))
+        @Test
         @available(valkeySwift 1.0, *)
         func testPipelinedSameCommandsSpan() async throws {
             let tracer = InMemoryTracer()
@@ -762,13 +762,13 @@ struct ConnectionTests {
 
             #expect(tracer.finishedSpans.count == 1)
             let span = try #require(tracer.finishedSpans.first)
-            #expect(span.operationName == "MULTI")
+            #expect(span.operationName == "Pipeline")
             #expect(span.kind == .client)
             #expect(span.errors.isEmpty)
             #expect(
                 span.attributes == [
                     "db.system.name": "valkey",
-                    "db.operation.name": "MULTI SET",
+                    "db.operation.name": "SET,SET",
                     "db.operation.batch.size": 2,
                     "server.address": "127.0.0.1",
                     "network.peer.address": "127.0.0.1",
@@ -778,7 +778,7 @@ struct ConnectionTests {
             #expect(span.status == nil)
         }
 
-        @Test(.disabled("Pipeline support not implemented yet"))
+        @Test
         @available(valkeySwift 1.0, *)
         func testPipelinedDifferentCommandsSpan() async throws {
             let tracer = InMemoryTracer()
@@ -805,13 +805,13 @@ struct ConnectionTests {
 
             #expect(tracer.finishedSpans.count == 1)
             let span = try #require(tracer.finishedSpans.first)
-            #expect(span.operationName == "MULTI")
+            #expect(span.operationName == "Pipeline")
             #expect(span.kind == .client)
             #expect(span.errors.isEmpty)
             #expect(
                 span.attributes == [
                     "db.system.name": "valkey",
-                    "db.operation.name": "MULTI",
+                    "db.operation.name": "SET,GET",
                     "db.operation.batch.size": 2,
                     "server.address": "127.0.0.1",
                     "network.peer.address": "127.0.0.1",
@@ -821,9 +821,9 @@ struct ConnectionTests {
             #expect(span.status == nil)
         }
 
-        @Test(.disabled("Pipeline support not implemented yet"))
+        @Test
         @available(valkeySwift 1.0, *)
-        func testPipelinedCommandFailureSpan() async throws {
+        func testTransactionSameCommandsSpan() async throws {
             let tracer = InMemoryTracer()
             var config = ValkeyConnectionConfiguration()
             config.tracing.tracer = tracer
@@ -833,27 +833,33 @@ struct ConnectionTests {
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
             try await channel.processHello()
 
-            async let results = connection.execute(
+            async let results = connection.transaction(
                 SET("foo", value: "bar"),
-                GET("foo")
+                SET("bar", value: "foo")
             )
-            _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-
+            let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            var buffer = ByteBuffer()
+            buffer.writeImmutableBuffer(RESPToken(.command(["MULTI"])).base)
+            buffer.writeImmutableBuffer(RESPToken(.command(["SET", "foo", "bar"])).base)
+            buffer.writeImmutableBuffer(RESPToken(.command(["SET", "bar", "foo"])).base)
+            buffer.writeImmutableBuffer(RESPToken(.command(["EXEC"])).base)
+            #expect(outbound == buffer)
             try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
-            try await channel.writeInbound(RESPToken(.simpleError("WRONGTYPE Error!")).base)
-            _ = await results
+            try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+            try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+            try await channel.writeInbound(RESPToken(.array([.simpleString("OK"), .simpleString("OK")])).base)
+
+            #expect(try await results.1.get().map { String($0) } == "OK")
 
             #expect(tracer.finishedSpans.count == 1)
             let span = try #require(tracer.finishedSpans.first)
             #expect(span.operationName == "MULTI")
             #expect(span.kind == .client)
-            #expect(span.errors.count == 1)
-            let error = try #require(span.errors.first)
-            #expect(error.error as? ValkeyClientError == ValkeyClientError(.commandError, message: "WRONGTYPE Error!"))
+            #expect(span.errors.isEmpty)
             #expect(
                 span.attributes == [
                     "db.system.name": "valkey",
-                    "db.operation.name": "MULTI",
+                    "db.operation.name": "SET,SET",
                     "db.operation.batch.size": 2,
                     "server.address": "127.0.0.1",
                     "network.peer.address": "127.0.0.1",
@@ -861,6 +867,110 @@ struct ConnectionTests {
                 ]
             )
             #expect(span.status == nil)
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testTransactionDifferentCommandsSpan() async throws {
+            let tracer = InMemoryTracer()
+            var config = ValkeyConnectionConfiguration()
+            config.tracing.tracer = tracer
+
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
+            try await channel.processHello()
+
+            async let results = connection.transaction(
+                SET("foo", value: "bar"),
+                GET("foo")
+            )
+            let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            var buffer = ByteBuffer()
+            buffer.writeImmutableBuffer(RESPToken(.command(["MULTI"])).base)
+            buffer.writeImmutableBuffer(RESPToken(.command(["SET", "foo", "bar"])).base)
+            buffer.writeImmutableBuffer(RESPToken(.command(["GET", "foo"])).base)
+            buffer.writeImmutableBuffer(RESPToken(.command(["EXEC"])).base)
+            #expect(outbound == buffer)
+
+            try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+            try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+            try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+            try await channel.writeInbound(RESPToken(.array([.simpleString("OK"), .bulkString("bar")])).base)
+
+            #expect(try await results.1.get().map { String($0) } == "bar")
+
+            #expect(tracer.finishedSpans.count == 1)
+            let span = try #require(tracer.finishedSpans.first)
+            #expect(span.operationName == "MULTI")
+            #expect(span.kind == .client)
+            #expect(span.errors.isEmpty)
+            #expect(
+                span.attributes == [
+                    "db.system.name": "valkey",
+                    "db.operation.name": "SET,GET",
+                    "db.operation.batch.size": 2,
+                    "server.address": "127.0.0.1",
+                    "network.peer.address": "127.0.0.1",
+                    "network.peer.port": 6379,
+                ]
+            )
+            #expect(span.status == nil)
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testTransactionCommandFailureSpan() async throws {
+            let tracer = InMemoryTracer()
+            var config = ValkeyConnectionConfiguration()
+            config.tracing.tracer = tracer
+
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
+            try await channel.processHello()
+
+            async let results = connection.transaction(
+                SET("foo", value: "bar"),
+                GET("foo")
+            )
+            let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            var buffer = ByteBuffer()
+            buffer.writeImmutableBuffer(RESPToken(.command(["MULTI"])).base)
+            buffer.writeImmutableBuffer(RESPToken(.command(["SET", "foo", "bar"])).base)
+            buffer.writeImmutableBuffer(RESPToken(.command(["GET", "foo"])).base)
+            buffer.writeImmutableBuffer(RESPToken(.command(["EXEC"])).base)
+            #expect(outbound == buffer)
+
+            try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+            try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+            try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+            try await channel.writeInbound(RESPToken(.simpleError("EXECABORT")).base)
+            _ = try? await results
+
+            #expect(tracer.finishedSpans.count == 1)
+            let span = try #require(tracer.finishedSpans.first)
+            #expect(span.operationName == "MULTI")
+            #expect(span.kind == .client)
+            #expect(span.errors.count == 1)
+            let error = try #require(span.errors.first?.error as? ValkeyTransactionError)
+            switch error {
+            case .transactionErrors(_, let execError as ValkeyClientError):
+                #expect(execError == ValkeyClientError(.commandError, message: "EXECABORT"))
+            default:
+                Issue.record()
+            }
+            #expect(
+                span.attributes == [
+                    "db.system.name": "valkey",
+                    "db.operation.name": "SET,GET",
+                    "db.operation.batch.size": 2,
+                    "server.address": "127.0.0.1",
+                    "network.peer.address": "127.0.0.1",
+                    "network.peer.port": 6379,
+                ]
+            )
+            #expect(span.status == .init(code: .error))
         }
     }
     #endif
