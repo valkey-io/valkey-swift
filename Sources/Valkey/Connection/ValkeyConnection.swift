@@ -166,7 +166,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     @inlinable func withTracingSupport<Value>(
         name: String,
-        operation: () async throws -> Value,
+        operation: () async throws -> sending Value,
         updateAttributes: (inout SpanAttributes) -> Void
     ) async throws -> Value {
         #if DistributedTracingSupport
