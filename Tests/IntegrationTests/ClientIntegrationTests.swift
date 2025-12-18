@@ -141,6 +141,27 @@ struct ClientIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testClientShutdown() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let client = ValkeyClient(.hostname(valkeyHostname, port: 6379), configuration: .init(), logger: logger)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await client.run()
+            }
+            group.addTask {
+                try await client.set("sdf", value: "Hello")
+            }
+            try await group.next()
+            group.cancelAll()
+        }
+        await #expect(throws: ValkeyClientError(.clientIsShutDown)) {
+            _ = try await client.get("sdf65fsdf").map { String($0) }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testBinarySetGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug

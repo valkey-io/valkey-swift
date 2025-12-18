@@ -145,7 +145,19 @@ extension ValkeyNodeClient {
     public func withConnection<Value>(
         operation: (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
-        let lease = try await self.connectionPool.leaseConnection()
+        let lease: ConnectionLease<ValkeyConnection>
+        do {
+            lease = try await self.connectionPool.leaseConnection()
+        } catch let error as ConnectionPoolError {
+            switch error {
+            case .requestCancelled:
+                throw ValkeyClientError(.cancelled)
+            case .poolShutdown:
+                throw ValkeyClientError(.clientIsShutDown)
+            default:
+                throw error
+            }
+        }
         defer { lease.release() }
 
         return try await operation(lease.connection)

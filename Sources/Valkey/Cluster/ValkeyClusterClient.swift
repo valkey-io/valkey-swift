@@ -187,7 +187,7 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         }
-        throw ValkeyClusterError.clientRequestCancelled
+        throw ValkeyClientError(.cancelled)
     }
 
     /// Pipeline a series of commands to nodes in the Valkey cluster
@@ -284,7 +284,7 @@ public final class ValkeyClusterClient: Sendable {
                     }
                 }
                 var results = [Result<RESPToken, any Error>](
-                    repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned),
+                    repeating: .failure(ValkeyClusterError._pipelinedResultNotReturned),
                     count: commands.count
                 )
                 // get results for each node
@@ -380,7 +380,7 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         }
-        throw ValkeyClusterError.clientRequestCancelled
+        throw ValkeyClientError(.cancelled)
     }
 
     struct Redirection {
@@ -459,7 +459,7 @@ public final class ValkeyClusterClient: Sendable {
             }
             retryCommands.removeAll(keepingCapacity: true)
         }
-        throw ValkeyClusterError.clientRequestCancelled
+        throw ValkeyClientError(.cancelled)
     }
 
     /// Get connection from cluster and run operation using connection
@@ -856,7 +856,7 @@ public final class ValkeyClusterClient: Sendable {
                     stateMachine.cancelWaitingForHealthy(id: waiterID)
                 }
 
-                continuation?.resume(throwing: ValkeyClusterError.clientRequestCancelled)
+                continuation?.resume(throwing: ValkeyClientError(.cancelled))
             }
         }
 
