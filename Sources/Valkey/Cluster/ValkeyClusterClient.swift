@@ -11,6 +11,10 @@ import NIOCore
 import NIOPosix
 import Synchronization
 
+#if ServiceLifecycleSupport
+import ServiceLifecycle
+#endif
+
 /// A client for interacting with a Valkey cluster.
 ///
 /// `ValkeyClusterClient` provides a high-level interface for communicating with a Valkey cluster.
@@ -1113,3 +1117,8 @@ extension Array where Element == any ValkeyCommand {
         self = commandArray
     }
 }
+
+#if ServiceLifecycleSupport
+@available(valkeySwift 1.0, *)
+extension ValkeyClusterClient: Service {}
+#endif  // ServiceLifecycle
