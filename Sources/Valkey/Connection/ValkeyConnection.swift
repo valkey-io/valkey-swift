@@ -807,11 +807,8 @@ extension ValkeyClientError {
     /// - SeeAlso: [](https://valkey.io/topics/protocol/#simple-errors)
     @usableFromInline
     var simpleErrorPrefix: Substring? {
-        guard let message else { return nil }
-        var prefixEndIndex = message.startIndex
-        while prefixEndIndex < message.endIndex, message[prefixEndIndex] != " " {
-            message.formIndex(after: &prefixEndIndex)
-        }
+        guard case .commandError = self.errorCode, let message else { return nil }
+        guard let prefixEndIndex = message.firstIndex(of: " ") else { return nil }
         return message[message.startIndex..<prefixEndIndex]
     }
 }
