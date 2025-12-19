@@ -153,8 +153,11 @@ public struct ValkeyClientConfiguration: Sendable {
         /// Creates the configuration for a Valkey client connection pool.
         /// - Parameters:
         ///   - minimumConnectionCount: The minimum number of connections to maintain.
-        ///   - maximumConnectionCount: The maximum number of connections to allow.
+        ///   - maximumConnectionSoftLimit: The maximum number of connections to allow that are not closed immediately.
+        ///   - maximumConnectionHardLimit: The maximum number of connections to allow.
         ///   - idleTimeout: The duration to allow a connect to be idle, that defaults to 60 seconds.
+        ///   - circuitBreakerTripAfter: Time after first connection fail before circuit breaker trips.
+        ///   - maximumConcurrentConnectionRequests: Maximum concurrent connection requests that can be run at one time.
         public init(
             minimumConnectionCount: Int = 0,
             maximumConnectionSoftLimit: Int = 20,
