@@ -670,17 +670,25 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ) -> (string: String, count: Int) {
         // get length of string so we only do one allocation
         var stringLength = 0
+        var count = 0
         for command in repeat each commands {
+            if count == 16 {
+                stringLength += 3  // length of ellipsis
+                break
+            }
             stringLength += Swift.type(of: command).name.count + 1
+            count += 1
         }
         var string: String = ""
         string.reserveCapacity(stringLength - 1)
 
-        var count = 0
+        count = 0
         for command in repeat each commands {
             if count == 0 {
                 string += "\(Swift.type(of: command).name)"
-            } else {
+            } else if count == 16 {
+                string += "..."
+            } else if count < 16 {
                 string += ",\(Swift.type(of: command).name)"
             }
             count += 1
@@ -698,13 +706,14 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         var count = 0
         for command in commands {
             if count == 16 {
-                stringLength += 2  // length of ellipsis - missing comma
+                stringLength += 3  // length of ellipsis
                 break
             }
-            stringLength += Swift.type(of: command).name.count
+            stringLength += Swift.type(of: command).name.count + 1
+            count += 1
         }
         var string: String = ""
-        string.reserveCapacity(stringLength)
+        string.reserveCapacity(stringLength - 1)
 
         guard let firstCommand = commands.first else { return "" }
         string = "\(Swift.type(of: firstCommand).name)"

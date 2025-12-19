@@ -823,6 +823,51 @@ struct ConnectionTests {
 
         @Test
         @available(valkeySwift 1.0, *)
+        func testPipelinedManyCommands() async throws {
+            let tracer = InMemoryTracer()
+            var config = ValkeyConnectionConfiguration()
+            config.tracing.tracer = tracer
+
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
+            try await channel.processHello()
+
+            let commandCount = 24
+            let commands: [any ValkeyCommand] = .init(repeating: GET("foo"), count: 24)
+            async let results = connection.execute(commands)
+
+            let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            var buffer = ByteBuffer()
+            for _ in 0..<commandCount {
+                buffer.writeImmutableBuffer(RESPToken(.command(["GET", "foo"])).base)
+            }
+            #expect(outbound == buffer)
+            for _ in 0..<commandCount {
+                try await channel.writeInbound(RESPToken(.bulkString("bar")).base)
+            }
+            #expect(try await results[0].get().decode(as: String.self) == "bar")
+
+            #expect(tracer.finishedSpans.count == 1)
+            let span = try #require(tracer.finishedSpans.first)
+            #expect(span.operationName == "Pipeline")
+            #expect(span.kind == .client)
+            #expect(span.errors.isEmpty)
+            #expect(
+                span.attributes == [
+                    "db.system.name": "valkey",
+                    "db.operation.name": "GET,GET,GET,GET,GET,GET,GET,GET,GET,GET,GET,GET,GET,GET,GET,GET...",
+                    "db.operation.batch.size": .int64(Int64(commandCount)),
+                    "server.address": "127.0.0.1",
+                    "network.peer.address": "127.0.0.1",
+                    "network.peer.port": 6379,
+                ]
+            )
+            #expect(span.status == nil)
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func testTransactionSameCommandsSpan() async throws {
             let tracer = InMemoryTracer()
             var config = ValkeyConnectionConfiguration()
