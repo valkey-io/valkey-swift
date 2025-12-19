@@ -21,6 +21,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             case connectionClosedDueToCancellation
             case timeout
             case clientIsShutDown
+            case connectionCreationCircuitBreakerTripped
         }
 
         fileprivate let value: _Internal
@@ -50,6 +51,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         public static var timeout: Self { .init(.timeout) }
         /// Client is shutdown.
         public static var clientIsShutDown: Self { .init(.clientIsShutDown) }
+        /// Connection pool connection creation circuit breaker triggered
+        public static var connectionCreationCircuitBreakerTripped: Self { .init(.connectionCreationCircuitBreakerTripped) }
     }
 
     /// The error code
@@ -78,6 +81,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         case .connectionClosedDueToCancellation: self.message ?? "Connection was closed because another command was cancelled."
         case .timeout: self.message ?? "Connection was closed because it timed out."
         case .clientIsShutDown: self.message ?? "Client is shutdown and not serving requests."
+        case .connectionCreationCircuitBreakerTripped: self.message ?? "Connection pool connection creation circuit breaker triggered."
         }
     }
 }

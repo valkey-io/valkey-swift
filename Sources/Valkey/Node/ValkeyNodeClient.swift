@@ -80,8 +80,11 @@ package final class ValkeyNodeClient: Sendable {
 
         var poolConfiguration = _ValkeyConnectionPool.ConnectionPoolConfiguration()
         poolConfiguration.minimumConnectionCount = connectionFactory.configuration.connectionPool.minimumConnectionCount
-        poolConfiguration.maximumConnectionSoftLimit = connectionFactory.configuration.connectionPool.maximumConnectionCount
-        poolConfiguration.maximumConnectionHardLimit = connectionFactory.configuration.connectionPool.maximumConnectionCount
+        poolConfiguration.maximumConnectionSoftLimit = connectionFactory.configuration.connectionPool.maximumConnectionSoftLimit
+        poolConfiguration.maximumConnectionHardLimit = connectionFactory.configuration.connectionPool.maximumConnectionHardLimit
+        poolConfiguration.idleTimeout = connectionFactory.configuration.connectionPool.idleTimeout
+        poolConfiguration.circuitBreakerTripAfter = connectionFactory.configuration.connectionPool.circuitBreakerTripAfter
+        poolConfiguration.maximumConcurrentConnectionRequests = connectionFactory.configuration.connectionPool.maximumConcurrentConnectionRequests
 
         self.readOnly = readOnly
         self.connectionPool = .init(
@@ -154,6 +157,8 @@ extension ValkeyNodeClient {
                 throw ValkeyClientError(.cancelled)
             case .poolShutdown:
                 throw ValkeyClientError(.clientIsShutDown)
+            case .connectionCreationCircuitBreakerTripped:
+                throw ValkeyClientError(.connectionCreationCircuitBreakerTripped)
             default:
                 throw error
             }
