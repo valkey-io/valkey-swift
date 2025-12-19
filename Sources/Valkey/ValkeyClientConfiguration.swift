@@ -125,17 +125,30 @@ public struct ValkeyClientConfiguration: Sendable {
         /// connections dropping below this number.
         public var minimumConnectionCount: Int
 
-        /// The maximum number of connections in the pool.
-        ///
-        /// The client will at no time create more connections than this.
-        /// If connections become idle, they will be closed, if they haven't received work
-        /// within ``idleTimeout``, as long as we have more connections than
-        /// ``minimumConnectionCount``.
-        public var maximumConnectionCount: Int
+        /// Between the `minimumConnectionCount` and
+        /// `maximumConnectionSoftLimit` the connection pool creates
+        /// _preserved_ connections. Preserved connections are closed
+        /// if they have been idle for ``idleTimeout``.
+        public var maximumConnectionSoftLimit: Int
+
+        /// The maximum number of connections for this pool, that can
+        /// exist at any point in time. The pool can create _overflow_
+        /// connections, if all connections are leased, and the
+        /// `maximumConnectionHardLimit` > `maximumConnectionSoftLimit `
+        /// Overflow connections are closed immediately as soon as they
+        /// become idle.
+        public var maximumConnectionHardLimit: Int
 
         /// The time that a _preserved_ idle connection stays in the
         /// pool before it is closed.
         public var idleTimeout: Duration
+
+        /// The amount of time to pass between the first failed connection
+        /// before triggering the circuit breaker.
+        public var circuitBreakerTripAfter: Duration
+
+        /// Maximum number of in-progress new connection requests to run at any one time
+        public var maximumConcurrentConnectionRequests: Int
 
         /// Creates the configuration for a Valkey client connection pool.
         /// - Parameters:
@@ -144,12 +157,26 @@ public struct ValkeyClientConfiguration: Sendable {
         ///   - idleTimeout: The duration to allow a connect to be idle, that defaults to 60 seconds.
         public init(
             minimumConnectionCount: Int = 0,
-            maximumConnectionCount: Int = 20,
-            idleTimeout: Duration = .seconds(60)
+            maximumConnectionSoftLimit: Int = 20,
+            maximumConnectionHardLimit: Int = 20,
+            idleTimeout: Duration = .seconds(60),
+            circuitBreakerTripAfter: Duration = .seconds(60),
+            maximumConcurrentConnectionRequests: Int = 20
         ) {
+            precondition(
+                minimumConnectionCount <= maximumConnectionSoftLimit,
+                "Minimum connection count cannot be greater than maximum connection soft limit"
+            )
+            precondition(
+                maximumConnectionSoftLimit <= maximumConnectionHardLimit,
+                "Maximum connection soft limit connection count cannot be greater than the maximum connection hard limit"
+            )
             self.minimumConnectionCount = minimumConnectionCount
-            self.maximumConnectionCount = maximumConnectionCount
+            self.maximumConnectionSoftLimit = maximumConnectionSoftLimit
+            self.maximumConnectionHardLimit = maximumConnectionHardLimit
             self.idleTimeout = idleTimeout
+            self.circuitBreakerTripAfter = circuitBreakerTripAfter
+            self.maximumConcurrentConnectionRequests = maximumConcurrentConnectionRequests
         }
     }
 
