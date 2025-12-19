@@ -121,7 +121,7 @@ func makeClient50Concurrent20ConnectionGETBenchmark() -> Benchmark? {
         let logger = Logger(label: "test")
         let client = ValkeyClient(
             .hostname("127.0.0.1", port: port),
-            configuration: .init(connectionPool: .init(minimumConnectionCount: 0, maximumConnectionCount: 20)),
+            configuration: .init(connectionPool: .init(minimumConnectionCount: 0, maximumConnectionSoftLimit: 20, maximumConnectionHardLimit: 20)),
             logger: logger
         )
 
