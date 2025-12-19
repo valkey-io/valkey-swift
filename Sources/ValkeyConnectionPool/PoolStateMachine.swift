@@ -696,7 +696,9 @@ where
         if !requests.isEmpty {
             let leaseResult = self.connections.leaseConnection(at: index, streams: UInt16(requests.count))
             let connectionsRequired: Int
-            if self.requestQueue.count <= self.connections.stats.availableStreams + self.connections.stats.leasedStreams {
+            if self.requestQueue.count <= self.connections.stats.availableStreams + self.connections.stats.leasedStreams
+                + self.connections.stats.connecting
+            {
                 connectionsRequired = self.configuration.minimumConnectionCount - Int(self.connections.stats.active)
             } else {
                 connectionsRequired = 1
