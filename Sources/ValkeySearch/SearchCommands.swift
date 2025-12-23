@@ -498,7 +498,7 @@ public enum FT {
             commandEncoder.encodeArray(
                 "FT.AGGREGATE",
                 index,
-                RESPBulkString(query),
+                RESPRenderableBulkString(query),
                 RESPPureToken("VERBATIM", verbatim),
                 load,
                 groupbys,
@@ -586,13 +586,13 @@ public enum FT {
 
             @inlinable
             public var respEntries: Int {
-                "AS".respEntries + RESPBulkString(fieldIdentifier).respEntries
+                "AS".respEntries + RESPRenderableBulkString(fieldIdentifier).respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 "AS".encode(into: &commandEncoder)
-                RESPBulkString(fieldIdentifier).encode(into: &commandEncoder)
+                RESPRenderableBulkString(fieldIdentifier).encode(into: &commandEncoder)
             }
         }
         public struct SchemaFieldsFieldTypeTagSeparator: RESPRenderable, Sendable, Hashable {
@@ -885,12 +885,12 @@ public enum FT {
 
             @inlinable
             public var respEntries: Int {
-                RESPBulkString(fieldIdentifier).respEntries + alias.respEntries + fieldType.respEntries
+                RESPRenderableBulkString(fieldIdentifier).respEntries + alias.respEntries + fieldType.respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                RESPBulkString(fieldIdentifier).encode(into: &commandEncoder)
+                RESPRenderableBulkString(fieldIdentifier).encode(into: &commandEncoder)
                 alias.encode(into: &commandEncoder)
                 fieldType.encode(into: &commandEncoder)
             }
@@ -929,7 +929,7 @@ public enum FT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("FT.CREATE", RESPBulkString(indexName), on, prefix, schema)
+            commandEncoder.encodeArray("FT.CREATE", RESPRenderableBulkString(indexName), on, prefix, schema)
         }
     }
 
@@ -1133,7 +1133,7 @@ public enum FT {
             commandEncoder.encodeArray(
                 "FT.SEARCH",
                 index,
-                RESPBulkString(query),
+                RESPRenderableBulkString(query),
                 RESPPureToken("NOCONTENT", nocontent),
                 timeout,
                 params,
