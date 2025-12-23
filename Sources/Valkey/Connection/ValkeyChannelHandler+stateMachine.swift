@@ -409,7 +409,7 @@ extension ValkeyChannelHandler {
                 self = .closed(nil)
                 var pendingCommands = state.pendingCommands
                 pendingCommands.prepend(state.pendingHelloCommand)
-                return .failPendingCommandsAndSubscriptions(state.pendingCommands)
+                return .failPendingCommandsAndSubscriptions(pendingCommands)
             case .active(let state):
                 self = .closed(nil)
                 return .failPendingCommandsAndSubscriptions(state.pendingCommands)

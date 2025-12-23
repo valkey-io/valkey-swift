@@ -11,6 +11,10 @@ import NIOCore
 import NIOPosix
 import Synchronization
 
+#if ServiceLifecycleSupport
+import ServiceLifecycle
+#endif
+
 /// A client for interacting with a Valkey cluster.
 ///
 /// `ValkeyClusterClient` provides a high-level interface for communicating with a Valkey cluster.
@@ -183,7 +187,7 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         }
-        throw ValkeyClusterError.clientRequestCancelled
+        throw ValkeyClientError(.cancelled)
     }
 
     /// Pipeline a series of commands to nodes in the Valkey cluster
@@ -280,7 +284,7 @@ public final class ValkeyClusterClient: Sendable {
                     }
                 }
                 var results = [Result<RESPToken, any Error>](
-                    repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned),
+                    repeating: .failure(ValkeyClusterError._pipelinedResultNotReturned),
                     count: commands.count
                 )
                 // get results for each node
@@ -376,7 +380,7 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         }
-        throw ValkeyClusterError.clientRequestCancelled
+        throw ValkeyClientError(.cancelled)
     }
 
     struct Redirection {
@@ -455,7 +459,7 @@ public final class ValkeyClusterClient: Sendable {
             }
             retryCommands.removeAll(keepingCapacity: true)
         }
-        throw ValkeyClusterError.clientRequestCancelled
+        throw ValkeyClientError(.cancelled)
     }
 
     /// Get connection from cluster and run operation using connection
@@ -463,20 +467,18 @@ public final class ValkeyClusterClient: Sendable {
     /// - Parameters:
     ///   - keys: Keys affected by operation. This is used to choose the cluster node
     ///   - readOnly: Is this connection only going to be used with readonly commands
-    ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Value returned by closure
     @inlinable
     public func withConnection<Value>(
         forKeys keys: some Collection<ValkeyKey>,
         readOnly: Bool = false,
-        isolation: isolated (any Actor)? = #isolation,
-        operation: (ValkeyConnection) async throws -> sending Value
+        operation: (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
         let hashSlots = keys.compactMap { HashSlot(key: $0) }
         let nodeSelection = getNodeSelection(readOnly: readOnly)
         let node = try await self.nodeClient(for: hashSlots, nodeSelection: nodeSelection)
-        return try await node.withConnection(isolation: isolation, operation: operation)
+        return try await node.withConnection(operation: operation)
     }
 
     @inlinable
@@ -854,7 +856,7 @@ public final class ValkeyClusterClient: Sendable {
                     stateMachine.cancelWaitingForHealthy(id: waiterID)
                 }
 
-                continuation?.resume(throwing: ValkeyClusterError.clientRequestCancelled)
+                continuation?.resume(throwing: ValkeyClientError(.cancelled))
             }
         }
 
@@ -1115,3 +1117,8 @@ extension Array where Element == any ValkeyCommand {
         self = commandArray
     }
 }
+
+#if ServiceLifecycleSupport
+@available(valkeySwift 1.0, *)
+extension ValkeyClusterClient: Service {}
+#endif  // ServiceLifecycle

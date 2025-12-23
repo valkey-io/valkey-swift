@@ -42,7 +42,7 @@ func makeClientGETSequentialBenchmark() -> Benchmark? {
             benchmark.startMeasurement()
             for _ in benchmark.scaledIterations {
                 let foo = try await client.get("foo")
-                precondition(foo.map { String(buffer: $0) } == "Bar")
+                precondition(foo.map { String($0) } == "Bar")
             }
             benchmark.stopMeasurement()
 
@@ -70,7 +70,7 @@ func makeClient20ConcurrentGETBenchmark() -> Benchmark? {
         let logger = Logger(label: "test")
         let client = ValkeyClient(
             .hostname("127.0.0.1", port: port),
-            configuration: .init(connectionPool: .init(minimumConnectionCount: 0, maximumConnectionCount: 20)),
+            configuration: .init(connectionPool: .init(minimumConnectionCount: 0, maximumConnectionSoftLimit: 20, maximumConnectionHardLimit: 20)),
             logger: logger
         )
 
@@ -87,7 +87,7 @@ func makeClient20ConcurrentGETBenchmark() -> Benchmark? {
                 group.addTask {
                     for _ in 0..<iterationsPerConnection {
                         let foo = try await client.get("foo")
-                        precondition(foo.map { String(buffer: $0) } == "Bar")
+                        precondition(foo.map { String($0) } == "Bar")
                     }
                 }
             }
@@ -121,7 +121,7 @@ func makeClient50Concurrent20ConnectionGETBenchmark() -> Benchmark? {
         let logger = Logger(label: "test")
         let client = ValkeyClient(
             .hostname("127.0.0.1", port: port),
-            configuration: .init(connectionPool: .init(minimumConnectionCount: 0, maximumConnectionCount: 20)),
+            configuration: .init(connectionPool: .init(minimumConnectionCount: 0, maximumConnectionSoftLimit: 20, maximumConnectionHardLimit: 20)),
             logger: logger
         )
 
@@ -138,7 +138,7 @@ func makeClient50Concurrent20ConnectionGETBenchmark() -> Benchmark? {
                 group.addTask {
                     for _ in 0..<iterationsPerConnection {
                         let foo = try await client.get("foo")
-                        precondition(foo.map { String(buffer: $0) } == "Bar")
+                        precondition(foo.map { String($0) } == "Bar")
                     }
                 }
             }

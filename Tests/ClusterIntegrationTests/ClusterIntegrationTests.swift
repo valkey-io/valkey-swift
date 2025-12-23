@@ -31,7 +31,7 @@ struct ClusterIntegrationTests {
                 try await client.set(key, value: "Hello")
 
                 let response = try await client.get(key)
-                #expect(response.map { String(buffer: $0) } == "Hello")
+                #expect(response.map { String($0) } == "Hello")
             }
         }
     }
@@ -48,7 +48,7 @@ struct ClusterIntegrationTests {
                 try await client.withConnection(forKeys: [key]) { connection in
                     _ = try await connection.set(key, value: "Hello")
                     let response = try await connection.get(key)
-                    #expect(response.map { String(buffer: $0) } == "Hello")
+                    #expect(response.map { String($0) } == "Hello")
                 }
             }
         }
@@ -66,7 +66,7 @@ struct ClusterIntegrationTests {
                 try await client.set(key, value: "Hello")
                 try await client.withConnection(forKeys: [key], readOnly: true) { connection in
                     let response = try await connection.get(key)
-                    #expect(response.map { String(buffer: $0) } == "Hello")
+                    #expect(response.map { String($0) } == "Hello")
                 }
             }
         }
@@ -98,7 +98,7 @@ struct ClusterIntegrationTests {
                 // will receive a MOVED error as the primary has moved to a replica
                 try await clusterClient.set(key, value: "baz")
                 let response = try await clusterClient.get(key)
-                #expect(response.map { String(buffer: $0) } == "baz")
+                #expect(response.map { String($0) } == "baz")
             }
         }
     }
@@ -118,14 +118,14 @@ struct ClusterIntegrationTests {
 
                 try await Self.testMigratingHashSlot(hashSlot, client: client) {
                     // key still uses nodeA
-                    let value = try await client.set(key, value: "Testing during import", get: true).map { String(buffer: $0) }
+                    let value = try await client.set(key, value: "Testing during import", get: true).map { String($0) }
                     #expect(value == "Testing before import")
                 } afterMigrate: {
                     // key has been migrated to nodeB so will receive an ASK error
-                    let value = try await client.set(key, value: "After migrate", get: true).map { String(buffer: $0) }
+                    let value = try await client.set(key, value: "After migrate", get: true).map { String($0) }
                     #expect(value == "Testing during import")
                 } finished: {
-                    let value = try await client.set(key, value: "Testing after import", get: true).map { String(buffer: $0) }
+                    let value = try await client.set(key, value: "Testing after import", get: true).map { String($0) }
                     #expect(value == "After migrate")
                 }
             }
@@ -168,8 +168,8 @@ struct ClusterIntegrationTests {
                     try await client.subscribe(to: "testSubscriptions") { subscription in
                         cont.finish()
                         var iterator = subscription.makeAsyncIterator()
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
                 }
                 await stream.first { _ in true }
@@ -195,14 +195,14 @@ struct ClusterIntegrationTests {
                     try await client.subscribe(to: "testSubscriptions") { subscription in
                         cont.yield()
                         var iterator = subscription.makeAsyncIterator()
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
                     try await client.subscribe(to: "testSubscriptions") { subscription in
                         cont.finish()
                         var iterator = subscription.makeAsyncIterator()
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
                 }
                 await stream.first { _ in true }
@@ -234,9 +234,9 @@ struct ClusterIntegrationTests {
                         try await client.subscribe(to: ["sub\(i)", "sub\(i+1)"]) { subscription in
                             cont.yield()
                             var iterator = subscription.makeAsyncIterator()
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "\(i)" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "\(i)" }
                             client.logger.info("Received \(i): \(i)")
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "\(i+1)" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "\(i+1)" }
                             client.logger.info("Received \(i): \(i+1)")
                         }
                     }
@@ -345,6 +345,92 @@ struct ClusterIntegrationTests {
         _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientAID)))
 
         try result.get()
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClusterLinks() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await Self.withValkeyCluster([(host: clusterFirstNodeHostname!, port: clusterFirstNodePort ?? 36001)], logger: logger) { client in
+            let clusterLinks = try await client.clusterLinks()
+            #expect(!clusterLinks.isEmpty && clusterLinks.count > 0)
+            for clusterLink in clusterLinks {
+                if let direction = clusterLink.direction {
+                    #expect(direction == .from || direction == .to)
+                }
+                if let node = clusterLink.node {
+                    #expect(!node.isEmpty)
+                }
+                if let createTime = clusterLink.createTime {
+                    #expect(createTime > 0)
+                }
+                if let events = clusterLink.events {
+                    #expect(!events.isEmpty)
+                }
+                if let sendBufferAllocated = clusterLink.sendBufferAllocated {
+                    #expect(sendBufferAllocated >= 0)
+                }
+                if let sendBufferUsed = clusterLink.sendBufferUsed {
+                    #expect(sendBufferUsed >= 0)
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClusterSlotStats() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+
+        try await Self.withValkeyCluster([(host: clusterFirstNodeHostname!, port: clusterFirstNodePort ?? 36001)], logger: logger) { client in
+            let slotStats = try await client.clusterSlotStats(
+                filter: .orderby(
+                    CLUSTER.SLOTSTATS.FilterOrderby(
+                        metric: "key-count",
+                        limit: 10,
+                        order: .desc
+                    )
+                )
+            )
+            #expect(!slotStats.isEmpty && slotStats.count == 10)
+            for slotStat in slotStats {
+                // slot is a required field, other fields are optional
+                #expect(slotStat.slot >= 0 && slotStat.slot <= 16383)
+                if let keyCount = slotStat.keyCount {
+                    #expect(keyCount >= 0)
+                }
+                if let cpuUsec = slotStat.cpuUsec {
+                    #expect(cpuUsec >= 0)
+                }
+                if let networkBytesIn = slotStat.networkBytesIn {
+                    #expect(networkBytesIn >= 0)
+                }
+                if let networkBytesOut = slotStat.networkBytesOut {
+                    #expect(networkBytesOut >= 0)
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClusterSlots() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await Self.withValkeyCluster([(host: clusterFirstNodeHostname!, port: clusterFirstNodePort ?? 36001)], logger: logger) { client in
+            let clusterSlots = try await client.clusterSlots()
+            for clusterSlot in clusterSlots {
+                #expect(clusterSlot.startSlot >= 0 && clusterSlot.startSlot <= 16383)
+                #expect(clusterSlot.endSlot >= 0 && clusterSlot.endSlot <= 16383)
+                for node in clusterSlot.nodes {
+                    #expect(!node.ip.isEmpty)
+                    #expect(node.port >= 0 && node.port <= 65535)
+                    #expect(!node.nodeId.isEmpty)
+                }
+            }
+        }
     }
 
     @Suite("Pipelining Tests")
@@ -535,7 +621,7 @@ struct ClusterIntegrationTests {
 
                     try await ClusterIntegrationTests.testMigratingHashSlot(hashSlot, client: client) {
                         // key still uses nodeA
-                        let value = try await client.set(key, value: "Testing during import", get: true).map { String(buffer: $0) }
+                        let value = try await client.set(key, value: "Testing during import", get: true).map { String($0) }
                         #expect(value == "Testing before import")
                     } afterMigrate: {
                         // key has been migrated to nodeB so will receive an ASK error
@@ -546,7 +632,7 @@ struct ClusterIntegrationTests {
                         #expect(try results[0].get().decode(as: String.self) == "Testing during import")
                         #expect(try results[1].get().decode(as: String.self) == "After migrate")
                     } finished: {
-                        let value = try await client.set(key, value: "Testing after import", get: true).map { String(buffer: $0) }
+                        let value = try await client.set(key, value: "Testing after import", get: true).map { String($0) }
                         #expect(value == "After migrate")
                     }
                 }
@@ -722,9 +808,9 @@ struct ClusterIntegrationTests {
                     GET("test3"),
                     DEL(keys: ["test3"])
                 )
-                let response = try results.1.get().map { String(buffer: $0) }
+                let response = try results.1.get().map { String($0) }
                 #expect(response == "1")
-                let response2 = try results.7.get().map { String(buffer: $0) }
+                let response2 = try results.7.get().map { String($0) }
                 #expect(response2 == "3")
             }
         }
@@ -804,7 +890,7 @@ struct ClusterIntegrationTests {
 
                     try await ClusterIntegrationTests.testMigratingHashSlot(hashSlot, client: client) {
                         // key still uses nodeA
-                        let value = try await client.set(key, value: "Testing during import", get: true).map { String(buffer: $0) }
+                        let value = try await client.set(key, value: "Testing during import", get: true).map { String($0) }
                         #expect(value == "Testing before import")
                     } afterMigrate: {
                         // key has been migrated to nodeB so will receive an ASK error
@@ -815,7 +901,7 @@ struct ClusterIntegrationTests {
                         #expect(try results[0].get().decode(as: String.self) == "Testing during import")
                         #expect(try results[1].get().decode(as: String.self) == "After migrate")
                     } finished: {
-                        let value = try await client.set(key, value: "Testing after import", get: true).map { String(buffer: $0) }
+                        let value = try await client.set(key, value: "Testing after import", get: true).map { String($0) }
                         #expect(value == "After migrate")
                     }
                 }

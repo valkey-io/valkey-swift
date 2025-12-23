@@ -16,6 +16,9 @@ private let disableResponseCalculationCommands: Set<String> = [
     "BZMPOP",
     "BZPOPMAX",
     "BZPOPMIN",
+    "CLUSTER SLOTS",
+    "CLUSTER SLOT-STATS",
+    "CLUSTER LINKS",
     "CLUSTER GETKEYSINSLOT",
     "CLUSTER MYID",
     "CLUSTER MYSHARDID",
@@ -26,6 +29,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "GEODIST",
     "GEOPOS",
     "GEOSEARCH",
+    "HRANDFIELD",
     "HSCAN",
     "ROLE",
     "LMOVE",
@@ -768,7 +772,7 @@ private func getResponseType(response: ValkeyCommand.ReplySchema.Response) -> St
                 "String"
             }
         } else {
-            "ByteBuffer"
+            "RESPBulkString"
         }
     case .integer:
         "Int"
@@ -838,14 +842,18 @@ extension ValkeyCommand.Argument {
                 }
             } else if self.type == .string, !self.optional, genericString {
                 if self.multiple {
-                    variable = "\(variable).map { RESPBulkString($0) }"
+                    variable = "\(variable).map { RESPRenderableBulkString($0) }"
                 } else {
-                    variable = "RESPBulkString(\(variable))"
+                    variable = "RESPRenderableBulkString(\(variable))"
                 }
             }
             if let token = self.token {
-                return "RESPWithToken(\"\(token)\", \(variable))"
-            } else if multiple, combinedWithCount == true {
+                if self.multiple, self.multipleToken {
+                    return "RESPArrayWithToken(\"\(token)\", \(variable))"
+                } else {
+                    return "RESPWithToken(\"\(token)\", \(variable))"
+                }
+            } else if self.multiple, self.combinedWithCount == true {
                 if isArray {
                     return "RESPArrayWithCount(\(variable))"
                 } else {

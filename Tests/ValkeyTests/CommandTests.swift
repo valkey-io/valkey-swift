@@ -16,6 +16,31 @@ import ValkeySearch
 ///
 /// Generally the commands being tested here are ones we have written custom responses for
 struct CommandTests {
+    struct ConnectionCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func clientTracking() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["CLIENT", "TRACKING", "OFF"]),
+                    response: .simpleString("OK")
+                ),
+                (
+                    request: .command(["CLIENT", "TRACKING", "ON", "REDIRECT", "25", "PREFIX", "test"]),
+                    response: .simpleString("OK")
+                ),
+                (
+                    request: .command(["CLIENT", "TRACKING", "ON", "REDIRECT", "25", "PREFIX", "test", "PREFIX", "this"]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.clientTracking(status: .off)
+                try await connection.clientTracking(status: .on, clientId: 25, prefixes: ["test"])
+                try await connection.clientTracking(status: .on, clientId: 25, prefixes: ["test", "this"])
+            }
+        }
+    }
+
     struct ScriptCommands {
         @Test
         @available(valkeySwift 1.0, *)
@@ -95,7 +120,7 @@ struct CommandTests {
                 let stats = try await connection.functionStats()
                 #expect(stats.runningScript.name == "valkey_swift_infinite_loop")
                 #expect(
-                    stats.runningScript.command.map { String(buffer: $0) } == [
+                    stats.runningScript.command.map { String($0) } == [
                         "FCALL",
                         "valkey_swift_infinite_loop",
                         "2",
@@ -250,20 +275,16 @@ struct CommandTests {
                 )
             ) { connection in
                 var result = try await connection.lcs(key1: "key1", key2: "key2")
-                #expect(result == .subSequence("mytext"))
+                #expect(try result.longestMatch() == "mytext")
                 result = try await connection.lcs(key1: "key1", key2: "key2", len: true)
-                #expect(result == .subSequenceLength(6))
+                #expect(try result.longestMatchLength() == 6)
                 result = try await connection.lcs(key1: "key1", key2: "key2", idx: true)
-                switch result {
-                case .matches(let length, let matches):
-                    #expect(length == 6)
-                    #expect(matches[0].first == 4...7)
-                    #expect(matches[0].second == 5...8)
-                    #expect(matches[1].first == 2...3)
-                    #expect(matches[1].second == 0...1)
-                default:
-                    Issue.record("Expected `matches` case")
-                }
+                let matches = try result.matches()
+                #expect(matches.length == 6)
+                #expect(matches.matches[0].first == 4...7)
+                #expect(matches.matches[0].second == 5...8)
+                #expect(matches.matches[1].first == 2...3)
+                #expect(matches.matches[1].second == 0...1)
             }
         }
     }
@@ -297,7 +318,7 @@ struct CommandTests {
             ) { connection in
                 let value = try await connection.blpop(keys: ["key1", "key2"], timeout: 30)
                 #expect(value?.key == "key2")
-                #expect(value?.value == ByteBuffer(string: "test"))
+                #expect(value.map { String($0.value) } == "test")
             }
         }
 
@@ -365,12 +386,12 @@ struct CommandTests {
             ) { connection in
                 var result = try await connection.zpopmin("key")
                 #expect(result[0].score == 1)
-                #expect(String(buffer: result[0].value) == "one")
+                #expect(String(result[0].value) == "one")
                 result = try await connection.zpopmin("key", count: 2)
                 #expect(result[0].score == 2)
-                #expect(String(buffer: result[0].value) == "two")
+                #expect(String(result[0].value) == "two")
                 #expect(result[1].score == 3)
-                #expect(String(buffer: result[1].value) == "three")
+                #expect(String(result[1].value) == "three")
             }
         }
 
@@ -401,13 +422,13 @@ struct CommandTests {
                 var result = try await connection.zmpop(keys: ["key", "key2"], where: .max)
                 #expect(result?.key == "key")
                 #expect(result?.values[0].score == 3)
-                #expect((result?.values[0].value).map { String(buffer: $0) } == "three")
+                #expect((result?.values[0].value).map { String($0) } == "three")
                 result = try await connection.zmpop(keys: ["key", "key2"], where: .max, count: 2)
                 #expect(result?.key == ValkeyKey("key2"))
                 #expect(result?.values[0].score == 5)
-                #expect((result?.values[0].value).map { String(buffer: $0) } == "five")
+                #expect((result?.values[0].value).map { String($0) } == "five")
                 #expect(result?.values[1].score == 4)
-                #expect((result?.values[1].value).map { String(buffer: $0) } == "four")
+                #expect((result?.values[1].value).map { String($0) } == "four")
             }
         }
 
@@ -432,14 +453,14 @@ struct CommandTests {
                 var result = try await connection.zrange("key", start: "4", stop: "10", sortby: .byscore, withscores: true)
                     .decode(as: [SortedSetEntry].self)
                 #expect(result[0].score == 4)
-                #expect(String(buffer: result[0].value) == "four")
+                #expect(String(result[0].value) == "four")
                 result = try await connection.zrange("key", start: "2", stop: "3", sortby: .byscore, withscores: true).decode(
                     as: [SortedSetEntry].self
                 )
                 #expect(result[0].score == 2)
-                #expect(String(buffer: result[0].value) == "two")
+                #expect(String(result[0].value) == "two")
                 #expect(result[1].score == 3)
-                #expect(String(buffer: result[1].value) == "three")
+                #expect(String(result[1].value) == "three")
             }
         }
 
@@ -493,15 +514,15 @@ struct CommandTests {
                 let membersAndScores = try result.members.withScores()
                 #expect(membersAndScores.count == 2)
                 #expect(membersAndScores[0].score == 5)
-                #expect(membersAndScores[0].value == ByteBuffer(string: "value1"))
+                #expect(String(membersAndScores[0].value) == "value1")
                 #expect(membersAndScores[1].score == 10)
-                #expect(membersAndScores[1].value == ByteBuffer(string: "value2"))
+                #expect(String(membersAndScores[1].value) == "value2")
                 result = try await connection.zscan("test", cursor: 23, noscores: true)
                 #expect(result.cursor == 25)
                 let members = try result.members.withoutScores()
                 #expect(members.count == 2)
-                #expect(members[0] == ByteBuffer(string: "value3"))
-                #expect(members[1] == ByteBuffer(string: "value4"))
+                #expect(String(members[0]) == "value3")
+                #expect(String(members[1]) == "value4")
             }
         }
     }
@@ -550,13 +571,13 @@ struct CommandTests {
                 let stream2 = try #require(result?.streams.first { $0.key == "key2" })
                 #expect(stream1.key == "key1")
                 #expect(stream1.messages[0].id == "event1")
-                #expect(stream1.messages[0][field: "field1"].map { String(buffer: $0) } == "value1")
+                #expect(stream1.messages[0][field: "field1"].map { String($0) } == "value1")
                 #expect(stream2.key == "key2")
                 #expect(stream2.messages[0].id == "event2")
-                #expect(stream2.messages[0][field: "field2"].map { String(buffer: $0) } == "value2")
+                #expect(stream2.messages[0][field: "field2"].map { String($0) } == "value2")
                 #expect(stream2.messages[1].id == "event3")
-                #expect(stream2.messages[1][field: "field3"].map { String(buffer: $0) } == "value3")
-                #expect(stream2.messages[1][field: "field4"].map { String(buffer: $0) } == "value4")
+                #expect(stream2.messages[1][field: "field3"].map { String($0) } == "value3")
+                #expect(stream2.messages[1][field: "field4"].map { String($0) } == "value4")
             }
         }
 
@@ -593,7 +614,7 @@ struct CommandTests {
                 #expect(stream1.key == "key1")
                 #expect(stream1.messages[0].id == "event1")
                 #expect(stream1.messages[0].fields?[0].key == "field1")
-                #expect(stream1.messages[0].fields.map { String(buffer: $0[0].value) } == "value1")
+                #expect(stream1.messages[0].fields.map { String($0[0].value) } == "value1")
                 #expect(stream1.messages[1].id == "event2")
                 #expect(stream1.messages[1].fields == nil)
 
@@ -663,11 +684,11 @@ struct CommandTests {
                     #expect(messages[0].id == "1749464199407-0")
                     #expect(messages[0].fields.count == 1)
                     #expect(messages[0].fields[0].key == "f")
-                    #expect(String(buffer: messages[0].fields[0].value) == "v")
+                    #expect(String(messages[0].fields[0].value) == "v")
                     #expect(messages[1].id == "1749464199408-0")
                     #expect(messages[1].fields.count == 1)
                     #expect(messages[1].fields[0].key == "f2")
-                    #expect(String(buffer: messages[1].fields[0].value) == "v2")
+                    #expect(String(messages[1].fields[0].value) == "v2")
                 default:
                     Issue.record("Expected `messages` case")
                 }
@@ -789,16 +810,16 @@ struct CommandTests {
                 #expect(result.cursor == 23)
                 let membersAndScores = try result.members.withValues()
                 #expect(membersAndScores.count == 2)
-                #expect(membersAndScores[0].field == ByteBuffer(string: "field1"))
-                #expect(membersAndScores[0].value == ByteBuffer(string: "value1"))
-                #expect(membersAndScores[1].field == ByteBuffer(string: "field2"))
-                #expect(membersAndScores[1].value == ByteBuffer(string: "value2"))
+                #expect(String(membersAndScores[0].field) == "field1")
+                #expect(String(membersAndScores[0].value) == "value1")
+                #expect(String(membersAndScores[1].field) == "field2")
+                #expect(String(membersAndScores[1].value) == "value2")
                 result = try await connection.hscan("test", cursor: 23, novalues: true)
                 #expect(result.cursor == 25)
                 let members = try result.members.withoutValues()
                 #expect(members.count == 2)
-                #expect(members[0] == ByteBuffer(string: "field3"))
-                #expect(members[1] == ByteBuffer(string: "field4"))
+                #expect(String(members[0]) == "field3")
+                #expect(String(members[1]) == "field4")
             }
         }
     }

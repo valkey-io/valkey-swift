@@ -38,7 +38,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @usableFromInline
     let tracer: (any Tracer)?
     @usableFromInline
-    let address: (hostOrSocketPath: String, port: Int?)?
+    let commonSpanAttributes: SpanAttributes
     #endif
     @usableFromInline
     let channel: any Channel
@@ -64,14 +64,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         self.logger = logger
         #if DistributedTracingSupport
         self.tracer = configuration.tracing.tracer
-        switch address?.value {
-        case let .hostname(host, port):
-            self.address = (host, port)
-        case let .unixDomainSocket(path):
-            self.address = (path, nil)
-        case nil:
-            self.address = nil
-        }
+        self.commonSpanAttributes = Self.createCommonSpanAttributes(address: address, configuration: configuration, channel: channel)
         #endif
         self.isClosed = .init(false)
     }
@@ -80,7 +73,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// connection.
     ///
     /// To avoid the cost of acquiring the connection and then closing it, it is always
-    /// preferable to use ``ValkeyClient/withConnection(isolation:operation:)`` which
+    /// preferable to use ``ValkeyClient/withConnection(operation:)`` which
     /// uses a persistent connection pool to provide connections to your Valkey database.
     ///
     /// - Parameters:
@@ -88,7 +81,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ///   - configuration: Configuration of Valkey connection
     ///   - eventLoop: EventLoop to run connection on
     ///   - logger: Logger for connection
-    ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Return value of operation closure
     public static func withConnection<Value>(
@@ -96,7 +88,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         configuration: ValkeyConnectionConfiguration = .init(),
         eventLoop: any EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
         logger: Logger,
-        isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> sending Value {
         let connection = try await connect(
@@ -202,7 +193,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             } onCancel: {
                 self.cancel(requestID: requestID)
             }
-            return try .init(fromRESP: token)
+            return try .init(token)
         } catch let error as ValkeyClientError {
             #if DistributedTracingSupport
             if let span {
@@ -556,13 +547,33 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     #if DistributedTracingSupport
     @usableFromInline
+    static func createCommonSpanAttributes(
+        address: ValkeyServerAddress?,
+        configuration: ValkeyConnectionConfiguration,
+        channel: Channel
+    ) -> SpanAttributes {
+        var commonAttributes: SpanAttributes = [
+            configuration.tracing.attributeNames.databaseSystemName: .string(configuration.tracing.attributeValues.databaseSystem)
+        ]
+        if let remoteAddress = channel.remoteAddress {
+            commonAttributes[configuration.tracing.attributeNames.networkPeerAddress] = remoteAddress.ipAddress
+            commonAttributes[configuration.tracing.attributeNames.networkPeerPort] = remoteAddress.port
+        }
+        switch address?.value {
+        case let .hostname(host, port):
+            commonAttributes[configuration.tracing.attributeNames.serverAddress] = host
+            commonAttributes[configuration.tracing.attributeNames.serverPort] = (port == 6379 ? nil : port)
+        case let .unixDomainSocket(path):
+            commonAttributes[configuration.tracing.attributeNames.serverAddress] = path
+        case nil:
+            break
+        }
+        return commonAttributes
+    }
+    @usableFromInline
     func applyCommonAttributes(to attributes: inout SpanAttributes, commandName: String) {
         attributes[self.configuration.tracing.attributeNames.databaseOperationName] = commandName
-        attributes[self.configuration.tracing.attributeNames.databaseSystemName] = self.configuration.tracing.attributeValues.databaseSystem
-        attributes[self.configuration.tracing.attributeNames.networkPeerAddress] = channel.remoteAddress?.ipAddress
-        attributes[self.configuration.tracing.attributeNames.networkPeerPort] = channel.remoteAddress?.port
-        attributes[self.configuration.tracing.attributeNames.serverAddress] = address?.hostOrSocketPath
-        attributes[self.configuration.tracing.attributeNames.serverPort] = address?.port == 6379 ? nil : address?.port
+        attributes.merge(self.commonSpanAttributes)
     }
     #endif
 
@@ -699,21 +710,22 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         logger: Logger
     ) -> EventLoopFuture<ValkeyConnection> {
         do {
-            let handler = try self._setupChannel(
-                channel,
-                configuration: configuration,
-                logger: logger
-            )
-            let connection = ValkeyConnection(
-                channel: channel,
-                connectionID: 0,
-                channelHandler: handler,
-                configuration: configuration,
-                address: .hostname("127.0.0.1", port: 6379),
-                logger: logger
-            )
-            return channel.connect(to: try SocketAddress(ipAddress: "127.0.0.1", port: 6379)).map {
-                connection
+            return channel.connect(to: try SocketAddress(ipAddress: "127.0.0.1", port: 6379)).flatMap {
+                channel.eventLoop.makeCompletedFuture {
+                    let handler = try self._setupChannel(
+                        channel,
+                        configuration: configuration,
+                        logger: logger
+                    )
+                    return ValkeyConnection(
+                        channel: channel,
+                        connectionID: 0,
+                        channelHandler: handler,
+                        configuration: configuration,
+                        address: .hostname("127.0.0.1", port: 6379),
+                        logger: logger
+                    )
+                }
             }
         } catch {
             return channel.eventLoop.makeFailedFuture(error)
@@ -795,11 +807,8 @@ extension ValkeyClientError {
     /// - SeeAlso: [](https://valkey.io/topics/protocol/#simple-errors)
     @usableFromInline
     var simpleErrorPrefix: Substring? {
-        guard let message else { return nil }
-        var prefixEndIndex = message.startIndex
-        while prefixEndIndex < message.endIndex, message[prefixEndIndex] != " " {
-            message.formIndex(after: &prefixEndIndex)
-        }
+        guard case .commandError = self.errorCode, let message else { return nil }
+        guard let prefixEndIndex = message.firstIndex(of: " ") else { return nil }
         return message[message.startIndex..<prefixEndIndex]
     }
 }
@@ -810,7 +819,7 @@ extension Result where Success == RESPToken, Failure == any Error {
     func convertFromRESP<Response: RESPTokenDecodable>(to: Response.Type) -> Result<Response, Error> {
         self.flatMap {
             do {
-                return try .success(Response(fromRESP: $0))
+                return try .success(Response($0))
             } catch {
                 return .failure(error)
             }

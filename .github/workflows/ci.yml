@@ -9,31 +9,55 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-ci
   cancel-in-progress: true
 
-env:
-  VALKEY_HOSTNAME: valkey
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
       matrix:
-        image: ["swift:6.1", "swift:6.2"]
+        swift: ["swift:6.1", "swift:6.2"]
+        database: ["valkey/valkey:latest", "redis:latest"]
     container:
-      image: ${{ matrix.image }}
+      image: ${{ matrix.swift }}
     services:
-      valkey:
-        image: valkey/valkey:8.0
+      database:
+        image: ${{ matrix.database }}
+        options: --name database
+        env:
+          VALKEY_EXTRA_FLAGS: "--tls-port 6380 --tls-cert-file /valkey/certs/server.crt --tls-key-file /valkey/certs/server.key --tls-ca-cert-file /valkey/certs/ca.crt"
         ports:
           - 6379:6379
-        options: --entrypoint valkey-server
+          - 6380:6380
+        volumes:
+          - ${{ github.workspace }}/valkey:/valkey
     steps:
       - name: Install jemalloc
         run: |
           apt-get update
           apt-get install -y libjemalloc-dev
+          apt-get install curl
       - name: Checkout
-        uses: actions/checkout@v4
-      - name: Test
+        uses: actions/checkout@v6
+      - name: Generate certificates
+        run: ./dev/generate-test-certs.sh
+      - name: Restart Docker
+        # The valkey service container is started *before* the certificates are
+        # generated. Restarting the container after the generate step is needed for the
+        # container to see the generated certificates.
+        uses: docker://docker
+        with:
+          args: docker restart database
+      - name: Test Redis
+        if: ${{ matrix.database == 'redis:latest' }}
+        env:
+          DISABLE_TLS_TESTS: true
+          VALKEY_HOSTNAME: database
+        run: |
+          swift test --enable-code-coverage
+      - name: Test Valkey
+        if: ${{ matrix.database != 'redis:latest' }}
+        env:
+          VALKEY_HOSTNAME: database
         run: |
           swift test --enable-code-coverage
       - name: Convert coverage files

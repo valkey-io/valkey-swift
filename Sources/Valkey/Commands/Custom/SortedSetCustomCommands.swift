@@ -10,15 +10,15 @@ import NIOCore
 /// Sorted set entry
 @_documentation(visibility: internal)
 public struct SortedSetEntry: RESPTokenDecodable, Sendable {
-    public let value: ByteBuffer
+    public let value: RESPBulkString
     public let score: Double
 
-    init(value: ByteBuffer, score: Double) {
+    init(value: RESPBulkString, score: Double) {
         self.value = value
         self.score = score
     }
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .array(let array):
             (self.value, self.score) = try array.decodeElements()
@@ -56,7 +56,7 @@ extension ZMPOP {
         public let key: ValkeyKey
         public let values: [SortedSetEntry]
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             switch token.value {
             case .array(let array):
                 (self.key, self.values) = try array.decodeElements()
@@ -88,14 +88,14 @@ extension ZSCAN {
             /// List of members and possibly scores.
             public let elements: RESPToken.Array
 
-            public init(fromRESP token: RESPToken) throws {
+            public init(_ token: RESPToken) throws {
                 self.elements = try token.decode(as: RESPToken.Array.self)
             }
 
             /// if ZSCAN was called with the `NOSCORES` parameter use this
             /// function to get an array of members
-            public func withoutScores() throws -> [ByteBuffer] {
-                try self.elements.decode(as: [ByteBuffer].self)
+            public func withoutScores() throws -> [RESPBulkString] {
+                try self.elements.decode(as: [RESPBulkString].self)
             }
 
             /// if ZSCAN was called without the `NOSCORES` parameter use this
@@ -103,8 +103,8 @@ extension ZSCAN {
             public func withScores() throws -> [SortedSetEntry] {
                 var array: [SortedSetEntry] = []
                 for respElement in try self.elements.asMap() {
-                    let value = try ByteBuffer(fromRESP: respElement.key)
-                    let score = try Double(fromRESP: respElement.value)
+                    let value = try RESPBulkString(respElement.key)
+                    let score = try Double(respElement.value)
                     array.append(.init(value: value, score: score))
                 }
                 return array
@@ -115,7 +115,7 @@ extension ZSCAN {
         /// Sorted set members
         public let members: Members
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             (self.cursor, self.members) = try token.decodeArrayElements()
         }
     }

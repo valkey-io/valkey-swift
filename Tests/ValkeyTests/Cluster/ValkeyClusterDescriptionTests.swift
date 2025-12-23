@@ -46,7 +46,7 @@ struct ValkeyClusterDescriptionTests {
             ])
         ])
         let token = RESPToken(val)
-        let description = try ValkeyClusterDescription(fromRESP: token)
+        let description = try ValkeyClusterDescription(token)
 
         #expect(
             description
@@ -103,8 +103,8 @@ struct ValkeyClusterDescriptionTests {
         ])
         let token = RESPToken(val)
 
-        #expect(throws: ValkeyClusterParseError(reason: .invalidNodeHealth, token: token)) {
-            _ = try ValkeyClusterDescription(fromRESP: token)
+        #expect(throws: RESPDecodeError(.unexpectedToken, token: .init(.bulkString("invalid-health-state")), message: "Invalid Node Health String")) {
+            _ = try ValkeyClusterDescription(token)
         }
     }
 
@@ -112,8 +112,8 @@ struct ValkeyClusterDescriptionTests {
     func testSlotsAreNotAnArray() throws {
         // Non-array token for cluster description
         let singleValueToken = RESPToken(RESP3Value.bulkString("not-an-array"))
-        #expect(throws: ValkeyClusterParseError.self) {
-            _ = try ValkeyClusterDescription(fromRESP: singleValueToken)
+        #expect(throws: RESPDecodeError.tokenMismatch(expected: [.array], token: .init(.bulkString("not-an-array")))) {
+            _ = try ValkeyClusterDescription(singleValueToken)
         }
 
         // Non-array token for slots
@@ -145,8 +145,8 @@ struct ValkeyClusterDescriptionTests {
             ])
         )
 
-        #expect(throws: ValkeyClusterParseError(reason: .slotsTokenIsNotAnArray, token: invalidSlotsToken)) {
-            try ValkeyClusterDescription(fromRESP: invalidSlotsToken)
+        #expect(throws: RESPDecodeError.tokenMismatch(expected: [.array], token: .init(.bulkString("not-an-array")))) {
+            try ValkeyClusterDescription(invalidSlotsToken)
         }
 
         // Non-array token for nodes
@@ -161,8 +161,8 @@ struct ValkeyClusterDescriptionTests {
             ])
         )
 
-        #expect(throws: ValkeyClusterParseError(reason: .nodesTokenIsNotAnArray, token: invalidNodesToken)) {
-            _ = try ValkeyClusterDescription(fromRESP: invalidNodesToken)
+        #expect(throws: RESPDecodeError.tokenMismatch(expected: [.array], token: .init(.bulkString("not-an-array")))) {
+            _ = try ValkeyClusterDescription(invalidNodesToken)
         }
     }
 
@@ -197,8 +197,8 @@ struct ValkeyClusterDescriptionTests {
         let token = RESPToken(valWithMultipleErrors)
 
         // The error we expect to see first is the invalid role
-        #expect(throws: ValkeyClusterParseError(reason: .invalidNodeRole, token: token)) {
-            _ = try ValkeyClusterDescription(fromRESP: token)
+        #expect(throws: RESPDecodeError(.unexpectedToken, token: .init(.bulkString("invalid-role")), message: "Invalid Role String")) {
+            _ = try ValkeyClusterDescription(token)
         }
     }
 
@@ -228,7 +228,7 @@ struct ValkeyClusterDescriptionTests {
         ])
 
         let token = RESPToken(val)
-        let description = try ValkeyClusterDescription(fromRESP: token)
+        let description = try ValkeyClusterDescription(token)
 
         #expect(
             description
@@ -305,7 +305,7 @@ struct ValkeyClusterDescriptionTests {
         ])
 
         let token = RESPToken(val)
-        let description = try ValkeyClusterDescription(fromRESP: token)
+        let description = try ValkeyClusterDescription(token)
 
         #expect(
             description

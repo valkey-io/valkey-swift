@@ -74,7 +74,7 @@ public enum CLUSTER {
     /// Advances the cluster config epoch.
     @_documentation(visibility: internal)
     public struct BUMPEPOCH: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "CLUSTER BUMPEPOCH" }
 
@@ -113,7 +113,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", RESPRenderableBulkString(nodeId))
         }
     }
 
@@ -277,7 +277,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "FORGET", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "FORGET", RESPRenderableBulkString(nodeId))
         }
     }
 
@@ -332,7 +332,7 @@ public enum CLUSTER {
     /// Returns information about the state of a node.
     @_documentation(visibility: internal)
     public struct INFO: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "CLUSTER INFO" }
 
@@ -358,15 +358,13 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "KEYSLOT", RESPBulkString(key))
+            commandEncoder.encodeArray("CLUSTER", "KEYSLOT", RESPRenderableBulkString(key))
         }
     }
 
     /// Returns a list of all TCP links to and from peer nodes.
     @_documentation(visibility: internal)
     public struct LINKS: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "CLUSTER LINKS" }
 
         @inlinable public init() {
@@ -393,7 +391,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "MEET", RESPBulkString(ip), port, clusterBusPort)
+            commandEncoder.encodeArray("CLUSTER", "MEET", RESPRenderableBulkString(ip), port, clusterBusPort)
         }
     }
 
@@ -433,7 +431,7 @@ public enum CLUSTER {
 
             @inlinable
             public var respEntries: Int {
-                "SLOTSRANGE".respEntries + ranges.respEntries + "NODE".respEntries + RESPBulkString(nodeId).respEntries
+                "SLOTSRANGE".respEntries + ranges.respEntries + "NODE".respEntries + RESPRenderableBulkString(nodeId).respEntries
             }
 
             @inlinable
@@ -441,7 +439,7 @@ public enum CLUSTER {
                 "SLOTSRANGE".encode(into: &commandEncoder)
                 ranges.encode(into: &commandEncoder)
                 "NODE".encode(into: &commandEncoder)
-                RESPBulkString(nodeId).encode(into: &commandEncoder)
+                RESPRenderableBulkString(nodeId).encode(into: &commandEncoder)
             }
         }
         @inlinable public static var name: String { "CLUSTER MIGRATESLOTS" }
@@ -486,7 +484,7 @@ public enum CLUSTER {
     /// Returns the cluster configuration for a node.
     @_documentation(visibility: internal)
     public struct NODES: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "CLUSTER NODES" }
 
@@ -512,7 +510,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "REPLICAS", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "REPLICAS", RESPRenderableBulkString(nodeId))
         }
     }
 
@@ -702,7 +700,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "SLAVES", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "SLAVES", RESPRenderableBulkString(nodeId))
         }
     }
 
@@ -789,8 +787,6 @@ public enum CLUSTER {
                 }
             }
         }
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "CLUSTER SLOT-STATS" }
 
         public var filter: Filter
@@ -807,8 +803,6 @@ public enum CLUSTER {
     /// Returns the mapping of cluster slots to nodes.
     @_documentation(visibility: internal)
     public struct SLOTS: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "CLUSTER SLOTS" }
 
         @inlinable public init() {
@@ -902,7 +896,7 @@ extension ValkeyClientProtocol {
     ///     * [String]: If the node already has the greatest config epoch in the cluster.
     @inlinable
     @discardableResult
-    public func clusterBumpepoch() async throws -> ByteBuffer {
+    public func clusterBumpepoch() async throws -> RESPBulkString {
         try await execute(CLUSTER.BUMPEPOCH())
     }
 
@@ -1044,7 +1038,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: A map between named fields and values in the form of <field>:<value> lines separated by newlines composed by the two bytes CRLF
     @inlinable
     @discardableResult
-    public func clusterInfo() async throws -> ByteBuffer {
+    public func clusterInfo() async throws -> RESPBulkString {
         try await execute(CLUSTER.INFO())
     }
 
@@ -1068,7 +1062,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: An array of cluster links and their attributes.
     @inlinable
     @discardableResult
-    public func clusterLinks() async throws -> RESPToken.Array {
+    public func clusterLinks() async throws -> CLUSTER.LINKS.Response {
         try await execute(CLUSTER.LINKS())
     }
 
@@ -1126,7 +1120,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The serialized cluster configuration.
     @inlinable
     @discardableResult
-    public func clusterNodes() async throws -> ByteBuffer {
+    public func clusterNodes() async throws -> RESPBulkString {
         try await execute(CLUSTER.NODES())
     }
 
@@ -1229,7 +1223,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Array of nested arrays, where the inner array element represents a slot and its respective usage statistics.
     @inlinable
     @discardableResult
-    public func clusterSlotStats(filter: CLUSTER.SLOTSTATS.Filter) async throws -> RESPToken.Array {
+    public func clusterSlotStats(filter: CLUSTER.SLOTSTATS.Filter) async throws -> CLUSTER.SLOTSTATS.Response {
         try await execute(CLUSTER.SLOTSTATS(filter: filter))
     }
 
@@ -1244,7 +1238,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Nested list of slot ranges with networking information.
     @inlinable
     @discardableResult
-    public func clusterSlots() async throws -> RESPToken.Array {
+    public func clusterSlots() async throws -> CLUSTER.SLOTS.Response {
         try await execute(CLUSTER.SLOTS())
     }
 

@@ -10,7 +10,7 @@ import NIOCore
 /// A type that can decode from a response token.
 public protocol RESPTokenDecodable {
     /// Initialize from RESPToken
-    init(fromRESP: RESPToken) throws
+    init(_ token: RESPToken) throws
 }
 
 extension RESPToken: RESPTokenDecodable {
@@ -20,11 +20,11 @@ extension RESPToken: RESPTokenDecodable {
     /// - Returns: Value
     @inlinable
     public func decode<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) throws -> Value {
-        try Value(fromRESP: self)
+        try Value(self)
     }
 
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         self = token
     }
 
@@ -47,7 +47,7 @@ extension RESPToken: RESPTokenDecodable {
 
 extension ByteBuffer: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .simpleString(let buffer),
             .bulkString(let buffer),
@@ -76,7 +76,7 @@ extension ByteBuffer: RESPTokenDecodable {
 
 extension String: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .simpleString(let buffer),
             .bulkString(let buffer),
@@ -110,7 +110,7 @@ extension String: RESPTokenDecodable {
 }
 
 extension Int64: RESPTokenDecodable {
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .number(let value):
             self = value
@@ -141,7 +141,7 @@ extension Int64: RESPTokenDecodable {
 
 extension Int: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .number(let value):
             guard let value = Int(exactly: value) else {
@@ -175,7 +175,7 @@ extension Int: RESPTokenDecodable {
 
 extension Double: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .double(let value):
             self = value
@@ -200,7 +200,7 @@ extension Double: RESPTokenDecodable {
 
 extension Bool: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .boolean(let value):
             self = value
@@ -212,25 +212,25 @@ extension Bool: RESPTokenDecodable {
 
 extension Optional: RESPTokenDecodable where Wrapped: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .null:
             self = nil
         default:
-            self = try Wrapped(fromRESP: token)
+            self = try Wrapped(token)
         }
     }
 }
 
 extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .array(let respArray), .set(let respArray), .push(let respArray):
             do {
                 var array: [Element] = []
                 for respElement in respArray {
-                    let element = try Element(fromRESP: respElement)
+                    let element = try Element(respElement)
                     array.append(element)
                 }
                 self = array
@@ -239,7 +239,7 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
                 case .tokenMismatch:
                     // if decoding array failed it is possible `Element` is represented by an array and we have a single array
                     // that represents one element of `Element` instead of Array<Element>. We should attempt to decode this as a single element
-                    let value = try Element(fromRESP: token)
+                    let value = try Element(token)
                     self = [value]
                 default:
                     throw error
@@ -248,7 +248,7 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
         case .null:
             throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
         default:
-            let value = try Element(fromRESP: token)
+            let value = try Element(token)
             self = [value]
         }
     }
@@ -256,19 +256,19 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
 
 extension Set: RESPTokenDecodable where Element: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .set(let respSet):
             var set: Set<Element> = .init()
             for respElement in respSet {
-                let element = try Element(fromRESP: respElement)
+                let element = try Element(respElement)
                 set.insert(element)
             }
             self = set
         case .null:
             throw RESPDecodeError.tokenMismatch(expected: [.set], token: token)
         default:
-            let value = try Element(fromRESP: token)
+            let value = try Element(token)
             self = [value]
         }
     }
@@ -276,7 +276,7 @@ extension Set: RESPTokenDecodable where Element: RESPTokenDecodable {
 
 extension Dictionary: RESPTokenDecodable where Value: RESPTokenDecodable, Key: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .map(let respMap), .attribute(let respMap):
             self = try respMap.decode(as: Self.self)
@@ -287,7 +287,7 @@ extension Dictionary: RESPTokenDecodable where Value: RESPTokenDecodable, Key: R
 }
 
 extension ClosedRange: RESPTokenDecodable where Bound: RESPTokenDecodable {
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         let (min, max) = try token.decodeArrayElements(as: (Bound, Bound).self)
         self = min...max
     }
@@ -295,7 +295,7 @@ extension ClosedRange: RESPTokenDecodable where Bound: RESPTokenDecodable {
 
 extension RESPToken.Array: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .array(let respArray), .set(let respArray), .push(let respArray):
             self = respArray
@@ -324,7 +324,7 @@ extension RESPToken.Array: RESPTokenDecodable {
         func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) throws -> T {
             switch token {
             case .some(let value):
-                return try T(fromRESP: value)
+                return try T(value)
             case .none:
                 throw RESPDecodeError.invalidArraySize(self, expectedSize: self._parameterPackTypeSize(type))
             }
@@ -353,7 +353,7 @@ extension RESPToken.Array: RESPTokenDecodable {
                     return .failure(ValkeyClientError(.commandError, message: value.errorString.map { Swift.String(buffer: $0) }))
                 default:
                     do {
-                        return try .success(T(fromRESP: value))
+                        return try .success(T(value))
                     } catch {
                         return .failure(error)
                     }
@@ -391,7 +391,7 @@ extension RESPToken.Array: RESPTokenDecodable {
 
 extension RESPToken.Map: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .map(let respArray):
             self = respArray
@@ -421,7 +421,7 @@ extension RESPToken.Map: RESPTokenDecodable {
         as type: [(Key, Value)].Type = [(Key, Value)].self
     ) throws -> [(Key, Value)] {
         try self.map {
-            try (Key(fromRESP: $0.key), Value(fromRESP: $0.value))
+            try (Key($0.key), Value($0.value))
         }
     }
 }

@@ -50,13 +50,12 @@ public protocol ValkeyClientProtocol: Sendable {
     /// AsyncSequence
     ///
     /// This should not be called directly, used the related commands
-    /// ``ValkeyClientProtocol/subscribe(to:isolation:process:)`` or
-    /// ``ValkeyClientProtocol/psubscribe(to:isolation:process:)``
+    /// ``ValkeyClientProtocol/subscribe(to:process:)`` or
+    /// ``ValkeyClientProtocol/psubscribe(to:process:)``
     func _subscribe<Value>(
         command: some ValkeySubscribeCommand,
-        isolation: isolated (any Actor)?,
-        process: (Subscription) async throws -> sending Value
-    ) async throws -> sending Value
+        process: (Subscription) async throws -> Value
+    ) async throws -> Value
 }
 
 @available(valkeySwift 1.0, *)
@@ -70,16 +69,14 @@ extension ValkeyClientProtocol {
     ///
     /// - Parameters:
     ///   - channels: list of channels to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
     public func subscribe<Value>(
         to channels: String...,
-        isolation: isolated (any Actor)? = #isolation,
-        process: (Subscription) async throws -> sending Value
-    ) async throws -> sending Value {
-        try await self.subscribe(to: channels, isolation: isolation, process: process)
+        process: (Subscription) async throws -> Value
+    ) async throws -> Value {
+        try await self.subscribe(to: channels, process: process)
     }
 
     /// Subscribe to list of channels and run closure with subscription
@@ -91,18 +88,15 @@ extension ValkeyClientProtocol {
     ///
     /// - Parameters:
     ///   - channels: list of channels to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
     public func subscribe<Value>(
         to channels: [String],
-        isolation: isolated (any Actor)? = #isolation,
-        process: (Subscription) async throws -> sending Value
-    ) async throws -> sending Value {
+        process: (Subscription) async throws -> Value
+    ) async throws -> Value {
         try await self._subscribe(
             command: SUBSCRIBE(channels: channels),
-            isolation: isolation,
             process: process
         )
     }
@@ -116,16 +110,14 @@ extension ValkeyClientProtocol {
     ///
     /// - Parameters:
     ///   - patterns: list of channel patterns to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
     public func psubscribe<Value>(
         to patterns: String...,
-        isolation: isolated (any Actor)? = #isolation,
-        process: (Subscription) async throws -> sending Value
-    ) async throws -> sending Value {
-        try await self.psubscribe(to: patterns, isolation: isolation, process: process)
+        process: (Subscription) async throws -> Value
+    ) async throws -> Value {
+        try await self.psubscribe(to: patterns, process: process)
     }
 
     /// Subscribe to list of pattern matching channels and run closure with subscription
@@ -137,18 +129,15 @@ extension ValkeyClientProtocol {
     ///
     /// - Parameters:
     ///   - patterns: list of channel patterns to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
     public func psubscribe<Value>(
         to patterns: [String],
-        isolation: isolated (any Actor)? = #isolation,
-        process: (Subscription) async throws -> sending Value
-    ) async throws -> sending Value {
+        process: (Subscription) async throws -> Value
+    ) async throws -> Value {
         try await self._subscribe(
             command: PSUBSCRIBE(patterns: patterns),
-            isolation: isolation,
             process: process
         )
     }

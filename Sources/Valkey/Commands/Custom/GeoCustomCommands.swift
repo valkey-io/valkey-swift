@@ -13,7 +13,7 @@ public struct GeoCoordinates: RESPTokenDecodable, Sendable {
     public let longitude: Double
     public let latitude: Double
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         (self.longitude, self.latitude) = try token.decodeArrayElements()
     }
 }
@@ -41,14 +41,14 @@ extension GEOSEARCH {
         public let member: String
         public let attributes: [RESPToken]
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             switch token.value {
             case .array(let array):
                 var arrayIterator = array.makeIterator()
                 guard let member = arrayIterator.next() else {
                     throw RESPDecodeError.invalidArraySize(array, expectedSize: 1)
                 }
-                self.member = try String(fromRESP: member)
+                self.member = try String(member)
                 self.attributes = array.dropFirst().map { $0 }
 
             case .bulkString(let buffer):
