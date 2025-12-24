@@ -415,7 +415,7 @@ struct PubSubIntegratedTests {
                         await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
                         await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
-                    client.node.subscriptionConnectionStateMachine.withLock { stateMachine in
+                    client.stateMachine.withLock { $0.getNode() }.subscriptionConnectionStateMachine.withLock { stateMachine in
                         #expect(stateMachine.isEmpty() == true)
                     }
                     try await client.subscribe(to: "testSubscriptions") { subscription in
@@ -424,7 +424,7 @@ struct PubSubIntegratedTests {
                         await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
                         await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
-                    client.node.subscriptionConnectionStateMachine.withLock { stateMachine in
+                    client.stateMachine.withLock { $0.getNode() }.subscriptionConnectionStateMachine.withLock { stateMachine in
                         #expect(stateMachine.isEmpty() == true)
                     }
                 }
@@ -475,7 +475,7 @@ struct PubSubIntegratedTests {
                     client.logger.info("Published \(i)")
                 }
                 try await group.waitForAll()
-                client.node.subscriptionConnectionStateMachine.withLock { stateMachine in
+                client.stateMachine.withLock { $0.getNode() }.subscriptionConnectionStateMachine.withLock { stateMachine in
                     #expect(stateMachine.isEmpty() == true)
                 }
             }
