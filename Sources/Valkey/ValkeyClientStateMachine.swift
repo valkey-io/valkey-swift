@@ -44,10 +44,13 @@ struct ValkeyClientStateMachine<
     var runningClients: ValkeyRunningClientsStateMachine<ConnectionPool, ConnectionPoolFactory>
     @usableFromInline
     var state: State
+    @usableFromInline
+    let findReplicas: Bool
 
-    init(poolFactory: ConnectionPoolFactory) {
+    init(poolFactory: ConnectionPoolFactory, configuration: ValkeyClientConfiguration) {
         self.runningClients = .init(poolFactory: poolFactory)
         self.state = .uninitialized
+        self.findReplicas = configuration.readOnlyCommandNodeSelection != .primary
     }
 
     @usableFromInline
@@ -65,6 +68,7 @@ struct ValkeyClientStateMachine<
 
     enum SetPrimaryAction {
         case runNodeAndFindReplicas(ConnectionPool)
+        case runNode(ConnectionPool)
         case findReplicas
         case doNothing
     }
@@ -72,9 +76,16 @@ struct ValkeyClientStateMachine<
         let nodes = ValkeyNodeIDs(primary: address)
         let action = self.runningClients.addNode(.init(address: address, readOnly: false))
         self.state = .running(nodes)
-        return switch action {
-        case .useExistingPool: .findReplicas
-        case .runAndUsePool(let pool): .runNodeAndFindReplicas(pool)
+        if self.findReplicas {
+            return switch action {
+            case .useExistingPool: .findReplicas
+            case .runAndUsePool(let pool): .runNodeAndFindReplicas(pool)
+            }
+        } else {
+            return switch action {
+            case .useExistingPool: .doNothing
+            case .runAndUsePool(let pool): .runNode(pool)
+            }
         }
     }
 

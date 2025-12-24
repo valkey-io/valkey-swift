@@ -83,12 +83,14 @@ public final class ValkeyClient: Sendable {
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
         self.runningAtomic = .init(false)
-        self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory))
+        self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         switch address.value {
         case .hostname(let host, let port):
             let action = self.stateMachine.withLock { $0.setPrimary(.hostname(host, port: port)) }
             switch action {
+            case .runNode(let client):
+                self.queueAction(.runNodeClient(client))
             case .runNodeAndFindReplicas(let client):
                 self.queueAction(.runNodeClient(client))
                 self.queueAction(.runRole(client))
