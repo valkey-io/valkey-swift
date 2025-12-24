@@ -1359,7 +1359,7 @@ struct CommandTests {
                 let result = try await connection.ftAggregate(
                     index: "idx:testIndex",
                     query: "@loc:[$lon $lat 10 km]",
-                    params: .init(nargs: 4, parameters: ["lon", "29.69465", "lat", "34.95126"])
+                    params: .init(nargs: 4, parameters: [.init(name: "lon", value: "29.69465"), .init(name: "lat", value: "34.95126")])
                 )
 
                 guard case .array(let arr) = result.value else {

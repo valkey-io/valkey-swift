@@ -378,23 +378,45 @@ public enum FT {
                 milliseconds.encode(into: &commandEncoder)
             }
         }
-        public struct Params: RESPRenderable, Sendable, Hashable {
-            public var nargs: Int
-            public var parameters: [String]
+        public struct ParamsParameters: RESPRenderable, Sendable, Hashable {
+            public var name: String
+            public var value: String
 
             @inlinable
-            public init(nargs: Int, parameters: [String]) {
+            public init(name: String, value: String) {
+                self.name = name
+                self.value = value
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                name.respEntries + value.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                name.encode(into: &commandEncoder)
+                value.encode(into: &commandEncoder)
+            }
+        }
+        public struct Params: RESPRenderable, Sendable, Hashable {
+            public var nargs: Int
+            public var parameters: [ParamsParameters]
+
+            @inlinable
+            public init(nargs: Int, parameters: [ParamsParameters]) {
                 self.nargs = nargs
                 self.parameters = parameters
             }
 
             @inlinable
             public var respEntries: Int {
-                nargs.respEntries + parameters.respEntries
+                "PARAMS".respEntries + nargs.respEntries + parameters.respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "PARAMS".encode(into: &commandEncoder)
                 nargs.encode(into: &commandEncoder)
                 parameters.encode(into: &commandEncoder)
             }

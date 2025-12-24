@@ -389,13 +389,28 @@
         "optional": true,
         "arguments": [
           {
+            "name": "params_token",
+            "type": "pure-token",
+            "token": "PARAMS"
+          },
+          {
             "name": "nargs",
             "type": "integer"
           },
           {
             "name": "parameters",
-            "type": "string",
-            "multiple": true
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "value",
+                "type": "string"
+              }
+            ]
           }
         ]
       },
