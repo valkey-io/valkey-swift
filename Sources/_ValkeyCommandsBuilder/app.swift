@@ -25,6 +25,8 @@ struct App {
             try writeValkeyCommands(toFolder: "Sources/ValkeyBloom/", commands: bloomCommands, module: true)
             let jsonCommands = try load(fileURL: resourceFolder.appending(path: "valkey-json-commands.json"), as: ValkeyCommands.self)
             try writeValkeyCommands(toFolder: "Sources/ValkeyJSON/", commands: jsonCommands, module: true)
+            let searchCommands = try load(fileURL: resourceFolder.appending(path: "valkey-search-commands.json"), as: ValkeyCommands.self)
+            try writeValkeyCommands(toFolder: "Sources/ValkeySearch/", commands: searchCommands, module: true)
         }
     }
 

@@ -1,0 +1,959 @@
+{
+  "FT._DEBUG": {
+    "acl_categories": [
+      "ADMIN",
+      "SLOW",
+      "READ",
+      "SEARCH"
+    ],
+    "arguments": [],
+    "complexity": "O(1)",
+    "group": "search",
+    "module_since": "1.1.0",
+    "summary": "Developer access, not for production use"
+  },
+  "FT._LIST": {
+    "acl_categories": [
+      "ADMIN",
+      "SLOW",
+      "READ",
+      "SEARCH"
+    ],
+    "arguments": [],
+    "arity": 1,
+    "complexity": "O(1)",
+    "group": "search",
+    "module_since": "1.0.0",
+    "summary": "Lists the currently defined indexes"
+  },
+  "FT.AGGREGATE": {
+    "acl_categories": [
+      "READ",
+      "SLOW",
+      "SEARCH"
+    ],
+    "arguments": [
+      {
+        "key_spec_index": 0,
+        "name": "index",
+        "type": "key"
+      },
+      {
+        "key_spec_index": 1,
+        "name": "query",
+        "type": "string"
+      },
+      {
+        "name": "verbatim",
+        "type": "pure-token",
+        "optional": true,
+        "token": "VERBATIM"
+      },
+      {
+        "name": "LOAD",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "load_token",
+            "type": "pure-token",
+            "token": "LOAD"
+          },
+          {
+            "name": "nargs",
+            "type": "integer"
+          },
+          {
+            "name": "items",
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "identifier",
+                "type": "string"
+              },
+              {
+                "name": "alias",
+                "type": "block",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "as_token",
+                    "type": "pure-token",
+                    "token": "AS"
+                  },
+                  {
+                    "name": "property",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "GROUPBY",
+        "type": "block",
+        "optional": true,
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "groupby_token",
+            "type": "pure-token",
+            "token": "GROUPBY"
+          },
+          {
+            "name": "nargs",
+            "type": "integer"
+          },
+          {
+            "name": "group_fields",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      },
+      {
+        "name": "REDUCE",
+        "type": "block",
+        "optional": true,
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "reduce_token",
+            "type": "pure-token",
+            "token": "REDUCE"
+          },
+          {
+            "name": "function",
+            "type": "oneof",
+            "arguments": [
+              {
+                "name": "count",
+                "type": "pure-token",
+                "token": "COUNT"
+              },
+              {
+                "name": "count_distinct",
+                "type": "pure-token",
+                "token": "COUNT_DISTINCT"
+              },
+              {
+                "name": "count_distinctish",
+                "type": "pure-token",
+                "token": "COUNT_DISTINCT_ISH"
+              },
+              {
+                "name": "sum",
+                "type": "pure-token",
+                "token": "SUM"
+              },
+              {
+                "name": "min",
+                "type": "pure-token",
+                "token": "MIN"
+              },
+              {
+                "name": "max",
+                "type": "pure-token",
+                "token": "MAX"
+              },
+              {
+                "name": "avg",
+                "type": "pure-token",
+                "token": "AVG"
+              },
+              {
+                "name": "stddev",
+                "type": "pure-token",
+                "token": "STDDEV"
+              },
+              {
+                "name": "quantile",
+                "type": "pure-token",
+                "token": "QUANTILE"
+              },
+              {
+                "name": "tolist",
+                "type": "pure-token",
+                "token": "TOLIST"
+              },
+              {
+                "name": "first_value",
+                "type": "pure-token",
+                "token": "FIRST_VALUE"
+              },
+              {
+                "name": "random_sample",
+                "type": "pure-token",
+                "token": "RANDOM_SAMPLE"
+              }
+            ]
+          },
+          {
+            "name": "nargs",
+            "type": "integer"
+          },
+          {
+            "name": "identifier",
+            "type": "string",
+            "multiple": true
+          },
+          {
+            "name": "alias",
+            "type": "block",
+            "optional": true,
+            "arguments": [
+              {
+                "name": "as_token",
+                "type": "pure-token",
+                "token": "AS"
+              },
+              {
+                "name": "identifier",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "SORTBY",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "sortby_token",
+            "type": "pure-token",
+            "token": "SORTBY"
+          },
+          {
+            "name": "nargs",
+            "type": "integer"
+          },
+          {
+            "name": "sort_params",
+            "type": "string",
+            "multiple": true
+          },
+          {
+            "name": "max",
+            "type": "block",
+            "optional": true,
+            "arguments": [
+              {
+                "name": "max_token",
+                "type": "pure-token",
+                "token": "MAX"
+              },
+              {
+                "name": "num",
+                "type": "integer"
+              }
+            ]
+          },
+          {
+            "name": "WITHCOUNT",
+            "type": "pure-token",
+            "optional": true,
+            "token": "WITHCOUNT"
+          }
+        ]
+      },
+      {
+        "name": "APPLY",
+        "type": "block",
+        "optional": true,
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "apply_token",
+            "type": "pure-token",
+            "token": "APPLY"
+          },
+          {
+            "name": "expr",
+            "type": "string"
+          },
+          {
+            "name": "as_token",
+            "type": "pure-token",
+            "token": "AS"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "LIMIT",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "limit_token",
+            "type": "pure-token",
+            "token": "LIMIT"
+          },
+          {
+            "name": "offset",
+            "type": "integer"
+          },
+          {
+            "name": "num",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "FILTER",
+        "type": "block",
+        "optional": true,
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "filter_token",
+            "type": "pure-token",
+            "token": "FILTER"
+          },
+          {
+            "name": "expr",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "WITHCURSOR",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "withcursor_token",
+            "type": "pure-token",
+            "token": "WITHCURSOR"
+          },
+          {
+            "name": "count",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "count_token",
+                "type": "pure-token",
+                "token": "COUNT"
+              },
+              {
+                "name": "read_size",
+                "type": "integer"
+              }
+            ]
+          },
+          {
+            "name": "maxidle",
+            "type": "block",
+            "optional": true,
+            "arguments": [
+              {
+                "name": "maxidle_token",
+                "type": "pure-token",
+                "token": "MAXIDLE"
+              },
+              {
+                "name": "idle_time",
+                "type": "integer"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "TIMEOUT",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "timeout_token",
+            "type": "pure-token",
+            "token": "TIMEOUT"
+          },
+          {
+            "name": "milliseconds",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "PARAMS",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "params_token",
+            "type": "pure-token",
+            "token": "PARAMS"
+          },
+          {
+            "name": "nargs",
+            "type": "integer"
+          },
+          {
+            "name": "parameters",
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "value",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "SCORER",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "scorer_token",
+            "type": "pure-token",
+            "token": "SCORER"
+          },
+          {
+            "name": "scorer",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "ADDSCORES",
+        "type": "pure-token",
+        "optional": true,
+        "token": "ADDSCORES"
+      },
+      {
+        "name": "DIALECT",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "dialect_token",
+            "type": "pure-token",
+            "token": "DIALECT"
+          },
+          {
+            "name": "dialect_version",
+            "type": "integer"
+          }
+        ]
+      }
+    ],
+    "arity": -3,
+    "complexity": "O(log N)",
+    "group": "search",
+    "module_since": "1.1.0",
+    "summary": "Performs a search of the specified index. The keys which match the query expression are subjected to further processing as specified"
+  },
+  "FT.CREATE": {
+    "acl_categories": [
+      "FAST",
+      "WRITE",
+      "SEARCH"
+    ],
+    "arguments": [
+      {
+        "key_spec_index": 0,
+        "name": "index-name",
+        "type": "string"
+      },
+      {
+        "name": "on",
+        "type": "block",
+        "optional": true,
+        "description": "Index source type",
+        "arguments": [
+          {
+            "name": "on_token",
+            "type": "pure-token",
+            "token": "ON"
+          },
+          {
+            "name": "type",
+            "type": "oneof",
+            "arguments": [
+              {
+                "name": "hash",
+                "type": "pure-token",
+                "token": "HASH"
+              },
+              {
+                "name": "json",
+                "type": "pure-token",
+                "token": "JSON"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "prefix",
+        "type": "block",
+        "optional": true,
+        "description": "Optional PREFIX clause to restrict indexed keys",
+        "arguments": [
+          {
+            "name": "PREFIX",
+            "type": "pure-token",
+            "token": "PREFIX"
+          },
+          {
+            "name": "count",
+            "type": "integer"
+          },
+          {
+            "name": "prefix",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      },
+      {
+        "name": "schema",
+        "type": "block",
+        "description": "Schema definition: one or more field definitions",
+        "arguments": [
+          {
+            "name": "schema_token",
+            "type": "pure-token",
+            "token": "SCHEMA"
+          },
+          {
+            "name": "fields",
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "field-identifier",
+                "type": "string"
+              },
+              {
+                "name": "alias",
+                "optional": true,
+                "type": "block",
+                "arguments": [
+                  {
+                    "name": "AS",
+                    "type": "pure-token",
+                    "token": "AS"
+                  },
+                  {
+                    "name": "field-identifier",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "name": "field-type",
+                "type": "oneof",
+                "arguments": [
+                  {
+                    "name": "NUMERIC",
+                    "type": "pure-token",
+                    "token": "NUMERIC"
+                  },
+                  {
+                    "name": "TEXT",
+                    "type": "pure-token",
+                    "token": "TEXT"
+                  },
+                  {
+                    "name": "TAG",
+                    "type": "block",
+                    "arguments": [
+                      {
+                        "name": "tag_token",
+                        "type": "pure-token",
+                        "token": "TAG"
+                      },
+                      {
+                        "name": "separator",
+                        "optional": true,
+                        "type": "block",
+                        "arguments": [
+                          {
+                            "name": "separator_token",
+                            "type": "pure-token",
+                            "token": "SEPARATOR"
+                          },
+                          {
+                            "name": "sep",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "casesensitive",
+                        "optional": true,
+                        "type": "pure-token",
+                        "token": "CASESENSITIVE"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "vector",
+                    "type": "block",
+                    "arguments": [
+                      {
+                        "name": "vector",
+                        "type": "pure-token",
+                        "token": "VECTOR"
+                      },
+                      {
+                        "name": "algorithm",
+                        "type": "oneof",
+                        "arguments": [
+                          {
+                            "name": "HNSW",
+                            "type": "pure-token",
+                            "token": "HNSW"
+                          },
+                          {
+                            "name": "FLAT",
+                            "type": "pure-token",
+                            "token": "FLAT"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "attr_count",
+                        "type": "integer"
+                      },
+                      {
+                        "name": "vector-params",
+                        "type": "block",
+                        "description": "Vector algorithm parameters (DIM, TYPE, DISTANCE_METRIC, INITIAL_CAP, M, EF_CONSTRUCTION, EF_RUNTIME, BLOCK_SIZE)",
+                        "arguments": [
+                          {
+                            "name": "type",
+                            "type": "block",
+                            "arguments": [
+                              {
+                                "name": "type_token",
+                                "type": "pure-token",
+                                "token": "TYPE"
+                              },
+                              {
+                                "name": "format",
+                                "type": "pure-token",
+                                "token": "FLOAT32"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "dim",
+                            "type": "block",
+                            "arguments": [
+                              {
+                                "name": "dim_token",
+                                "type": "pure-token",
+                                "token": "DIM"
+                              },
+                              {
+                                "name": "value",
+                                "type": "integer"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "distance_metric",
+                            "type": "block",
+                            "arguments": [
+                              {
+                                "name": "dm_token",
+                                "type": "pure-token",
+                                "token": "DISTANCE_METRIC"
+                              },
+                              {
+                                "name": "metric",
+                                "type": "oneof",
+                                "arguments": [
+                                  {
+                                    "name": "l2",
+                                    "type": "pure-token",
+                                    "token": "L2"
+                                  },
+                                  {
+                                    "name": "ip",
+                                    "type": "pure-token",
+                                    "token": "IP"
+                                  },
+                                  {
+                                    "name": "cosine",
+                                    "type": "pure-token",
+                                    "token": "COSINE"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "name": "m",
+                            "type": "block",
+                            "optional": true,
+                            "arguments": [
+                              {
+                                "name": "m_token",
+                                "type": "pure-token",
+                                "token": "M"
+                              },
+                              {
+                                "name": "value",
+                                "type": "integer"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "ef_construction",
+                            "type": "block",
+                            "optional": true,
+                            "arguments": [
+                              {
+                                "name": "efc_token",
+                                "type": "pure-token",
+                                "token": "EF_CONSTRUCTION"
+                              },
+                              {
+                                "name": "value",
+                                "type": "integer"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "block_size",
+                            "type": "block",
+                            "optional": true,
+                            "arguments": [
+                              {
+                                "name": "bs_token",
+                                "type": "pure-token",
+                                "token": "BLOCK_SIZE"
+                              },
+                              {
+                                "name": "value",
+                                "type": "integer"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "complexity": "Construction time O(N log N), where N is the number of indexed items",
+    "group": "search",
+    "module_since": "1.0.0",
+    "summary": "Creates an empty search index and initiates the backfill process"
+  },
+  "FT.DROPINDEX": {
+    "acl_categories": [
+      "FAST",
+      "WRITE",
+      "SEARCH"
+    ],
+    "arguments": [
+      {
+        "key_spec_index": 0,
+        "name": "key",
+        "type": "key"
+      }
+    ],
+    "arity": 2,
+    "complexity": "O(N)",
+    "group": "search",
+    "module_since": "1.0.0",
+    "summary": "Drop the index created by FT.CREATE command. It is an error if the index doesn't exist"
+  },
+  "FT.INFO": {
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "SEARCH"
+    ],
+    "arguments": [
+      {
+        "key_spec_index": 0,
+        "name": "key",
+        "type": "key"
+      },
+      {
+        "name": "scope",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "LOCAL",
+            "type": "pure-token",
+            "token": "LOCAL"
+          },
+          {
+            "name": "GLOBAL",
+            "type": "pure-token",
+            "token": "GLOBAL"
+          }
+        ]
+      }
+    ],
+    "arity": -2,
+    "complexity": "O(1)",
+    "group": "search",
+    "module_since": "1.0.0",
+    "summary": "Detailed information about the specified index is returned"
+  },
+  "FT.SEARCH": {
+    "acl_categories": [
+      "READ",
+      "SLOW",
+      "SEARCH"
+    ],
+    "arguments": [
+      {
+        "key_spec_index": 0,
+        "name": "index",
+        "type": "key"
+      },
+      {
+        "key_spec_index": 1,
+        "name": "query",
+        "type": "string"
+      },
+      {
+        "name": "NOCONTENT",
+        "type": "pure-token",
+        "optional": true,
+        "token": "NOCONTENT",
+        "description": "When present, only matching key names are returned (no fields)."
+      },
+      {
+        "name": "TIMEOUT",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "TIMEOUT",
+            "type": "pure-token",
+            "token": "TIMEOUT"
+          },
+          {
+            "name": "timeout_ms",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "PARAMS",
+        "type": "block",
+        "optional": true,
+        "description": "Parameter substitution map used by $-placeholders in the query string.",
+        "arguments": [
+          {
+            "name": "PARAMS",
+            "type": "pure-token",
+            "token": "PARAMS"
+          },
+          {
+            "name": "count",
+            "type": "integer"
+          },
+          {
+            "name": "pairs",
+            "type": "string",
+            "multiple": true,
+            "description": "name/value pairs (count must be even)"
+          }
+        ]
+      },
+      {
+        "name": "RETURN_FIELDS",
+        "type": "block",
+        "optional": true,
+        "description": "Specify which fields to return and optional aliases. If count is 0 behaves like NOCONTENT.",
+        "arguments": [
+          {
+            "name": "RETURN_TOKEN",
+            "type": "pure-token",
+            "token": "RETURN"
+          },
+          {
+            "name": "count",
+            "type": "integer"
+          },
+          {
+            "name": "fields",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      },
+      {
+        "name": "LIMIT",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "LIMIT",
+            "type": "pure-token",
+            "token": "LIMIT"
+          },
+          {
+            "name": "offset",
+            "type": "integer"
+          },
+          {
+            "name": "count",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "DIALECT",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "DIALECT",
+            "type": "pure-token",
+            "token": "DIALECT"
+          },
+          {
+            "name": "dialect",
+            "type": "integer"
+          }
+        ],
+        "description": "Specifies the query dialect (supported values validated by server)."
+      },
+      {
+        "name": "LOCALONLY",
+        "type": "pure-token",
+        "optional": true,
+        "token": "LOCALONLY",
+        "description": "If present, restricts search to local index data only."
+      }
+    ],
+    "arity": -3,
+    "complexity": "O(log N)",
+    "group": "search",
+    "module_since": "1.0.0",
+    "summary": "Performs a search of the specified index. The keys which match the query expression are returned"
+  }
+}
