@@ -128,6 +128,7 @@ extension ValkeyClient {
     /// Get connection from connection pool and run operation using connection
     ///
     /// - Parameters:
+    ///   - readOnly: Are operations in closure are read only
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Value returned by closure
     @inlinable

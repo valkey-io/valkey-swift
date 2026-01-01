@@ -74,7 +74,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// connection.
     ///
     /// To avoid the cost of acquiring the connection and then closing it, it is always
-    /// preferable to use ``ValkeyClient/withConnection(operation:)`` which
+    /// preferable to use ``ValkeyClient/withConnection(readOnly:operation:)`` which
     /// uses a persistent connection pool to provide connections to your Valkey database.
     ///
     /// - Parameters:
