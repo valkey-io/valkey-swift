@@ -179,6 +179,7 @@ public struct ValkeyTracingConfiguration: Sendable {
     /// Attribute names used in spans created by Valkey.
     public struct AttributeNames: Sendable {
         public var databaseOperationName: String = "db.operation.name"
+        public var databaseOperationBatchSize: String = "db.operation.batch.size"
         public var databaseSystemName: String = "db.system.name"
         public var networkPeerAddress: String = "network.peer.address"
         public var networkPeerPort: String = "network.peer.port"
