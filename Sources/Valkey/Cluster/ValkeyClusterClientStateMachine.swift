@@ -534,7 +534,7 @@ where
     @inlinable
     package func poolFastPath(
         for slots: some Collection<HashSlot>,
-        nodeSelection: ValkeyClusterNodeSelection
+        nodeSelection: ValkeyNodeSelection
     ) throws(ValkeyClusterError) -> ConnectionPool {
         switch self.clusterState {
         case .unavailable:

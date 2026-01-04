@@ -482,9 +482,9 @@ public final class ValkeyClusterClient: Sendable {
     }
 
     @inlinable
-    /* private */ func getNodeSelection(readOnly: Bool) -> ValkeyClusterNodeSelection {
+    /* private */ func getNodeSelection(readOnly: Bool) -> ValkeyNodeSelection {
         if readOnly {
-            self.clientConfiguration.readOnlyCommandNodeSelection.clusterNodeSelection
+            self.clientConfiguration.readOnlyCommandNodeSelection.nodeSelection
         } else {
             .primary
         }
@@ -577,7 +577,7 @@ public final class ValkeyClusterClient: Sendable {
     @usableFromInline
     func splitCommandsAcrossNodes(
         commands: [any ValkeyCommand],
-        nodeSelection: ValkeyClusterNodeSelection
+        nodeSelection: ValkeyNodeSelection
     ) async throws -> [ValkeyServerAddress: NodeAndCommands].Values {
         var nodeMap: [ValkeyServerAddress: NodeAndCommands] = [:]
         var index = commands.startIndex
@@ -877,7 +877,7 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     package func nodeClient(
         for slots: some (Collection<HashSlot> & Sendable),
-        nodeSelection: ValkeyClusterNodeSelection
+        nodeSelection: ValkeyNodeSelection
     ) async throws -> ValkeyNodeClient {
         var retries = 0
         while retries < 3 {
