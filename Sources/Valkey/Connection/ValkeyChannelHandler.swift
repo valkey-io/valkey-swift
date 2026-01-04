@@ -58,6 +58,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         let blockingCommandTimeout: TimeAmount
         let clientName: String?
         let readOnly: Bool
+        let clientRedirect: Bool
         let databaseNumber: Int
     }
     @usableFromInline
@@ -305,6 +306,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             READONLY().encode(into: &self.encoder)
         }
 
+        if self.configuration.clientRedirect {
+            numberOfPendingCommands += 1
+            CLIENT.CAPA(capabilities: ["redirect"]).encode(into: &self.encoder)
+        }
+
         let promise = eventLoop.makePromise(of: RESPToken.self)
 
         let deadline = .now() + self.configuration.commandTimeout
@@ -548,6 +554,7 @@ extension ValkeyChannelHandler.Configuration {
             blockingCommandTimeout: .init(other.blockingCommandTimeout),
             clientName: other.clientName,
             readOnly: other.readOnly,
+            clientRedirect: other.enableClientRedirect,
             databaseNumber: other.databaseNumber
         )
     }

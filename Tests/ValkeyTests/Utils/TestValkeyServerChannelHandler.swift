@@ -61,6 +61,8 @@ final class TestValkeyServerChannelHandler: ChannelInboundHandler {
             switch parameters.first {
             case "SETINFO":
                 context.writeAndFlush(self.wrapOutboundOut(Self.okResponse), promise: nil)
+            case "CAPA":
+                context.writeAndFlush(self.wrapOutboundOut(Self.okResponse), promise: nil)
             default:
                 commandHandler(command, parameters) {
                     context.writeAndFlush(self.wrapOutboundOut($0), promise: nil)
