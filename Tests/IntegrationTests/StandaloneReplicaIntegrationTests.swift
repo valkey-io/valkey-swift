@@ -13,14 +13,31 @@ import Valkey
 @Suite(
     "Standalone Replica Integration Tests",
     .serialized,
-    .disabled(if: firstReplicaHostname == nil, "VALKEY_REPLICA1_HOSTNAME environment variable is not set.")
+    .disabled(if: primaryHostname == nil || primaryPort == nil, "VALKEY_PRIMARY_HOSTNAME or VALKEY_PRIMARY_PORT environment variable is not set.")
 )
 struct StandaloneReplicaIntegrationTests {
+    @available(valkeySwift 1.0, *)
+    @Test func testReadonlySelection() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(primaryHostname!, port: primaryPort!), logger: logger) { client in
+            try await withKey(client) { key in
+                // wait 100 milliseconds to ensure ROLE has returned replicas
+                try await Task.sleep(for: .milliseconds(100))
+                try await client.withConnection(readOnly: true) { connection in
+                    _ = try await connection.get(key)
+                    await #expect(throws: ValkeyClientError(.commandError, message: "READONLY You can't write against a read only replica.")) {
+                        try await connection.set(key, value: "readonly")
+                    }
+                }
+            }
+        }
+    }
 
     @available(valkeySwift 1.0, *)
     func withValkeyClient(
         _ address: ValkeyServerAddress,
-        configuration: ValkeyClientConfiguration = .init(),
+        configuration: ValkeyClientConfiguration = .init(readOnlyCommandNodeSelection: .cycleReplicas),
         logger: Logger,
         operation: @escaping @Sendable (ValkeyClient) async throws -> Void
     ) async throws {
@@ -52,5 +69,5 @@ struct StandaloneReplicaIntegrationTests {
     }
 }
 
-private let firstReplicaHostname: String? = ProcessInfo.processInfo.environment["VALKEY_REPLICA1_HOSTNAME"]
-private let firstReplicaPort: Int? = ProcessInfo.processInfo.environment["VALKEY_REPLICA1_PORT"].flatMap { Int($0) }
+private let primaryHostname: String? = ProcessInfo.processInfo.environment["VALKEY_PRIMARY_HOSTNAME"]
+private let primaryPort: Int? = ProcessInfo.processInfo.environment["VALKEY_PRIMARY_PORT"].flatMap { Int($0) }

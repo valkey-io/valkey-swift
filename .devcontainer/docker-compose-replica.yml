@@ -15,6 +15,7 @@ services:
       - ..:/workspace
     depends_on:
       - valkey
+      - valkey_primary
       - valkey_replica_1
       - valkey_replica_2
       - valkey_replica_3
@@ -23,8 +24,8 @@ services:
     security_opt:
       - seccomp=unconfined
     environment:
-      - VALKEY_REPLICA1_HOSTNAME=localhost
-      - VALKEY_REPLICA1_PORT=36001
+      - VALKEY_PRIMARY_HOSTNAME=localhost
+      - VALKEY_PRIMARY_PORT=9000
     command: sleep infinity
 
   valkey:
@@ -32,19 +33,26 @@ services:
     network_mode: "host"
     command: valkey-server --port 6379
 
+  valkey_primary:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    depends_on:
+      - valkey
+    command: valkey-server --port 9000
+
   valkey_replica_1:
     image: 'valkey/valkey:latest'
     network_mode: "host"
     depends_on:
       - valkey
-    command: valkey-server --port 9001 --replicaof 127.0.0.1 6379
+    command: valkey-server --port 9001 --replicaof 127.0.0.1 9000
 
   valkey_replica_2:
     image: 'valkey/valkey:latest'
     network_mode: "host"
     depends_on:
       - valkey
-    command: valkey-server --port 9002 --replicaof 127.0.0.1 6379
+    command: valkey-server --port 9002 --replicaof 127.0.0.1 9000
 
   valkey_replica_3:
     image: 'valkey/valkey:latest'
