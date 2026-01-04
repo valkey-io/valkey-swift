@@ -30,12 +30,12 @@ struct ValkeyClientStateMachine<
         self.findReplicas = configuration.readOnlyCommandNodeSelection != .primary
     }
 
-    @usableFromInline
-    func getNode() -> ConnectionPool {
+    @inlinable
+    func getNode(_ selection: ValkeyNodeSelection) -> ConnectionPool {
         guard case .running(let nodes) = self.state else {
             preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
         }
-        let nodeID = nodes.primary
+        let nodeID = selection.select(nodeIDs: nodes)
         if let pool = self.runningClients[nodeID]?.pool {
             return pool
         } else {

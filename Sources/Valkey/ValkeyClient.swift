@@ -27,6 +27,7 @@ public final class ValkeyClient: Sendable {
     @usableFromInline
     let stateMachine: Mutex<ValkeyClientStateMachine<ValkeyNodeClient, ValkeyNodeClientFactory>>
     /// configuration
+    @usableFromInline
     var configuration: ValkeyClientConfiguration { self.nodeClientFactory.configuration }
     /// EventLoopGroup to use
     let eventLoopGroup: any EventLoopGroup
@@ -136,8 +137,19 @@ extension ValkeyClient {
         readOnly: Bool = false,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        let node = self.getNode(readOnly: readOnly)
         return try await node.withConnection(operation: operation)
+    }
+
+    @inlinable
+    func getNode(readOnly: Bool) -> ValkeyNodeClient {
+        let selection =
+            if readOnly {
+                self.configuration.readOnlyCommandNodeSelection.nodeSelection
+            } else {
+                ValkeyNodeSelection.primary
+            }
+        return self.stateMachine.withLock { $0.getNode(selection) }
     }
 }
 
@@ -183,7 +195,7 @@ extension ValkeyClient: ValkeyClientProtocol {
     /// - Returns: Response from Valkey command
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
-        try await self.withConnection { connection in
+        try await self.withConnection(readOnly: command.isReadOnly) { connection in
             try await connection.execute(command)
         }
     }
@@ -202,7 +214,11 @@ extension ValkeyClient {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, any Error>) {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        var readOnly = true
+        for command in repeat each commands {
+            readOnly = readOnly && command.isReadOnly
+        }
+        let node = self.getNode(readOnly: readOnly)
         return await node.execute(repeat each commands)
     }
 
@@ -222,7 +238,13 @@ extension ValkeyClient {
     public func execute<Commands: Collection & Sendable>(
         _ commands: Commands
     ) async -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        let readOnly =
+            if self.configuration.readOnlyCommandNodeSelection == .primary {
+                false
+            } else {
+                commands.reduce(true) { $0 && $1.isReadOnly }
+            }
+        let node = self.getNode(readOnly: readOnly)
         return await node.execute(commands)
     }
     /// Pipeline a series of commands as a transaction to Valkey connection
@@ -240,7 +262,11 @@ extension ValkeyClient {
     public func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        var readOnly = true
+        for command in repeat each commands {
+            readOnly = readOnly && command.isReadOnly
+        }
+        let node = self.getNode(readOnly: readOnly)
         return try await node.transaction(repeat each commands)
     }
 
@@ -263,7 +289,13 @@ extension ValkeyClient {
     public func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
     ) async throws -> [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        let readOnly =
+            if self.configuration.readOnlyCommandNodeSelection == .primary {
+                false
+            } else {
+                commands.reduce(true) { $0 && $1.isReadOnly }
+            }
+        let node = self.getNode(readOnly: readOnly)
         return try await node.transaction(commands)
     }
 }

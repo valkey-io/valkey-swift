@@ -18,7 +18,7 @@ extension ValkeyClient {
     func withSubscriptionConnection<Value>(
         _ operation: (ValkeyConnection) async throws -> Value
     ) async throws -> sending Value {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        let node = self.getNode(readOnly: true)
         let id = node.subscriptionConnectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {
