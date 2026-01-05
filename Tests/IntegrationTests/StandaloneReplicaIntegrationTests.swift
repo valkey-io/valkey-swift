@@ -37,22 +37,47 @@ struct StandaloneReplicaIntegrationTests {
     }
 
     @available(valkeySwift 1.0, *)
-    func withValkeyClient(
+    @Test func testRoleRedirectFromReplica() async throws {
+        struct UnexpectedRoleError: Error {}
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        // get replica address
+        let replicaAddress = try await withValkeyClient(.hostname(primaryHostname!, port: primaryPort!), logger: logger) { client in
+            let role = try await client.role()
+            switch role {
+            case .primary(let primary):
+                let replica = try #require(primary.replicas.first)
+                return ValkeyServerAddress.hostname(replica.ip, port: replica.port)
+            default:
+                throw UnexpectedRoleError()
+            }
+        }
+
+        // connect to replica
+        try await withValkeyClient(replicaAddress, logger: logger) { client in
+            try await withKey(client) { key in
+                // wait 100 milliseconds to ensure ROLE has returned replica status
+                try await Task.sleep(for: .milliseconds(100))
+                try await client.set(key, value: "redirect")
+            }
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    func withValkeyClient<Value>(
         _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(readOnlyCommandNodeSelection: .cycleReplicas),
         logger: Logger,
-        operation: @escaping @Sendable (ValkeyClient) async throws -> Void
-    ) async throws {
+        operation: @escaping @Sendable (ValkeyClient) async throws -> Value
+    ) async throws -> Value {
         try await withThrowingTaskGroup(of: Void.self) { group in
             let client = ValkeyClient(address, configuration: configuration, logger: logger)
             group.addTask {
                 await client.run()
             }
-            group.addTask {
-                try await operation(client)
-            }
-            try await group.next()
+            let value = try await operation(client)
             group.cancelAll()
+            return value
         }
     }
 

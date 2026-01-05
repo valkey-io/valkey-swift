@@ -38,7 +38,7 @@ public final class ValkeyClient: Sendable {
 
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
-        case runRole(ValkeyNodeClient)
+        case runRole
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -93,7 +93,7 @@ public final class ValkeyClient: Sendable {
             self.queueAction(.runNodeClient(client))
         case .runNodeAndFindReplicas(let client):
             self.queueAction(.runNodeClient(client))
-            self.queueAction(.runRole(client))
+            self.queueAction(.runRole)
         case .findReplicas, .doNothing:
             preconditionFailure("First time you call setPrimary it should return runNodeAndFindReplicas or runNode")
         }
@@ -164,24 +164,43 @@ extension ValkeyClient {
         case .runNodeClient(let nodeClient):
             await nodeClient.run()
 
-        case .runRole(let nodeClient):
+        case .runRole:
             var replicas: [ValkeyServerAddress] = []
+            let nodeClient = self.getNode(readOnly: false)
             if let role = try? await nodeClient.execute(ROLE()) {
                 switch role {
                 case .primary(let primary):
                     replicas = primary.replicas.map { .hostname($0.ip, port: $0.port) }
-                case .replica:
+                    self.logger.debug("Found replicas \(replicas)")
+
+                case .replica(let replica):
+                    // if client is pointing to a replica then redirect to the primiary
+                    let action = self.stateMachine.withLock { $0.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort)) }
+                    self.logger.debug("Client is a connected to a replica redirecting to primary \(replica.primaryIP):\(replica.primaryPort)")
+                    switch action {
+                    case .runNode(let client):
+                        self.queueAction(.runNodeClient(client))
+                    case .runNodeAndFindReplicas(let client):
+                        self.queueAction(.runNodeClient(client))
+                        self.queueAction(.runRole)
+                    case .findReplicas:
+                        self.queueAction(.runRole)
+                    case .doNothing:
+                        break
+                    }
+
                     break
                 case .sentinel:
                     preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
                 }
-            }
-            let action = self.stateMachine.withLock { $0.addReplicas(nodeIDs: replicas) }
-            for node in action.clientsToRun {
-                self.queueAction(.runNodeClient(node))
-            }
-            for node in action.clientsToShutdown {
-                node.triggerGracefulShutdown()
+
+                let action = self.stateMachine.withLock { $0.addReplicas(nodeIDs: replicas) }
+                for node in action.clientsToRun {
+                    self.queueAction(.runNodeClient(node))
+                }
+                for node in action.clientsToShutdown {
+                    node.triggerGracefulShutdown()
+                }
             }
         }
     }
