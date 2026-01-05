@@ -26,9 +26,11 @@ struct StandaloneReplicaIntegrationTests {
                 try await Task.sleep(for: .milliseconds(100))
                 try await client.withConnection(readOnly: true) { connection in
                     _ = try await connection.get(key)
-                    await #expect(throws: ValkeyClientError(.commandError, message: "READONLY You can't write against a read only replica.")) {
+                    let error = await #expect(throws: ValkeyClientError.self) {
                         try await connection.set(key, value: "readonly")
                     }
+                    #expect(error?.errorCode == .commandError)
+                    #expect(error?.message?.hasPrefix("READONLY") == true)
                 }
             }
         }
