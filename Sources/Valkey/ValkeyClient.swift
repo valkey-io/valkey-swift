@@ -174,7 +174,7 @@ extension ValkeyClient {
                     self.logger.debug("Found replicas \(replicas)")
 
                 case .replica(let replica):
-                    // if client is pointing to a replica then redirect to the primiary
+                    // if client is pointing to a replica then redirect to the primary
                     let action = self.stateMachine.withLock { $0.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort)) }
                     self.logger.debug("Client is a connected to a replica redirecting to primary \(replica.primaryIP):\(replica.primaryPort)")
                     switch action {

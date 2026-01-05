@@ -5,10 +5,10 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
-/// Represents the mapping of nodes in a Valkey shard, consisting of a primary node and optional replicas.
+/// Represents the mapping of nodes consisting of a primary node and optional replicas.
 @usableFromInline
 package struct ValkeyNodeIDs<ID: Sendable & Hashable>: Hashable, Sendable {
-    /// The primary node responsible for handling write operations for this shard.
+    /// The primary node responsible for handling write operations.
     @usableFromInline
     package var primary: ID
 
@@ -17,10 +17,10 @@ package struct ValkeyNodeIDs<ID: Sendable & Hashable>: Hashable, Sendable {
     @usableFromInline
     package var replicas: [ID]
 
-    /// Creates a new shard node mapping with the specified primary and optional replicas.
+    /// Creates a new node mapping with the specified primary and optional replicas.
     ///
     /// - Parameters:
-    ///   - primary: The primary node ID for this shard
+    ///   - primary: The primary node ID
     ///   - replicas: An array of replica node IDs, defaults to empty
     @inlinable
     package init(primary: ID, replicas: [ID] = []) {
@@ -35,7 +35,7 @@ extension ValkeyNodeIDs: ExpressibleByArrayLiteral {
 
     @usableFromInline
     package init(arrayLiteral elements: ID...) {
-        precondition(!elements.isEmpty, "ValkeyShardNodeIDs requires at least one node ID for the primary")
+        precondition(!elements.isEmpty, "ValkeyNodeIDs requires at least one node ID for the primary")
         self.primary = elements.first!
         self.replicas = Array(elements.dropFirst())
     }
