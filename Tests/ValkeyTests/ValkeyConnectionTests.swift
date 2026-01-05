@@ -198,6 +198,29 @@ struct ConnectionTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testBulkString() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
+        try await channel.processHello()
+
+        async let result = connection.get("foo")
+        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
+        try await channel.writeInbound(RESPToken(.bulkString("bar")).base)
+
+        let bulkString = try #require(try await result)
+        #expect(String(bulkString) == "bar")
+        #expect(ByteBuffer(bulkString).readableBytesView.elementsEqual([0x62, 0x61, 0x72]))
+        #if compiler(>=6.2)
+        #expect(bulkString.span[0] == 0x62)
+        #expect(bulkString.span[1] == 0x61)
+        #expect(bulkString.span[2] == 0x72)
+        #endif
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testPipeline() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
