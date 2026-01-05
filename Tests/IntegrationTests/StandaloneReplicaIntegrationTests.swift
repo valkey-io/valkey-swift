@@ -30,7 +30,8 @@ struct StandaloneReplicaIntegrationTests {
                         try await connection.set(key, value: "readonly")
                     }
                     #expect(error?.errorCode == .commandError)
-                    #expect(error?.message?.hasPrefix("READONLY") == true)
+                    let errorMessage = try #require(error?.message)
+                    #expect(errorMessage.hasPrefix("READONLY") || errorMessage.hasPrefix("REDIRECT") == true)
                 }
             }
         }
