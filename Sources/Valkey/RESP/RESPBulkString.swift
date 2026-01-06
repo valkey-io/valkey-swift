@@ -109,6 +109,17 @@ extension RESPBulkString {
             return _overrideLifetime(span, borrowing: self)
         }
     }
+
+    /// Provides high performance read only access to the contents of the RESPBulkString
+    @inlinable
+    @available(macOS 10.14.4, iOS 12.2, watchOS 5.2, tvOS 12.2, visionOS 1.0, *)
+    public var span: Span<UInt8> {
+        @_lifetime(borrow self)
+        borrowing get {
+            let span = self.buffer.readableBytesUInt8Span
+            return _overrideLifetime(span, borrowing: self)
+        }
+    }
 }
 #endif
 
