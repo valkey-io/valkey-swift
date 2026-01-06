@@ -444,7 +444,7 @@ struct ClusterIntegrationTests {
                 #expect(!clusterNode.nodeId.isEmpty)
                 #expect(!clusterNode.endpoint.isEmpty)
                 #expect(!clusterNode.flags.isEmpty)
-                if(clusterNode.flags.contains(ValkeyClusterNode.Flag.slave)) {
+                if clusterNode.flags.contains(ValkeyClusterNode.Flag.slave) {
                     #expect(clusterNode.primaryId != nil && !clusterNode.primaryId!.isEmpty)
                 } else {
                     #expect(clusterNode.primaryId == nil)
@@ -464,7 +464,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .debug
         try await Self.withValkeyCluster([(host: clusterFirstNodeHostname!, port: clusterFirstNodePort ?? 36001)], logger: logger) { client in
             let clusterNodes = try await client.clusterNodes()
-            let leaderNodes = clusterNodes.nodes.filter( { $0.flags.contains(.master) } )
+            let leaderNodes = clusterNodes.nodes.filter({ $0.flags.contains(.master) })
             for leaderNode in leaderNodes {
                 let clusterReplicas = try await client.clusterReplicas(nodeId: leaderNode.nodeId)
                 for clusterReplica in clusterReplicas.nodes {
