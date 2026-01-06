@@ -696,7 +696,7 @@ struct ClusterIntegrationTests {
                 [(host: firstNodeHostname, port: firstNodePort)],
                 logger: logger
             ) { client in
-                let nodeSelections: [ValkeyClusterNodeSelection] = [.primary, .cycleReplicas(234)]
+                let nodeSelections: [ValkeyNodeSelection] = [.primary, .cycleReplicas(234)]
                 for selection in nodeSelections {
                     let nodesAndIndices = try await client.splitCommandsAcrossNodes(commands: values.commands, nodeSelection: selection)
                     #expect(nodesAndIndices.count == values.selection.count)

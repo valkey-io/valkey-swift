@@ -27,6 +27,7 @@ public final class ValkeyClient: Sendable {
     @usableFromInline
     let stateMachine: Mutex<ValkeyClientStateMachine<ValkeyNodeClient, ValkeyNodeClientFactory>>
     /// configuration
+    @usableFromInline
     var configuration: ValkeyClientConfiguration { self.nodeClientFactory.configuration }
     /// EventLoopGroup to use
     let eventLoopGroup: any EventLoopGroup
@@ -37,7 +38,7 @@ public final class ValkeyClient: Sendable {
 
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
-        case runRole(ValkeyNodeClient)
+        case runRole
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -92,7 +93,7 @@ public final class ValkeyClient: Sendable {
             self.queueAction(.runNodeClient(client))
         case .runNodeAndFindReplicas(let client):
             self.queueAction(.runNodeClient(client))
-            self.queueAction(.runRole(client))
+            self.queueAction(.runRole)
         case .findReplicas, .doNothing:
             preconditionFailure("First time you call setPrimary it should return runNodeAndFindReplicas or runNode")
         }
@@ -136,8 +137,19 @@ extension ValkeyClient {
         readOnly: Bool = false,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        let node = self.getNode(readOnly: readOnly)
         return try await node.withConnection(operation: operation)
+    }
+
+    @inlinable
+    func getNode(readOnly: Bool) -> ValkeyNodeClient {
+        let selection =
+            if readOnly {
+                self.configuration.readOnlyCommandNodeSelection.nodeSelection
+            } else {
+                ValkeyNodeSelection.primary
+            }
+        return self.stateMachine.withLock { $0.getNode(selection) }
     }
 }
 
@@ -152,24 +164,43 @@ extension ValkeyClient {
         case .runNodeClient(let nodeClient):
             await nodeClient.run()
 
-        case .runRole(let nodeClient):
+        case .runRole:
             var replicas: [ValkeyServerAddress] = []
+            let nodeClient = self.getNode(readOnly: false)
             if let role = try? await nodeClient.execute(ROLE()) {
                 switch role {
                 case .primary(let primary):
                     replicas = primary.replicas.map { .hostname($0.ip, port: $0.port) }
-                case .replica:
+                    self.logger.debug("Found replicas \(replicas)")
+
+                case .replica(let replica):
+                    // if client is pointing to a replica then redirect to the primary
+                    let action = self.stateMachine.withLock { $0.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort)) }
+                    self.logger.debug("Client is a connected to a replica redirecting to primary \(replica.primaryIP):\(replica.primaryPort)")
+                    switch action {
+                    case .runNode(let client):
+                        self.queueAction(.runNodeClient(client))
+                    case .runNodeAndFindReplicas(let client):
+                        self.queueAction(.runNodeClient(client))
+                        self.queueAction(.runRole)
+                    case .findReplicas:
+                        self.queueAction(.runRole)
+                    case .doNothing:
+                        break
+                    }
+
                     break
                 case .sentinel:
                     preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
                 }
-            }
-            let action = self.stateMachine.withLock { $0.addReplicas(nodeIDs: replicas) }
-            for node in action.clientsToRun {
-                self.queueAction(.runNodeClient(node))
-            }
-            for node in action.clientsToShutdown {
-                node.triggerGracefulShutdown()
+
+                let action = self.stateMachine.withLock { $0.addReplicas(nodeIDs: replicas) }
+                for node in action.clientsToRun {
+                    self.queueAction(.runNodeClient(node))
+                }
+                for node in action.clientsToShutdown {
+                    node.triggerGracefulShutdown()
+                }
             }
         }
     }
@@ -183,7 +214,7 @@ extension ValkeyClient: ValkeyClientProtocol {
     /// - Returns: Response from Valkey command
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
-        try await self.withConnection { connection in
+        try await self.withConnection(readOnly: command.isReadOnly) { connection in
             try await connection.execute(command)
         }
     }
@@ -202,7 +233,11 @@ extension ValkeyClient {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, any Error>) {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        var readOnly = true
+        for command in repeat each commands {
+            readOnly = readOnly && command.isReadOnly
+        }
+        let node = self.getNode(readOnly: readOnly)
         return await node.execute(repeat each commands)
     }
 
@@ -222,7 +257,13 @@ extension ValkeyClient {
     public func execute<Commands: Collection & Sendable>(
         _ commands: Commands
     ) async -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        let readOnly =
+            if self.configuration.readOnlyCommandNodeSelection == .primary {
+                false
+            } else {
+                commands.reduce(true) { $0 && $1.isReadOnly }
+            }
+        let node = self.getNode(readOnly: readOnly)
         return await node.execute(commands)
     }
     /// Pipeline a series of commands as a transaction to Valkey connection
@@ -240,7 +281,11 @@ extension ValkeyClient {
     public func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        var readOnly = true
+        for command in repeat each commands {
+            readOnly = readOnly && command.isReadOnly
+        }
+        let node = self.getNode(readOnly: readOnly)
         return try await node.transaction(repeat each commands)
     }
 
@@ -263,7 +308,13 @@ extension ValkeyClient {
     public func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
     ) async throws -> [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
-        let node = self.stateMachine.withLock { $0.getNode() }
+        let readOnly =
+            if self.configuration.readOnlyCommandNodeSelection == .primary {
+                false
+            } else {
+                commands.reduce(true) { $0 && $1.isReadOnly }
+            }
+        let node = self.getNode(readOnly: readOnly)
         return try await node.transaction(commands)
     }
 }

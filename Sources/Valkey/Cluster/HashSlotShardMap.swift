@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -9,38 +9,7 @@
 ///
 /// In a Valkey cluster, each shard consists of one primary node and zero or more replica nodes.
 @usableFromInline
-package struct ValkeyShardNodeIDs: Hashable, Sendable {
-    /// The primary node responsible for handling write operations for this shard.
-    @usableFromInline
-    package var primary: ValkeyNodeID
-
-    /// The replica nodes that maintain copies of the primary's data.
-    /// Replicas can handle read operations but not writes.
-    @usableFromInline
-    package var replicas: [ValkeyNodeID]
-
-    /// Creates a new shard node mapping with the specified primary and optional replicas.
-    ///
-    /// - Parameters:
-    ///   - primary: The primary node ID for this shard
-    ///   - replicas: An array of replica node IDs, defaults to empty
-    package init(primary: ValkeyNodeID, replicas: [ValkeyNodeID] = []) {
-        self.primary = primary
-        self.replicas = replicas
-    }
-}
-
-extension ValkeyShardNodeIDs: ExpressibleByArrayLiteral {
-    @usableFromInline
-    package typealias ArrayLiteralElement = ValkeyNodeID
-
-    @usableFromInline
-    package init(arrayLiteral elements: ValkeyNodeID...) {
-        precondition(!elements.isEmpty, "ValkeyShardNodeIDs requires at least one node ID for the primary")
-        self.primary = elements.first!
-        self.replicas = Array(elements.dropFirst())
-    }
-}
+package typealias ValkeyShardNodeIDs = ValkeyNodeIDs<ValkeyNodeID>
 
 /// This object allows us to efficiently look up the Valkey shard given a hash slot.
 ///
