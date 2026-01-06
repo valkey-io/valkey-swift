@@ -56,15 +56,15 @@ public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster nodes response from the response token you provide.
     /// - Parameter respToken: The response token containing cluster nodes data.
-    public init(_ respToken: RESPToken) throws {
-        self.nodes = try Self.makeClusterNodes(respToken: respToken)
+    public init(_ token: RESPToken) throws {
+        self.nodes = try Self.makeClusterNodes(token: token)
     }
 
-    fileprivate static func makeClusterNodes(respToken: RESPToken) throws(RESPDecodeError) -> [ValkeyClusterNode] {
-        switch respToken.value {
+    fileprivate static func makeClusterNodes(token: RESPToken) throws(RESPDecodeError) -> [ValkeyClusterNode] {
+        switch token.value {
         case .bulkString, .verbatimString:
             // For CLUSTER NODES response (single bulk string containing all nodes)
-            let string = try String(respToken)
+            let string = try String(token)
             let lines = string.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
             return try lines.map { line throws(RESPDecodeError) in
                 try ValkeyClusterNode.parseNodeLine(line)
@@ -78,7 +78,7 @@ public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
             }
 
         default:
-            throw RESPDecodeError.tokenMismatch(expected: [.bulkString, .verbatimString, .array], token: respToken)
+            throw RESPDecodeError.tokenMismatch(expected: [.bulkString, .verbatimString, .array], token: token)
         }
     }
 }
