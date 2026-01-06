@@ -35,6 +35,179 @@ extension CLUSTER.SLOTS {
     public typealias Response = [ValkeyClusterSlotRange]
 }
 
+extension CLUSTER.NODES {
+    public typealias Response = ValkeyClusterNodes
+}
+
+extension CLUSTER.REPLICAS {
+    public typealias Response = ValkeyClusterNodes
+}
+
+extension CLUSTER.SLAVES {
+    public typealias Response = ValkeyClusterNodes
+}
+
+/// Response type for cluster node listing commands.
+///
+/// Contains an array of cluster nodes from CLUSTER NODES, CLUSTER SLAVES, or CLUSTER REPLICAS responses.
+public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
+    /// The array of cluster nodes
+    public var nodes: [ValkeyClusterNode]
+
+    /// Creates a cluster nodes response from the response token you provide.
+    /// - Parameter respToken: The response token containing cluster nodes data.
+    public init(_ respToken: RESPToken) throws {
+        self.nodes = try Self.makeClusterNodes(respToken: respToken)
+    }
+
+    fileprivate static func makeClusterNodes(respToken: RESPToken) throws(RESPDecodeError) -> [ValkeyClusterNode] {
+        switch respToken.value {
+        case .bulkString, .verbatimString:
+            // For CLUSTER NODES response (single bulk string containing all nodes)
+            let string = try String(respToken)
+            let lines = string.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
+            return try lines.map { line throws(RESPDecodeError) in
+                try ValkeyClusterNode.parseNodeLine(line)
+            }
+
+        case .array(let array):
+            // For CLUSTER SLAVES/REPLICAS response (array of bulk strings)
+            return try array.map { nodeToken throws(RESPDecodeError) in
+                let nodeString = try String(nodeToken)
+                return try ValkeyClusterNode.parseNodeLine(nodeString)
+            }
+
+        default:
+            throw RESPDecodeError.tokenMismatch(expected: [.bulkString, .verbatimString, .array], token: respToken)
+        }
+    }
+}
+
+/// A single node entry from cluster node listing commands.
+///
+/// Represents a node from CLUSTER NODES, CLUSTER SLAVES, or CLUSTER REPLICAS responses.
+/// Each node contains information about its ID, endpoint, role, status, and assigned slots.
+public struct ValkeyClusterNode: Hashable, Sendable, RESPTokenDecodable {
+    /// Individual node flag indicating the node's role or status
+    public enum Flag: String, Sendable, Hashable, CaseIterable {
+        /// The node is a primary (master)
+        case master
+        /// The node is a replica (slave)
+        case slave
+        /// The node is myself
+        case myself
+        /// The node is in PFAIL state
+        case pfail = "fail?"
+        /// The node is in FAIL state
+        case fail
+        /// The node is in handshake state
+        case handshake
+        /// The node has no address
+        case noaddr
+        /// The node doesn't participate in failovers
+        case nofailover
+        /// No flags are set
+        case noflags
+    }
+
+    /// The unique node ID
+    public var nodeId: String
+    /// The IP address and port (format: ip:port@cport or ip:port@cport,hostname)
+    public var endpoint: String
+    /// Node flags indicating role and status
+    public var flags: Set<Flag>
+    /// ID of the primary node (if this is a replica), or "-" if this is a primary
+    public var primaryId: String?
+    /// Last ping sent timestamp
+    public var pingSent: Int64
+    /// Last pong received timestamp
+    public var pongReceived: Int64
+    /// Configuration epoch for this node
+    public var configEpoch: Int64
+    /// Link state to this node (connected or disconnected)
+    public var linkState: String
+    /// Hash slots served by this node (only for primaries)
+    public var slots: [String]
+
+    /// Creates a new cluster node
+    /// - Parameters:
+    ///   - nodeId: The unique node ID
+    ///   - endpoint: The IP address and port
+    ///   - flags: Node flags indicating role and status
+    ///   - primaryId: ID of the primary node (if replica)
+    ///   - pingSent: Last ping sent timestamp
+    ///   - pongReceived: Last pong received timestamp
+    ///   - configEpoch: Configuration epoch
+    ///   - linkState: Link state to this node
+    ///   - slots: Hash slots served by this node
+    public init(
+        nodeId: String,
+        endpoint: String,
+        flags: Set<Flag>,
+        primaryId: String?,
+        pingSent: Int64,
+        pongReceived: Int64,
+        configEpoch: Int64,
+        linkState: String,
+        slots: [String] = []
+    ) {
+        self.nodeId = nodeId
+        self.endpoint = endpoint
+        self.flags = flags
+        self.primaryId = primaryId
+        self.pingSent = pingSent
+        self.pongReceived = pongReceived
+        self.configEpoch = configEpoch
+        self.linkState = linkState
+        self.slots = slots
+    }
+
+    /// Creates a cluster node from the response token you provide.
+    /// - Parameter respToken: The response token containing cluster node data.
+    public init(_ respToken: RESPToken) throws {
+        let nodeString = try String(respToken)
+        self = try Self.parseNodeLine(nodeString)
+    }
+
+    fileprivate static func parseNodeLine(_ line: String) throws(RESPDecodeError) -> ValkeyClusterNode {
+        let components = line.split(separator: " ").map(String.init)
+        guard components.count >= 8 else {
+            throw RESPDecodeError(.unexpectedToken, token: RESPToken(validated: .init(string: line)), message: "Invalid node line format")
+        }
+
+        let nodeId = components[0]
+        let endpoint = components[1]
+        let flagsString = components[2]
+        let primaryId = components[3] == "-" ? nil : components[3]
+        let pingSent = Int64(components[4]) ?? 0
+        let pongReceived = Int64(components[5]) ?? 0
+        let configEpoch = Int64(components[6]) ?? 0
+        let linkState = components[7]
+        let slots = Array(components.dropFirst(8))
+
+        // Parse flags
+        var flags: Set<Flag> = []
+        let flagComponents = flagsString.split(separator: ",").map(String.init)
+        for flagString in flagComponents {
+            if let flag = Flag(rawValue: flagString) {
+                flags.insert(flag)
+            }
+        }
+
+        return ValkeyClusterNode(
+            nodeId: nodeId,
+            endpoint: endpoint,
+            flags: flags,
+            primaryId: primaryId,
+            pingSent: pingSent,
+            pongReceived: pongReceived,
+            configEpoch: configEpoch,
+            linkState: linkState,
+            slots: slots
+        )
+    }
+}
+
 /// A description of a Valkey cluster.
 ///
 /// A description is return when you call ``ValkeyClientProtocol/clusterShards()``.
