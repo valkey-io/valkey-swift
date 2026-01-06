@@ -1111,7 +1111,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER NODES](https://valkey.io/commands/cluster-nodes)
     /// - Available: 3.0.0
     /// - Complexity: O(N) where N is the total number of Cluster nodes
-    /// - Response: ValkeyClusterNodesResponse: Array of cluster node information.
+    /// - Response: ValkeyClusterNodes: Array of cluster node information.
     @inlinable
     @discardableResult
     public func clusterNodes() async throws -> CLUSTER.NODES.Response {
@@ -1123,7 +1123,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER REPLICAS](https://valkey.io/commands/cluster-replicas)
     /// - Available: 5.0.0
     /// - Complexity: O(N) where N is the number of replicas.
-    /// - Response: ValkeyClusterNodesResponse: A list of replica nodes replicating from the specified primary node.
+    /// - Response: ValkeyClusterNodes: A list of replica nodes replicating from the specified primary node.
     @inlinable
     @discardableResult
     public func clusterReplicas<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> CLUSTER.REPLICAS.Response {
@@ -1202,7 +1202,7 @@ extension ValkeyClientProtocol {
     /// - Available: 3.0.0
     /// - Deprecated since: 5.0.0. Replaced by `CLUSTER REPLICAS`.
     /// - Complexity: O(N) where N is the number of replicas.
-    /// - Response: ValkeyClusterNodesResponse: A list of replica nodes replicating from the specified primary node.
+    /// - Response: ValkeyClusterNodes: A list of replica nodes replicating from the specified primary node.
     @inlinable
     @discardableResult
     public func clusterSlaves<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> CLUSTER.SLAVES.Response {
