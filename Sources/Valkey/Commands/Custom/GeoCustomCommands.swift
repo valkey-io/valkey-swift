@@ -116,16 +116,9 @@ public struct GeoRadiusEntries: RESPTokenDecodable, Sendable {
 /// Attributes are returned in a specific order when present: distance, hash, coordinates.
 public struct GeoRadiusEntry: Sendable {
 
-    /// The member name from the sorted set.
     public let member: String
-
-    /// The distance from the center (present if WITHDIST option was used).
     public let distance: Double?
-
-    /// The geohash integer (present if WITHHASH option was used).
     public let hash: Int64?
-
-    /// The coordinates as [longitude, latitude] (present if WITHCOORD option was used).
     public let coordinates: GeoCoordinates?
 
     /// Create a new GeoRadiusEntry.
@@ -191,13 +184,6 @@ public struct GeoRadiusEntry: Sendable {
                     throw RESPDecodeError.invalidArraySize(array, expectedSize: expectedSize)
                 }
                 coordinates = try GeoCoordinates(coordToken)
-            }
-
-            // Validate that all elements in the array have been consumed
-            if iterator.next() != nil {
-                let expectedSize =
-                    1 + (options.contains(.WITHDIST) ? 1 : 0) + (options.contains(.WITHHASH) ? 1 : 0) + (options.contains(.WITHCOORD) ? 1 : 0)
-                throw RESPDecodeError.invalidArraySize(array, expectedSize: expectedSize)
             }
 
             return GeoRadiusEntry(
