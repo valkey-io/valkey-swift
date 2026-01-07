@@ -55,7 +55,7 @@ public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
     public var nodes: [ValkeyClusterNode]
 
     /// Creates a cluster nodes response from the response token you provide.
-    /// - Parameter respToken: The response token containing cluster nodes data.
+    /// - Parameter token: The response token containing cluster nodes data.
     public init(_ token: RESPToken) throws {
         self.nodes = try Self.makeClusterNodes(token: token)
     }
