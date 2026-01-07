@@ -685,6 +685,8 @@ public enum CLUSTER {
     /// Lists the replica nodes of a primary node.
     @_documentation(visibility: internal)
     public struct SLAVES<NodeId: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
         @inlinable public static var name: String { "CLUSTER SLAVES" }
 
         public var nodeId: NodeId
@@ -1202,10 +1204,10 @@ extension ValkeyClientProtocol {
     /// - Available: 3.0.0
     /// - Deprecated since: 5.0.0. Replaced by `CLUSTER REPLICAS`.
     /// - Complexity: O(N) where N is the number of replicas.
-    /// - Response: ValkeyClusterNodes: A list of replica nodes replicating from the specified primary node.
+    /// - Response: [Array]: A list of replica nodes replicating from the specified primary node.
     @inlinable
     @discardableResult
-    public func clusterSlaves<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> CLUSTER.SLAVES.Response {
+    public func clusterSlaves<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> RESPToken.Array {
         try await execute(CLUSTER.SLAVES(nodeId: nodeId))
     }
 

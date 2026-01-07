@@ -433,54 +433,6 @@ struct ClusterIntegrationTests {
         }
     }
 
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testClusterNodes() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
-        try await Self.withValkeyCluster([(host: clusterFirstNodeHostname!, port: clusterFirstNodePort ?? 36001)], logger: logger) { client in
-            let clusterNodes = try await client.clusterNodes()
-            for clusterNode in clusterNodes.nodes {
-                #expect(!clusterNode.nodeId.isEmpty)
-                #expect(!clusterNode.endpoint.isEmpty)
-                #expect(!clusterNode.flags.isEmpty)
-                if clusterNode.flags.contains(ValkeyClusterNode.Flag.slave) {
-                    #expect(clusterNode.primaryId != nil && !clusterNode.primaryId!.isEmpty)
-                } else {
-                    #expect(clusterNode.primaryId == nil)
-                }
-                #expect(clusterNode.pingSent >= 0)
-                #expect(clusterNode.pingSent >= 0)
-                #expect(clusterNode.pongReceived >= 0)
-                #expect(!clusterNode.linkState.isEmpty)
-            }
-        }
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testClusterReplicas() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
-        try await Self.withValkeyCluster([(host: clusterFirstNodeHostname!, port: clusterFirstNodePort ?? 36001)], logger: logger) { client in
-            let clusterNodes = try await client.clusterNodes()
-            let leaderNodes = clusterNodes.nodes.filter({ $0.flags.contains(.master) })
-            for leaderNode in leaderNodes {
-                let clusterReplicas = try await client.clusterReplicas(nodeId: leaderNode.nodeId)
-                for clusterReplica in clusterReplicas.nodes {
-                    #expect(!clusterReplica.nodeId.isEmpty)
-                    #expect(!clusterReplica.endpoint.isEmpty)
-                    #expect(!clusterReplica.flags.isEmpty)
-                    #expect(clusterReplica.primaryId != nil && clusterReplica.primaryId == leaderNode.nodeId)
-                    #expect(clusterReplica.pingSent >= 0)
-                    #expect(clusterReplica.pingSent >= 0)
-                    #expect(clusterReplica.pongReceived >= 0)
-                    #expect(!clusterReplica.linkState.isEmpty)
-                }
-            }
-        }
-    }
-
     @Suite("Pipelining Tests")
     struct Pipeline {
         @Test

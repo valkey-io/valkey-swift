@@ -43,10 +43,6 @@ extension CLUSTER.REPLICAS {
     public typealias Response = ValkeyClusterNodes
 }
 
-extension CLUSTER.SLAVES {
-    public typealias Response = ValkeyClusterNodes
-}
-
 /// Response type for cluster node listing commands.
 ///
 /// Contains an array of cluster nodes from CLUSTER NODES, CLUSTER SLAVES, or CLUSTER REPLICAS responses.
