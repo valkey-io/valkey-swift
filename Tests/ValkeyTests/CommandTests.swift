@@ -48,14 +48,16 @@ struct CommandTests {
             try await testCommandEncodesDecodes(
                 (
                     request: .command(["CLUSTER", "NODES"]),
-                    response: .bulkString("""
-                            0b44e8f9af2a4b354b68eabc24330efbddba47aa 127.0.0.1:36004@46004 slave 5eab28fc81814e8b2210500fb650ffe622382bd8 0 1767807820519 3 connected
-                            0577d8ed1e6b36796b6ce0b24aeef44de185ca68 127.0.0.1:36002@46002 myself,master - 0 0 2 connected 5461-10922
-                            02d3f849999f98d7e1c498d64992de4e03f703de 127.0.0.1:36006@46006 slave 0577d8ed1e6b36796b6ce0b24aeef44de185ca68 0 1767807820000 2 connected
-                            5eab28fc81814e8b2210500fb650ffe622382bd8 127.0.0.1:36003@46003 master - 0 1767807821640 3 connected 10923-16383
-                            bdeb2fc40e0e4f934cf26fd601aa8c97720893f3 127.0.0.1:36001@46001 master - 0 1767807821539 1 connected 0-5460
-                            14a77ccb848767e4da31ef85a0e1c62ac1ad018a 127.0.0.1:36005@46005 slave bdeb2fc40e0e4f934cf26fd601aa8c97720893f3 0 1767807820620 1 connected
-                            """)
+                    response: .bulkString(
+                        """
+                        0b44e8f9af2a4b354b68eabc24330efbddba47aa 127.0.0.1:36004@46004 slave 5eab28fc81814e8b2210500fb650ffe622382bd8 0 1767807820519 3 connected
+                        0577d8ed1e6b36796b6ce0b24aeef44de185ca68 127.0.0.1:36002@46002 myself,master - 0 0 2 connected 5461-10922
+                        02d3f849999f98d7e1c498d64992de4e03f703de 127.0.0.1:36006@46006 slave 0577d8ed1e6b36796b6ce0b24aeef44de185ca68 0 1767807820000 2 connected
+                        5eab28fc81814e8b2210500fb650ffe622382bd8 127.0.0.1:36003@46003 master - 0 1767807821640 3 connected 10923-16383
+                        bdeb2fc40e0e4f934cf26fd601aa8c97720893f3 127.0.0.1:36001@46001 master - 0 1767807821539 1 connected 0-5460
+                        14a77ccb848767e4da31ef85a0e1c62ac1ad018a 127.0.0.1:36005@46005 slave bdeb2fc40e0e4f934cf26fd601aa8c97720893f3 0 1767807820620 1 connected
+                        """
+                    )
                 )
             ) { connection in
                 let clusterNodes = try await connection.clusterNodes()
@@ -84,7 +86,7 @@ struct CommandTests {
                     request: .command(["CLUSTER", "REPLICAS", "leader-node-id"]),
                     response: .array([
                         .bulkString("replica-node-id1 127.0.0.1:36001@46001 slave leader-node-id 0 1767807820519 3 connected"),
-                        .bulkString("replica-node-id2 127.0.0.1:36002@46002 slave leader-node-id 0 1767807820519 3 connected")
+                        .bulkString("replica-node-id2 127.0.0.1:36002@46002 slave leader-node-id 0 1767807820519 3 connected"),
                     ])
                 )
             ) { connection in
