@@ -784,14 +784,34 @@ struct CommandTests {
                 (
                     request: .command(["GEORADIUS", "Scotland", "30.0", "50.0", "500.0", "km", "WITHCOORD", "WITHDIST", "WITHHASH"]),
                     response: .array([
-                        .array([.bulkString("Edinburgh"), .bulkString("38.9"), .bulkString("3665074419141107"), .array([.bulkString("31.23"), .bulkString("56.20")])]),
-                        .array([.bulkString("Glasgow"), .bulkString("71.2"), .bulkString("3676829890883619"), .array([.bulkString("35.74"), .bulkString("44.87")])]),
-                        .array([.bulkString("Dundee"), .bulkString("128.5"), .bulkString("3676829890801228"), .array([.bulkString("33.62"), .bulkString("48.10")])]),
+                        .array([
+                            .bulkString("Edinburgh"), .bulkString("38.9"), .bulkString("3665074419141107"),
+                            .array([.bulkString("31.23"), .bulkString("56.20")]),
+                        ]),
+                        .array([
+                            .bulkString("Glasgow"), .bulkString("71.2"), .bulkString("3676829890883619"),
+                            .array([.bulkString("35.74"), .bulkString("44.87")]),
+                        ]),
+                        .array([
+                            .bulkString("Dundee"), .bulkString("128.5"), .bulkString("3676829890801228"),
+                            .array([.bulkString("33.62"), .bulkString("48.10")]),
+                        ]),
                     ])
-                        ),
+                ),
             ) { connection in
-                let geoRadiusEntries = try await connection.georadius("Scotland", longitude: 30.0, latitude: 50.0, radius: 500.0, unit: GEORADIUS.Unit.km, withcoord: true, withdist: true, withhash: true)
-                for geoRadiusEntry in try geoRadiusEntries.get(options: [GeoRadiusEntries.Option.WITHHASH, GeoRadiusEntries.Option.WITHDIST, GeoRadiusEntries.Option.WITHCOORD]) {
+                let geoRadiusEntries = try await connection.georadius(
+                    "Scotland",
+                    longitude: 30.0,
+                    latitude: 50.0,
+                    radius: 500.0,
+                    unit: GEORADIUS.Unit.km,
+                    withcoord: true,
+                    withdist: true,
+                    withhash: true
+                )
+                for geoRadiusEntry in try geoRadiusEntries.get(options: [
+                    GeoRadiusEntries.Option.WITHHASH, GeoRadiusEntries.Option.WITHDIST, GeoRadiusEntries.Option.WITHCOORD,
+                ]) {
                     print(geoRadiusEntry)
                     #expect(!geoRadiusEntry.member.isEmpty)
                     #expect(geoRadiusEntry.distance != nil && geoRadiusEntry.distance! > 0)
@@ -810,14 +830,33 @@ struct CommandTests {
                 (
                     request: .command(["GEORADIUSBYMEMBER", "Scotland", "Edinburgh", "500.0", "km", "WITHCOORD", "WITHDIST", "WITHHASH"]),
                     response: .array([
-                        .array([.bulkString("Edinburgh"), .bulkString("38.9"), .bulkString("3665074419141107"), .array([.bulkString("31.23"), .bulkString("56.20")])]),
-                        .array([.bulkString("Glasgow"), .bulkString("71.2"), .bulkString("3676829890883619"), .array([.bulkString("35.74"), .bulkString("44.87")])]),
-                        .array([.bulkString("Dundee"), .bulkString("128.5"), .bulkString("3676829890801228"), .array([.bulkString("33.62"), .bulkString("48.10")])]),
+                        .array([
+                            .bulkString("Edinburgh"), .bulkString("38.9"), .bulkString("3665074419141107"),
+                            .array([.bulkString("31.23"), .bulkString("56.20")]),
+                        ]),
+                        .array([
+                            .bulkString("Glasgow"), .bulkString("71.2"), .bulkString("3676829890883619"),
+                            .array([.bulkString("35.74"), .bulkString("44.87")]),
+                        ]),
+                        .array([
+                            .bulkString("Dundee"), .bulkString("128.5"), .bulkString("3676829890801228"),
+                            .array([.bulkString("33.62"), .bulkString("48.10")]),
+                        ]),
                     ])
-                        ),
+                ),
             ) { connection in
-                let geoRadiusEntries = try await connection.georadiusbymember("Scotland", member: "Edinburgh", radius: 500.0, unit: GEORADIUSBYMEMBER.Unit.km, withcoord: true, withdist: true, withhash: true)
-                for geoRadiusEntry in try geoRadiusEntries.get(options: [GeoRadiusEntries.Option.WITHHASH, GeoRadiusEntries.Option.WITHDIST, GeoRadiusEntries.Option.WITHCOORD]) {
+                let geoRadiusEntries = try await connection.georadiusbymember(
+                    "Scotland",
+                    member: "Edinburgh",
+                    radius: 500.0,
+                    unit: GEORADIUSBYMEMBER.Unit.km,
+                    withcoord: true,
+                    withdist: true,
+                    withhash: true
+                )
+                for geoRadiusEntry in try geoRadiusEntries.get(options: [
+                    GeoRadiusEntries.Option.WITHHASH, GeoRadiusEntries.Option.WITHDIST, GeoRadiusEntries.Option.WITHCOORD,
+                ]) {
                     #expect(!geoRadiusEntry.member.isEmpty)
                     #expect(geoRadiusEntry.distance != nil && geoRadiusEntry.distance! >= 0)
                     #expect(geoRadiusEntry.hash != nil && geoRadiusEntry.hash! > 0)

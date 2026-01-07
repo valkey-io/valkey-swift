@@ -79,7 +79,6 @@ extension GEOSEARCH {
     public typealias Response = [SearchEntry]
 }
 
-
 public struct GeoRadiusEntries: RESPTokenDecodable, Sendable {
 
     private let token: RESPToken
@@ -196,7 +195,8 @@ public struct GeoRadiusEntry: Sendable {
 
             // Validate that all elements in the array have been consumed
             if iterator.next() != nil {
-                let expectedSize = 1 + (options.contains(.WITHDIST) ? 1 : 0) + (options.contains(.WITHHASH) ? 1 : 0) + (options.contains(.WITHCOORD) ? 1 : 0)
+                let expectedSize =
+                    1 + (options.contains(.WITHDIST) ? 1 : 0) + (options.contains(.WITHHASH) ? 1 : 0) + (options.contains(.WITHCOORD) ? 1 : 0)
                 throw RESPDecodeError.invalidArraySize(array, expectedSize: expectedSize)
             }
 
