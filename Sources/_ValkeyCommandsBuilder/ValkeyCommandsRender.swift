@@ -25,7 +25,6 @@ private let disableResponseCalculationCommands: Set<String> = [
     "CLUSTER SHARDS",
     "CLUSTER NODES",
     "CLUSTER REPLICAS",
-    "CLUSTER SLAVES",
     "FUNCTION LIST",
     "FUNCTION LOAD",
     "FUNCTION STATS",
