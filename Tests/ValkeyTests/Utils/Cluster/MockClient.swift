@@ -9,13 +9,13 @@ import Synchronization
 import Valkey
 
 @available(valkeySwift 1.0, *)
-final class MockClientFactory: ValkeyNodeConnectionPoolFactory {
+final class MockClientFactory<NodeDescription: Sendable>: ValkeyNodeConnectionPoolFactory {
 
-    let _runningPoolsLock = Mutex([MockClient]())
+    let _runningPoolsLock = Mutex([MockClient<NodeDescription>]())
 
     init() {}
 
-    func makeConnectionPool(nodeDescription: ValkeyNodeDescription) -> MockClient {
+    func makeConnectionPool(nodeDescription: NodeDescription) -> MockClient<NodeDescription> {
         let pool = MockClient(nodeDescription: nodeDescription)
         self._runningPoolsLock.withLock {
             $0.append(pool)
@@ -25,17 +25,17 @@ final class MockClientFactory: ValkeyNodeConnectionPoolFactory {
 }
 
 @available(valkeySwift 1.0, *)
-final class MockClient: ValkeyNodeConnectionPool {
+final class MockClient<NodeDescription: Sendable>: ValkeyNodeConnectionPool {
     enum State {
         case initialized
         case running(CheckedContinuation<Void, Never>)
         case finished
     }
 
-    let nodeDescription: ValkeyNodeDescription
+    let nodeDescription: NodeDescription
     let stateLock = Mutex(State.initialized)
 
-    init(nodeDescription: ValkeyNodeDescription) {
+    init(nodeDescription: NodeDescription) {
         self.nodeDescription = nodeDescription
     }
 

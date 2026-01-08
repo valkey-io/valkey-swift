@@ -12,33 +12,10 @@ struct ValkeyClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory
 > where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription == ValkeyNodeClientFactory.NodeDescription {
-    /// Represents the mapping of primary and replica nodes.
-    @usableFromInline
-    package struct ValkeyNodeIDs: Hashable, Sendable {
-        /// The primary node responsible for handling write operations for this shard.
-        @usableFromInline
-        package var primary: ValkeyServerAddress
-
-        /// The replica nodes that maintain copies of the primary's data.
-        /// Replicas can handle read operations but not writes.
-        @usableFromInline
-        package var replicas: [ValkeyServerAddress]
-
-        /// Creates a new shard node mapping with the specified primary and optional replicas.
-        ///
-        /// - Parameters:
-        ///   - primary: The primary node ID for this shard
-        ///   - replicas: An array of replica node IDs, defaults to empty
-        package init(primary: ValkeyServerAddress, replicas: [ValkeyServerAddress] = []) {
-            self.primary = primary
-            self.replicas = replicas
-        }
-    }
-
     @usableFromInline
     enum State {
         case uninitialized
-        case running(ValkeyNodeIDs)
+        case running(ValkeyNodeIDs<ValkeyServerAddress>)
     }
     @usableFromInline
     var runningClients: ValkeyRunningClientsStateMachine<ConnectionPool, ConnectionPoolFactory>
@@ -53,12 +30,12 @@ struct ValkeyClientStateMachine<
         self.findReplicas = configuration.readOnlyCommandNodeSelection != .primary
     }
 
-    @usableFromInline
-    func getNode() -> ConnectionPool {
+    @inlinable
+    func getNode(_ selection: ValkeyNodeSelection) -> ConnectionPool {
         guard case .running(let nodes) = self.state else {
             preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
         }
-        let nodeID = nodes.primary
+        let nodeID = selection.select(nodeIDs: nodes)
         if let pool = self.runningClients[nodeID]?.pool {
             return pool
         } else {
