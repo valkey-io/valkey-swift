@@ -60,7 +60,7 @@ public struct GeoSearchEntries: RESPTokenDecodable, Sendable {
     /// Decode the GEOSEARCH / GEORADIUS response entries based on the options used in the command.
     ///
     /// - Parameter options: The set of options (WITHDIST, WITHHASH, WITHCOORD) that were used in the GEORADIUS command.
-    /// - Returns: An array of decoded ``GeoSearchEntry`` objects.
+    /// - Returns: An array of decoded ``Entry`` objects.
     /// - Throws: ``RESPDecodeError`` if the response cannot be decoded.
     public func get(options: Set<Option>) throws -> [Entry] {
         switch token.value {
@@ -113,7 +113,7 @@ public struct GeoSearchEntries: RESPTokenDecodable, Sendable {
         /// - Parameters:
         ///   - token: The RESP token to decode.
         ///   - options: The options that were used in the GEORADIUS command.
-        /// - Returns: A decoded ``GeoSearchEntry``.
+        /// - Returns: A decoded ``Entry``.
         /// - Throws: ``RESPDecodeError`` if the token cannot be decoded.
         fileprivate static func decode(_ token: RESPToken, options: Set<GeoSearchEntries.Option> = []) throws -> Entry {
             switch token.value {
