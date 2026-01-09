@@ -10,12 +10,14 @@ import Testing
 @testable import Valkey
 
 struct ValkeyClientStateMachineTests {
+    @available(valkeySwift 1.0, *)
     typealias TestStateMachine = ValkeyClientStateMachine<
         MockClient<ValkeyClientNodeDescription>,
         MockClientFactory<ValkeyClientNodeDescription>
     >
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSetGetPrimary() {
         let factory = MockClientFactory<ValkeyClientNodeDescription>()
         var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init())
@@ -33,6 +35,7 @@ struct ValkeyClientStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSetPrimaryAndReplicas() {
         let factory = MockClientFactory<ValkeyClientNodeDescription>()
         var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas))
@@ -63,6 +66,7 @@ struct ValkeyClientStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testReplaceReplicas() {
         let factory = MockClientFactory<ValkeyClientNodeDescription>()
         var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas))
