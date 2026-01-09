@@ -682,24 +682,6 @@ public enum CLUSTER {
         }
     }
 
-    /// Lists the replica nodes of a primary node.
-    @_documentation(visibility: internal)
-    public struct SLAVES<NodeId: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
-        @inlinable public static var name: String { "CLUSTER SLAVES" }
-
-        public var nodeId: NodeId
-
-        @inlinable public init(nodeId: NodeId) {
-            self.nodeId = nodeId
-        }
-
-        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "SLAVES", RESPRenderableBulkString(nodeId))
-        }
-    }
-
     /// Return an array of slot usage statistics for slots assigned to the current node.
     @_documentation(visibility: internal)
     public struct SLOTSTATS: ValkeyCommand {
@@ -1113,7 +1095,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER NODES](https://valkey.io/commands/cluster-nodes)
     /// - Available: 3.0.0
     /// - Complexity: O(N) where N is the total number of Cluster nodes
-    /// - Response: ValkeyClusterNodes: Array of cluster node information.
+    /// - Response: [String]: The serialized cluster configuration.
     @inlinable
     @discardableResult
     public func clusterNodes() async throws -> CLUSTER.NODES.Response {
@@ -1125,10 +1107,10 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER REPLICAS](https://valkey.io/commands/cluster-replicas)
     /// - Available: 5.0.0
     /// - Complexity: O(N) where N is the number of replicas.
-    /// - Response: ValkeyClusterNodes: A list of replica nodes replicating from the specified primary node.
+    /// - Response: [Array]: A list of replica nodes replicating from the specified primary node provided in the same format used by CLUSTER NODES.
     @inlinable
     @discardableResult
-    public func clusterReplicas<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> CLUSTER.REPLICAS.Response {
+    public func clusterReplicas<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> CLUSTER.REPLICASResponse {
         try await execute(CLUSTER.REPLICAS(nodeId: nodeId))
     }
 
@@ -1196,19 +1178,6 @@ extension ValkeyClientProtocol {
     @discardableResult
     public func clusterShards() async throws -> CLUSTER.SHARDS.Response {
         try await execute(CLUSTER.SHARDS())
-    }
-
-    /// Lists the replica nodes of a primary node.
-    ///
-    /// - Documentation: [CLUSTER SLAVES](https://valkey.io/commands/cluster-slaves)
-    /// - Available: 3.0.0
-    /// - Deprecated since: 5.0.0. Replaced by `CLUSTER REPLICAS`.
-    /// - Complexity: O(N) where N is the number of replicas.
-    /// - Response: [Array]: A list of replica nodes replicating from the specified primary node.
-    @inlinable
-    @discardableResult
-    public func clusterSlaves<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> RESPToken.Array {
-        try await execute(CLUSTER.SLAVES(nodeId: nodeId))
     }
 
     /// Return an array of slot usage statistics for slots assigned to the current node.

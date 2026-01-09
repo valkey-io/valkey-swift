@@ -65,7 +65,7 @@ struct CommandTests {
                     #expect(!clusterNode.nodeId.isEmpty)
                     #expect(!clusterNode.endpoint.isEmpty)
                     #expect(!clusterNode.flags.isEmpty)
-                    if clusterNode.flags.contains(ValkeyClusterNode.Flag.slave) {
+                    if clusterNode.flags.contains(ValkeyClusterNode.Flag.replica) {
                         #expect(clusterNode.primaryId != nil && !clusterNode.primaryId!.isEmpty)
                     } else {
                         #expect(clusterNode.primaryId == nil)

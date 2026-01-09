@@ -1496,82 +1496,6 @@ public struct SHUTDOWN: ValkeyCommand {
     }
 }
 
-/// Sets a server as a replica of another, or promotes it to being a primary.
-@_documentation(visibility: internal)
-public struct SLAVEOF: ValkeyCommand {
-    public struct ArgsHostPort: RESPRenderable, Sendable, Hashable {
-        public var host: String
-        public var port: Int
-
-        @inlinable
-        public init(host: String, port: Int) {
-            self.host = host
-            self.port = port
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            host.respEntries + port.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            host.encode(into: &commandEncoder)
-            port.encode(into: &commandEncoder)
-        }
-    }
-    public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
-
-        @inlinable
-        public init() {
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            "NO".respEntries + "ONE".respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            "NO".encode(into: &commandEncoder)
-            "ONE".encode(into: &commandEncoder)
-        }
-    }
-    public enum Args: RESPRenderable, Sendable, Hashable {
-        case hostPort(ArgsHostPort)
-        case noOne
-
-        @inlinable
-        public var respEntries: Int {
-            switch self {
-            case .hostPort(let hostPort): hostPort.respEntries
-            case .noOne: ArgsNoOne().respEntries
-            }
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            switch self {
-            case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
-            case .noOne: ArgsNoOne().encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = RESPBulkString
-
-    @inlinable public static var name: String { "SLAVEOF" }
-
-    public var args: Args
-
-    @inlinable public init(args: Args) {
-        self.args = args
-    }
-
-    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SLAVEOF", args)
-    }
-}
-
 /// Swaps two databases.
 @_documentation(visibility: internal)
 public struct SWAPDB: ValkeyCommand {
@@ -2375,19 +2299,6 @@ extension ValkeyClientProtocol {
     @inlinable
     public func shutdown(abortSelector: SHUTDOWN.AbortSelector? = nil) async throws {
         _ = try await execute(SHUTDOWN(abortSelector: abortSelector))
-    }
-
-    /// Sets a server as a replica of another, or promotes it to being a primary.
-    ///
-    /// - Documentation: [SLAVEOF](https://valkey.io/commands/slaveof)
-    /// - Available: 1.0.0
-    /// - Deprecated since: 5.0.0. Replaced by `REPLICAOF`.
-    /// - Complexity: O(1)
-    /// - Response: [String]: SlaveOf status.
-    @inlinable
-    @discardableResult
-    public func slaveof(args: SLAVEOF.Args) async throws -> RESPBulkString {
-        try await execute(SLAVEOF(args: args))
     }
 
     /// Returns the slow log's entries.
