@@ -809,7 +809,10 @@ struct CommandTests {
                     withdist: true,
                     withhash: true
                 )
-                try verifyGeoSearchEntries(entries, options: [GeoSearchEntries.Option.withHash, GeoSearchEntries.Option.withDist, GeoSearchEntries.Option.withCoord])
+                try verifyGeoSearchEntries(
+                    entries,
+                    options: [GeoSearchEntries.Option.withHash, GeoSearchEntries.Option.withDist, GeoSearchEntries.Option.withCoord]
+                )
             }
         }
 
@@ -832,7 +835,10 @@ struct CommandTests {
                     withdist: true,
                     withhash: true
                 )
-                try verifyGeoSearchEntries(entries, options: [GeoSearchEntries.Option.withHash, GeoSearchEntries.Option.withDist, GeoSearchEntries.Option.withCoord])
+                try verifyGeoSearchEntries(
+                    entries,
+                    options: [GeoSearchEntries.Option.withHash, GeoSearchEntries.Option.withDist, GeoSearchEntries.Option.withCoord]
+                )
             }
         }
 
@@ -854,7 +860,10 @@ struct CommandTests {
                     withdist: true,
                     withhash: true
                 )
-                try verifyGeoSearchEntries(entries, options: [GeoSearchEntries.Option.withHash, GeoSearchEntries.Option.withDist, GeoSearchEntries.Option.withCoord])
+                try verifyGeoSearchEntries(
+                    entries,
+                    options: [GeoSearchEntries.Option.withHash, GeoSearchEntries.Option.withDist, GeoSearchEntries.Option.withCoord]
+                )
             }
         }
 
