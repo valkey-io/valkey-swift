@@ -249,8 +249,11 @@ extension XREVRANGE {
     public typealias Response = XREVRANGEResponse
 }
 
-extension XINFO.CONSUMERS {
-    public struct Consumer: RESPTokenDecodable {
+extension XINFO {
+    public typealias CONSUMERSResponse = [Consumer]
+    public typealias GROUPSResponse = [ConsumerGroup]
+
+    public struct Consumer: RESPTokenDecodable, Sendable {
         /// Consumer's name
         public let name: String
         /// Pending messages for the consumer, which are messages that were delivered but are yet to be acknowledged
@@ -292,11 +295,8 @@ extension XINFO.CONSUMERS {
             }
         }
     }
-    public typealias Response = [Consumer]
-}
 
-extension XINFO.GROUPS {
-    public struct ConsumerGroup: RESPTokenDecodable {
+    public struct ConsumerGroup: RESPTokenDecodable, Sendable {
         public let name: String
         public let consumers: Int
         public let pending: Int
@@ -343,5 +343,12 @@ extension XINFO.GROUPS {
             }
         }
     }
-    public typealias Response = [ConsumerGroup]
+
+}
+extension XINFO.CONSUMERS {
+    public typealias Response = XINFO.CONSUMERSResponse
+}
+
+extension XINFO.GROUPS {
+    public typealias Response = XINFO.GROUPSResponse
 }
