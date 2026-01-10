@@ -7,6 +7,10 @@
 //
 import NIOCore
 
+extension CLUSTER {
+    public typealias REPLICASResponse = ValkeyClusterNodes
+}
+
 extension CLUSTER.GETKEYSINSLOT {
     public typealias Response = [ValkeyKey]
 }
@@ -40,12 +44,12 @@ extension CLUSTER.NODES {
 }
 
 extension CLUSTER.REPLICAS {
-    public typealias Response = ValkeyClusterNodes
+    public typealias Response = CLUSTER.REPLICASResponse
 }
 
 /// Response type for cluster node listing commands.
 ///
-/// Contains an array of cluster nodes from CLUSTER NODES, CLUSTER SLAVES, or CLUSTER REPLICAS responses.
+/// Contains an array of cluster nodes from CLUSTER NODES, CLUSTER REPLICAS responses.
 public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
     /// The array of cluster nodes
     public var nodes: [ValkeyClusterNode]
@@ -67,7 +71,7 @@ public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
             }
 
         case .array(let array):
-            // For CLUSTER SLAVES/REPLICAS response (array of bulk strings)
+            // For CLUSTER REPLICAS response (array of bulk strings)
             return try array.map { nodeToken throws(RESPDecodeError) in
                 let nodeString = try String(nodeToken)
                 return try ValkeyClusterNode.parseNodeLine(nodeString)
@@ -81,15 +85,15 @@ public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
 
 /// A single node entry from cluster node listing commands.
 ///
-/// Represents a node from CLUSTER NODES, CLUSTER SLAVES, or CLUSTER REPLICAS responses.
+/// Represents a node from CLUSTER NODES or CLUSTER REPLICAS responses.
 /// Each node contains information about its ID, endpoint, role, status, and assigned slots.
 public struct ValkeyClusterNode: Hashable, Sendable, RESPTokenDecodable {
     /// Individual node flag indicating the node's role or status
     public enum Flag: String, Sendable, Hashable, CaseIterable {
-        /// The node is a primary (master)
-        case master
-        /// The node is a replica (slave)
-        case slave
+        /// The node is a primary
+        case primary = "master"
+        /// The node is a replica
+        case replica = "slave"
         /// The node is myself
         case myself
         /// The node is in PFAIL state
