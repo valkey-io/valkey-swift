@@ -8,7 +8,7 @@
 import NIOCore
 
 @_documentation(visibility: internal)
-public struct XREADMessage: RESPTokenDecodable, Sendable {
+public struct XMessage: RESPTokenDecodable, Sendable {
     public let id: String
     public let fields: [(key: String, value: RESPBulkString)]
 
@@ -108,7 +108,7 @@ public struct XREADStreams<Message>: RESPTokenDecodable, Sendable where Message:
 @_documentation(visibility: internal)
 public struct XAUTOCLAIMResponse: RESPTokenDecodable, Sendable {
     public let streamID: String
-    public let messages: [XREADMessage]
+    public let messages: [XMessage]
     public let deletedMessages: [String]
 
     public init(_ token: RESPToken) throws {
@@ -127,7 +127,7 @@ extension XAUTOCLAIM {
 @_documentation(visibility: internal)
 public enum XCLAIMResponse: RESPTokenDecodable, Sendable {
     case none
-    case messages([XREADMessage])
+    case messages([XMessage])
     case ids([String])
 
     public init(_ token: RESPToken) throws {
@@ -226,13 +226,13 @@ extension XPENDING {
 }
 
 @_documentation(visibility: internal)
-public typealias XRANGEResponse = [XREADMessage]
+public typealias XRANGEResponse = [XMessage]
 extension XRANGE {
     public typealias Response = XRANGEResponse
 }
 
 @_documentation(visibility: internal)
-public typealias XREADResponse = XREADStreams<XREADMessage>?
+public typealias XREADResponse = XREADStreams<XMessage>?
 extension XREAD {
     public typealias Response = XREADResponse
 }
@@ -244,7 +244,7 @@ extension XREADGROUP {
 }
 
 @_documentation(visibility: internal)
-public typealias XREVRANGEResponse = [XREADMessage]
+public typealias XREVRANGEResponse = [XMessage]
 extension XREVRANGE {
     public typealias Response = XREVRANGEResponse
 }
@@ -267,32 +267,16 @@ extension XINFO {
             switch token.value {
             case .array(let array):
                 let map = try array.asMap()
-                var name: String?
-                var pending: Int?
-                var idle: Int?
-                var inactive: Int?
-
-                for entry in map {
-                    switch try entry.key.decode(as: String.self) {
-                    case "name": name = try entry.value.decode(as: String.self)
-                    case "pending": pending = try entry.value.decode(as: Int.self)
-                    case "idle": idle = try entry.value.decode(as: Int.self)
-                    case "inactive": inactive = try entry.value.decode(as: Int.self)
-                    default: break
-                    }
-                }
-                guard let name else { throw RESPDecodeError.missingToken(key: "name", token: token) }
-                guard let pending else { throw RESPDecodeError.missingToken(key: "pending", token: token) }
-                guard let idle else { throw RESPDecodeError.missingToken(key: "idle", token: token) }
-                guard let inactive else { throw RESPDecodeError.missingToken(key: "inactive", token: token) }
-
-                self.name = name
-                self.pending = pending
-                self.idle = idle
-                self.inactive = inactive
+                self = try Consumer(map)
+            case .map(let map):
+                self = try Consumer(map)
             default:
                 throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
             }
+        }
+
+        init(_ map: RESPToken.Map) throws {
+            (self.name, self.pending, self.idle, self.inactive) = try map.decodeElements("name", "pending", "idle", "inactive")
         }
     }
 
@@ -301,49 +285,32 @@ extension XINFO {
         public let consumers: Int
         public let pending: Int
         public let lastDeliveredId: String
-        public let entriesRead: Int
+        public let entriesRead: Int?
         public let lag: Int?
 
         public init(_ token: RESPToken) throws {
             switch token.value {
             case .array(let array):
                 let map = try array.asMap()
-                var name: String?
-                var consumers: Int?
-                var pending: Int?
-                var lastDeliveredId: String?
-                var entriesRead: Int?
-                var lag: Int?
-
-                for entry in map {
-                    switch try entry.key.decode(as: String.self) {
-                    case "name": name = try entry.value.decode(as: String.self)
-                    case "consumers": consumers = try entry.value.decode(as: Int.self)
-                    case "pending": pending = try entry.value.decode(as: Int.self)
-                    case "last-delivered-id": lastDeliveredId = try entry.value.decode(as: String.self)
-                    case "entries-read": entriesRead = try entry.value.decode(as: Int.self)
-                    case "lag": lag = try entry.value.decode(as: Int?.self)
-                    default: break
-                    }
-                }
-                guard let name else { throw RESPDecodeError.missingToken(key: "name", token: token) }
-                guard let consumers else { throw RESPDecodeError.missingToken(key: "consumers", token: token) }
-                guard let pending else { throw RESPDecodeError.missingToken(key: "pending", token: token) }
-                guard let lastDeliveredId else { throw RESPDecodeError.missingToken(key: "last-delivered-id", token: token) }
-                guard let entriesRead else { throw RESPDecodeError.missingToken(key: "entries-read", token: token) }
-
-                self.name = name
-                self.consumers = consumers
-                self.pending = pending
-                self.lastDeliveredId = lastDeliveredId
-                self.entriesRead = entriesRead
-                self.lag = lag
+                self = try ConsumerGroup(map)
+            case .map(let map):
+                self = try ConsumerGroup(map)
             default:
-                throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
+                throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
             }
         }
-    }
 
+        init(_ map: RESPToken.Map) throws {
+            (self.name, self.consumers, self.pending, self.lastDeliveredId, self.entriesRead, self.lag) = try map.decodeElements(
+                "name",
+                "consumers",
+                "pending",
+                "last-delivered-id",
+                "entries-read",
+                "lag"
+            )
+        }
+    }
 }
 extension XINFO.CONSUMERS {
     public typealias Response = XINFO.CONSUMERSResponse
@@ -351,4 +318,64 @@ extension XINFO.CONSUMERS {
 
 extension XINFO.GROUPS {
     public typealias Response = XINFO.GROUPSResponse
+}
+
+extension XINFO.STREAM {
+    public struct Response: RESPTokenDecodable, Sendable {
+        /// The number of entries in the stream (see XLEN)
+        public let length: Int
+        /// The number of keys in the underlying radix data structure
+        public let radixTreeKeys: Int
+        /// The number of nodes in the underlying radix data structure
+        public let radixTreeNodes: Int
+        /// The number of consumer groups defined for the stream
+        public let groups: Int
+        /// The ID of the least-recently entry that was added to the stream
+        public let lastGeneratedID: String
+        /// The maximal entry ID that was deleted from the stream
+        public let maxDeletedEntryID: String
+        /// The count of all entries added to the stream during its lifetime
+        public let entriesAdded: Int
+        // The ID and field-value tuples of the first entry in the stream
+        public let firstEntry: XMessage
+        // The ID and field-value tuples of the last entry in the stream
+        public let lastEntry: XMessage
+
+        public init(_ token: RESPToken) throws {
+            switch token.value {
+            case .array(let array):
+                let map = try array.asMap()
+                self = try Response(map)
+            case .map(let map):
+                self = try Response(map)
+            default:
+                throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
+            }
+        }
+
+        init(_ map: RESPToken.Map) throws {
+            (
+                self.length,
+                self.radixTreeKeys,
+                self.radixTreeNodes,
+                self.groups,
+                self.lastGeneratedID,
+                self.maxDeletedEntryID,
+                self.entriesAdded,
+                self.firstEntry,
+                self.lastEntry
+            ) =
+                try map.decodeElements(
+                    "length",
+                    "radix-tree-keys",
+                    "radix-tree-nodes",
+                    "groups",
+                    "last-generated-id",
+                    "max-deleted-entry-id",
+                    "entries-added",
+                    "first-entry",
+                    "last-entry"
+                )
+        }
+    }
 }
