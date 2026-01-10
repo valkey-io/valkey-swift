@@ -248,3 +248,100 @@ public typealias XREVRANGEResponse = [XREADMessage]
 extension XREVRANGE {
     public typealias Response = XREVRANGEResponse
 }
+
+extension XINFO.CONSUMERS {
+    public struct Consumer: RESPTokenDecodable {
+        /// Consumer's name
+        public let name: String
+        /// Pending messages for the consumer, which are messages that were delivered but are yet to be acknowledged
+        public let pending: Int
+        /// The number of milliseconds that have passed since the consumer's last attempted interaction
+        public let idle: Int
+        /// The number of milliseconds that have passed since the consumer's last successful interaction
+        public let inactive: Int
+
+        public init(_ token: RESPToken) throws {
+            switch token.value {
+            case .array(let array):
+                let map = try array.asMap()
+                var name: String?
+                var pending: Int?
+                var idle: Int?
+                var inactive: Int?
+
+                for entry in map {
+                    switch try entry.key.decode(as: String.self) {
+                    case "name": name = try entry.value.decode(as: String.self)
+                    case "pending": pending = try entry.value.decode(as: Int.self)
+                    case "idle": idle = try entry.value.decode(as: Int.self)
+                    case "inactive": inactive = try entry.value.decode(as: Int.self)
+                    default: break
+                    }
+                }
+                guard let name else { throw RESPDecodeError.missingToken(key: "name", token: token) }
+                guard let pending else { throw RESPDecodeError.missingToken(key: "pending", token: token) }
+                guard let idle else { throw RESPDecodeError.missingToken(key: "idle", token: token) }
+                guard let inactive else { throw RESPDecodeError.missingToken(key: "inactive", token: token) }
+
+                self.name = name
+                self.pending = pending
+                self.idle = idle
+                self.inactive = inactive
+            default:
+                throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
+            }
+        }
+    }
+    public typealias Response = [Consumer]
+}
+
+extension XINFO.GROUPS {
+    public struct ConsumerGroup: RESPTokenDecodable {
+        public let name: String
+        public let consumers: Int
+        public let pending: Int
+        public let lastDeliveredId: String
+        public let entriesRead: Int
+        public let lag: Int?
+
+        public init(_ token: RESPToken) throws {
+            switch token.value {
+            case .array(let array):
+                let map = try array.asMap()
+                var name: String?
+                var consumers: Int?
+                var pending: Int?
+                var lastDeliveredId: String?
+                var entriesRead: Int?
+                var lag: Int?
+
+                for entry in map {
+                    switch try entry.key.decode(as: String.self) {
+                    case "name": name = try entry.value.decode(as: String.self)
+                    case "consumers": consumers = try entry.value.decode(as: Int.self)
+                    case "pending": pending = try entry.value.decode(as: Int.self)
+                    case "last-delivered-id": lastDeliveredId = try entry.value.decode(as: String.self)
+                    case "entries-read": entriesRead = try entry.value.decode(as: Int.self)
+                    case "lag": lag = try entry.value.decode(as: Int?.self)
+                    default: break
+                    }
+                }
+                guard let name else { throw RESPDecodeError.missingToken(key: "name", token: token) }
+                guard let consumers else { throw RESPDecodeError.missingToken(key: "consumers", token: token) }
+                guard let pending else { throw RESPDecodeError.missingToken(key: "pending", token: token) }
+                guard let lastDeliveredId else { throw RESPDecodeError.missingToken(key: "last-delivered-id", token: token) }
+                guard let entriesRead else { throw RESPDecodeError.missingToken(key: "entries-read", token: token) }
+
+                self.name = name
+                self.consumers = consumers
+                self.pending = pending
+                self.lastDeliveredId = lastDeliveredId
+                self.entriesRead = entriesRead
+                self.lag = lag
+            default:
+                throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
+            }
+        }
+    }
+    public typealias Response = [ConsumerGroup]
+}
