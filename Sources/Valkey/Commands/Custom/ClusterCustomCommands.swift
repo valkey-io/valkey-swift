@@ -464,7 +464,7 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
     }
 
     /// Creates a cluster link from the response token you provide.
-    /// - Parameter respToken: The response token.
+    /// - Parameter token: The response token.
     public init(_ token: RESPToken) throws {
         (self.direction, self.node, self.createTime, self.events, self.sendBufferAllocated, self.sendBufferUsed) = try token.decodeMapElements(
             "direction",
@@ -493,7 +493,7 @@ public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
     public var networkBytesOut: Int?
 
     /// Creates a cluster slot stats from the response token you provide.
-    /// - Parameter respToken: The response token.
+    /// - Parameter token: The response token.
     public init(_ token: RESPToken) throws {
         let slotAndStats: (Int, RESPToken) =
             switch token.value {
