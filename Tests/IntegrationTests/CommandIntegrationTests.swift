@@ -149,7 +149,7 @@ struct CommandIntegratedTests {
                     withhash: true
                 )
 
-                for entry in try geoSearchEntries.get(options: [.withDist, .withHash, .withCoord]) {
+                for entry in try geoSearchEntries.decode(options: [.withDist, .withHash, .withCoord]) {
                     #expect(!entry.member.isEmpty)
                     #expect(entry.distance != nil && entry.distance! > 0)
                     #expect(entry.hash != nil && entry.hash! > 0)

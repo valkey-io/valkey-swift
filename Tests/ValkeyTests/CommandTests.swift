@@ -811,7 +811,7 @@ struct CommandTests {
                 )
                 try verifyGeoSearchEntries(
                     entries,
-                    options: [GeoSearchEntries.Option.withHash, GeoSearchEntries.Option.withDist, GeoSearchEntries.Option.withCoord]
+                    options: [.withHash, .withDist, .withCoord]
                 )
             }
         }
@@ -837,7 +837,7 @@ struct CommandTests {
                 )
                 try verifyGeoSearchEntries(
                     entries,
-                    options: [GeoSearchEntries.Option.withHash, GeoSearchEntries.Option.withDist, GeoSearchEntries.Option.withCoord]
+                    options: [.withHash, .withDist, .withCoord]
                 )
             }
         }
@@ -862,14 +862,14 @@ struct CommandTests {
                 )
                 try verifyGeoSearchEntries(
                     entries,
-                    options: [GeoSearchEntries.Option.withHash, GeoSearchEntries.Option.withDist, GeoSearchEntries.Option.withCoord]
+                    options: [.withHash, .withDist, .withCoord]
                 )
             }
         }
 
         private func verifyGeoSearchEntries(_ entries: GeoSearchEntries, options: [GeoSearchEntries.Option]) throws {
-            for entry in try entries.get(options: [
-                GeoSearchEntries.Option.withHash, GeoSearchEntries.Option.withDist, GeoSearchEntries.Option.withCoord,
+            for entry in try entries.decode(options: [
+                .withHash, .withDist, .withCoord,
             ]) {
                 #expect(!entry.member.isEmpty)
                 #expect(entry.distance != nil && entry.distance! >= 0)
