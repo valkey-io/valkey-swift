@@ -111,8 +111,8 @@ extension ROLE {
 
 extension TIME {
     public struct Response: RESPTokenDecodable & Sendable {
-        let seconds: Int
-        let microSeconds: Int
+        public let seconds: Int
+        public let microSeconds: Int
 
         public init(_ token: RESPToken) throws {
             (self.seconds, self.microSeconds) = try token.decodeArrayElements()
