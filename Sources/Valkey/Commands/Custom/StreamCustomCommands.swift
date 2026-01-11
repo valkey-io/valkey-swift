@@ -264,18 +264,15 @@ extension XINFO {
         public let inactive: Int?
 
         public init(_ token: RESPToken) throws {
-            switch token.value {
-            case .array(let array):
-                let map = try array.asMap()
-                self = try Consumer(map)
-            case .map(let map):
-                self = try Consumer(map)
-            default:
-                throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
-            }
-        }
-
-        init(_ map: RESPToken.Map) throws {
+            let map =
+                switch token.value {
+                case .array(let array):
+                    try array.asMap()
+                case .map(let map):
+                    map
+                default:
+                    throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
+                }
             (self.name, self.pending, self.idle, self.inactive) = try map.decodeElements("name", "pending", "idle", "inactive")
         }
     }
@@ -289,18 +286,15 @@ extension XINFO {
         public let lag: Int?
 
         public init(_ token: RESPToken) throws {
-            switch token.value {
-            case .array(let array):
-                let map = try array.asMap()
-                self = try ConsumerGroup(map)
-            case .map(let map):
-                self = try ConsumerGroup(map)
-            default:
-                throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
-            }
-        }
-
-        init(_ map: RESPToken.Map) throws {
+            let map =
+                switch token.value {
+                case .array(let array):
+                    try array.asMap()
+                case .map(let map):
+                    map
+                default:
+                    throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
+                }
             (self.name, self.consumers, self.pending, self.lastDeliveredId, self.entriesRead, self.lag) = try map.decodeElements(
                 "name",
                 "consumers",
@@ -338,18 +332,15 @@ extension XINFO.STREAM {
             let pending: [XMessage]
 
             public init(_ token: RESPToken) throws {
-                switch token.value {
-                case .array(let array):
-                    let map = try array.asMap()
-                    self = try Consumer(map)
-                case .map(let map):
-                    self = try Consumer(map)
-                default:
-                    throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
-                }
-            }
-
-            init(_ map: RESPToken.Map) throws {
+                let map =
+                    switch token.value {
+                    case .array(let array):
+                        try array.asMap()
+                    case .map(let map):
+                        map
+                    default:
+                        throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
+                    }
                 (self.name, self.seenTime, self.activeTime, self.pelCount, self.pending) = try map.decodeElements(
                     "name",
                     "seen-time",
@@ -379,18 +370,15 @@ extension XINFO.STREAM {
             public let consumers: [Consumer]
 
             public init(_ token: RESPToken) throws {
-                switch token.value {
-                case .array(let array):
-                    let map = try array.asMap()
-                    self = try Group(map)
-                case .map(let map):
-                    self = try Group(map)
-                default:
-                    throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
-                }
-            }
-
-            init(_ map: RESPToken.Map) throws {
+                let map =
+                    switch token.value {
+                    case .array(let array):
+                        try array.asMap()
+                    case .map(let map):
+                        map
+                    default:
+                        throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
+                    }
                 (self.name, self.lastDeliveredID, self.entriesRead, self.lag, self.pelCount, self.pending, self.consumers) = try map.decodeElements(
                     "name",
                     "last-delivered-id",
@@ -426,18 +414,15 @@ extension XINFO.STREAM {
         public let groups: [Group]?
 
         public init(_ token: RESPToken) throws {
-            switch token.value {
-            case .array(let array):
-                let map = try array.asMap()
-                self = try Response(map)
-            case .map(let map):
-                self = try Response(map)
-            default:
-                throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
-            }
-        }
-
-        init(_ map: RESPToken.Map) throws {
+            let map =
+                switch token.value {
+                case .array(let array):
+                    try array.asMap()
+                case .map(let map):
+                    map
+                default:
+                    throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: token)
+                }
             var groupsToken: RESPToken
             (
                 self.length,
@@ -463,6 +448,7 @@ extension XINFO.STREAM {
                     "last-entry",
                     "entries"
                 )
+            // The group entry can be either the number of groups, or an array of groups
             switch groupsToken.value {
             case .number(let value):
                 self.numberOfGroups = Int(value)
