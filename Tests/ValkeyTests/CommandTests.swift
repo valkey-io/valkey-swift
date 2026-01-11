@@ -272,6 +272,18 @@ struct CommandTests {
                 try await connection.replicaof(args: .noOne)
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func time() async throws {
+            try await testCommandEncodesDecodes(
+                (request: .command(["TIME"]), response: .array([.number(1_714_701_491), .number(723379)])),
+            ) { connection in
+                let time = try await connection.time()
+                #expect(time.seconds == 1_714_701_491)
+                #expect(time.microSeconds == 723379)
+            }
+        }
     }
 
     struct SetCommands {

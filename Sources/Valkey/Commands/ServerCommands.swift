@@ -1530,8 +1530,6 @@ public struct SYNC: ValkeyCommand {
 /// Returns the server time.
 @_documentation(visibility: internal)
 public struct TIME: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     @inlinable public static var name: String { "TIME" }
 
     @inlinable public init() {
@@ -2381,7 +2379,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Array containing two elements: Unix time in seconds and microseconds.
     @inlinable
     @discardableResult
-    public func time() async throws -> RESPToken.Array {
+    public func time() async throws -> TIME.Response {
         try await execute(TIME())
     }
 

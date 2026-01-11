@@ -42,6 +42,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "SCRIPT EXISTS",
     "SCRIPT LOAD",
     "SCRIPT SHOW",
+    "TIME",
     "XAUTOCLAIM",
     "XCLAIM",
     "XPENDING",
