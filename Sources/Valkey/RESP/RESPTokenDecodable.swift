@@ -43,6 +43,27 @@ extension RESPToken: RESPTokenDecodable {
             throw RESPDecodeError.tokenMismatch(expected: [.array], token: self)
         }
     }
+
+    /// Convert RESPToken Array to a tuple of values
+    /// - Parameter as: Tuple of types to convert to
+    /// - Throws: RESPDecodeError
+    /// - Returns: Tuple of decoded values
+    @inlinable
+    public func decodeMapElements<each Value: RESPTokenDecodable>(
+        _ keys: String...,
+        as type: (repeat (each Value)).Type = (repeat (each Value)).self
+    ) throws -> (repeat each Value) {
+        let map =
+            switch self.value {
+            case .array(let array):
+                try array.asMap()
+            case .map(let map):
+                map
+            default:
+                throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: self)
+            }
+        return try map.decodeElements(keys)
+    }
 }
 
 extension ByteBuffer: RESPTokenDecodable {
@@ -225,11 +246,11 @@ extension Optional: RESPTokenDecodable where Wrapped: RESPTokenDecodable {
 extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
     @inlinable
     public init(_ token: RESPToken) throws {
-        self = try .init(token, decodeArrayAsSingleElement: true)
+        self = try .init(token, decodeSingleElementAsArray: true)
     }
 
     @inlinable
-    public init(_ token: RESPToken, decodeArrayAsSingleElement: Bool) throws {
+    public init(_ token: RESPToken, decodeSingleElementAsArray: Bool) throws {
         switch token.value {
         case .array(let respArray), .set(let respArray), .push(let respArray):
             do {
@@ -239,16 +260,20 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
                     array.append(element)
                 }
                 self = array
-            } catch let error as RESPDecodeError {
-                guard decodeArrayAsSingleElement else { throw error }
-                switch error.errorCode {
+            } catch let decodeError as RESPDecodeError {
+                guard decodeSingleElementAsArray else { throw decodeError }
+                switch decodeError.errorCode {
                 case .tokenMismatch:
                     // if decoding array failed it is possible `Element` is represented by an array and we have a single array
                     // that represents one element of `Element` instead of Array<Element>. We should attempt to decode this as a single element
-                    let value = try Element(token)
-                    self = [value]
+                    do {
+                        let value = try Element(token)
+                        self = [value]
+                    } catch {
+                        throw decodeError
+                    }
                 default:
-                    throw error
+                    throw decodeError
                 }
             }
         case .null:
@@ -443,6 +468,14 @@ extension RESPToken.Map: RESPTokenDecodable {
     @inlinable
     public func decodeElements<each Value: RESPTokenDecodable>(
         _ keys: String...,
+        as type: (repeat (each Value)).Type = (repeat (each Value)).self
+    ) throws -> (repeat each Value) {
+        try decodeElements(keys)
+    }
+
+    @inlinable
+    func decodeElements<each Value: RESPTokenDecodable>(
+        _ keys: [String],
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {
         var encoder = ValkeyCommandEncoder()
