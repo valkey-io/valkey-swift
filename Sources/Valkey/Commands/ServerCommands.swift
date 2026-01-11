@@ -313,8 +313,6 @@ extension COMMAND {
     /// Extracts the key names and access flags for an arbitrary command.
     @_documentation(visibility: internal)
     public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "COMMAND GETKEYSANDFLAGS" }
 
         public var command: Command
@@ -1791,7 +1789,10 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of keys from the given command and their usage flags.
     @inlinable
     @discardableResult
-    public func commandGetkeysandflags<Command: RESPStringRenderable>(command: Command, args: [String] = []) async throws -> RESPToken.Array {
+    public func commandGetkeysandflags<Command: RESPStringRenderable>(
+        command: Command,
+        args: [String] = []
+    ) async throws -> COMMAND.GETKEYSANDFLAGSResponse {
         try await execute(COMMAND.GETKEYSANDFLAGS(command: command, args: args))
     }
 

@@ -203,6 +203,24 @@ struct CommandTests {
     struct ServerCommands {
         @Test
         @available(valkeySwift 1.0, *)
+        func commandGetkeysandflags() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["COMMAND", "GETKEYSANDFLAGS", "LMOVE", "mylist1", "mylist2", "left", "left"]),
+                    response: .array([
+                        .array([.bulkString("mylist1"), .array([.bulkString("RW"), .bulkString("access"), .bulkString("delete")])]),
+                        .array([.bulkString("mylist2"), .array([.bulkString("RW"), .bulkString("insert")])]),
+                    ])
+                )
+            ) { connection in
+                let keys = try await connection.commandGetkeysandflags(command: "LMOVE", args: ["mylist1", "mylist2", "left", "left"])
+                #expect(keys.count == 2)
+                #expect(keys[0].key == "mylist1")
+                #expect(keys[0].flags == [.rw, .access, .delete])
+            }
+        }
+        @Test
+        @available(valkeySwift 1.0, *)
         func role() async throws {
             try await testCommandEncodesDecodes(
                 (
@@ -2439,7 +2457,11 @@ func testCommandEncodesDecodes(
         group.addTask {
             for (request, response) in respValues {
                 let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(outbound == RESPToken(request).base, sourceLocation: sourceLocation)
+                #expect(
+                    outbound == RESPToken(request).base,
+                    "\(RESPToken(validated: outbound).value.descriptionWith(redact: false))",
+                    sourceLocation: sourceLocation
+                )
                 try await channel.writeInbound(RESPToken(response).base)
             }
         }

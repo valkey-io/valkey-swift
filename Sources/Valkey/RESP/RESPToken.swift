@@ -279,7 +279,7 @@ public struct RESPToken: Hashable, Sendable {
         self.base = validated
     }
 
-    init(validated: ByteBuffer) {
+    package init(validated: ByteBuffer) {
         self.base = validated
     }
 }
@@ -612,7 +612,7 @@ extension RESPToken.Value: CustomDebugStringConvertible {
         self.descriptionWith(indent: "", childIndent: "", redact: true)
     }
 
-    func descriptionWith(indent tab: String = "", childIndent childTab: String = "", redact: Bool = true) -> String {
+    package func descriptionWith(indent tab: String = "", childIndent childTab: String = "", redact: Bool = true) -> String {
         switch self {
         case .simpleString(let buffer): "\(tab).simpleString(\"\(String(buffer: buffer))\")"
         case .simpleError(let buffer): "\(tab).simpleError(\"\(String(buffer: buffer))\")"
