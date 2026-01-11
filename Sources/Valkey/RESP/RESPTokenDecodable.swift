@@ -28,7 +28,7 @@ extension RESPToken: RESPTokenDecodable {
         self = token
     }
 
-    /// Convert RESPToken Array to a tuple of values
+    /// Decode RESPToken as a tuple of values, if it is an Array
     /// - Parameter as: Tuple of types to convert to
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
@@ -44,10 +44,16 @@ extension RESPToken: RESPTokenDecodable {
         }
     }
 
-    /// Convert RESPToken Array to a tuple of values
-    /// - Parameter as: Tuple of types to convert to
+    /// Decode elements corresponding to dictionary keys in RESPToken if it is either an
+    /// array or map
+    ///
+    /// The number of keys has to be equal to the number of elements in the tuple returned
+    ///
+    /// - Parameters
+    ///   - keys: Array of keys to extract values from map
+    ///   - type: Parameter pack of types to convert to
     /// - Throws: RESPDecodeError
-    /// - Returns: Tuple of decoded values
+    /// - Returns: Parameter pack of decoded values
     @inlinable
     public func decodeMapElements<each Value: RESPTokenDecodable>(
         _ keys: String...,
