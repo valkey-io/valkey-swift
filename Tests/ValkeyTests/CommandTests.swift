@@ -909,7 +909,6 @@ struct CommandTests {
                         .bulkString("last-generated-id"): .bulkString("1768072864629-0"),
                         .bulkString("max-deleted-entry-id"): .bulkString("0-0"),
                         .bulkString("entries-added"): .number(2),
-                        .bulkString("recorded-first-entry-id"): .bulkString("1768072864629-0"),
                         .bulkString("groups"): .number(1),
                         .bulkString("first-entry"): .array([
                             .bulkString("1768072864629-0"),
@@ -930,6 +929,13 @@ struct CommandTests {
             ) { connection in
                 let result = try await connection.xinfoStream("key")
                 #expect(result.length == 2)
+                #expect(result.numberOfRadixTreeKeys == 2)
+                #expect(result.numberOfRadixTreeNodes == 3)
+                #expect(result.lastGeneratedID == "1768072864629-0")
+                #expect(result.maxDeletedEntryID == "0-0")
+                #expect(result.entriesAdded == 2)
+                #expect(result.firstEntry?.id == "1768072864629-0")
+                #expect(result.lastEntry?.id == "1768072864630-0")
             }
         }
     }

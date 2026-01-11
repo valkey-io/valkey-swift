@@ -225,6 +225,11 @@ extension Optional: RESPTokenDecodable where Wrapped: RESPTokenDecodable {
 extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
     @inlinable
     public init(_ token: RESPToken) throws {
+        self = try .init(token, decodeArrayAsSingleElement: true)
+    }
+
+    @inlinable
+    public init(_ token: RESPToken, decodeArrayAsSingleElement: Bool) throws {
         switch token.value {
         case .array(let respArray), .set(let respArray), .push(let respArray):
             do {
@@ -235,6 +240,7 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
                 }
                 self = array
             } catch let error as RESPDecodeError {
+                guard decodeArrayAsSingleElement else { throw error }
                 switch error.errorCode {
                 case .tokenMismatch:
                     // if decoding array failed it is possible `Element` is represented by an array and we have a single array
@@ -425,9 +431,13 @@ extension RESPToken.Map: RESPTokenDecodable {
         }
     }
 
-    /// Convert RESPToken Map to a parameter pack of values
+    /// Convert values from RESPToken Map to a parameter pack of values
+    ///
+    /// The number of keys has to be equal to the number of elements in the type parameter pack
+    ///
     /// - Parameters
     ///   - keys: Array of keys to extract values from map
+    ///   - type: Parameter pack of types to convert to
     /// - Throws: RESPDecodeError
     /// - Returns: Parameter pack of decoded values
     @inlinable
@@ -436,14 +446,27 @@ extension RESPToken.Map: RESPTokenDecodable {
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {
         var encoder = ValkeyCommandEncoder()
+        var mapIterator = self.makeIterator()
+
         func decodeRESPToken<T: RESPTokenDecodable>(named name: String?, map: RESPToken.Map, as: T.Type) throws -> T {
             guard let name else { preconditionFailure("Invalid number of keys") }
             encoder.reset()
             encoder.encodeBulkString(name)
-            for (key, value) in self {
-                if key.base == encoder.buffer {
-                    return try T(value)
+            var count = keys.count
+            while count > 0 {
+                var keyValue: (RESPToken, RESPToken)
+                // get next element, or if we have hit the end of the list start
+                // from the beginning again
+                if let next = mapIterator.next() {
+                    keyValue = next
+                } else {
+                    mapIterator = self.makeIterator()
+                    keyValue = mapIterator.next()!
                 }
+                if keyValue.0.base == encoder.buffer {
+                    return try T(keyValue.1)
+                }
+                count -= 1
             }
             do {
                 return try T(RESPToken.nullToken)
@@ -451,8 +474,8 @@ extension RESPToken.Map: RESPTokenDecodable {
                 throw RESPDecodeError.missingToken(key: name, token: self)
             }
         }
-        var iterator = keys.makeIterator()
-        return try (repeat decodeRESPToken(named: iterator.next(), map: self, as: (each Value).self))
+        var keyIterator = keys.makeIterator()
+        return try (repeat decodeRESPToken(named: keyIterator.next(), map: self, as: (each Value).self))
     }
 
     /// Convert RESPToken Map to a parameter pack of optional values

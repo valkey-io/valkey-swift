@@ -647,5 +647,4 @@ struct ClientIntegratedTests {
             }
         }
     }
-
 }

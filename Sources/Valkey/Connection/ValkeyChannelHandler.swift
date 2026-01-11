@@ -400,7 +400,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     func handleToken(context: ChannelHandlerContext, token: RESPToken) {
-        print(token.value.descriptionWith(indent: "", childIndent: "", redact: false))
         switch token.identifier {
         case .simpleError, .bulkError:
             switch self.stateMachine.receivedResponse(token: token) {
