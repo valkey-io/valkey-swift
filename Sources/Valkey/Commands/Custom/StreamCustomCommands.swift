@@ -259,9 +259,9 @@ extension XINFO {
         /// Pending messages for the consumer, which are messages that were delivered but are yet to be acknowledged
         public let pending: Int
         /// The number of milliseconds that have passed since the consumer's last attempted interaction
-        public let idle: Int
+        public let idle: Int64
         /// The number of milliseconds that have passed since the consumer's last successful interaction
-        public let inactive: Int?
+        public let inactive: Int64?
 
         public init(_ token: RESPToken) throws {
             (self.name, self.pending, self.idle, self.inactive) = try token.decodeMapElements("name", "pending", "idle", "inactive")
@@ -302,10 +302,10 @@ extension XINFO.STREAM {
             /// Consumer name
             let name: String
             /// The UNIX timestamp of the last attempted interaction (Examples: XREADGROUP, XCLAIM, XAUTOCLAIM)
-            let seenTime: Int
+            let seenTime: Int64
             /// The UNIX timestamp of the last successful interaction (Examples: XREADGROUP that actually read
             /// some entries into the PEL, XCLAIM/XAUTOCLAIM that actually claimed some entries)
-            let activeTime: Int?
+            let activeTime: Int64?
             /// The number of entries in the PEL: pending messages for the consumer, which are messages that were
             /// delivered but are yet to be acknowledged
             let pelCount: Int
