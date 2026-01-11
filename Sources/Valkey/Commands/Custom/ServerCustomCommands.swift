@@ -109,6 +109,19 @@ extension ROLE {
     }
 }
 
+extension MODULE.LIST {
+    public typealias Response = [Module]
+    public struct Module: RESPTokenDecodable & Sendable {
+        public let name: String
+        public let version: String
+
+        public init(_ token: RESPToken) throws {
+            preconditionFailure("Waiting for decodeMapElements to be merged")
+            //(self.name, self.version) = try token.decodeMapElements("name", "ver")
+        }
+    }
+}
+
 extension TIME {
     public struct Response: RESPTokenDecodable & Sendable {
         public let seconds: Int

@@ -877,8 +877,6 @@ public enum MODULE {
     /// Returns all loaded modules.
     @_documentation(visibility: internal)
     public struct LIST: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "MODULE LIST" }
 
         @inlinable public init() {
@@ -2198,7 +2196,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Returns information about the modules loaded to the server.
     @inlinable
     @discardableResult
-    public func moduleList() async throws -> RESPToken.Array {
+    public func moduleList() async throws -> MODULE.LIST.Response {
         try await execute(MODULE.LIST())
     }
 
