@@ -477,30 +477,4 @@ extension RESPToken.Map: RESPTokenDecodable {
         var keyIterator = keys.makeIterator()
         return try (repeat decodeRESPToken(named: keyIterator.next(), map: self, as: (each Value).self))
     }
-
-    /// Convert RESPToken Map to a parameter pack of optional values
-    /// - Parameters
-    ///   - keys: Array of keys to extract values from map
-    /// - Throws: RESPDecodeError
-    /// - Returns: Parameter pack of decoded values
-    @inlinable
-    public func decodeOptionalElements<each Value: RESPTokenDecodable>(
-        _ keys: String...,
-        as type: (repeat (each Value)).Type = (repeat (each Value)).self
-    ) throws -> (repeat (each Value)?) {
-        var encoder = ValkeyCommandEncoder()
-        func decodeRESPToken<T: RESPTokenDecodable>(named name: String?, map: RESPToken.Map, as: T.Type) throws -> T? {
-            guard let name else { preconditionFailure("Invalid number of keys") }
-            encoder.reset()
-            encoder.encodeBulkString(name)
-            for (key, value) in self {
-                if key.base == encoder.buffer {
-                    return try T(value)
-                }
-            }
-            return nil
-        }
-        var iterator = keys.makeIterator()
-        return try (repeat decodeRESPToken(named: iterator.next(), map: self, as: (each Value).self))
-    }
 }
