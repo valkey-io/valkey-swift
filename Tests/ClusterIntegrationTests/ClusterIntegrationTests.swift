@@ -356,24 +356,12 @@ struct ClusterIntegrationTests {
             let clusterLinks = try await client.clusterLinks()
             #expect(!clusterLinks.isEmpty && clusterLinks.count > 0)
             for clusterLink in clusterLinks {
-                if let direction = clusterLink.direction {
-                    #expect(direction == .from || direction == .to)
-                }
-                if let node = clusterLink.node {
-                    #expect(!node.isEmpty)
-                }
-                if let createTime = clusterLink.createTime {
-                    #expect(createTime > 0)
-                }
-                if let events = clusterLink.events {
-                    #expect(!events.isEmpty)
-                }
-                if let sendBufferAllocated = clusterLink.sendBufferAllocated {
-                    #expect(sendBufferAllocated >= 0)
-                }
-                if let sendBufferUsed = clusterLink.sendBufferUsed {
-                    #expect(sendBufferUsed >= 0)
-                }
+                #expect(clusterLink.direction == .from || clusterLink.direction == .to)
+                #expect(!clusterLink.node.isEmpty)
+                #expect(clusterLink.createTime > 0)
+                #expect(!clusterLink.events.isEmpty)
+                #expect(clusterLink.sendBufferAllocated >= 0)
+                #expect(clusterLink.sendBufferUsed >= 0)
             }
         }
     }

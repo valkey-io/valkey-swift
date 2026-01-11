@@ -103,7 +103,13 @@ struct ValkeyClusterDescriptionTests {
         ])
         let token = RESPToken(val)
 
-        #expect(throws: RESPDecodeError(.unexpectedToken, token: .init(.bulkString("invalid-health-state")), message: "Invalid Node Health String")) {
+        #expect(
+            throws: RESPDecodeError(
+                .unexpectedToken,
+                token: .init(.bulkString("invalid-health-state")),
+                message: "Invalid Node Health String: invalid-health-state"
+            )
+        ) {
             _ = try ValkeyClusterDescription(token)
         }
     }
@@ -112,7 +118,7 @@ struct ValkeyClusterDescriptionTests {
     func testSlotsAreNotAnArray() throws {
         // Non-array token for cluster description
         let singleValueToken = RESPToken(RESP3Value.bulkString("not-an-array"))
-        #expect(throws: RESPDecodeError.tokenMismatch(expected: [.array], token: .init(.bulkString("not-an-array")))) {
+        #expect(throws: RESPDecodeError.tokenMismatch(expected: [.array, .map], token: .init(.bulkString("not-an-array")))) {
             _ = try ValkeyClusterDescription(singleValueToken)
         }
 
@@ -161,7 +167,7 @@ struct ValkeyClusterDescriptionTests {
             ])
         )
 
-        #expect(throws: RESPDecodeError.tokenMismatch(expected: [.array], token: .init(.bulkString("not-an-array")))) {
+        #expect(throws: RESPDecodeError.tokenMismatch(expected: [.array, .map], token: .init(.bulkString("not-an-array")))) {
             _ = try ValkeyClusterDescription(invalidNodesToken)
         }
     }
@@ -197,7 +203,7 @@ struct ValkeyClusterDescriptionTests {
         let token = RESPToken(valWithMultipleErrors)
 
         // The error we expect to see first is the invalid role
-        #expect(throws: RESPDecodeError(.unexpectedToken, token: .init(.bulkString("invalid-role")), message: "Invalid Role String")) {
+        #expect(throws: RESPDecodeError(.unexpectedToken, token: .init(.bulkString("invalid-role")), message: "Invalid Role String: invalid-role")) {
             _ = try ValkeyClusterDescription(token)
         }
     }
