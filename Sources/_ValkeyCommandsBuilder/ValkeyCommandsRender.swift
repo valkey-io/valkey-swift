@@ -49,6 +49,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "XREAD",
     "XREADGROUP",
     "XREVRANGE",
+    "WAITAOF",
     "ZMPOP",
     "ZPOPMAX",
     "ZPOPMIN",
