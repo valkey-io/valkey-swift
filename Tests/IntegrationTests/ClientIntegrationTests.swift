@@ -515,18 +515,24 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testAuthentication() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
-        try await withValkeyConnection(.hostname(valkeyHostname), logger: logger) { connection in
-            try await connection.aclSetuser(username: "johnsmith", rules: ["on", ">3guygsf43", "+ACL|WHOAMI"])
-        }
-        try await withValkeyConnection(
-            .hostname(valkeyHostname),
-            configuration: .init(authentication: .init(username: "johnsmith", password: "3guygsf43")),
-            logger: logger
-        ) { connection in
-            let user = try await connection.aclWhoami()
-            #expect(String(user) == "johnsmith")
+        let logger = {
+            var logger = Logger(label: "Valkey")
+            logger.logLevel = .debug
+            return logger
+        }()
+        try await withValkeyClient(.hostname(valkeyHostname), logger: logger) { client in
+            try await client.aclSetuser(username: "johnsmith", rules: ["on", ">3guygsf43", "+ACL|WHOAMI", "(+SET ~key2)"])
+
+            try await withValkeyConnection(
+                .hostname(valkeyHostname),
+                configuration: .init(authentication: .init(username: "johnsmith", password: "3guygsf43")),
+                logger: logger
+            ) { connection in
+                let user = try await connection.aclWhoami()
+                #expect(String(user) == "johnsmith")
+            }
+
+            try await client.aclDeluser(usernames: ["johnsmith"])
         }
     }
 
