@@ -219,6 +219,42 @@ struct CommandTests {
                 #expect(keys[0].flags == [.rw, .access, .delete])
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func moduleList() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["MODULE", "LIST"]),
+                    response: .array([
+                        .map([
+                            .bulkString("name"): .bulkString("json"),
+                            .bulkString("ver"): .number(10002),
+                            .bulkString("path"): .bulkString("/usr/lib/valkey/libjson.so"),
+                            .bulkString("args"): .array([]),
+                        ]),
+                        .map([
+                            .bulkString("name"): .bulkString("ldap"),
+                            .bulkString("ver"): .number(16_777_471),
+                            .bulkString("path"): .bulkString("/usr/lib/valkey/libvalkey_ldap.so"),
+                            .bulkString("args"): .array([]),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let modules = try await connection.moduleList()
+                #expect(modules.count == 2)
+                #expect(modules[0].name == "json")
+                #expect(modules[0].version == 10002)
+                #expect(modules[0].path == "/usr/lib/valkey/libjson.so")
+                #expect(modules[0].args == [])
+                #expect(modules[1].name == "ldap")
+                #expect(modules[1].version == 16_777_471)
+                #expect(modules[1].path == "/usr/lib/valkey/libvalkey_ldap.so")
+                #expect(modules[1].args == [])
+            }
+        }
+
         @Test
         @available(valkeySwift 1.0, *)
         func role() async throws {

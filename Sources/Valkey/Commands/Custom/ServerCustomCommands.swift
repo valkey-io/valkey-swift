@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -157,12 +157,17 @@ extension ROLE {
 extension MODULE.LIST {
     public typealias Response = [Module]
     public struct Module: RESPTokenDecodable & Sendable {
+        /// Module name
         public let name: String
-        public let version: String
+        /// Module version
+        public let version: Int
+        /// Module path
+        public let path: String
+        /// Module arguments
+        public let args: [String]
 
         public init(_ token: RESPToken) throws {
-            preconditionFailure("Waiting for decodeMapElements to be merged")
-            //(self.name, self.version) = try token.decodeMapElements("name", "ver")
+            (self.name, self.version, self.path, self.args) = try token.decodeMapElements("name", "ver", "path", "args")
         }
     }
 }
