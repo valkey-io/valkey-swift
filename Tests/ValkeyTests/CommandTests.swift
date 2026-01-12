@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -122,7 +122,31 @@ struct CommandTests {
                 #expect(result.localSynced == true)
                 #expect(result.numberOfReplicasSynced == 2)
             }
+        }
+    }
 
+    struct PubSubCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func pubSubNumSub() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["PUBSUB", "NUMSUB", "channel1", "channel2"]),
+                    response: .array([
+                        .bulkString("channel1"),
+                        .number(10),
+                        .bulkString("channel2"),
+                        .number(3),
+                    ])
+                )
+            ) { connection in
+                let subscribers = try await connection.pubsubNumsub(channels: ["channel1", "channel2"])
+                #expect(subscribers.channels.count == 2)
+                #expect(subscribers.channels[0].name == "channel1")
+                #expect(subscribers.channels[0].numberOfSubscribers == 10)
+                #expect(subscribers.channels[1].name == "channel2")
+                #expect(subscribers.channels[1].numberOfSubscribers == 3)
+            }
         }
     }
 

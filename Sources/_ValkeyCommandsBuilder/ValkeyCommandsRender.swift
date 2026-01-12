@@ -42,6 +42,8 @@ private let disableResponseCalculationCommands: Set<String> = [
     "LMOVE",
     "LMPOP",
     "MODULE LIST",
+    "PUBSUB NUMSUB",
+    "PUBSUB SHARDNUMSUB",
     "ROLE",
     "SCAN",
     "SSCAN",
