@@ -17,6 +17,7 @@ public struct PubSubSubscriptionCounts: RESPTokenDecodable & Sendable {
         case .array(let array):
             var iterator = array.makeIterator()
             var channels: [(name: String, numberOfSubscribers: Int)] = []
+            channels.reserveCapacity(array.count / 2)
             while let nameToken = iterator.next() {
                 guard let subscribersToken = iterator.next() else {
                     throw RESPDecodeError.invalidArraySize(array)
