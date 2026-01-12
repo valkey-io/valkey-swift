@@ -143,11 +143,13 @@ struct CommandIntegratedTests {
                 let geoSearchEntries = try await client.geosearch(
                     key,
                     from: .fromlonlat(.init(longitude: 0.0, latitude: 53.0)),
-                    by: .circle(.init(radius: 10000, unit: .mi)),
+                    by: .circle(.init(radius: 1000, unit: .mi)),
                     withcoord: true,
                     withdist: true,
                     withhash: true
                 )
+
+                #expect(geoSearchEntries.count == 2)
 
                 for entry in try geoSearchEntries.decode(options: [.withDist, .withHash, .withCoord]) {
                     #expect(!entry.member.isEmpty)

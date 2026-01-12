@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -97,8 +97,6 @@ public enum ACL {
     /// Lists the ACL rules of a user.
     @_documentation(visibility: internal)
     public struct GETUSER<Username: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Map?
-
         @inlinable public static var name: String { "ACL GETUSER" }
 
         public var username: Username
@@ -313,8 +311,6 @@ extension COMMAND {
     /// Extracts the key names and access flags for an arbitrary command.
     @_documentation(visibility: internal)
     public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "COMMAND GETKEYSANDFLAGS" }
 
         public var command: Command
@@ -818,8 +814,6 @@ public enum MEMORY {
     /// Returns details about memory usage.
     @_documentation(visibility: internal)
     public struct STATS: ValkeyCommand {
-        public typealias Response = RESPToken.Map
-
         @inlinable public static var name: String { "MEMORY STATS" }
 
         @inlinable public init() {
@@ -877,8 +871,6 @@ public enum MODULE {
     /// Returns all loaded modules.
     @_documentation(visibility: internal)
     public struct LIST: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "MODULE LIST" }
 
         @inlinable public init() {
@@ -1530,8 +1522,6 @@ public struct SYNC: ValkeyCommand {
 /// Returns the server time.
 @_documentation(visibility: internal)
 public struct TIME: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     @inlinable public static var name: String { "TIME" }
 
     @inlinable public init() {
@@ -1613,7 +1603,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: If user does not exist
     @inlinable
     @discardableResult
-    public func aclGetuser<Username: RESPStringRenderable>(username: Username) async throws -> RESPToken.Map? {
+    public func aclGetuser<Username: RESPStringRenderable>(username: Username) async throws -> ACL.GETUSERResponse {
         try await execute(ACL.GETUSER(username: username))
     }
 
@@ -1795,7 +1785,10 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of keys from the given command and their usage flags.
     @inlinable
     @discardableResult
-    public func commandGetkeysandflags<Command: RESPStringRenderable>(command: Command, args: [String] = []) async throws -> RESPToken.Array {
+    public func commandGetkeysandflags<Command: RESPStringRenderable>(
+        command: Command,
+        args: [String] = []
+    ) async throws -> COMMAND.GETKEYSANDFLAGSResponse {
         try await execute(COMMAND.GETKEYSANDFLAGS(command: command, args: args))
     }
 
@@ -2163,7 +2156,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Map]: Memory usage details.
     @inlinable
     @discardableResult
-    public func memoryStats() async throws -> RESPToken.Map {
+    public func memoryStats() async throws -> MEMORY.STATS.Response {
         try await execute(MEMORY.STATS())
     }
 
@@ -2200,7 +2193,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Returns information about the modules loaded to the server.
     @inlinable
     @discardableResult
-    public func moduleList() async throws -> RESPToken.Array {
+    public func moduleList() async throws -> MODULE.LIST.Response {
         try await execute(MODULE.LIST())
     }
 
@@ -2381,7 +2374,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Array containing two elements: Unix time in seconds and microseconds.
     @inlinable
     @discardableResult
-    public func time() async throws -> RESPToken.Array {
+    public func time() async throws -> TIME.Response {
         try await execute(TIME())
     }
 

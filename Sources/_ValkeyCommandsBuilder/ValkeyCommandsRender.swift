@@ -10,6 +10,7 @@ import Foundation
 /// List of functions where the Response calculation has been disabled because we want
 /// to override the response in the Valkey library
 private let disableResponseCalculationCommands: Set<String> = [
+    "ACL GETUSER",
     "BLPOP",
     "BLMPOP",
     "BRPOP",
@@ -26,6 +27,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "CLUSTER SHARDS",
     "CLUSTER NODES",
     "CLUSTER REPLICAS",
+    "COMMAND GETKEYSANDFLAGS",
     "FUNCTION LIST",
     "FUNCTION LOAD",
     "FUNCTION STATS",
@@ -38,15 +40,20 @@ private let disableResponseCalculationCommands: Set<String> = [
     "GEORADIUSBYMEMBER_RO",
     "HRANDFIELD",
     "HSCAN",
+    "MEMORY STATS",
     "ROLE",
     "LMOVE",
     "LMPOP",
+    "MODULE LIST",
+    "PUBSUB NUMSUB",
+    "PUBSUB SHARDNUMSUB",
     "ROLE",
     "SCAN",
     "SSCAN",
     "SCRIPT EXISTS",
     "SCRIPT LOAD",
     "SCRIPT SHOW",
+    "TIME",
     "XAUTOCLAIM",
     "XCLAIM",
     "XINFO CONSUMERS",
@@ -101,7 +108,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
     var string = """
         //
         // This source file is part of the valkey-swift project
-        // Copyright (c) 2025 the valkey-swift project authors
+        // Copyright (c) 2025-2026 the valkey-swift project authors
         //
         // See LICENSE.txt for license information
         // SPDX-License-Identifier: Apache-2.0
