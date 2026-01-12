@@ -39,6 +39,32 @@ struct CommandTests {
                 try await connection.clientTracking(status: .on, clientId: 25, prefixes: ["test", "this"])
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func clientTrackingInfo() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["CLIENT", "TRACKINGINFO"]),
+                    response: .map([
+                        .bulkString("flags"): .set([
+                            .bulkString("on"),
+                            .bulkString("bcast"),
+                        ]),
+                        .bulkString("redirect"): .number(0),
+                        .bulkString("prefixes"): .array([
+                            .bulkString("test/")
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let info = try await connection.clientTrackinginfo()
+                #expect(info.redirect == 0)
+                #expect(info.flags.contains(.on))
+                #expect(info.flags.contains(.broadcast))
+                #expect(info.prefixes == ["test/"])
+            }
+        }
     }
 
     struct ClusterCommands {

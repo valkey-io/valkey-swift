@@ -788,8 +788,6 @@ extension CLIENT {
     /// Returns information about server-assisted client-side caching for the connection.
     @_documentation(visibility: internal)
     public struct TRACKINGINFO: ValkeyCommand {
-        public typealias Response = RESPToken.Map
-
         @inlinable public static var name: String { "CLIENT TRACKINGINFO" }
 
         @inlinable public init() {
@@ -1437,7 +1435,7 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
-    public func clientTrackinginfo() async throws -> RESPToken.Map {
+    public func clientTrackinginfo() async throws -> CLIENT.TRACKINGINFO.Response {
         try await execute(CLIENT.TRACKINGINFO())
     }
 
