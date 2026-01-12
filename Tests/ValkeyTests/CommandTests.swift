@@ -799,6 +799,145 @@ struct CommandTests {
                 }
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func xinfoConsumers() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["XINFO", "CONSUMERS", "key", "MyGroup"]),
+                    response: .array([
+                        .array([
+                            .bulkString("name"),
+                            .bulkString("Alice"),
+                            .bulkString("pending"),
+                            .number(1),
+                            .bulkString("idle"),
+                            .number(9_104_628),
+                            .bulkString("inactive"),
+                            .number(18_104_698),
+                        ]),
+                        .array([
+                            .bulkString("name"),
+                            .bulkString("Bob"),
+                            .bulkString("pending"),
+                            .number(1),
+                            .bulkString("idle"),
+                            .number(83_841_983),
+                            .bulkString("inactive"),
+                            .number(993_841_998),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.xinfoConsumers("key", group: "MyGroup")
+                #expect(result.count == 2)
+                #expect(result[0].name == "Alice")
+                #expect(result[0].pending == 1)
+                #expect(result[0].idle == 9_104_628)
+                #expect(result[0].inactive == 18_104_698)
+                #expect(result[1].name == "Bob")
+                #expect(result[1].pending == 1)
+                #expect(result[1].idle == 83_841_983)
+                #expect(result[1].inactive == 993_841_998)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func xinfoGroups() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["XINFO", "GROUPS", "key"]),
+                    response: .array([
+                        .array([
+                            .bulkString("name"),
+                            .bulkString("myGroup"),
+                            .bulkString("consumers"),
+                            .number(1),
+                            .bulkString("pending"),
+                            .number(2),
+                            .bulkString("last-delivered-id"),
+                            .bulkString("1638126030001-0"),
+                            .bulkString("entries-read"),
+                            .number(1),
+                            .bulkString("lag"),
+                            .number(1),
+                        ]),
+                        .array([
+                            .bulkString("name"),
+                            .bulkString("myOtherGroup"),
+                            .bulkString("consumers"),
+                            .number(1),
+                            .bulkString("pending"),
+                            .number(0),
+                            .bulkString("last-delivered-id"),
+                            .bulkString("1638126028070-0"),
+                            .bulkString("entries-read"),
+                            .number(2),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.xinfoGroups("key")
+                #expect(result.count == 2)
+                #expect(result[0].name == "myGroup")
+                #expect(result[0].consumers == 1)
+                #expect(result[0].pending == 2)
+                #expect(result[0].lastDeliveredId == "1638126030001-0")
+                #expect(result[0].entriesRead == 1)
+                #expect(result[0].lag == 1)
+                #expect(result[1].name == "myOtherGroup")
+                #expect(result[1].consumers == 1)
+                #expect(result[1].pending == 0)
+                #expect(result[1].lastDeliveredId == "1638126028070-0")
+                #expect(result[1].entriesRead == 2)
+                #expect(result[1].lag == nil)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func xinfoStream() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["XINFO", "STREAM", "key"]),
+                    response: .map([
+                        .bulkString("length"): .number(2),
+                        .bulkString("radix-tree-keys"): .number(2),
+                        .bulkString("radix-tree-nodes"): .number(3),
+                        .bulkString("last-generated-id"): .bulkString("1768072864629-0"),
+                        .bulkString("max-deleted-entry-id"): .bulkString("0-0"),
+                        .bulkString("entries-added"): .number(2),
+                        .bulkString("groups"): .number(1),
+                        .bulkString("first-entry"): .array([
+                            .bulkString("1768072864629-0"),
+                            .array([
+                                .bulkString("key"),
+                                .bulkString("field"),
+                            ]),
+                        ]),
+                        .bulkString("last-entry"): .array([
+                            .bulkString("1768072864630-0"),
+                            .array([
+                                .bulkString("key2"),
+                                .bulkString("field2"),
+                            ]),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.xinfoStream("key")
+                #expect(result.length == 2)
+                #expect(result.numberOfRadixTreeKeys == 2)
+                #expect(result.numberOfRadixTreeNodes == 3)
+                #expect(result.lastGeneratedID == "1768072864629-0")
+                #expect(result.maxDeletedEntryID == "0-0")
+                #expect(result.entriesAdded == 2)
+                #expect(result.firstEntry?.id == "1768072864629-0")
+                #expect(result.lastEntry?.id == "1768072864630-0")
+            }
+        }
     }
 
     struct GeoCommands {

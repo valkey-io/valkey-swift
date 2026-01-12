@@ -284,6 +284,11 @@ public struct RESPToken: Hashable, Sendable {
     }
 }
 
+extension RESPToken {
+    @usableFromInline
+    static let nullToken = RESPToken(validated: .init(bytes: "_\r\n".utf8))
+}
+
 extension ByteBuffer {
     fileprivate func getRESP3TypeIdentifier(at index: Int) throws -> RESPTypeIdentifier? {
         guard let int = self.getInteger(at: index, as: UInt8.self) else {
