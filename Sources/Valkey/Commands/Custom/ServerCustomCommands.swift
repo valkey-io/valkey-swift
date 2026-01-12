@@ -32,19 +32,30 @@ extension ROLE {
             }
         }
         public struct Replica: Sendable {
-            public enum State: String, RESPTokenDecodable, Sendable {
-                case connect
-                case connecting
-                case sync
-                case connected
+
+            public struct State: Hashable, RawRepresentable, RESPTokenDecodable, CustomStringConvertible, Sendable {
+                public let rawValue: String
+
+                public init(rawValue: String) {
+                    self.rawValue = rawValue
+                }
 
                 public init(_ token: RESPToken) throws {
                     let string = try String(token)
-                    guard let state = State(rawValue: string) else {
-                        throw RESPDecodeError(.unexpectedToken, token: token)
-                    }
-                    self = state
+                    self = .init(rawValue: string)
                 }
+
+                public var description: String { "\"\(self.rawValue)\"" }
+
+                /// The replica needs to connect to its primary.
+                public static var connect: State { .init(rawValue: "connect") }
+                /// The primary-replica connection is in progress
+                public static var connecting: State { .init(rawValue: "connecting") }
+                /// The primary and replica are trying to perform the synchronization
+                public static var sync: State { .init(rawValue: "sync") }
+                /// The replica is online
+                public static var connected: State { .init(rawValue: "connected") }
+
             }
             public let primaryIP: String
             public let primaryPort: Int
