@@ -962,6 +962,22 @@ struct CommandTests {
     }
 
     struct GeoCommands {
+
+        private var geoSearchResponse: RESP3Value = .array([
+            .array([
+                .bulkString("Edinburgh"), .bulkString("38.9"), .bulkString("3665074419141107"),
+                .array([.bulkString("31.23"), .bulkString("56.20")]),
+            ]),
+            .array([
+                .bulkString("Glasgow"), .bulkString("71.2"), .bulkString("3676829890883619"),
+                .array([.bulkString("35.74"), .bulkString("44.87")]),
+            ]),
+            .array([
+                .bulkString("Dundee"), .bulkString("128.5"), .bulkString("3676829890801228"),
+                .array([.bulkString("33.62"), .bulkString("48.10")]),
+            ]),
+        ])
+
         @Test
         @available(valkeySwift 1.0, *)
         func geopos() async throws {
@@ -1000,6 +1016,94 @@ struct CommandTests {
                 #expect(distance == 42)
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func geoSearch() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["GEOSEARCH", "Scotland", "BYRADIUS", "500.0", "km", "WITHCOORD", "WITHDIST", "WITHHASH"]),
+                    response: geoSearchResponse
+                ),
+            ) { connection in
+                let entries = try await connection.geosearch(
+                    "Scotland",
+                    by: .circle(.init(radius: 500.0, unit: .km)),
+                    withcoord: true,
+                    withdist: true,
+                    withhash: true
+                )
+                try verifyGeoSearchEntries(
+                    entries,
+                    options: [.withHash, .withDist, .withCoord]
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func geoRadius() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["GEORADIUS", "Scotland", "30.0", "50.0", "500.0", "km", "WITHCOORD", "WITHDIST", "WITHHASH"]),
+                    response: geoSearchResponse
+                ),
+            ) { connection in
+                let entries = try await connection.georadius(
+                    "Scotland",
+                    longitude: 30.0,
+                    latitude: 50.0,
+                    radius: 500.0,
+                    unit: GEORADIUS.Unit.km,
+                    withcoord: true,
+                    withdist: true,
+                    withhash: true
+                )
+                try verifyGeoSearchEntries(
+                    entries,
+                    options: [.withHash, .withDist, .withCoord]
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func geoRadiusByMember() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["GEORADIUSBYMEMBER", "Scotland", "Edinburgh", "500.0", "km", "WITHCOORD", "WITHDIST", "WITHHASH"]),
+                    response: geoSearchResponse
+                ),
+            ) { connection in
+                let entries = try await connection.georadiusbymember(
+                    "Scotland",
+                    member: "Edinburgh",
+                    radius: 500.0,
+                    unit: GEORADIUSBYMEMBER.Unit.km,
+                    withcoord: true,
+                    withdist: true,
+                    withhash: true
+                )
+                try verifyGeoSearchEntries(
+                    entries,
+                    options: [.withHash, .withDist, .withCoord]
+                )
+            }
+        }
+
+        private func verifyGeoSearchEntries(_ entries: GeoSearchEntries, options: [GeoSearchEntries.Option]) throws {
+            for entry in try entries.decode(options: [
+                .withHash, .withDist, .withCoord,
+            ]) {
+                #expect(!entry.member.isEmpty)
+                #expect(entry.distance != nil && entry.distance! >= 0)
+                #expect(entry.hash != nil && entry.hash! > 0)
+                #expect(entry.coordinates != nil)
+                #expect(entry.coordinates!.latitude > 0)
+                #expect(entry.coordinates!.longitude > 0)
+            }
+        }
+
     }
 
     struct HashCommands {

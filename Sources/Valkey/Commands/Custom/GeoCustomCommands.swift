@@ -30,35 +30,145 @@ extension GEOPOS {
 }
 
 extension GEOSEARCH {
-    /// Search entry for GEOSEARCH command.
-    ///
-    /// Given the response for GEOSEARCH is dependent on which `with` attributes flags
-    /// are set in the command it is not possible to know the structure of the response
-    /// beforehand. The order the attributes are in the array, if relevant with flag is
-    /// set, is distance, hash and coordinates. These can be decoded respectively as a
-    /// `Double`, `String` and ``GeoCoordinate``
-    public struct SearchEntry: RESPTokenDecodable, Sendable {
-        public let member: String
-        public let attributes: [RESPToken]
+    public typealias Response = GeoSearchEntries
+}
 
-        public init(_ token: RESPToken) throws {
+extension GEORADIUS {
+    public typealias Response = GeoSearchEntries
+}
+
+extension GEORADIUSBYMEMBER {
+    public typealias Response = GeoSearchEntries
+}
+
+extension GEORADIUSBYMEMBERRO {
+    public typealias Response = GeoSearchEntries
+}
+
+extension GEORADIUSRO {
+    public typealias Response = GeoSearchEntries
+}
+
+public struct GeoSearchEntries: RESPTokenDecodable, Sendable {
+
+    private let token: RESPToken
+
+    public init(_ token: RESPToken) throws {
+        self.token = token
+    }
+
+    /// Decode the GEOSEARCH / GEORADIUS response entries based on the options used in the command.
+    ///
+    /// - Parameter options: The set of options (withDist, withHash, withCoord) that were used in the GEOSEARCH / GEORADIUS command.
+    /// - Returns: An array of decoded ``Entry`` objects.
+    /// - Throws: ``RESPDecodeError`` if the response cannot be decoded.
+    public func decode(options: Set<Option>) throws -> [Entry] {
+        switch token.value {
+        case .array(let array):
+            return try array.map { try Entry.decode($0, options: options) }
+        default:
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
+        }
+    }
+
+    /// Options for GEOSEARCH / GEORADIUS command that affect the response structure.
+    public enum Option: String, Sendable, Hashable, CaseIterable {
+        case withDist
+        case withHash
+        case withCoord
+    }
+
+    /// A search entry result from a GEOSEARCH / GEORADIUS commands.
+    ///
+    /// The structure of this entry depends on which options were provided to the GEOSEARCH / GEORADIUS commands.
+    /// Attributes are returned in a specific order when present: distance, hash, coordinates.
+    public struct Entry: Sendable {
+
+        public let member: String
+        public let distance: Double?
+        public let hash: Int64?
+        public let coordinates: GeoCoordinates?
+
+        /// Create a new Entry.
+        ///
+        /// - Parameters:
+        ///   - member: The member name.
+        ///   - distance: Optional distance from center.
+        ///   - hash: Optional geohash integer.
+        ///   - coordinates: Optional coordinates.
+        public init(
+            member: String,
+            distance: Double? = nil,
+            hash: Int64? = nil,
+            coordinates: GeoCoordinates? = nil
+        ) {
+            self.member = member
+            self.distance = distance
+            self.hash = hash
+            self.coordinates = coordinates
+        }
+
+        /// Decode a GEOSEARCH / GEORADIUS entry token based on the options used in the command.
+        ///
+        /// - Parameters:
+        ///   - token: The RESP token to decode.
+        ///   - options: The options that were used in the GEORADIUS command.
+        /// - Returns: A decoded ``Entry``.
+        /// - Throws: ``RESPDecodeError`` if the token cannot be decoded.
+        fileprivate static func decode(_ token: RESPToken, options: Set<GeoSearchEntries.Option> = []) throws -> Entry {
             switch token.value {
             case .array(let array):
-                var arrayIterator = array.makeIterator()
-                guard let member = arrayIterator.next() else {
+                var iterator = array.makeIterator()
+
+                // First element is always the member name
+                guard let memberToken = iterator.next() else {
                     throw RESPDecodeError.invalidArraySize(array, expectedSize: 1)
                 }
-                self.member = try String(member)
-                self.attributes = array.dropFirst().map { $0 }
+                let member = try String(memberToken)
+
+                var distance: Double? = nil
+                var hash: Int64? = nil
+                var coordinates: GeoCoordinates? = nil
+
+                // Parse attributes in order: distance, hash, coordinates
+                if options.contains(.withDist) {
+                    guard let distToken = iterator.next() else {
+                        throw RESPDecodeError.invalidArraySize(array, expectedSize: 2)
+                    }
+                    distance = try Double(distToken)
+                }
+
+                if options.contains(.withHash) {
+                    guard let hashToken = iterator.next() else {
+                        let expectedSize = 2 + (options.contains(.withDist) ? 1 : 0)
+                        throw RESPDecodeError.invalidArraySize(array, expectedSize: expectedSize)
+                    }
+                    hash = try Int64(hashToken)
+                }
+
+                if options.contains(.withCoord) {
+                    guard let coordToken = iterator.next() else {
+                        let expectedSize = 2 + (options.contains(.withDist) ? 1 : 0) + (options.contains(.withHash) ? 1 : 0)
+                        throw RESPDecodeError.invalidArraySize(array, expectedSize: expectedSize)
+                    }
+                    coordinates = try GeoCoordinates(coordToken)
+                }
+
+                return Entry(
+                    member: member,
+                    distance: distance,
+                    hash: hash,
+                    coordinates: coordinates
+                )
 
             case .bulkString(let buffer):
-                self.member = String(buffer: buffer)
-                self.attributes = []
+                // Simple response without any options - just the member name
+                return Entry(member: String(buffer: buffer))
 
             default:
                 throw RESPDecodeError.tokenMismatch(expected: [.array, .bulkString], token: token)
             }
         }
     }
-    public typealias Response = [SearchEntry]
+
 }
