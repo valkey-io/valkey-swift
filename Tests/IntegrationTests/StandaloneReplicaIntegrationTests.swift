@@ -63,6 +63,37 @@ struct StandaloneReplicaIntegrationTests {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(primaryHostname!, port: primaryPort!), logger: logger) { client in
+            // wait 100 milliseconds to ensure ROLE has returned status
+            try await Task.sleep(for: .milliseconds(100))
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.withConnection { connection in
+                        try await connection.subscribe(to: "testSubscriptions") { subscription in
+                            cont.finish()
+                            var iterator = subscription.makeAsyncIterator()
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
+                        }
+                        #expect(await connection.isSubscriptionsEmpty())
+                    }
+                }
+                try await client.withConnection { connection in
+                    await stream.first { _ in true }
+                    try await connection.publish(channel: "testSubscriptions", message: "hello")
+                    try await connection.publish(channel: "testSubscriptions", message: "goodbye")
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
+
     @available(valkeySwift 1.0, *)
     func withValkeyClient<Value>(
         _ address: ValkeyServerAddress,

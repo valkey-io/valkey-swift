@@ -130,7 +130,7 @@ struct CommandIntegratedTests {
 
     @available(valkeySwift 1.0, *)
     @Test
-    func testGEOPOS() async throws {
+    func testGEOSEARCH() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
@@ -140,18 +140,25 @@ struct CommandIntegratedTests {
                     data: [.init(longitude: 1.0, latitude: 53.0, member: "Edinburgh"), .init(longitude: 1.4, latitude: 53.5, member: "Glasgow")]
                 )
                 #expect(count == 2)
-                let search = try await client.geosearch(
+                let geoSearchEntries = try await client.geosearch(
                     key,
                     from: .fromlonlat(.init(longitude: 0.0, latitude: 53.0)),
-                    by: .circle(.init(radius: 10000, unit: .mi)),
+                    by: .circle(.init(radius: 1000, unit: .mi)),
                     withcoord: true,
                     withdist: true,
                     withhash: true
                 )
-                print(search.map { $0.member })
-                try print(search.map { try $0.attributes[0].decode(as: Double.self) })
-                try print(search.map { try $0.attributes[1].decode(as: String.self) })
-                try print(search.map { try $0.attributes[2].decode(as: GeoCoordinates.self) })
+
+                #expect(geoSearchEntries.count == 2)
+
+                for entry in try geoSearchEntries.decode(options: [.withDist, .withHash, .withCoord]) {
+                    #expect(!entry.member.isEmpty)
+                    #expect(entry.distance != nil && entry.distance! > 0)
+                    #expect(entry.hash != nil && entry.hash! > 0)
+                    #expect(entry.coordinates != nil)
+                    #expect(entry.coordinates!.latitude > 0)
+                    #expect(entry.coordinates!.longitude > 0)
+                }
             }
         }
     }
