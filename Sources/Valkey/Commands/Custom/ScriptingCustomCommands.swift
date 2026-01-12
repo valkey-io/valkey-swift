@@ -95,21 +95,3 @@ extension FUNCTION.STATS {
         }
     }
 }
-
-extension SCRIPT {
-    public typealias LOADResponse = String
-    public typealias EXISTSResponse = [Int]
-    public typealias SHOWResponse = String
-}
-
-extension SCRIPT.LOAD {
-    public typealias Response = SCRIPT.LOADResponse
-}
-
-extension SCRIPT.EXISTS {
-    public typealias Response = SCRIPT.EXISTSResponse
-}
-
-extension SCRIPT.SHOW {
-    public typealias Response = SCRIPT.SHOWResponse
-}

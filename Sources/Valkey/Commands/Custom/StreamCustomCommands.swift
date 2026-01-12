@@ -233,34 +233,7 @@ extension XPENDING {
     public typealias Response = XPENDINGResponse
 }
 
-@_documentation(visibility: internal)
-public typealias XRANGEResponse = [XMessage]
-extension XRANGE {
-    public typealias Response = XRANGEResponse
-}
-
-@_documentation(visibility: internal)
-public typealias XREADResponse = XREADStreams<XMessage>?
-extension XREAD {
-    public typealias Response = XREADResponse
-}
-
-@_documentation(visibility: internal)
-public typealias XREADGROUPResponse = XREADStreams<XREADGroupMessage>?
-extension XREADGROUP {
-    public typealias Response = XREADGROUPResponse
-}
-
-@_documentation(visibility: internal)
-public typealias XREVRANGEResponse = [XMessage]
-extension XREVRANGE {
-    public typealias Response = XREVRANGEResponse
-}
-
 extension XINFO {
-    public typealias CONSUMERSResponse = [Consumer]
-    public typealias GROUPSResponse = [ConsumerGroup]
-
     public struct Consumer: RESPTokenDecodable, Sendable {
         /// Consumer's name
         public let name: String
@@ -296,12 +269,8 @@ extension XINFO {
         }
     }
 }
-extension XINFO.CONSUMERS {
-    public typealias Response = XINFO.CONSUMERSResponse
-}
-
 extension XINFO.GROUPS {
-    public typealias Response = XINFO.GROUPSResponse
+    public typealias Response = [XINFO.ConsumerGroup]
 }
 
 extension XINFO.STREAM {

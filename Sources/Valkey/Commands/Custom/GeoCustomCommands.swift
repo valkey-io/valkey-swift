@@ -18,13 +18,6 @@ public struct GeoCoordinates: RESPTokenDecodable, Sendable {
     }
 }
 
-/// A type that represents a coordinate value for a geographic location.
-@_documentation(visibility: internal)
-public typealias GEODISTResponse = Double?
-extension GEODIST {
-    public typealias Response = GEODISTResponse
-}
-
 extension GEOPOS {
     public typealias Response = [GeoCoordinates?]
 }
@@ -35,18 +28,6 @@ extension GEOSEARCH {
 
 extension GEORADIUS {
     public typealias Response = GeoSearchEntries
-}
-
-@_documentation(visibility: internal)
-public typealias GEORADIUSBYMEMBERResponse = GeoSearchEntries
-extension GEORADIUSBYMEMBER {
-    public typealias Response = GEORADIUSBYMEMBERResponse
-}
-
-@_documentation(visibility: internal)
-public typealias GEORADIUSBYMEMBERROResponse = GeoSearchEntries
-extension GEORADIUSBYMEMBERRO {
-    public typealias Response = GEORADIUSBYMEMBERROResponse
 }
 
 extension GEORADIUSRO {

@@ -7,10 +7,6 @@
 //
 import NIOCore
 
-extension CLUSTER {
-    public typealias REPLICASResponse = ValkeyClusterNodes
-}
-
 extension CLUSTER.GETKEYSINSLOT {
     public typealias Response = [ValkeyKey]
 }
@@ -41,10 +37,6 @@ extension CLUSTER.SLOTS {
 
 extension CLUSTER.NODES {
     public typealias Response = ValkeyClusterNodes
-}
-
-extension CLUSTER.REPLICAS {
-    public typealias Response = CLUSTER.REPLICASResponse
 }
 
 /// Response type for cluster node listing commands.

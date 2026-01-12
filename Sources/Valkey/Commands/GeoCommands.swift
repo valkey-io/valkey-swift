@@ -102,6 +102,8 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
             }
         }
     }
+    public typealias Response = Double?
+
     @inlinable public static var name: String { "GEODIST" }
 
     public var key: ValkeyKey
@@ -387,6 +389,8 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
+    public typealias Response = GeoSearchEntries
+
     @inlinable public static var name: String { "GEORADIUSBYMEMBER" }
 
     public var key: ValkeyKey
@@ -501,6 +505,8 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
+    public typealias Response = GeoSearchEntries
+
     @inlinable public static var name: String { "GEORADIUSBYMEMBER_RO" }
 
     public var key: ValkeyKey
@@ -1249,7 +1255,7 @@ extension ValkeyClientProtocol {
         member1: Member1,
         member2: Member2,
         unit: GEODIST<Member1, Member2>.Unit? = nil
-    ) async throws -> GEODISTResponse {
+    ) async throws -> Double? {
         try await execute(GEODIST(key, member1: member1, member2: member2, unit: unit))
     }
 
@@ -1340,7 +1346,7 @@ extension ValkeyClientProtocol {
         countBlock: GEORADIUSBYMEMBER<Member>.CountBlock? = nil,
         order: GEORADIUSBYMEMBER<Member>.Order? = nil,
         store: GEORADIUSBYMEMBER<Member>.Store? = nil
-    ) async throws -> GEORADIUSBYMEMBERResponse {
+    ) async throws -> GeoSearchEntries {
         try await execute(
             GEORADIUSBYMEMBER(
                 key,
@@ -1378,7 +1384,7 @@ extension ValkeyClientProtocol {
         withhash: Bool = false,
         countBlock: GEORADIUSBYMEMBERRO<Member>.CountBlock? = nil,
         order: GEORADIUSBYMEMBERRO<Member>.Order? = nil
-    ) async throws -> GEORADIUSBYMEMBERROResponse {
+    ) async throws -> GeoSearchEntries {
         try await execute(
             GEORADIUSBYMEMBERRO(
                 key,
