@@ -28,7 +28,7 @@ extension RESPToken: RESPTokenDecodable {
         self = token
     }
 
-    /// Convert RESPToken Array to a tuple of values
+    /// Decode RESPToken as a tuple of values, if it is an Array
     /// - Parameter as: Tuple of types to convert to
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
@@ -42,6 +42,33 @@ extension RESPToken: RESPTokenDecodable {
         default:
             throw RESPDecodeError.tokenMismatch(expected: [.array], token: self)
         }
+    }
+
+    /// Decode elements corresponding to dictionary keys in RESPToken if it is either an
+    /// array or map
+    ///
+    /// The number of keys has to be equal to the number of elements in the tuple returned
+    ///
+    /// - Parameters
+    ///   - keys: Array of keys to extract values from map
+    ///   - type: Parameter pack of types to convert to
+    /// - Throws: RESPDecodeError
+    /// - Returns: Parameter pack of decoded values
+    @inlinable
+    public func decodeMapElements<each Value: RESPTokenDecodable>(
+        _ keys: String...,
+        as type: (repeat (each Value)).Type = (repeat (each Value)).self
+    ) throws -> (repeat each Value) {
+        let map =
+            switch self.value {
+            case .array(let array):
+                try array.asMap()
+            case .map(let map):
+                map
+            default:
+                throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: self)
+            }
+        return try map.decodeElements(keys)
     }
 }
 
@@ -225,6 +252,11 @@ extension Optional: RESPTokenDecodable where Wrapped: RESPTokenDecodable {
 extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
     @inlinable
     public init(_ token: RESPToken) throws {
+        self = try .init(token, decodeSingleElementAsArray: true)
+    }
+
+    @inlinable
+    public init(_ token: RESPToken, decodeSingleElementAsArray: Bool) throws {
         switch token.value {
         case .array(let respArray), .set(let respArray), .push(let respArray):
             do {
@@ -234,15 +266,20 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
                     array.append(element)
                 }
                 self = array
-            } catch let error as RESPDecodeError {
-                switch error.errorCode {
+            } catch let decodeError as RESPDecodeError {
+                guard decodeSingleElementAsArray else { throw decodeError }
+                switch decodeError.errorCode {
                 case .tokenMismatch:
                     // if decoding array failed it is possible `Element` is represented by an array and we have a single array
                     // that represents one element of `Element` instead of Array<Element>. We should attempt to decode this as a single element
-                    let value = try Element(token)
-                    self = [value]
+                    do {
+                        let value = try Element(token)
+                        self = [value]
+                    } catch {
+                        throw decodeError
+                    }
                 default:
-                    throw error
+                    throw decodeError
                 }
             }
         case .null:
@@ -423,5 +460,60 @@ extension RESPToken.Map: RESPTokenDecodable {
         try self.map {
             try (Key($0.key), Value($0.value))
         }
+    }
+
+    /// Convert values from RESPToken Map to a parameter pack of values
+    ///
+    /// The number of keys has to be equal to the number of elements in the type parameter pack
+    ///
+    /// - Parameters
+    ///   - keys: Array of keys to extract values from map
+    ///   - type: Parameter pack of types to convert to
+    /// - Throws: RESPDecodeError
+    /// - Returns: Parameter pack of decoded values
+    @inlinable
+    public func decodeElements<each Value: RESPTokenDecodable>(
+        _ keys: String...,
+        as type: (repeat (each Value)).Type = (repeat (each Value)).self
+    ) throws -> (repeat each Value) {
+        try decodeElements(keys)
+    }
+
+    @inlinable
+    func decodeElements<each Value: RESPTokenDecodable>(
+        _ keys: [String],
+        as type: (repeat (each Value)).Type = (repeat (each Value)).self
+    ) throws -> (repeat each Value) {
+        var encoder = ValkeyCommandEncoder()
+        var mapIterator = self.makeIterator()
+
+        func decodeRESPToken<T: RESPTokenDecodable>(named name: String?, map: RESPToken.Map, as: T.Type) throws -> T {
+            guard let name else { preconditionFailure("Invalid number of keys") }
+            encoder.reset()
+            encoder.encodeBulkString(name)
+            var count = keys.count
+            while count > 0 {
+                var keyValue: (RESPToken, RESPToken)
+                // get next element, or if we have hit the end of the list start
+                // from the beginning again
+                if let next = mapIterator.next() {
+                    keyValue = next
+                } else {
+                    mapIterator = self.makeIterator()
+                    keyValue = mapIterator.next()!
+                }
+                if keyValue.0.base == encoder.buffer {
+                    return try T(keyValue.1)
+                }
+                count -= 1
+            }
+            do {
+                return try T(RESPToken.nullToken)
+            } catch {
+                throw RESPDecodeError.missingToken(key: name, token: self)
+            }
+        }
+        var keyIterator = keys.makeIterator()
+        return try (repeat decodeRESPToken(named: keyIterator.next(), map: self, as: (each Value).self))
     }
 }

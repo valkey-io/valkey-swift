@@ -209,8 +209,6 @@ public enum XINFO {
     /// Returns a list of the consumers in a consumer group.
     @_documentation(visibility: internal)
     public struct CONSUMERS<Group: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "XINFO CONSUMERS" }
 
         public var key: ValkeyKey
@@ -233,8 +231,6 @@ public enum XINFO {
     /// Returns a list of the consumer groups of a stream.
     @_documentation(visibility: internal)
     public struct GROUPS: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "XINFO GROUPS" }
 
         public var key: ValkeyKey
@@ -289,8 +285,6 @@ public enum XINFO {
                 RESPWithToken("COUNT", count).encode(into: &commandEncoder)
             }
         }
-        public typealias Response = RESPToken.Map
-
         @inlinable public static var name: String { "XINFO STREAM" }
 
         public var key: ValkeyKey
@@ -1176,7 +1170,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Array list of consumers
     @inlinable
-    public func xinfoConsumers<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws -> RESPToken.Array {
+    public func xinfoConsumers<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws -> XINFO.CONSUMERSResponse {
         try await execute(XINFO.CONSUMERS(key, group: group))
     }
 
@@ -1188,7 +1182,7 @@ extension ValkeyClientProtocol {
     ///     * 7.0.0: Added the `entries-read` and `lag` fields
     /// - Complexity: O(1)
     @inlinable
-    public func xinfoGroups(_ key: ValkeyKey) async throws -> RESPToken.Array {
+    public func xinfoGroups(_ key: ValkeyKey) async throws -> XINFO.GROUPS.Response {
         try await execute(XINFO.GROUPS(key))
     }
 
@@ -1217,7 +1211,7 @@ extension ValkeyClientProtocol {
     ///     * [Map]: Summary form, in case `FULL` was not given.
     ///     * [Map]: Extended form, in case `FULL` was given.
     @inlinable
-    public func xinfoStream(_ key: ValkeyKey, fullBlock: XINFO.STREAM.FullBlock? = nil) async throws -> RESPToken.Map {
+    public func xinfoStream(_ key: ValkeyKey, fullBlock: XINFO.STREAM.FullBlock? = nil) async throws -> XINFO.STREAM.Response {
         try await execute(XINFO.STREAM(key, fullBlock: fullBlock))
     }
 
