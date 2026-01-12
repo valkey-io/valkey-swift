@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -69,8 +69,6 @@ public enum PUBSUB {
     /// Returns a count of subscribers to channels.
     @_documentation(visibility: internal)
     public struct NUMSUB: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "PUBSUB NUMSUB" }
 
         public var channels: [String]
@@ -105,8 +103,6 @@ public enum PUBSUB {
     /// Returns the count of subscribers of shard channels.
     @_documentation(visibility: internal)
     public struct SHARDNUMSUB: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "PUBSUB SHARDNUMSUB" }
 
         public var shardchannels: [String]
@@ -316,7 +312,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     @discardableResult
-    public func pubsubNumsub(channels: [String] = []) async throws -> RESPToken.Array {
+    public func pubsubNumsub(channels: [String] = []) async throws -> PUBSUB.NUMSUB.Response {
         try await execute(PUBSUB.NUMSUB(channels: channels))
     }
 
@@ -340,7 +336,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     @discardableResult
-    public func pubsubShardnumsub(shardchannels: [String] = []) async throws -> RESPToken.Array {
+    public func pubsubShardnumsub(shardchannels: [String] = []) async throws -> PUBSUB.SHARDNUMSUB.Response {
         try await execute(PUBSUB.SHARDNUMSUB(shardchannels: shardchannels))
     }
 

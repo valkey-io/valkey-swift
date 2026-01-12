@@ -37,12 +37,14 @@ extension GEORADIUS {
     public typealias Response = GeoSearchEntries
 }
 
+public typealias GEORADIUSBYMEMBERResponse = GeoSearchEntries
 extension GEORADIUSBYMEMBER {
-    public typealias Response = GeoSearchEntries
+    public typealias Response = GEORADIUSBYMEMBERResponse
 }
 
+public typealias GEORADIUSBYMEMBERROResponse = GeoSearchEntries
 extension GEORADIUSBYMEMBERRO {
-    public typealias Response = GeoSearchEntries
+    public typealias Response = GEORADIUSBYMEMBERROResponse
 }
 
 extension GEORADIUSRO {
@@ -51,11 +53,19 @@ extension GEORADIUSRO {
 
 public struct GeoSearchEntries: RESPTokenDecodable, Sendable {
 
-    private let token: RESPToken
+    private let array: RESPToken.Array
 
     public init(_ token: RESPToken) throws {
-        self.token = token
+        switch token.value {
+        case .array(let array):
+            self.array = array
+        default:
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
+        }
     }
+
+    /// Number of entries
+    public var count: Int { self.array.count }
 
     /// Decode the GEOSEARCH / GEORADIUS response entries based on the options used in the command.
     ///
@@ -63,12 +73,7 @@ public struct GeoSearchEntries: RESPTokenDecodable, Sendable {
     /// - Returns: An array of decoded ``Entry`` objects.
     /// - Throws: ``RESPDecodeError`` if the response cannot be decoded.
     public func decode(options: Set<Option>) throws -> [Entry] {
-        switch token.value {
-        case .array(let array):
-            return try array.map { try Entry.decode($0, options: options) }
-        default:
-            throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
-        }
+        try self.array.map { try Entry.decode($0, options: options) }
     }
 
     /// Options for GEOSEARCH / GEORADIUS command that affect the response structure.

@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -122,7 +122,31 @@ struct CommandTests {
                 #expect(result.localSynced == true)
                 #expect(result.numberOfReplicasSynced == 2)
             }
+        }
+    }
 
+    struct PubSubCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func pubSubNumSub() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["PUBSUB", "NUMSUB", "channel1", "channel2"]),
+                    response: .array([
+                        .bulkString("channel1"),
+                        .number(10),
+                        .bulkString("channel2"),
+                        .number(3),
+                    ])
+                )
+            ) { connection in
+                let subscribers = try await connection.pubsubNumsub(channels: ["channel1", "channel2"])
+                #expect(subscribers.channels.count == 2)
+                #expect(subscribers.channels[0].name == "channel1")
+                #expect(subscribers.channels[0].numberOfSubscribers == 10)
+                #expect(subscribers.channels[1].name == "channel2")
+                #expect(subscribers.channels[1].numberOfSubscribers == 3)
+            }
         }
     }
 
@@ -224,6 +248,98 @@ struct CommandTests {
     struct ServerCommands {
         @Test
         @available(valkeySwift 1.0, *)
+        func aclGetuser() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["ACL", "GETUSER", "johnsmith"]),
+                    response: .map([
+                        .bulkString("flags"): .set([
+                            .bulkString("on"),
+                            .bulkString("sanitize-payload"),
+                        ]),
+                        .bulkString("passwords"): .array([
+                            .bulkString("b212518f8e7683e708e4e07b0f388d0c04b573acac8e80fee7b24856d9d26893")
+                        ]),
+                        .bulkString("commands"): .bulkString("-@all +acl|whoami"),
+                        .bulkString("keys"): .bulkString(""),
+                        .bulkString("channels"): .bulkString(""),
+                        .bulkString("selectors"): .array([
+                            .map([
+                                .bulkString("commands"): .bulkString("-@all +set"),
+                                .bulkString("keys"): .bulkString("~key2"),
+                                .bulkString("channels"): .bulkString(""),
+                            ])
+                        ]),
+                    ])
+                )
+            ) { client in
+                let user = try #require(try await client.aclGetuser(username: "johnsmith"))
+                #expect(user.flags == [.on, .sanitizePayload])
+                #expect(user.passwords == ["b212518f8e7683e708e4e07b0f388d0c04b573acac8e80fee7b24856d9d26893"])
+                #expect(user.keys == "")
+                #expect(user.channels == "")
+                #expect(user.selectors?.count == 1)
+                #expect(user.selectors?[0].commands == "-@all +set")
+                #expect(user.selectors?[0].keys == "~key2")
+                #expect(user.selectors?[0].channels == "")
+            }
+        }
+        @Test
+        @available(valkeySwift 1.0, *)
+        func commandGetkeysandflags() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["COMMAND", "GETKEYSANDFLAGS", "LMOVE", "mylist1", "mylist2", "left", "left"]),
+                    response: .array([
+                        .array([.bulkString("mylist1"), .array([.bulkString("RW"), .bulkString("access"), .bulkString("delete")])]),
+                        .array([.bulkString("mylist2"), .array([.bulkString("RW"), .bulkString("insert")])]),
+                    ])
+                )
+            ) { connection in
+                let keys = try await connection.commandGetkeysandflags(command: "LMOVE", args: ["mylist1", "mylist2", "left", "left"])
+                #expect(keys.count == 2)
+                #expect(keys[0].key == "mylist1")
+                #expect(keys[0].flags == [.rw, .access, .delete])
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func moduleList() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["MODULE", "LIST"]),
+                    response: .array([
+                        .map([
+                            .bulkString("name"): .bulkString("json"),
+                            .bulkString("ver"): .number(10002),
+                            .bulkString("path"): .bulkString("/usr/lib/valkey/libjson.so"),
+                            .bulkString("args"): .array([]),
+                        ]),
+                        .map([
+                            .bulkString("name"): .bulkString("ldap"),
+                            .bulkString("ver"): .number(16_777_471),
+                            .bulkString("path"): .bulkString("/usr/lib/valkey/libvalkey_ldap.so"),
+                            .bulkString("args"): .array([]),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let modules = try await connection.moduleList()
+                #expect(modules.count == 2)
+                #expect(modules[0].name == "json")
+                #expect(modules[0].version == 10002)
+                #expect(modules[0].path == "/usr/lib/valkey/libjson.so")
+                #expect(modules[0].args == [])
+                #expect(modules[1].name == "ldap")
+                #expect(modules[1].version == 16_777_471)
+                #expect(modules[1].path == "/usr/lib/valkey/libvalkey_ldap.so")
+                #expect(modules[1].args == [])
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func role() async throws {
             try await testCommandEncodesDecodes(
                 (
@@ -291,6 +407,18 @@ struct CommandTests {
             ) { connection in
                 try await connection.replicaof(args: .hostPort(.init(host: "127.0.0.1", port: 18000)))
                 try await connection.replicaof(args: .noOne)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func time() async throws {
+            try await testCommandEncodesDecodes(
+                (request: .command(["TIME"]), response: .array([.number(1_714_701_491), .number(723379)])),
+            ) { connection in
+                let time = try await connection.time()
+                #expect(time.seconds == 1_714_701_491)
+                #expect(time.microSeconds == 723379)
             }
         }
     }
@@ -2691,7 +2819,11 @@ func testCommandEncodesDecodes(
         group.addTask {
             for (request, response) in respValues {
                 let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(outbound == RESPToken(request).base, sourceLocation: sourceLocation)
+                #expect(
+                    outbound == RESPToken(request).base,
+                    "\(RESPToken(validated: outbound).value.descriptionWith(redact: false))",
+                    sourceLocation: sourceLocation
+                )
                 try await channel.writeInbound(RESPToken(response).base)
             }
         }
