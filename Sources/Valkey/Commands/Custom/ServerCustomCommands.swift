@@ -226,6 +226,90 @@ extension ROLE {
     }
 }
 
+extension MEMORY.STATS {
+    public struct Key: RawRepresentable, RESPTokenDecodable, Hashable, Sendable, CustomStringConvertible {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public init(_ token: RESPToken) throws {
+            let string = try String(token)
+            self = .init(rawValue: string)
+        }
+
+        public var description: String { self.rawValue }
+
+        /// Peak memory consumed by Valkey in bytes (see INFO's used_memory_peak)
+        public static var peakAllocated: Key { .init(rawValue: "peak.allocated") }
+        /// Total number of bytes allocated by Valkey using its allocator (see INFO's used_memory)
+        public static var totalAllocated: Key { .init(rawValue: "total.allocated") }
+        /// Initial amount of memory consumed by Valkey at startup in bytes (see INFO's used_memory_startup)
+        public static var startupAllocated: Key { .init(rawValue: "startup.allocated") }
+        /// Memory usage by replication backlog (see INFO's mem_replication_backlog)
+        public static var replicationBackLog: Key { .init(rawValue: "replication.backlog") }
+        /// The total size in bytes of all replicas overheads (output and query buffers, connection contexts)
+        public static var clientsSlaves: Key { .init(rawValue: "clients.slaves") }
+        /// The total size in bytes of all clients overheads (output and query buffers, connection contexts)
+        public static var clientsNormal: Key { .init(rawValue: "clients.normal") }
+        /// Memory usage by cluster links (see INFO's mem_cluster_links).
+        public static var clusterLinks: Key { .init(rawValue: "cluster.links") }
+        /// The summed size in bytes of AOF related buffers.
+        public static var aofBuffer: Key { .init(rawValue: "aof.buffer") }
+        /// the summed size in bytes of the overheads of the Lua scripts' caches
+        public static var luaCaches: Key { .init(rawValue: "lua.caches") }
+        /// the summed size in bytes of the overheads of the Function scripts' caches
+        public static var functionsCaches: Key { .init(rawValue: "functions.caches") }
+        /// For each of the server's databases, the overheads of the main and expiry dictionaries (overhead.hashtable.main and overhead.hashtable.expires, respectively) are reported in bytes
+        public static func db(_ number: Int) -> Key { .init(rawValue: "db.\(number)") }
+        /// Total overhead of dictionary buckets in databases (Added in Valkey 8.0)
+        public static var overheadDBHashtableLUT: Key { .init(rawValue: "overhead.db.hashtable.lut") }
+        /// Temporary memory overhead of database dictionaries currently being rehashed (Added in Valkey 8.0)
+        public static var overheadDBHashtableRehashing: Key { .init(rawValue: "overhead.db.hashtable.rehashing") }
+        /// The sum of all overheads, i.e. startup.allocated, replication.backlog, clients.slaves, clients.normal, aof.buffer and those of the internal data structures that are used in managing the Valkey keyspace (see INFO's used_memory_overhead)
+        public static var overheadTotal: Key { .init(rawValue: "overhead.total") }
+        /// Number of DB dictionaries currently being rehashed (Added in Valkey 8.0)
+        public static var dbDictionaryRehashingCount: Key { .init(rawValue: "db.dict.rehashing.count") }
+        /// The total number of keys stored across all databases in the server
+        public static var keysCount: Key { .init(rawValue: "keys.count") }
+        /// The ratio between dataset.bytes and keys.count
+        public static var keysBytesPerKey: Key { .init(rawValue: "keys.bytes-per-key") }
+        /// The size in bytes of the dataset, i.e. overhead.total subtracted from total.allocated (see INFO's used_memory_dataset)
+        public static var datasetBytes: Key { .init(rawValue: "dataset.bytes") }
+        /// The percentage of dataset.bytes out of the total memory usage
+        public static var datasetPercentage: Key { .init(rawValue: "dataset.percentage") }
+        /// The percentage of total.allocated out of peak.allocated
+        public static var peakPercentage: Key { .init(rawValue: "peak.percentage") }
+        /// See INFO's allocator_allocated
+        public static var allocatorAllocated: Key { .init(rawValue: "allocator.allocated") }
+        /// See INFO's allocator_active
+        public static var allocatorActive: Key { .init(rawValue: "allocator.active") }
+        /// See INFO's allocator_resident
+        public static var allocatorResident: Key { .init(rawValue: "allocator.resident") }
+        /// See INFO's allocator_muzzy
+        public static var allocatorMuzzy: Key { .init(rawValue: "allocator.muzzy") }
+        /// See INFO's allocator_frag_ratio
+        public static var allocatorFragmentationRatio: Key { .init(rawValue: "allocator-fragmentation.ratio") }
+        /// See INFO's allocator_frag_bytes
+        public static var allocatorFragmentationBytes: Key { .init(rawValue: "allocator-fragmentation.bytes") }
+        /// See INFO's allocator_rss_ratio
+        public static var allocatorRSSRatio: Key { .init(rawValue: "allocator-rss.ratio") }
+        /// See INFO's allocator_rss_bytes
+        public static var allocatorRSSBytes: Key { .init(rawValue: "allocator-rss.bytes") }
+        /// See INFO's rss_overhead_ratio
+        public static var rssOverheadRatio: Key { .init(rawValue: "rss-overhead.ratio") }
+        /// See INFO's rss_overhead_bytes
+        public static var rssOverheadBytes: Key { .init(rawValue: "rss-overhead.bytes") }
+        /// See INFO's mem_fragmentation_ratio
+        public static var fragmentation: Key { .init(rawValue: "fragmentation") }
+        /// See INFO's mem_fragmentation_bytes
+        public static var fragmentationBytes: Key { .init(rawValue: "fragmentation.bytes") }
+    }
+
+    public typealias Response = [Key: RESPToken]
+}
+
 extension MODULE.LIST {
     public typealias Response = [Module]
     public struct Module: RESPTokenDecodable & Sendable {
