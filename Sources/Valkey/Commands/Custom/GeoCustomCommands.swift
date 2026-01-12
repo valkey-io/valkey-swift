@@ -37,12 +37,14 @@ extension GEORADIUS {
     public typealias Response = GeoSearchEntries
 }
 
+public typealias GEORADIUSBYMEMBERResponse = GeoSearchEntries
 extension GEORADIUSBYMEMBER {
-    public typealias Response = GeoSearchEntries
+    public typealias Response = GEORADIUSBYMEMBERResponse
 }
 
+public typealias GEORADIUSBYMEMBERROResponse = GeoSearchEntries
 extension GEORADIUSBYMEMBERRO {
-    public typealias Response = GeoSearchEntries
+    public typealias Response = GEORADIUSBYMEMBERROResponse
 }
 
 extension GEORADIUSRO {
