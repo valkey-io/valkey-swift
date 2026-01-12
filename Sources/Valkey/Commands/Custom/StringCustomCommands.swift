@@ -27,24 +27,7 @@ extension LCS {
             public let length: Int64
 
             public init(_ token: RESPToken) throws {
-                switch token.value {
-                case .map(let map):
-                    var matches: [Match]?
-                    var length: Int64?
-                    for entry in map {
-                        switch try String(entry.key) {
-                        case "len": length = try .init(entry.value)
-                        case "matches": matches = try .init(entry.value)
-                        default: break
-                        }
-                    }
-                    guard let matches else { throw RESPDecodeError.missingToken(key: "matches", token: token) }
-                    guard let length else { throw RESPDecodeError.missingToken(key: "len", token: token) }
-                    self.length = length
-                    self.matches = matches
-                default:
-                    throw RESPDecodeError.tokenMismatch(expected: [.map], token: token)
-                }
+                (self.matches, self.length) = try token.decodeMapElements("matches", "len")
             }
         }
 

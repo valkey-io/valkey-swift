@@ -94,6 +94,10 @@ public struct RESPDecodeError: Error, Equatable {
     public static func missingToken(key: String, token: RESPToken) -> Self {
         .init(.missingToken, token: token, message: "Expected map to contain token with key \"\(key)\"")
     }
+    /// Token associated with key is missing
+    public static func missingToken(key: String, token: RESPToken.Map) -> Self {
+        .init(.missingToken, token: .map(token), message: "Expected map to contain token with key \"\(key)\"")
+    }
 }
 
 extension RESPDecodeError: CustomStringConvertible {

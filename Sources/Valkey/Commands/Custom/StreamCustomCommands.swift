@@ -8,7 +8,7 @@
 import NIOCore
 
 @_documentation(visibility: internal)
-public struct XREADMessage: RESPTokenDecodable, Sendable {
+public struct XMessage: RESPTokenDecodable, Sendable {
     public let id: String
     public let fields: [(key: String, value: RESPBulkString)]
 
@@ -108,7 +108,7 @@ public struct XREADStreams<Message>: RESPTokenDecodable, Sendable where Message:
 @_documentation(visibility: internal)
 public struct XAUTOCLAIMResponse: RESPTokenDecodable, Sendable {
     public let streamID: String
-    public let messages: [XREADMessage]
+    public let messages: [XMessage]
     public let deletedMessages: [String]
 
     public init(_ token: RESPToken) throws {
@@ -127,7 +127,7 @@ extension XAUTOCLAIM {
 @_documentation(visibility: internal)
 public enum XCLAIMResponse: RESPTokenDecodable, Sendable {
     case none
-    case messages([XREADMessage])
+    case messages([XMessage])
     case ids([String])
 
     public init(_ token: RESPToken) throws {
@@ -226,13 +226,13 @@ extension XPENDING {
 }
 
 @_documentation(visibility: internal)
-public typealias XRANGEResponse = [XREADMessage]
+public typealias XRANGEResponse = [XMessage]
 extension XRANGE {
     public typealias Response = XRANGEResponse
 }
 
 @_documentation(visibility: internal)
-public typealias XREADResponse = XREADStreams<XREADMessage>?
+public typealias XREADResponse = XREADStreams<XMessage>?
 extension XREAD {
     public typealias Response = XREADResponse
 }
@@ -244,7 +244,177 @@ extension XREADGROUP {
 }
 
 @_documentation(visibility: internal)
-public typealias XREVRANGEResponse = [XREADMessage]
+public typealias XREVRANGEResponse = [XMessage]
 extension XREVRANGE {
     public typealias Response = XREVRANGEResponse
+}
+
+extension XINFO {
+    public typealias CONSUMERSResponse = [Consumer]
+    public typealias GROUPSResponse = [ConsumerGroup]
+
+    public struct Consumer: RESPTokenDecodable, Sendable {
+        /// Consumer's name
+        public let name: String
+        /// Pending messages for the consumer, which are messages that were delivered but are yet to be acknowledged
+        public let pending: Int
+        /// The number of milliseconds that have passed since the consumer's last attempted interaction
+        public let idle: Int64
+        /// The number of milliseconds that have passed since the consumer's last successful interaction
+        public let inactive: Int64?
+
+        public init(_ token: RESPToken) throws {
+            (self.name, self.pending, self.idle, self.inactive) = try token.decodeMapElements("name", "pending", "idle", "inactive")
+        }
+    }
+
+    public struct ConsumerGroup: RESPTokenDecodable, Sendable {
+        public let name: String
+        public let consumers: Int
+        public let pending: Int
+        public let lastDeliveredId: String
+        public let entriesRead: Int?
+        public let lag: Int?
+
+        public init(_ token: RESPToken) throws {
+            (self.name, self.consumers, self.pending, self.lastDeliveredId, self.entriesRead, self.lag) = try token.decodeMapElements(
+                "name",
+                "consumers",
+                "pending",
+                "last-delivered-id",
+                "entries-read",
+                "lag"
+            )
+        }
+    }
+}
+extension XINFO.CONSUMERS {
+    public typealias Response = XINFO.CONSUMERSResponse
+}
+
+extension XINFO.GROUPS {
+    public typealias Response = XINFO.GROUPSResponse
+}
+
+extension XINFO.STREAM {
+    public struct Response: RESPTokenDecodable, Sendable {
+        public struct Consumer: RESPTokenDecodable, Sendable {
+            /// Consumer name
+            let name: String
+            /// The UNIX timestamp of the last attempted interaction (Examples: XREADGROUP, XCLAIM, XAUTOCLAIM)
+            let seenTime: Int64
+            /// The UNIX timestamp of the last successful interaction (Examples: XREADGROUP that actually read
+            /// some entries into the PEL, XCLAIM/XAUTOCLAIM that actually claimed some entries)
+            let activeTime: Int64?
+            /// The number of entries in the PEL: pending messages for the consumer, which are messages that were
+            /// delivered but are yet to be acknowledged
+            let pelCount: Int
+            /// An array with pending entries information, has the same structure as described above, except the
+            /// consumer name is omitted (redundant, since anyway we are in a specific consumer context)
+            let pending: [XMessage]
+
+            public init(_ token: RESPToken) throws {
+                (self.name, self.seenTime, self.activeTime, self.pelCount, self.pending) = try token.decodeMapElements(
+                    "name",
+                    "seen-time",
+                    "active-time",
+                    "pel-count",
+                    "pending"
+                )
+            }
+        }
+
+        public struct Group: RESPTokenDecodable, Sendable {
+            /// the consumer group's name
+            public let name: String
+            /// The ID of the last entry delivered to the group's consumers
+            public let lastDeliveredID: String
+            /// The logical "read counter" of the last entry delivered to the group's consumers
+            public let entriesRead: Int?
+            /// The number of entries in the stream that are still waiting to be delivered to the group's consumers,
+            /// or a NULL when that number can't be determined.
+            public let lag: Int?
+            /// The length of the group's pending entries list (PEL), which are messages that were delivered but are
+            /// yet to be acknowledged
+            public let pelCount: Int
+            /// An array with pending entries information
+            public let pending: [XMessage]
+            /// An array with consumers information
+            public let consumers: [Consumer]
+
+            public init(_ token: RESPToken) throws {
+                (self.name, self.lastDeliveredID, self.entriesRead, self.lag, self.pelCount, self.pending, self.consumers) =
+                    try token.decodeMapElements(
+                        "name",
+                        "last-delivered-id",
+                        "entries-read",
+                        "lag",
+                        "pel-count",
+                        "pending",
+                        "consumers"
+                    )
+            }
+        }
+        /// The number of entries in the stream (see XLEN)
+        public let length: Int
+        /// The number of keys in the underlying radix data structure
+        public let numberOfRadixTreeKeys: Int
+        /// The number of nodes in the underlying radix data structure
+        public let numberOfRadixTreeNodes: Int
+        /// The number of consumer groups defined for the stream
+        public let numberOfGroups: Int
+        /// The ID of the least-recently entry that was added to the stream
+        public let lastGeneratedID: String
+        /// The maximal entry ID that was deleted from the stream
+        public let maxDeletedEntryID: String
+        /// The count of all entries added to the stream during its lifetime
+        public let entriesAdded: Int
+        /// The ID and field-value tuples of the first entry in the stream
+        public let firstEntry: XMessage?
+        /// The ID and field-value tuples of the last entry in the stream
+        public let lastEntry: XMessage?
+        /// Array of the stream entries (ID and field-value tuples) in ascending order.
+        public let entries: [XMessage]?
+        /// Array of groups associated with stream
+        public let groups: [Group]?
+
+        public init(_ token: RESPToken) throws {
+            var groupsToken: RESPToken
+            (
+                self.length,
+                self.numberOfRadixTreeKeys,
+                self.numberOfRadixTreeNodes,
+                groupsToken,
+                self.lastGeneratedID,
+                self.maxDeletedEntryID,
+                self.entriesAdded,
+                self.firstEntry,
+                self.lastEntry,
+                self.entries
+            ) =
+                try token.decodeMapElements(
+                    "length",
+                    "radix-tree-keys",
+                    "radix-tree-nodes",
+                    "groups",
+                    "last-generated-id",
+                    "max-deleted-entry-id",
+                    "entries-added",
+                    "first-entry",
+                    "last-entry",
+                    "entries"
+                )
+            // The group entry can be either the number of groups, or an array of groups
+            switch groupsToken.value {
+            case .number(let value):
+                self.numberOfGroups = Int(value)
+                self.groups = nil
+            case .array(let array):
+                self.numberOfGroups = array.count
+                self.groups = try array.decode(as: [Group].self)
+            default:
+                throw RESPDecodeError.tokenMismatch(expected: [.array, .integer], token: groupsToken)
+            }
+        }
+    }
 }

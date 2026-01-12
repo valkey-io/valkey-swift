@@ -1038,8 +1038,6 @@ public struct WAIT: ValkeyCommand {
 /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the primary and/or replicas.
 @_documentation(visibility: internal)
 public struct WAITAOF: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     @inlinable public static var name: String { "WAITAOF" }
 
     public var numlocal: Int
@@ -1549,7 +1547,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Number of local and remote AOF files in sync.
     @inlinable
     @discardableResult
-    public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws -> RESPToken.Array {
+    public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws -> WAITAOF.Response {
         try await execute(WAITAOF(numlocal: numlocal, numreplicas: numreplicas, timeout: timeout))
     }
 

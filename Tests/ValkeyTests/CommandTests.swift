@@ -41,6 +41,91 @@ struct CommandTests {
         }
     }
 
+    struct ClusterCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func clusterNodes() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["CLUSTER", "NODES"]),
+                    response: .bulkString(
+                        """
+                        0b44e8f9af2a4b354b68eabc24330efbddba47aa 127.0.0.1:36004@46004 slave 5eab28fc81814e8b2210500fb650ffe622382bd8 0 1767807820519 3 connected
+                        0577d8ed1e6b36796b6ce0b24aeef44de185ca68 127.0.0.1:36002@46002 myself,master - 0 0 2 connected 5461-10922
+                        02d3f849999f98d7e1c498d64992de4e03f703de 127.0.0.1:36006@46006 slave 0577d8ed1e6b36796b6ce0b24aeef44de185ca68 0 1767807820000 2 connected
+                        5eab28fc81814e8b2210500fb650ffe622382bd8 127.0.0.1:36003@46003 master - 0 1767807821640 3 connected 10923-16383
+                        bdeb2fc40e0e4f934cf26fd601aa8c97720893f3 127.0.0.1:36001@46001 master - 0 1767807821539 1 connected 0-5460
+                        14a77ccb848767e4da31ef85a0e1c62ac1ad018a 127.0.0.1:36005@46005 slave bdeb2fc40e0e4f934cf26fd601aa8c97720893f3 0 1767807820620 1 connected
+                        """
+                    )
+                )
+            ) { connection in
+                let clusterNodes = try await connection.clusterNodes()
+                for clusterNode in clusterNodes.nodes {
+                    #expect(!clusterNode.nodeId.isEmpty)
+                    #expect(!clusterNode.endpoint.isEmpty)
+                    #expect(!clusterNode.flags.isEmpty)
+                    if clusterNode.flags.contains(ValkeyClusterNode.Flag.replica) {
+                        #expect(clusterNode.primaryId != nil && !clusterNode.primaryId!.isEmpty)
+                    } else {
+                        #expect(clusterNode.primaryId == nil)
+                    }
+                    #expect(clusterNode.pingSent >= 0)
+                    #expect(clusterNode.pingSent >= 0)
+                    #expect(clusterNode.pongReceived >= 0)
+                    #expect(!clusterNode.linkState.isEmpty)
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func clusterReplicas() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["CLUSTER", "REPLICAS", "leader-node-id"]),
+                    response: .array([
+                        .bulkString("replica-node-id1 127.0.0.1:36001@46001 slave leader-node-id 0 1767807820519 3 connected"),
+                        .bulkString("replica-node-id2 127.0.0.1:36002@46002 slave leader-node-id 0 1767807820519 3 connected"),
+                    ])
+                )
+            ) { connection in
+                let clusterReplicas = try await connection.clusterReplicas(nodeId: "leader-node-id")
+                for clusterReplica in clusterReplicas.nodes {
+                    #expect(!clusterReplica.nodeId.isEmpty)
+                    #expect(!clusterReplica.endpoint.isEmpty)
+                    #expect(!clusterReplica.flags.isEmpty)
+                    #expect(clusterReplica.primaryId != nil && clusterReplica.primaryId == "leader-node-id")
+                    #expect(clusterReplica.pingSent >= 0)
+                    #expect(clusterReplica.pingSent >= 0)
+                    #expect(clusterReplica.pongReceived >= 0)
+                    #expect(!clusterReplica.linkState.isEmpty)
+                }
+            }
+        }
+    }
+
+    struct GenericCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func waitAOF() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["WAITAOF", "1", "2", "15000"]),
+                    response: .array([
+                        .number(1),
+                        .number(2),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.waitaof(numlocal: 1, numreplicas: 2, timeout: 15000)
+                #expect(result.localSynced == true)
+                #expect(result.numberOfReplicasSynced == 2)
+            }
+
+        }
+    }
+
     struct ScriptCommands {
         @Test
         @available(valkeySwift 1.0, *)
@@ -733,6 +818,145 @@ struct CommandTests {
                 case .extended:
                     Issue.record("Expected `standard` case")
                 }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func xinfoConsumers() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["XINFO", "CONSUMERS", "key", "MyGroup"]),
+                    response: .array([
+                        .array([
+                            .bulkString("name"),
+                            .bulkString("Alice"),
+                            .bulkString("pending"),
+                            .number(1),
+                            .bulkString("idle"),
+                            .number(9_104_628),
+                            .bulkString("inactive"),
+                            .number(18_104_698),
+                        ]),
+                        .array([
+                            .bulkString("name"),
+                            .bulkString("Bob"),
+                            .bulkString("pending"),
+                            .number(1),
+                            .bulkString("idle"),
+                            .number(83_841_983),
+                            .bulkString("inactive"),
+                            .number(993_841_998),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.xinfoConsumers("key", group: "MyGroup")
+                #expect(result.count == 2)
+                #expect(result[0].name == "Alice")
+                #expect(result[0].pending == 1)
+                #expect(result[0].idle == 9_104_628)
+                #expect(result[0].inactive == 18_104_698)
+                #expect(result[1].name == "Bob")
+                #expect(result[1].pending == 1)
+                #expect(result[1].idle == 83_841_983)
+                #expect(result[1].inactive == 993_841_998)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func xinfoGroups() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["XINFO", "GROUPS", "key"]),
+                    response: .array([
+                        .array([
+                            .bulkString("name"),
+                            .bulkString("myGroup"),
+                            .bulkString("consumers"),
+                            .number(1),
+                            .bulkString("pending"),
+                            .number(2),
+                            .bulkString("last-delivered-id"),
+                            .bulkString("1638126030001-0"),
+                            .bulkString("entries-read"),
+                            .number(1),
+                            .bulkString("lag"),
+                            .number(1),
+                        ]),
+                        .array([
+                            .bulkString("name"),
+                            .bulkString("myOtherGroup"),
+                            .bulkString("consumers"),
+                            .number(1),
+                            .bulkString("pending"),
+                            .number(0),
+                            .bulkString("last-delivered-id"),
+                            .bulkString("1638126028070-0"),
+                            .bulkString("entries-read"),
+                            .number(2),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.xinfoGroups("key")
+                #expect(result.count == 2)
+                #expect(result[0].name == "myGroup")
+                #expect(result[0].consumers == 1)
+                #expect(result[0].pending == 2)
+                #expect(result[0].lastDeliveredId == "1638126030001-0")
+                #expect(result[0].entriesRead == 1)
+                #expect(result[0].lag == 1)
+                #expect(result[1].name == "myOtherGroup")
+                #expect(result[1].consumers == 1)
+                #expect(result[1].pending == 0)
+                #expect(result[1].lastDeliveredId == "1638126028070-0")
+                #expect(result[1].entriesRead == 2)
+                #expect(result[1].lag == nil)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func xinfoStream() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["XINFO", "STREAM", "key"]),
+                    response: .map([
+                        .bulkString("length"): .number(2),
+                        .bulkString("radix-tree-keys"): .number(2),
+                        .bulkString("radix-tree-nodes"): .number(3),
+                        .bulkString("last-generated-id"): .bulkString("1768072864629-0"),
+                        .bulkString("max-deleted-entry-id"): .bulkString("0-0"),
+                        .bulkString("entries-added"): .number(2),
+                        .bulkString("groups"): .number(1),
+                        .bulkString("first-entry"): .array([
+                            .bulkString("1768072864629-0"),
+                            .array([
+                                .bulkString("key"),
+                                .bulkString("field"),
+                            ]),
+                        ]),
+                        .bulkString("last-entry"): .array([
+                            .bulkString("1768072864630-0"),
+                            .array([
+                                .bulkString("key2"),
+                                .bulkString("field2"),
+                            ]),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.xinfoStream("key")
+                #expect(result.length == 2)
+                #expect(result.numberOfRadixTreeKeys == 2)
+                #expect(result.numberOfRadixTreeNodes == 3)
+                #expect(result.lastGeneratedID == "1768072864629-0")
+                #expect(result.maxDeletedEntryID == "0-0")
+                #expect(result.entriesAdded == 2)
+                #expect(result.firstEntry?.id == "1768072864629-0")
+                #expect(result.lastEntry?.id == "1768072864630-0")
             }
         }
     }

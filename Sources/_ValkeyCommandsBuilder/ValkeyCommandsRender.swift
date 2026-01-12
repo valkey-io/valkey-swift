@@ -23,6 +23,8 @@ private let disableResponseCalculationCommands: Set<String> = [
     "CLUSTER MYID",
     "CLUSTER MYSHARDID",
     "CLUSTER SHARDS",
+    "CLUSTER NODES",
+    "CLUSTER REPLICAS",
     "FUNCTION LIST",
     "FUNCTION LOAD",
     "FUNCTION STATS",
@@ -46,11 +48,15 @@ private let disableResponseCalculationCommands: Set<String> = [
     "SCRIPT SHOW",
     "XAUTOCLAIM",
     "XCLAIM",
+    "XINFO CONSUMERS",
+    "XINFO GROUPS",
+    "XINFO STREAM",
     "XPENDING",
     "XRANGE",
     "XREAD",
     "XREADGROUP",
     "XREVRANGE",
+    "WAITAOF",
     "ZMPOP",
     "ZPOPMAX",
     "ZPOPMIN",
@@ -82,6 +88,12 @@ let connectionOnlyFunctionNames: Set<String> = [
     "CLIENT SETNAME",
     "CLIENT SETINFO",
     "CLIENT TRACKINGINFO",
+]
+
+/// Skipped functions
+let skippedFunctions: Set<String> = [
+    "CLUSTER SLAVES",
+    "SLAVEOF",
 ]
 
 func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: ValkeyCommands, module: Bool) -> String {
@@ -137,6 +149,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
                 // if there is no function assume command is a container command
                 guard !namespaces.contains(key) || command.function != nil else { continue }
                 guard command.docFlags?.contains("SYSCMD") != true else { continue }
+                guard !skippedFunctions.contains(key) else { continue }
                 string.appendCommand(
                     command: command,
                     name: key,
@@ -153,6 +166,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
         // if there is no function assume command is a container command
         guard !namespaces.contains(key) || command.function != nil else { continue }
         guard command.docFlags?.contains("SYSCMD") != true else { continue }
+        guard !skippedFunctions.contains(key) else { continue }
         string.appendCommand(
             command: command,
             name: key,
@@ -166,7 +180,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
     keys.removeAll { subscribeFunctions.contains($0) }
 
     let connectionOnlyFunctions = commands.filter { connectionOnlyFunctionNames.contains($0.key) }
-    let clientProtocolFunctions = commands.filter { connectionOnlyFunctions[$0.key] == nil }
+    let clientProtocolFunctions = commands.filter { connectionOnlyFunctions[$0.key] == nil && !skippedFunctions.contains($0.key) }
 
     if clientProtocolFunctions.count > 0 {
         string.append("@available(valkeySwift 1.0, *)\n")
