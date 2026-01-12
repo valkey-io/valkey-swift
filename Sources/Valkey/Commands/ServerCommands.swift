@@ -814,8 +814,6 @@ public enum MEMORY {
     /// Returns details about memory usage.
     @_documentation(visibility: internal)
     public struct STATS: ValkeyCommand {
-        public typealias Response = RESPToken.Map
-
         @inlinable public static var name: String { "MEMORY STATS" }
 
         @inlinable public init() {
@@ -2158,7 +2156,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Map]: Memory usage details.
     @inlinable
     @discardableResult
-    public func memoryStats() async throws -> RESPToken.Map {
+    public func memoryStats() async throws -> MEMORY.STATS.Response {
         try await execute(MEMORY.STATS())
     }
 

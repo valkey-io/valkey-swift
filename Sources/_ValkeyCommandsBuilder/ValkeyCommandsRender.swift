@@ -39,6 +39,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "GEORADIUSBYMEMBER_RO",
     "HRANDFIELD",
     "HSCAN",
+    "MEMORY STATS",
     "ROLE",
     "LMOVE",
     "LMPOP",
