@@ -248,6 +248,44 @@ struct CommandTests {
     struct ServerCommands {
         @Test
         @available(valkeySwift 1.0, *)
+        func aclGetuser() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["ACL", "GETUSER", "johnsmith"]),
+                    response: .map([
+                        .bulkString("flags"): .set([
+                            .bulkString("on"),
+                            .bulkString("sanitize-payload"),
+                        ]),
+                        .bulkString("passwords"): .array([
+                            .bulkString("b212518f8e7683e708e4e07b0f388d0c04b573acac8e80fee7b24856d9d26893")
+                        ]),
+                        .bulkString("commands"): .bulkString("-@all +acl|whoami"),
+                        .bulkString("keys"): .bulkString(""),
+                        .bulkString("channels"): .bulkString(""),
+                        .bulkString("selectors"): .array([
+                            .map([
+                                .bulkString("commands"): .bulkString("-@all +set"),
+                                .bulkString("keys"): .bulkString("~key2"),
+                                .bulkString("channels"): .bulkString(""),
+                            ])
+                        ]),
+                    ])
+                )
+            ) { client in
+                let user = try #require(try await client.aclGetuser(username: "johnsmith"))
+                #expect(user.flags == [.on, .sanitizePayload])
+                #expect(user.passwords == ["b212518f8e7683e708e4e07b0f388d0c04b573acac8e80fee7b24856d9d26893"])
+                #expect(user.keys == "")
+                #expect(user.channels == "")
+                #expect(user.selectors?.count == 1)
+                #expect(user.selectors?[0].commands == "-@all +set")
+                #expect(user.selectors?[0].keys == "~key2")
+                #expect(user.selectors?[0].channels == "")
+            }
+        }
+        @Test
+        @available(valkeySwift 1.0, *)
         func commandGetkeysandflags() async throws {
             try await testCommandEncodesDecodes(
                 (

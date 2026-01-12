@@ -6,6 +6,67 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+extension ACL {
+    public typealias GETUSERResponse = OptionalGETUSERResponse?
+    public struct OptionalGETUSERResponse: RESPTokenDecodable, Sendable {
+        public struct Flag: Hashable, RawRepresentable, RESPTokenDecodable, CustomStringConvertible, Sendable {
+            public let rawValue: String
+
+            public init(rawValue: String) {
+                self.rawValue = rawValue
+            }
+
+            public init(_ token: RESPToken) throws {
+                let string = try String(token)
+                self = .init(rawValue: string)
+            }
+
+            public var description: String { "\"\(self.rawValue)\"" }
+
+            /// User is enabled. It is possible to authenticate with this user
+            public static var on: Flag { .init(rawValue: "on") }
+            /// User has been disabled. It is no longer possible to authenticate with this user
+            public static var off: Flag { .init(rawValue: "off") }
+            /// User does not need a password to authenticate
+            public static var noPassword: Flag { .init(rawValue: "nopass") }
+            public static var sanitizePayload: Flag { .init(rawValue: "sanitize-payload") }
+            public static var skipSanitizePayload: Flag { .init(rawValue: "skip-sanitize-payload") }
+
+        }
+        public struct Selector: RESPTokenDecodable, Sendable {
+            public let commands: String
+            public let keys: String
+            public let channels: String?
+
+            public init(_ token: RESPToken) throws {
+                (self.commands, self.keys, self.channels) = try token.decodeMapElements("commands", "keys", "channels")
+            }
+        }
+
+        public let flags: Set<Flag>
+        public let passwords: [String]
+        public let commands: String
+        public let keys: String
+        public let channels: String?
+        public let selectors: [Selector]?
+
+        public init(_ token: RESPToken) throws {
+            (self.flags, self.passwords, self.commands, self.keys, self.channels, self.selectors) = try token.decodeMapElements(
+                "flags",
+                "passwords",
+                "commands",
+                "keys",
+                "channels",
+                "selectors"
+            )
+        }
+    }
+}
+
+extension ACL.GETUSER {
+    public typealias Response = ACL.GETUSERResponse
+}
+
 extension COMMAND {
     public typealias GETKEYSANDFLAGSResponse = [GETKEYSANDFLAGSKey]
 
