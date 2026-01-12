@@ -97,6 +97,8 @@ public enum ACL {
     /// Lists the ACL rules of a user.
     @_documentation(visibility: internal)
     public struct GETUSER<Username: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = ACL.GETUSERResponse?
+
         @inlinable public static var name: String { "ACL GETUSER" }
 
         public var username: Username
@@ -1603,7 +1605,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: If user does not exist
     @inlinable
     @discardableResult
-    public func aclGetuser<Username: RESPStringRenderable>(username: Username) async throws -> ACL.GETUSERResponse {
+    public func aclGetuser<Username: RESPStringRenderable>(username: Username) async throws -> ACL.GETUSERResponse? {
         try await execute(ACL.GETUSER(username: username))
     }
 

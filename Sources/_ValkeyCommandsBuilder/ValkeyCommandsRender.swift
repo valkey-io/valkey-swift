@@ -108,6 +108,7 @@ let skippedFunctions: Set<String> = [
 /// We cannot override the Response type for Commands that have generic parameters in extensions.
 /// This list includes a collection of these commands with response symbol names
 let commandCustomResponseTypes: [String: String] = [
+    "ACL GETUSER": "ACL.GETUSERResponse?",
     "GEODIST": "Double?",
     "XREAD": "XREADStreams<XMessage>?",
     "XREADGROUP": "XREADStreams<XREADGroupMessage>?",
