@@ -1,10 +1,55 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+
+extension COMMAND {
+    public typealias GETKEYSANDFLAGSResponse = [GETKEYSANDFLAGSKey]
+
+    public struct GETKEYSANDFLAGSKey: RESPTokenDecodable, Sendable {
+        public struct Flags: RawRepresentable, RESPTokenDecodable, Sendable, Equatable, CustomStringConvertible {
+            public let rawValue: String
+
+            public init(rawValue: String) {
+                self.rawValue = rawValue
+            }
+
+            public init(_ token: RESPToken) throws {
+                let string = try String(token)
+                self = .init(rawValue: string)
+            }
+
+            public var description: String { self.rawValue }
+
+            public static var rw: Self { .init(rawValue: "RW") }
+            public static var ro: Self { .init(rawValue: "RO") }
+            public static var ow: Self { .init(rawValue: "OW") }
+            public static var rm: Self { .init(rawValue: "RM") }
+            public static var access: Self { .init(rawValue: "access") }
+            public static var update: Self { .init(rawValue: "update") }
+            public static var insert: Self { .init(rawValue: "insert") }
+            public static var delete: Self { .init(rawValue: "delete") }
+            public static var notKey: Self { .init(rawValue: "not_key") }
+            public static var incomplete: Self { .init(rawValue: "incomplete") }
+            public static var variableFlags: Self { .init(rawValue: "variable_flags") }
+        }
+        public let key: ValkeyKey
+        public let flags: [Flags]
+
+        public init(_ token: RESPToken) throws {
+            (self.key, self.flags) = try token.decodeArrayElements()
+        }
+    }
+
+}
+
+extension COMMAND.GETKEYSANDFLAGS {
+    public typealias Response = COMMAND.GETKEYSANDFLAGSResponse
+}
+
 extension ROLE {
     public enum Response: RESPTokenDecodable, Sendable {
         struct MissingValueDecodeError: Error {
@@ -116,6 +161,35 @@ extension ROLE {
             default:
                 throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
             }
+        }
+    }
+}
+
+extension MODULE.LIST {
+    public typealias Response = [Module]
+    public struct Module: RESPTokenDecodable & Sendable {
+        /// Module name
+        public let name: String
+        /// Module version
+        public let version: Int
+        /// Module path
+        public let path: String
+        /// Module arguments
+        public let args: [String]
+
+        public init(_ token: RESPToken) throws {
+            (self.name, self.version, self.path, self.args) = try token.decodeMapElements("name", "ver", "path", "args")
+        }
+    }
+}
+
+extension TIME {
+    public struct Response: RESPTokenDecodable & Sendable {
+        public let seconds: Int
+        public let microSeconds: Int
+
+        public init(_ token: RESPToken) throws {
+            (self.seconds, self.microSeconds) = try token.decodeArrayElements()
         }
     }
 }

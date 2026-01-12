@@ -224,6 +224,60 @@ struct CommandTests {
     struct ServerCommands {
         @Test
         @available(valkeySwift 1.0, *)
+        func commandGetkeysandflags() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["COMMAND", "GETKEYSANDFLAGS", "LMOVE", "mylist1", "mylist2", "left", "left"]),
+                    response: .array([
+                        .array([.bulkString("mylist1"), .array([.bulkString("RW"), .bulkString("access"), .bulkString("delete")])]),
+                        .array([.bulkString("mylist2"), .array([.bulkString("RW"), .bulkString("insert")])]),
+                    ])
+                )
+            ) { connection in
+                let keys = try await connection.commandGetkeysandflags(command: "LMOVE", args: ["mylist1", "mylist2", "left", "left"])
+                #expect(keys.count == 2)
+                #expect(keys[0].key == "mylist1")
+                #expect(keys[0].flags == [.rw, .access, .delete])
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func moduleList() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["MODULE", "LIST"]),
+                    response: .array([
+                        .map([
+                            .bulkString("name"): .bulkString("json"),
+                            .bulkString("ver"): .number(10002),
+                            .bulkString("path"): .bulkString("/usr/lib/valkey/libjson.so"),
+                            .bulkString("args"): .array([]),
+                        ]),
+                        .map([
+                            .bulkString("name"): .bulkString("ldap"),
+                            .bulkString("ver"): .number(16_777_471),
+                            .bulkString("path"): .bulkString("/usr/lib/valkey/libvalkey_ldap.so"),
+                            .bulkString("args"): .array([]),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let modules = try await connection.moduleList()
+                #expect(modules.count == 2)
+                #expect(modules[0].name == "json")
+                #expect(modules[0].version == 10002)
+                #expect(modules[0].path == "/usr/lib/valkey/libjson.so")
+                #expect(modules[0].args == [])
+                #expect(modules[1].name == "ldap")
+                #expect(modules[1].version == 16_777_471)
+                #expect(modules[1].path == "/usr/lib/valkey/libvalkey_ldap.so")
+                #expect(modules[1].args == [])
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func role() async throws {
             try await testCommandEncodesDecodes(
                 (
@@ -291,6 +345,18 @@ struct CommandTests {
             ) { connection in
                 try await connection.replicaof(args: .hostPort(.init(host: "127.0.0.1", port: 18000)))
                 try await connection.replicaof(args: .noOne)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func time() async throws {
+            try await testCommandEncodesDecodes(
+                (request: .command(["TIME"]), response: .array([.number(1_714_701_491), .number(723379)])),
+            ) { connection in
+                let time = try await connection.time()
+                #expect(time.seconds == 1_714_701_491)
+                #expect(time.microSeconds == 723379)
             }
         }
     }
@@ -2691,7 +2757,11 @@ func testCommandEncodesDecodes(
         group.addTask {
             for (request, response) in respValues {
                 let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(outbound == RESPToken(request).base, sourceLocation: sourceLocation)
+                #expect(
+                    outbound == RESPToken(request).base,
+                    "\(RESPToken(validated: outbound).value.descriptionWith(redact: false))",
+                    sourceLocation: sourceLocation
+                )
                 try await channel.writeInbound(RESPToken(response).base)
             }
         }

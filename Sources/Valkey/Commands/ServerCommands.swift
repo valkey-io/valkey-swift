@@ -313,8 +313,6 @@ extension COMMAND {
     /// Extracts the key names and access flags for an arbitrary command.
     @_documentation(visibility: internal)
     public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "COMMAND GETKEYSANDFLAGS" }
 
         public var command: Command
@@ -877,8 +875,6 @@ public enum MODULE {
     /// Returns all loaded modules.
     @_documentation(visibility: internal)
     public struct LIST: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "MODULE LIST" }
 
         @inlinable public init() {
@@ -1530,8 +1526,6 @@ public struct SYNC: ValkeyCommand {
 /// Returns the server time.
 @_documentation(visibility: internal)
 public struct TIME: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     @inlinable public static var name: String { "TIME" }
 
     @inlinable public init() {
@@ -1795,7 +1789,10 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of keys from the given command and their usage flags.
     @inlinable
     @discardableResult
-    public func commandGetkeysandflags<Command: RESPStringRenderable>(command: Command, args: [String] = []) async throws -> RESPToken.Array {
+    public func commandGetkeysandflags<Command: RESPStringRenderable>(
+        command: Command,
+        args: [String] = []
+    ) async throws -> COMMAND.GETKEYSANDFLAGSResponse {
         try await execute(COMMAND.GETKEYSANDFLAGS(command: command, args: args))
     }
 
@@ -2200,7 +2197,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Returns information about the modules loaded to the server.
     @inlinable
     @discardableResult
-    public func moduleList() async throws -> RESPToken.Array {
+    public func moduleList() async throws -> MODULE.LIST.Response {
         try await execute(MODULE.LIST())
     }
 
@@ -2381,7 +2378,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Array containing two elements: Unix time in seconds and microseconds.
     @inlinable
     @discardableResult
-    public func time() async throws -> RESPToken.Array {
+    public func time() async throws -> TIME.Response {
         try await execute(TIME())
     }
 
