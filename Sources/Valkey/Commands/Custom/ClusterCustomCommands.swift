@@ -89,25 +89,37 @@ public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
 /// Each node contains information about its ID, endpoint, role, status, and assigned slots.
 public struct ValkeyClusterNode: Hashable, Sendable, RESPTokenDecodable {
     /// Individual node flag indicating the node's role or status
-    public enum Flag: String, Sendable, Hashable, CaseIterable {
+    public struct Flag: Hashable, RawRepresentable, RESPTokenDecodable, CustomStringConvertible, Sendable {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public init(_ token: RESPToken) throws {
+            let string = try String(token)
+            self = .init(rawValue: string)
+        }
+
+        public var description: String { self.rawValue }
         /// The node is a primary
-        case primary = "master"
+        public static var primary: Flag { .init(rawValue: "master") }
         /// The node is a replica
-        case replica = "slave"
+        public static var replica: Flag { .init(rawValue: "slave") }
         /// The node is myself
-        case myself
+        public static var myself: Flag { .init(rawValue: "myself") }
         /// The node is in PFAIL state
-        case pfail = "fail?"
+        public static var pfail: Flag { .init(rawValue: "fail?") }
         /// The node is in FAIL state
-        case fail
+        public static var fail: Flag { .init(rawValue: "fail") }
         /// The node is in handshake state
-        case handshake
+        public static var handshake: Flag { .init(rawValue: "handshake") }
         /// The node has no address
-        case noaddr
+        public static var noaddr: Flag { .init(rawValue: "noaddr") }
         /// The node doesn't participate in failovers
-        case nofailover
+        public static var nofailover: Flag { .init(rawValue: "nofailover") }
         /// No flags are set
-        case noflags
+        public static var noflags: Flag { .init(rawValue: "noflags") }
     }
 
     /// The unique node ID
@@ -189,9 +201,7 @@ public struct ValkeyClusterNode: Hashable, Sendable, RESPTokenDecodable {
         var flags: Set<Flag> = []
         let flagComponents = flagsString.split(separator: ",").map(String.init)
         for flagString in flagComponents {
-            if let flag = Flag(rawValue: flagString) {
-                flags.insert(flag)
-            }
+            flags.insert(Flag(rawValue: flagString))
         }
 
         return ValkeyClusterNode(
