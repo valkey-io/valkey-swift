@@ -17,3 +17,19 @@ extension SCAN {
         }
     }
 }
+
+extension WAITAOF {
+    public struct Response: RESPTokenDecodable, Sendable {
+        /// Has local Valkey node fsynced to AOF(Append only file) all writes performed in the context of the current connection
+        public let localSynced: Bool
+        /// Number of replicas that have acknowledged they have fsynced to AOF(Append only file) all writes performed in the
+        /// context of the current connection
+        public let numberOfReplicasSynced: Int
+
+        public init(_ token: RESPToken) throws {
+            let localSynced: Int
+            (localSynced, self.numberOfReplicasSynced) = try token.decodeArrayElements()
+            self.localSynced = localSynced == 1 ? true : false
+        }
+    }
+}

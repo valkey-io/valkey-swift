@@ -105,6 +105,27 @@ struct CommandTests {
         }
     }
 
+    struct GenericCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func waitAOF() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["WAITAOF", "1", "2", "15000"]),
+                    response: .array([
+                        .number(1),
+                        .number(2),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.waitaof(numlocal: 1, numreplicas: 2, timeout: 15000)
+                #expect(result.localSynced == true)
+                #expect(result.numberOfReplicasSynced == 2)
+            }
+
+        }
+    }
+
     struct ScriptCommands {
         @Test
         @available(valkeySwift 1.0, *)
