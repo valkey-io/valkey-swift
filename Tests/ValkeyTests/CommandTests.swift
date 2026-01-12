@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -37,6 +37,32 @@ struct CommandTests {
                 try await connection.clientTracking(status: .off)
                 try await connection.clientTracking(status: .on, clientId: 25, prefixes: ["test"])
                 try await connection.clientTracking(status: .on, clientId: 25, prefixes: ["test", "this"])
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func clientTrackingInfo() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["CLIENT", "TRACKINGINFO"]),
+                    response: .map([
+                        .bulkString("flags"): .set([
+                            .bulkString("on"),
+                            .bulkString("bcast"),
+                        ]),
+                        .bulkString("redirect"): .number(0),
+                        .bulkString("prefixes"): .array([
+                            .bulkString("test/")
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let info = try await connection.clientTrackinginfo()
+                #expect(info.redirect == 0)
+                #expect(info.flags.contains(.on))
+                #expect(info.flags.contains(.broadcast))
+                #expect(info.prefixes == ["test/"])
             }
         }
     }
