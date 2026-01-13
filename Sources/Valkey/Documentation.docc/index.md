@@ -52,6 +52,7 @@ Valkey-swift is a swift based client for Valkey, the high-performance key/value 
 
 - ``ValkeyClientError``
 - ``ValkeyClusterError``
+- ``ValkeyTransactionError``
 - ``RESPDecodeError``
 - ``RESPParsingError``
 
