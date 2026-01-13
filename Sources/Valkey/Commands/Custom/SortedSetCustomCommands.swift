@@ -135,7 +135,7 @@ extension ZRANDMEMBER {
         /// - Returns: Random member as RESPBulkString, or nil if key doesn't exist
         /// - Throws: RESPDecodeError if response format is unexpected
         public func singleMember() throws -> RESPBulkString? {
-            return try RESPBulkString?(token)
+            try RESPBulkString?(token)
         }
 
         /// Get multiple random members when ZRANDMEMBER was called with COUNT but without WITHSCORES

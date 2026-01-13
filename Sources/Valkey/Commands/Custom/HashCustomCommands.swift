@@ -81,7 +81,7 @@ extension HRANDFIELD {
         /// - Returns: Random field name as RESPBulkString, or nil if key doesn't exist
         /// - Throws: RESPDecodeError if response format is unexpected
         public func singleField() throws -> RESPBulkString? {
-            return try RESPBulkString?(token)
+            try RESPBulkString?(token)
         }
 
         /// Get multiple random fields when HRANDFIELD was called with COUNT but without WITHVALUES
