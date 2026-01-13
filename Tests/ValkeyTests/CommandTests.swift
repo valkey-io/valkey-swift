@@ -707,17 +707,78 @@ struct CommandTests {
         @available(valkeySwift 1.0, *)
         func zrandmember() async throws {
             try await testCommandEncodesDecodes(
+                // Single member (no COUNT option) - returns one member
                 (
-                    request: .command(["ZRANDMEMBER", "test", "0", "WITHSCORES"]),
+                    request: .command(["ZRANDMEMBER", "key"]),
+                    response: .bulkString("member1")
+                ),
+                // Null response when key doesn't exist
+                (
+                    request: .command(["ZRANDMEMBER", "nonexistent"]),
+                    response: .null
+                ),
+                // Multiple members without WITHSCORES
+                (
+                    request: .command(["ZRANDMEMBER", "key", "2"]),
+                    response: .array([.bulkString("member1"), .bulkString("member2")])
+                ),
+                // Multiple members with WITHSCORES (flat array format)
+                (
+                    request: .command(["ZRANDMEMBER", "key", "3", "WITHSCORES"]),
+                    response: .array([
+                        .bulkString("member1"), .double(1.0),
+                        .bulkString("member2"), .double(2.5),
+                        .bulkString("member3"), .double(3.7)
+                    ])
+                ),
+                // Empty array with COUNT 0
+                (
+                    request: .command(["ZRANDMEMBER", "key", "0"]),
                     response: .array([])
                 ),
+                // Empty array with COUNT 0 and WITHSCORES
                 (
-                    request: .command(["ZRANDMEMBER", "test", "0"]),
+                    request: .command(["ZRANDMEMBER", "key", "0", "WITHSCORES"]),
                     response: .array([])
                 )
             ) { connection in
-                _ = try await connection.zrandmember("test", options: .init(count: 0, withscores: true))
-                _ = try await connection.zrandmember("test", options: .init(count: 0, withscores: false))
+                // Single member
+                var result = try await connection.zrandmember("key")
+                let singleMember = try result.singleMember()
+                #expect(singleMember != nil)
+                #expect(String(singleMember!) == "member1")
+
+                // Null response
+                result = try await connection.zrandmember("nonexistent")
+                #expect(try result.singleMember() == nil)
+
+                // multiple members without scores
+                result = try await connection.zrandmember("key", options: .init(count: 2))
+                let members = try result.multipleMembers()
+                #expect(members?.count == 2)
+                #expect(members.map { String($0[0]) } == "member1")
+                #expect(members.map { String($0[1]) } == "member2")
+
+                // Multiple members with scores
+                result = try await connection.zrandmember("key", options: .init(count: 3, withscores: true))
+                let entries = try result.multipleMembersWithScores()
+                #expect(entries?.count == 3)
+                #expect(entries?[0].score == 1.0)
+                #expect(String(entries![0].value) == "member1")
+                #expect(entries?[1].score == 2.5)
+                #expect(String(entries![1].value) == "member2")
+                #expect(entries?[2].score == 3.7)
+                #expect(String(entries![2].value) == "member3")
+
+                // Empty array without scores
+                result = try await connection.zrandmember("key", options: .init(count: 0))
+                let emptyMembers = try result.multipleMembers()
+                #expect(emptyMembers?.isEmpty == true)
+
+                // Empty array with scores
+                result = try await connection.zrandmember("key", options: .init(count: 0, withscores: true))
+                let emptyEntries = try result.multipleMembersWithScores()
+                #expect(emptyEntries?.isEmpty == true)
             }
         }
 

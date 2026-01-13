@@ -120,3 +120,58 @@ extension ZSCAN {
         }
     }
 }
+
+extension ZRANDMEMBER {
+    /// Custom response type for ZRANDMEMBER command that handles all possible return scenarios
+    public struct Response: RESPTokenDecodable, Sendable {
+        /// The raw RESP token containing the response
+        public let token: RESPToken
+
+        public init(_ token: RESPToken) throws {
+            self.token = token
+        }
+
+        /// Get single random member when ZRANDMEMBER was called without COUNT
+        /// - Returns: Random member as RESPBulkString, or nil if key doesn't exist
+        /// - Throws: RESPDecodeError if response format is unexpected
+        public func singleMember() throws -> RESPBulkString? {
+            if token.value == .null {
+                return nil
+            }
+            return try RESPBulkString(token)
+        }
+
+        /// Get multiple random members when ZRANDMEMBER was called with COUNT but without WITHSCORES
+        /// - Returns: Array of member names as RESPBulkString, or nil if key doesn't exist
+        /// - Throws: RESPDecodeError if response format is unexpected
+        @inlinable
+        public func multipleMembers() throws -> [RESPBulkString]? {
+            try [RESPBulkString]?(token)
+        }
+
+        /// Get multiple random member-score pairs when ZRANDMEMBER was called with COUNT and WITHSCORES
+        /// - Returns: Array of SortedSetEntry (member-score pairs), or nil if key doesn't exist
+        /// - Throws: RESPDecodeError if response format is unexpected
+        public func multipleMembersWithScores() throws -> [SortedSetEntry]? {
+            switch token.value {
+            case .null:
+                return nil
+            case .array(let array):
+                var iterator = array.makeIterator()
+                var entries: [SortedSetEntry] = []
+                entries.reserveCapacity(array.count / 2)
+                while let memberToken = iterator.next() {
+                    guard let scoreToken = iterator.next() else {
+                        throw RESPDecodeError.invalidArraySize(array)
+                    }
+                    let member = try RESPBulkString(memberToken)
+                    let score = try Double(scoreToken)
+                    entries.append(SortedSetEntry(value: member, score: score))
+                }
+                return entries
+            default:
+                throw RESPDecodeError.tokenMismatch(expected: [.null, .array], token: token)
+            }
+        }
+    }
+}

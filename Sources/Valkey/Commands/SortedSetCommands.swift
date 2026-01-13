@@ -581,7 +581,6 @@ public struct ZRANDMEMBER: ValkeyCommand {
             RESPPureToken("WITHSCORES", withscores).encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken?
 
     @inlinable public static var name: String { "ZRANDMEMBER" }
 
@@ -1556,7 +1555,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: Randomly selected elements when 'COUNT' is used.
     ///     * [Array]: Randomly selected elements when 'COUNT' and 'WITHSCORES' modifiers are used.
     @inlinable
-    public func zrandmember(_ key: ValkeyKey, options: ZRANDMEMBER.Options? = nil) async throws -> RESPToken? {
+    public func zrandmember(_ key: ValkeyKey, options: ZRANDMEMBER.Options? = nil) async throws -> ZRANDMEMBER.Response {
         try await execute(ZRANDMEMBER(key, options: options))
     }
 
