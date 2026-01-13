@@ -81,11 +81,7 @@ extension HRANDFIELD {
         /// - Returns: Random field name as RESPBulkString, or nil if key doesn't exist
         /// - Throws: RESPDecodeError if response format is unexpected
         public func singleField() throws -> RESPBulkString? {
-            // Handle .null as it is expected when the key doesn't exist
-            if token.value == .null {
-                return nil
-            }
-            return try RESPBulkString(token)
+            try RESPBulkString?(token)
         }
 
         /// Get multiple random fields when HRANDFIELD was called with COUNT but without WITHVALUES
@@ -118,35 +114,14 @@ extension HRANDFIELD {
                     // Array of arrays format - can use HashEntry decode
                     return try [HashEntry]?(token)
                 default:
-                    // Flat array format - handle manually
-                    return try _decodeFlatArrayFormat(array)
+                    // Flat array format
+                    return try array.asMap().map {
+                        try HashEntry(field: RESPBulkString($0.key), value: RESPBulkString($0.value))
+                    }
                 }
             default:
                 throw RESPDecodeError.tokenMismatch(expected: [.null, .array], token: token)
             }
-        }
-
-        /// Helper method to decode flat array format
-        /// - Parameter array: RESP array containing alternating field-value pairs
-        /// - Returns: Array of HashEntry objects
-        /// - Throws: RESPDecodeError if format is invalid
-        private func _decodeFlatArrayFormat(_ array: RESPToken.Array) throws -> [HashEntry] {
-            guard array.count % 2 == 0 else {
-                throw RESPDecodeError(.invalidArraySize, token: token)
-            }
-
-            var entries: [HashEntry] = []
-            entries.reserveCapacity(array.count / 2)
-
-            // Iterate over pairs
-            var iterator = array.makeIterator()
-            while let field = iterator.next(), let value = iterator.next() {
-                let fieldBuffer = try RESPBulkString(field)
-                let valueBuffer = try RESPBulkString(value)
-                entries.append(HashEntry(field: fieldBuffer, value: valueBuffer))
-            }
-
-            return entries
         }
     }
 }
