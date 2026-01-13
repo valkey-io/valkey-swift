@@ -60,6 +60,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "XINFO GROUPS",
     "XINFO STREAM",
     "XPENDING",
+    "ZRANDMEMBER",
     "XRANGE",
     "XREAD",
     "XREADGROUP",

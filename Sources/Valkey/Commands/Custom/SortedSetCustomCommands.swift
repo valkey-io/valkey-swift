@@ -120,3 +120,46 @@ extension ZSCAN {
         }
     }
 }
+
+extension ZRANDMEMBER {
+    /// Custom response type for ZRANDMEMBER command that handles all possible return scenarios
+    public struct Response: RESPTokenDecodable, Sendable {
+        /// The raw RESP token containing the response
+        public let token: RESPToken
+
+        public init(_ token: RESPToken) throws {
+            self.token = token
+        }
+
+        /// Get single random member when ZRANDMEMBER was called without COUNT
+        /// - Returns: Random member as RESPBulkString, or nil if key doesn't exist
+        /// - Throws: RESPDecodeError if response format is unexpected
+        public func singleMember() throws -> RESPBulkString? {
+            try RESPBulkString?(token)
+        }
+
+        /// Get multiple random members when ZRANDMEMBER was called with COUNT but without WITHSCORES
+        /// - Returns: Array of member names as RESPBulkString, or nil if key doesn't exist
+        /// - Throws: RESPDecodeError if response format is unexpected
+        @inlinable
+        public func multipleMembers() throws -> [RESPBulkString]? {
+            try [RESPBulkString]?(token)
+        }
+
+        /// Get multiple random member-score pairs when ZRANDMEMBER was called with COUNT and WITHSCORES
+        /// - Returns: Array of SortedSetEntry (member-score pairs), or nil if key doesn't exist
+        /// - Throws: RESPDecodeError if response format is unexpected
+        public func multipleMembersWithScores() throws -> [SortedSetEntry]? {
+            switch token.value {
+            case .null:
+                return nil
+            case .array(let array):
+                return try array.asMap().map {
+                    try SortedSetEntry(value: RESPBulkString($0.key), score: Double($0.value))
+                }
+            default:
+                throw RESPDecodeError.tokenMismatch(expected: [.null, .array], token: token)
+            }
+        }
+    }
+}
