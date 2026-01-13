@@ -48,7 +48,7 @@ extension CLIENT.TRACKINGINFO {
         public let prefixes: [String]
 
         public init(_ token: RESPToken) throws {
-            (self.flags, self.redirect, self.prefixes) = try token.decodeMapElements("flags", "redirect", "prefixes")
+            (self.flags, self.redirect, self.prefixes) = try token.decodeMapValues("flags", "redirect", "prefixes")
         }
     }
 

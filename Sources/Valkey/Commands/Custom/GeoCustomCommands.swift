@@ -37,11 +37,13 @@ extension GEORADIUS {
     public typealias Response = GeoSearchEntries
 }
 
+@_documentation(visibility: internal)
 public typealias GEORADIUSBYMEMBERResponse = GeoSearchEntries
 extension GEORADIUSBYMEMBER {
     public typealias Response = GEORADIUSBYMEMBERResponse
 }
 
+@_documentation(visibility: internal)
 public typealias GEORADIUSBYMEMBERROResponse = GeoSearchEntries
 extension GEORADIUSBYMEMBERRO {
     public typealias Response = GEORADIUSBYMEMBERROResponse
@@ -51,6 +53,7 @@ extension GEORADIUSRO {
     public typealias Response = GeoSearchEntries
 }
 
+@_documentation(visibility: internal)
 public struct GeoSearchEntries: RESPTokenDecodable, Sendable {
 
     private let array: RESPToken.Array
@@ -175,5 +178,4 @@ public struct GeoSearchEntries: RESPTokenDecodable, Sendable {
             }
         }
     }
-
 }

@@ -264,7 +264,7 @@ extension XINFO {
         public let inactive: Int64?
 
         public init(_ token: RESPToken) throws {
-            (self.name, self.pending, self.idle, self.inactive) = try token.decodeMapElements("name", "pending", "idle", "inactive")
+            (self.name, self.pending, self.idle, self.inactive) = try token.decodeMapValues("name", "pending", "idle", "inactive")
         }
     }
 
@@ -277,7 +277,7 @@ extension XINFO {
         public let lag: Int?
 
         public init(_ token: RESPToken) throws {
-            (self.name, self.consumers, self.pending, self.lastDeliveredId, self.entriesRead, self.lag) = try token.decodeMapElements(
+            (self.name, self.consumers, self.pending, self.lastDeliveredId, self.entriesRead, self.lag) = try token.decodeMapValues(
                 "name",
                 "consumers",
                 "pending",
@@ -314,7 +314,7 @@ extension XINFO.STREAM {
             let pending: [XMessage]
 
             public init(_ token: RESPToken) throws {
-                (self.name, self.seenTime, self.activeTime, self.pelCount, self.pending) = try token.decodeMapElements(
+                (self.name, self.seenTime, self.activeTime, self.pelCount, self.pending) = try token.decodeMapValues(
                     "name",
                     "seen-time",
                     "active-time",
@@ -344,7 +344,7 @@ extension XINFO.STREAM {
 
             public init(_ token: RESPToken) throws {
                 (self.name, self.lastDeliveredID, self.entriesRead, self.lag, self.pelCount, self.pending, self.consumers) =
-                    try token.decodeMapElements(
+                    try token.decodeMapValues(
                         "name",
                         "last-delivered-id",
                         "entries-read",
@@ -392,7 +392,7 @@ extension XINFO.STREAM {
                 self.lastEntry,
                 self.entries
             ) =
-                try token.decodeMapElements(
+                try token.decodeMapValues(
                     "length",
                     "radix-tree-keys",
                     "radix-tree-nodes",
