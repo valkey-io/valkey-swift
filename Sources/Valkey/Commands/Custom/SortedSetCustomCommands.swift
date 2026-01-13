@@ -135,10 +135,7 @@ extension ZRANDMEMBER {
         /// - Returns: Random member as RESPBulkString, or nil if key doesn't exist
         /// - Throws: RESPDecodeError if response format is unexpected
         public func singleMember() throws -> RESPBulkString? {
-            if token.value == .null {
-                return nil
-            }
-            return try RESPBulkString(token)
+            return try RESPBulkString?(token)
         }
 
         /// Get multiple random members when ZRANDMEMBER was called with COUNT but without WITHSCORES
@@ -157,18 +154,9 @@ extension ZRANDMEMBER {
             case .null:
                 return nil
             case .array(let array):
-                var iterator = array.makeIterator()
-                var entries: [SortedSetEntry] = []
-                entries.reserveCapacity(array.count / 2)
-                while let memberToken = iterator.next() {
-                    guard let scoreToken = iterator.next() else {
-                        throw RESPDecodeError.invalidArraySize(array)
-                    }
-                    let member = try RESPBulkString(memberToken)
-                    let score = try Double(scoreToken)
-                    entries.append(SortedSetEntry(value: member, score: score))
+                return try array.asMap().map {
+                    try SortedSetEntry(value: RESPBulkString($0.key), score: Double($0.value))
                 }
-                return entries
             default:
                 throw RESPDecodeError.tokenMismatch(expected: [.null, .array], token: token)
             }
