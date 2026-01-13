@@ -728,7 +728,7 @@ struct CommandTests {
                     response: .array([
                         .bulkString("member1"), .double(1.0),
                         .bulkString("member2"), .double(2.5),
-                        .bulkString("member3"), .double(3.7)
+                        .bulkString("member3"), .double(3.7),
                     ])
                 ),
                 // Empty array with COUNT 0
