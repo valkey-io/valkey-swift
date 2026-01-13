@@ -1,5 +1,9 @@
 version: 1
 builder:
   configs:
-    - documentation_targets: [Valkey]
+    - documentation_targets:
+        - Valkey
+        - ValkeyBloom
+        - ValkeyJSON
+        - ValkeySearch
       swift_version: 6.1
