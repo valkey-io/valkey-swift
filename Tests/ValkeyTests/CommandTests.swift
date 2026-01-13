@@ -914,24 +914,45 @@ struct CommandTests {
                             ]),
                         ]),
                     ])
-                )
+                ),
+                (
+                    request: .command(["XCLAIM", "key1", "MyGroup", "consumer1", "0", "1749463853292-0", "JUSTID"]),
+                    response: .array([
+                        .bulkString("1749464199407-0"),
+                        .bulkString("1749464199408-0"),
+                    ])
+                ),
             ) { connection in
-                let result = try await connection.xclaim("key1", group: "MyGroup", consumer: "consumer1", minIdleTime: "0", ids: ["1749463853292-0"])
-                switch result {
-                case .messages(let messages):
-                    #expect(messages.count == 2)
-                    #expect(messages[0].id == "1749464199407-0")
-                    #expect(messages[0].fields.count == 1)
-                    #expect(messages[0].fields[0].key == "f")
-                    #expect(String(messages[0].fields[0].value) == "v")
-                    #expect(messages[1].id == "1749464199408-0")
-                    #expect(messages[1].fields.count == 1)
-                    #expect(messages[1].fields[0].key == "f2")
-                    #expect(String(messages[1].fields[0].value) == "v2")
-                default:
-                    Issue.record("Expected `messages` case")
-                }
+                var result = try await connection.xclaim(
+                    "key1",
+                    group: "MyGroup",
+                    consumer: "consumer1",
+                    minIdleTime: "0",
+                    ids: ["1749463853292-0"]
+                )
+                let messages = try result.messages()
+                #expect(messages.count == 2)
+                #expect(messages[0].id == "1749464199407-0")
+                #expect(messages[0].fields.count == 1)
+                #expect(messages[0].fields[0].key == "f")
+                #expect(String(messages[0].fields[0].value) == "v")
+                #expect(messages[1].id == "1749464199408-0")
+                #expect(messages[1].fields.count == 1)
+                #expect(messages[1].fields[0].key == "f2")
+                #expect(String(messages[1].fields[0].value) == "v2")
 
+                result = try await connection.xclaim(
+                    "key1",
+                    group: "MyGroup",
+                    consumer: "consumer1",
+                    minIdleTime: "0",
+                    ids: ["1749463853292-0"],
+                    justid: true
+                )
+                let ids = try result.ids()
+                #expect(ids.count == 2)
+                #expect(ids[0] == "1749464199407-0")
+                #expect(ids[1] == "1749464199408-0")
             }
         }
 
@@ -956,22 +977,47 @@ struct CommandTests {
                             ]),
                         ]),
                     ])
+                ),
+                (
+                    request: .command(["XPENDING", "key", "MyGroup", "-", "+", "10"]),
+                    response: .array([
+                        .array([
+                            .bulkString("1749462751004-0"),
+                            .bulkString("consumer1"),
+                            .number(196415),
+                            .number(1),
+                        ]),
+                        .array([
+                            .bulkString("1749462751005-0"),
+                            .bulkString("consumer1"),
+                            .number(197803),
+                            .number(1),
+                        ]),
+                    ])
                 )
             ) { connection in
-                let result = try await connection.xpending("key", group: "MyGroup")
-                switch result {
-                case .standard(let standard):
-                    #expect(standard.pendingMessageCount == 3)
-                    #expect(standard.minimumID == "1749462751004-0")
-                    #expect(standard.maximumID == "1749462751005-0")
-                    #expect(standard.consumers.count == 2)
-                    #expect(standard.consumers[0].consumer == "consumer1")
-                    #expect(standard.consumers[0].count == "1")
-                    #expect(standard.consumers[1].consumer == "consumer2")
-                    #expect(standard.consumers[1].count == "2")
-                case .extended:
-                    Issue.record("Expected `standard` case")
-                }
+                var result = try await connection.xpending("key", group: "MyGroup")
+                let summary = try result.summary()
+                #expect(summary.pendingMessageCount == 3)
+                #expect(summary.minimumID == "1749462751004-0")
+                #expect(summary.maximumID == "1749462751005-0")
+                #expect(summary.consumers.count == 2)
+                #expect(summary.consumers[0].consumer == "consumer1")
+                #expect(summary.consumers[0].count == "1")
+                #expect(summary.consumers[1].consumer == "consumer2")
+                #expect(summary.consumers[1].count == "2")
+
+                result = try await connection.xpending("key", group: "MyGroup", filters: .init(start: "-", end: "+", count: 10))
+                let messages = try result.messages()
+                #expect(messages.count == 2)
+                #expect(messages[0].id == "1749462751004-0")
+                #expect(messages[0].consumer == "consumer1")
+                #expect(messages[0].millisecondsSinceDelivered == 196415)
+                #expect(messages[0].numberOfTimesDelivered == 1)
+                #expect(messages[1].id == "1749462751005-0")
+                #expect(messages[1].consumer == "consumer1")
+                #expect(messages[1].millisecondsSinceDelivered == 197803)
+                #expect(messages[1].numberOfTimesDelivered == 1)
             }
         }
 
