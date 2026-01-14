@@ -39,7 +39,7 @@ extension ACL {
             public let channels: String?
 
             public init(_ token: RESPToken) throws {
-                (self.commands, self.keys, self.channels) = try token.decodeMapElements("commands", "keys", "channels")
+                (self.commands, self.keys, self.channels) = try token.decodeMapValues("commands", "keys", "channels")
             }
         }
 
@@ -51,7 +51,7 @@ extension ACL {
         public let selectors: [Selector]?
 
         public init(_ token: RESPToken) throws {
-            (self.flags, self.passwords, self.commands, self.keys, self.channels, self.selectors) = try token.decodeMapElements(
+            (self.flags, self.passwords, self.commands, self.keys, self.channels, self.selectors) = try token.decodeMapValues(
                 "flags",
                 "passwords",
                 "commands",
@@ -323,7 +323,7 @@ extension MODULE.LIST {
         public let args: [String]
 
         public init(_ token: RESPToken) throws {
-            (self.name, self.version, self.path, self.args) = try token.decodeMapElements("name", "ver", "path", "args")
+            (self.name, self.version, self.path, self.args) = try token.decodeMapValues("name", "ver", "path", "args")
         }
     }
 }

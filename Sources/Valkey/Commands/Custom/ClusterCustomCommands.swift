@@ -362,7 +362,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
 
         public init(_ token: RESPToken) throws {
             (self.id, self.port, self.tlsPort, self.ip, self.hostname, self.endpoint, self.role, self.replicationOffset, self.health) =
-                try token.decodeMapElements("id", "port", "tls-port", "ip", "hostname", "endpoint", "role", "replication-offset", "health")
+                try token.decodeMapValues("id", "port", "tls-port", "ip", "hostname", "endpoint", "role", "replication-offset", "health")
         }
     }
 
@@ -384,7 +384,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
 
         public init(_ token: RESPToken) throws {
             let hashSlots: TokenDecodableHashSlots
-            (hashSlots, self.nodes) = try token.decodeMapElements("slots", "nodes")
+            (hashSlots, self.nodes) = try token.decodeMapValues("slots", "nodes")
             self.slots = hashSlots.slots
         }
     }
@@ -476,7 +476,7 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
     /// Creates a cluster link from the response token you provide.
     /// - Parameter token: The response token.
     public init(_ token: RESPToken) throws {
-        (self.direction, self.node, self.createTime, self.events, self.sendBufferAllocated, self.sendBufferUsed) = try token.decodeMapElements(
+        (self.direction, self.node, self.createTime, self.events, self.sendBufferAllocated, self.sendBufferUsed) = try token.decodeMapValues(
             "direction",
             "node",
             "create-time",
@@ -513,7 +513,7 @@ public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
                 throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
             }
         self.slot = slotAndStats.0
-        (self.keyCount, self.cpuUsec, self.networkBytesIn, self.networkBytesOut) = try slotAndStats.1.decodeMapElements(
+        (self.keyCount, self.cpuUsec, self.networkBytesIn, self.networkBytesOut) = try slotAndStats.1.decodeMapValues(
             "key-count",
             "cpu-usec",
             "network-bytes-in",

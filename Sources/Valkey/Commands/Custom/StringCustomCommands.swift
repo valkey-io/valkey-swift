@@ -27,7 +27,7 @@ extension LCS {
             public let length: Int64
 
             public init(_ token: RESPToken) throws {
-                (self.matches, self.length) = try token.decodeMapElements("matches", "len")
+                (self.matches, self.length) = try token.decodeMapValues("matches", "len")
             }
         }
 

@@ -55,7 +55,7 @@ extension RESPToken: RESPTokenDecodable {
     /// - Throws: RESPDecodeError
     /// - Returns: Parameter pack of decoded values
     @inlinable
-    public func decodeMapElements<each Value: RESPTokenDecodable>(
+    public func decodeMapValues<each Value: RESPTokenDecodable>(
         _ keys: String...,
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {
@@ -68,7 +68,7 @@ extension RESPToken: RESPTokenDecodable {
             default:
                 throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: self)
             }
-        return try map.decodeElements(keys)
+        return try map.decodeValues(keys)
     }
 }
 
@@ -472,15 +472,15 @@ extension RESPToken.Map: RESPTokenDecodable {
     /// - Throws: RESPDecodeError
     /// - Returns: Parameter pack of decoded values
     @inlinable
-    public func decodeElements<each Value: RESPTokenDecodable>(
+    public func decodeValues<each Value: RESPTokenDecodable>(
         _ keys: String...,
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {
-        try decodeElements(keys)
+        try decodeValues(keys)
     }
 
     @inlinable
-    func decodeElements<each Value: RESPTokenDecodable>(
+    func decodeValues<each Value: RESPTokenDecodable>(
         _ keys: [String],
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {

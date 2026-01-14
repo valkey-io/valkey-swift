@@ -53,7 +53,7 @@ let (member, score) = respToken.decodeArrayElements(as: (String, Int).self)
 When a command returns a dictionary it is returned as a ``RESPToken/Map``. This can be to avoid the additional memory allocation of creating a Swift `Dictionary`, or a more complex type is being represented. `RESPToken.Map` conforms to `Sequence` and its element type is a key value pair of two `RESPToken`. You can iterate over its contents and decode its elements as follows.
 
 ```swift
-let values = try await client.configGet(parameters: ["*max-*-entries*"])
+let values = try await client.hgetall("hashKey")
 for (keyToken, valueToken) in values {
     let key = try keyToken.decode(as: String.self)
     let value = try valueToken.decode(as: String.self)
@@ -64,6 +64,42 @@ for (keyToken, valueToken) in values {
 Alternatively if you don't mind the additional allocation you can decode as a Swift `Dictionary`
 
 ```swift
-let values = try await client.configGet(parameters: ["*max-*-entries*"])
+let values = try await client.hgetall("hashKey")
     .decode(as: [String: String].self)
+```
+
+The type of each value in a `RESPToken.Map` is not fixed. It is possible for values in the same map to represent different types. You can decode specific fields from a map using either `RESPToken.Map` method ``RESPToken/Map/decodeValues(_:as:)`` or `RESPToken` method ``RESPToken/decodeMapValues(_:as:)``. The following code extracts two values with keys "member", "score"
+
+```swift
+let (member, score) = respToken.decodeMapValues("member", "score", as: (String, Int).self)
+```
+
+As a `RESPToken.Map` is just a sequence of key value pairs access by key name is a O(n) process where n is the number of entries in the map.
+
+## RESPBulkString
+
+Where a command response is a RESP bulk string eg `GET`, it returns a ``RESPBulkString`` type. RESP bulk strings can be either UTF-8 Strings or binary blobs. Valkey swift provides initializers for both `String` and `ByteBuffer` to access the bulk string as either UTF-8 or binary blob.
+
+```swift
+// Get value as a String
+let value = try await client.get("key").map { String($0) }
+// Get value as a ByteBuffer
+let value = try await client.get("key").map { ByteBuffer($0) }
+```
+
+`RESPBulkString` conforms to protocol `RandomAccessCollection` where `Element == UInt8` so you can access it's raw bytes using any of the methods available to you via that protocol.
+
+```swift
+if let response = try await connection.get("key") {
+    print("\(response[0]), \(response[1])")
+}
+```
+
+`RESPBulkString` also provides high performance read only access to it's raw bytes using ``RESPBulkString/bytes`` and ``RESPBulkString/span`` which return a `RawSpan` and `Span<UInt8>` respectively.
+
+```swift
+if let response = try await connection.get("key") {
+    let span = response.span
+    print("\(span[0]), \(span[1])")
+}
 ```
