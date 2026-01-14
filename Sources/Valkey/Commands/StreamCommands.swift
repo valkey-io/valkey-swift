@@ -209,6 +209,8 @@ public enum XINFO {
     /// Returns a list of the consumers in a consumer group.
     @_documentation(visibility: internal)
     public struct CONSUMERS<Group: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = [XINFO.Consumer]
+
         @inlinable public static var name: String { "XINFO CONSUMERS" }
 
         public var key: ValkeyKey
@@ -671,6 +673,8 @@ public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand {
 /// Returns the messages from a stream within a range of IDs.
 @_documentation(visibility: internal)
 public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: ValkeyCommand {
+    public typealias Response = [XMessage]
+
     @inlinable public static var name: String { "XRANGE" }
 
     public var key: ValkeyKey
@@ -718,6 +722,8 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
             ids.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
         }
     }
+    public typealias Response = XREADStreams<XMessage>?
+
     @inlinable public static var name: String { "XREAD" }
 
     public var count: Int?
@@ -786,6 +792,8 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
             ids.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
         }
     }
+    public typealias Response = XREADStreams<XREADGroupMessage>?
+
     @inlinable public static var name: String { "XREADGROUP" }
 
     public var groupBlock: GroupBlock
@@ -821,6 +829,8 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
 /// Returns the messages from a stream within a range of IDs in reverse order.
 @_documentation(visibility: internal)
 public struct XREVRANGE<End: RESPStringRenderable, Start: RESPStringRenderable>: ValkeyCommand {
+    public typealias Response = [XMessage]
+
     @inlinable public static var name: String { "XREVRANGE" }
 
     public var key: ValkeyKey
@@ -1170,7 +1180,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Array list of consumers
     @inlinable
-    public func xinfoConsumers<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws -> XINFO.CONSUMERSResponse {
+    public func xinfoConsumers<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws -> [XINFO.Consumer] {
         try await execute(XINFO.CONSUMERS(key, group: group))
     }
 
@@ -1259,7 +1269,7 @@ extension ValkeyClientProtocol {
         start: Start,
         end: End,
         count: Int? = nil
-    ) async throws -> XRANGEResponse {
+    ) async throws -> [XMessage] {
         try await execute(XRANGE(key, start: start, end: end, count: count))
     }
 
@@ -1271,8 +1281,11 @@ extension ValkeyClientProtocol {
     ///     * [Map]: A map of key-value elements when each element composed of key name and the entries reported for that key.
     ///     * [Null]: If BLOCK option is given, and a timeout occurs, or there is no stream we can serve.
     @inlinable
-    public func xread<Id: RESPStringRenderable>(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD<Id>.Streams) async throws -> XREADResponse
-    {
+    public func xread<Id: RESPStringRenderable>(
+        count: Int? = nil,
+        milliseconds: Int? = nil,
+        streams: XREAD<Id>.Streams
+    ) async throws -> XREADStreams<XMessage>? {
         try await execute(XREAD(count: count, milliseconds: milliseconds, streams: streams))
     }
 
@@ -1292,7 +1305,7 @@ extension ValkeyClientProtocol {
         milliseconds: Int? = nil,
         noack: Bool = false,
         streams: XREADGROUP<Group, Consumer, Id>.Streams
-    ) async throws -> XREADGROUPResponse {
+    ) async throws -> XREADStreams<XREADGroupMessage>? {
         try await execute(XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
@@ -1310,7 +1323,7 @@ extension ValkeyClientProtocol {
         end: End,
         start: Start,
         count: Int? = nil
-    ) async throws -> XREVRANGEResponse {
+    ) async throws -> [XMessage] {
         try await execute(XREVRANGE(key, end: end, start: start, count: count))
     }
 

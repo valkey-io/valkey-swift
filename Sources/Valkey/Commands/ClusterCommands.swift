@@ -497,6 +497,8 @@ public enum CLUSTER {
     /// Lists the replica nodes of a primary node.
     @_documentation(visibility: internal)
     public struct REPLICAS<NodeId: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = ValkeyClusterNodes
+
         @inlinable public static var name: String { "CLUSTER REPLICAS" }
 
         public var nodeId: NodeId
@@ -1110,7 +1112,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: A list of replica nodes replicating from the specified primary node provided in the same format used by CLUSTER NODES.
     @inlinable
     @discardableResult
-    public func clusterReplicas<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> CLUSTER.REPLICASResponse {
+    public func clusterReplicas<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> ValkeyClusterNodes {
         try await execute(CLUSTER.REPLICAS(nodeId: nodeId))
     }
 

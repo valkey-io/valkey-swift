@@ -233,6 +233,8 @@ public enum SCRIPT {
     /// Determines whether server-side Lua scripts exist in the script cache.
     @_documentation(visibility: internal)
     public struct EXISTS<Sha1: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = [Int]
+
         @inlinable public static var name: String { "SCRIPT EXISTS" }
 
         public var sha1s: [Sha1]
@@ -308,6 +310,8 @@ public enum SCRIPT {
     /// Loads a server-side Lua script to the script cache.
     @_documentation(visibility: internal)
     public struct LOAD<Script: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = String
+
         @inlinable public static var name: String { "SCRIPT LOAD" }
 
         public var script: Script
@@ -324,6 +328,8 @@ public enum SCRIPT {
     /// Show server-side Lua script in the script cache.
     @_documentation(visibility: internal)
     public struct SHOW<Sha1: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = String
+
         @inlinable public static var name: String { "SCRIPT SHOW" }
 
         public var sha1: Sha1
@@ -670,7 +676,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: An array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
     @discardableResult
-    public func scriptExists<Sha1: RESPStringRenderable>(sha1s: [Sha1]) async throws -> SCRIPT.EXISTSResponse {
+    public func scriptExists<Sha1: RESPStringRenderable>(sha1s: [Sha1]) async throws -> [Int] {
         try await execute(SCRIPT.EXISTS(sha1s: sha1s))
     }
 
@@ -716,7 +722,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The SHA1 digest of the script added into the script cache
     @inlinable
     @discardableResult
-    public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> SCRIPT.LOADResponse {
+    public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> String {
         try await execute(SCRIPT.LOAD(script: script))
     }
 
@@ -728,7 +734,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: Lua script if sha1 hash exists in script cache.
     @inlinable
     @discardableResult
-    public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> SCRIPT.SHOWResponse {
+    public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> String {
         try await execute(SCRIPT.SHOW(sha1: sha1))
     }
 

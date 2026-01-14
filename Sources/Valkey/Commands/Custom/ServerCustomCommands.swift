@@ -7,8 +7,7 @@
 //
 
 extension ACL {
-    public typealias GETUSERResponse = OptionalGETUSERResponse?
-    public struct OptionalGETUSERResponse: RESPTokenDecodable, Sendable {
+    public struct GETUSERResponse: RESPTokenDecodable, Sendable {
         public struct Flag: Hashable, RawRepresentable, RESPTokenDecodable, CustomStringConvertible, Sendable {
             public let rawValue: String
 
@@ -61,10 +60,6 @@ extension ACL {
             )
         }
     }
-}
-
-extension ACL.GETUSER {
-    public typealias Response = ACL.GETUSERResponse
 }
 
 extension COMMAND {

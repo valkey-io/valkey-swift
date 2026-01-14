@@ -105,6 +105,24 @@ let skippedFunctions: Set<String> = [
     "SLAVEOF",
 ]
 
+/// We cannot override the Response type for Commands that have generic parameters in extensions.
+/// This list includes a collection of these commands with response symbol names
+let commandCustomResponseTypes: [String: String] = [
+    "ACL GETUSER": "ACL.GETUSERResponse?",
+    "GEODIST": "Double?",
+    "XREAD": "XREADStreams<XMessage>?",
+    "XREADGROUP": "XREADStreams<XREADGroupMessage>?",
+    "CLUSTER REPLICAS": "ValkeyClusterNodes",
+    "GEORADIUSBYMEMBER": "GeoSearchEntries",
+    "GEORADIUSBYMEMBER_RO": "GeoSearchEntries",
+    "SCRIPT LOAD": "String",
+    "SCRIPT EXISTS": "[Int]",
+    "SCRIPT SHOW": "String",
+    "XRANGE": "[XMessage]",
+    "XREVRANGE": "[XMessage]",
+    "XINFO CONSUMERS": "[XINFO.Consumer]",
+]
+
 func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: ValkeyCommands, module: Bool) -> String {
     var string = """
         //
@@ -447,7 +465,12 @@ extension String {
                 self.appendBlock(argument: arg, names: [], tab: tab, genericStrings: !arg.optional)
             }
         }
-        var returnType = disableResponseCalculation ? "RESPToken" : getResponseType(command: command)
+        var returnType =
+            if disableResponseCalculation {
+                commandCustomResponseTypes[name] ?? "RESPToken"
+            } else {
+                getResponseType(command: command)
+            }
         if returnType == "Void" {
             returnType = "RESPToken"
         }
@@ -507,22 +530,24 @@ extension String {
         let genericParameters = genericParameters(command.arguments)
 
         let calculatedResponseType = getResponseType(command: command)
-        let returnType: String =
-            if disableResponseCalculation {
-                if genericParameters != "" {
-                    " -> \(name.commandTypeName)Response"
-                } else {
-                    " -> \(name.commandTypeName).Response"
-                }
-            } else if calculatedResponseType == "Void" {
-                ""
-            } else if calculatedResponseType != "RESPToken" {
-                " -> \(calculatedResponseType)"
-            } else if genericParameters == "" {
-                " -> \(name.commandTypeName).Response"
+        let returnType: String
+        if disableResponseCalculation {
+            if let customResponseType = commandCustomResponseTypes[name] {
+                returnType = " -> \(customResponseType)"
+            } else if genericParameters != "" {
+                returnType = " -> \(name.commandTypeName)Response"
             } else {
-                " -> RESPToken"
+                returnType = " -> \(name.commandTypeName).Response"
             }
+        } else if calculatedResponseType == "Void" {
+            returnType = ""
+        } else if calculatedResponseType != "RESPToken" {
+            returnType = " -> \(calculatedResponseType)"
+        } else if genericParameters == "" {
+            returnType = " -> \(name.commandTypeName).Response"
+        } else {
+            returnType = " -> RESPToken"
+        }
         let ignoreSendResponse = if returnType == "" { "_ = " } else { "" }
 
         func _appendFunction(isArray: Bool) {
