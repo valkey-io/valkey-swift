@@ -125,23 +125,33 @@ extension XAUTOCLAIM {
 }
 
 @_documentation(visibility: internal)
-public enum XCLAIMResponse: RESPTokenDecodable, Sendable {
-    case none
-    case messages([XMessage])
-    case ids([String])
+public struct XCLAIMResponse: RESPTokenDecodable, Sendable {
+    /// The raw RESP token containing the response
+    public let token: RESPToken
 
     public init(_ token: RESPToken) throws {
+        self.token = token
+    }
+
+    /// Return array of message ids when `XCLAIM`` is called with `JUSTID`
+    /// - Returns: Array of ids of message successfully claimed
+    /// - Throws: RESPDecodeError if response format is unexpected
+    public func ids() throws -> [String] {
         switch token.value {
         case .array(let array):
-            if array.count == 0 {
-                self = .none
-                return
-            }
-            do {
-                self = try .messages(array.decode())
-            } catch {
-                self = try .ids(array.decode())
-            }
+            try array.decode()
+        default:
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
+        }
+    }
+
+    /// Return array of messages when `XCLAIM`` is called without `JUSTID`
+    /// - Returns: Array of messages successfully claimed
+    /// - Throws: RESPDecodeError if response format is unexpected
+    public func messages() throws -> [XMessage] {
+        switch token.value {
+        case .array(let array):
+            try array.decode()
         default:
             throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
         }
@@ -153,8 +163,8 @@ extension XCLAIM {
 }
 
 @_documentation(visibility: internal)
-public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
-    public struct Standard: RESPTokenDecodable, Sendable {
+public struct XPENDINGResponse: RESPTokenDecodable, Sendable {
+    public struct Summary: RESPTokenDecodable, Sendable {
         public struct Consumer: RESPTokenDecodable, Sendable {
             public let consumer: String
             public let count: String
@@ -182,43 +192,41 @@ public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
             }
         }
     }
-    public struct Extended: RESPTokenDecodable, Sendable {
-        struct PendingMessage: RESPTokenDecodable, Sendable {
-            public let id: String
-            public let consumer: String
-            public let millisecondsSinceDelivered: Int
-            public let numberOfTimesDelivered: Int
-
-            public init(_ token: RESPToken) throws {
-                switch token.value {
-                case .array(let array):
-                    (self.id, self.consumer, self.millisecondsSinceDelivered, self.numberOfTimesDelivered) = try array.decodeElements()
-                default:
-                    throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
-                }
-            }
-        }
-        let messages: [PendingMessage]
+    public struct PendingMessage: RESPTokenDecodable, Sendable {
+        public let id: String
+        public let consumer: String
+        public let millisecondsSinceDelivered: Int
+        public let numberOfTimesDelivered: Int
 
         public init(_ token: RESPToken) throws {
             switch token.value {
             case .array(let array):
-                self.messages = try array.decode(as: [PendingMessage].self)
+                (self.id, self.consumer, self.millisecondsSinceDelivered, self.numberOfTimesDelivered) = try array.decodeElements()
             default:
                 throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
             }
         }
     }
 
-    case standard(Standard)
-    case extended(Extended)
+    /// The raw RESP token containing the response
+    public let token: RESPToken
 
     public init(_ token: RESPToken) throws {
-        do {
-            self = try .standard(.init(token))
-        } catch {
-            self = try .extended(.init(token))
-        }
+        self.token = token
+    }
+
+    /// Return summary format when `XPENDING` is called without a range of IDs
+    /// - Returns: Summary of pending messages
+    /// - Throws: RESPDecodeError if response format is unexpected
+    public func summary() throws -> Summary {
+        try Summary(self.token)
+    }
+
+    /// Return details of pending messages when `XPENDING` is called with a range of IDs
+    /// - Returns: Array of pending messages
+    /// - Throws: RESPDecodeError if response format is unexpected
+    public func messages() throws -> [PendingMessage] {
+        try [PendingMessage](self.token)
     }
 }
 extension XPENDING {
