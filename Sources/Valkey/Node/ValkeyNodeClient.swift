@@ -195,14 +195,15 @@ extension ValkeyNodeClient {
     @inlinable
     func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
+    ) async -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
         do {
             return try await self.withConnection { connection in
-                let results = await connection.execute(repeat (each commands))
-                return (repeat (each results).mapError { $0 })
+                await connection.execute(repeat (each commands))
             }
+        } catch let error as ValkeyClientError {
+            return (repeat Result<(each Command).Response, ValkeyClientError>.failure(error))
         } catch {
-            return (repeat Result<(each Command).Response, any Error>.failure(error))
+            return (repeat Result<(each Command).Response, ValkeyClientError>.failure(ValkeyClientError(.unrecognisedError, error: error)))
         }
     }
 
@@ -221,13 +222,15 @@ extension ValkeyNodeClient {
     @inlinable
     func execute<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         do {
             return try await self.withConnection { connection in
                 await connection.execute(commands)
             }
-        } catch {
+        } catch let error as ValkeyClientError {
             return .init(repeating: .failure(error), count: commands.count)
+        } catch {
+            return .init(repeating: .failure(ValkeyClientError(.unrecognisedError, error: error)), count: commands.count)
         }
     }
 
@@ -279,13 +282,15 @@ extension ValkeyNodeClient {
     /// command
     func executeWithAsk<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         do {
             return try await self.withConnection { connection in
                 await connection.executeWithAsk(commands)
             }
-        } catch {
+        } catch let error as ValkeyClientError {
             return .init(repeating: .failure(error), count: commands.count)
+        } catch {
+            return .init(repeating: .failure(ValkeyClientError(.unrecognisedError, error: error)), count: commands.count)
         }
     }
 
