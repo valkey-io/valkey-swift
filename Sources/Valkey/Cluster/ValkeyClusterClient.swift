@@ -220,7 +220,7 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
+    ) async -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
         let results = await self.execute([any ValkeyCommand](commands: repeat each commands))
         var index = AutoIncrementingInteger()
         return (repeat results[index.next()].convertFromRESP(to: (each Command).Response.self))
@@ -232,10 +232,10 @@ public final class ValkeyClusterClient: Sendable {
         @usableFromInline
         let indices: [[any ValkeyCommand].Index]
         @usableFromInline
-        let results: [Result<RESPToken, any Error>]
+        let results: [Result<RESPToken, ValkeyClientError>]
 
         @inlinable
-        init(indices: [[any ValkeyCommand].Index], results: [Result<RESPToken, any Error>]) {
+        init(indices: [[any ValkeyCommand].Index], results: [Result<RESPToken, ValkeyClientError>]) {
             self.indices = indices
             self.results = results
         }
@@ -263,7 +263,7 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func execute(
         _ commands: [any ValkeyCommand]
-    ) async -> [Result<RESPToken, any Error>] {
+    ) async -> [Result<RESPToken, ValkeyClientError>] {
         guard commands.count > 0 else { return [] }
         let readOnlyCommand = commands.reduce(true) { $0 && $1.isReadOnly }
         let nodeSelection = getNodeSelection(readOnly: readOnlyCommand)
@@ -272,11 +272,7 @@ public final class ValkeyClusterClient: Sendable {
             let nodes = try await self.splitCommandsAcrossNodes(commands: commands, nodeSelection: nodeSelection)
             // if this list has one element, then just run the pipeline on that single node
             if nodes.count == 1 {
-                do {
-                    return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands)
-                } catch {
-                    return .init(repeating: .failure(error), count: commands.count)
-                }
+                return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands)
             }
             return await withTaskGroup(of: NodePipelineResult.self) { group in
                 // run generated pipelines concurrently
@@ -286,13 +282,23 @@ public final class ValkeyClusterClient: Sendable {
                         do {
                             let results = try await self.execute(node: node.node, commands: IndexedSubCollection(commands, indices: indices))
                             return .init(indices: indices, results: results)
-                        } catch {
+                        } catch let error as ValkeyClientError {
                             return NodePipelineResult(indices: indices, results: .init(repeating: .failure(error), count: indices.count))
+                        } catch let error as ValkeyClusterError {
+                            return NodePipelineResult(
+                                indices: indices,
+                                results: .init(repeating: .failure(.init(.clusterError, error: error)), count: indices.count)
+                            )
+                        } catch {
+                            return NodePipelineResult(
+                                indices: indices,
+                                results: .init(repeating: .failure(.init(.unrecognisedError, error: error)), count: indices.count)
+                            )
                         }
                     }
                 }
-                var results = [Result<RESPToken, any Error>](
-                    repeating: .failure(ValkeyClusterError._pipelinedResultNotReturned),
+                var results = [Result<RESPToken, ValkeyClientError>](
+                    repeating: .failure(.init(.transactionError, error: ValkeyClusterError._pipelinedResultNotReturned)),
                     count: commands.count
                 )
                 // get results for each node
@@ -304,8 +310,12 @@ public final class ValkeyClusterClient: Sendable {
                 }
                 return results
             }
-        } catch {
+        } catch let error as ValkeyClientError {
             return .init(repeating: .failure(error), count: commands.count)
+        } catch let error as ValkeyClusterError {
+            return .init(repeating: .failure(.init(.clusterError, error: error)), count: commands.count)
+        } catch {
+            return .init(repeating: .failure(.init(.unrecognisedError, error: error)), count: commands.count)
         }
     }
 
@@ -405,11 +415,12 @@ public final class ValkeyClusterClient: Sendable {
     ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
+    /// - Throws: CancellationError, ValkeyClientError, ValkeyClusterError
     @usableFromInline
     func execute<Commands: Collection & Sendable>(
         node: ValkeyNodeClient,
         commands: Commands
-    ) async throws -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
+    ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
         // execute pipeline
         var results = await node.execute(commands)
         var retryCommands: [(any ValkeyCommand, Int)] = []

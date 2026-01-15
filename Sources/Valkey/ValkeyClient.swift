@@ -238,7 +238,7 @@ extension ValkeyClient {
     @inlinable
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
+    ) async -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
         var readOnly = true
         for command in repeat each commands {
             readOnly = readOnly && command.isReadOnly
@@ -262,7 +262,7 @@ extension ValkeyClient {
     @inlinable
     public func execute<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         let readOnly =
             if self.configuration.readOnlyCommandNodeSelection == .primary {
                 false

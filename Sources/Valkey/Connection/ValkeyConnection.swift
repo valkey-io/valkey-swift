@@ -184,8 +184,9 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
         let requestID = Self.requestIDGenerator.next()
 
+        let token: RESPToken
         do {
-            let token = try await withTaskCancellationHandler {
+            token = try await withTaskCancellationHandler {
                 if Task.isCancelled {
                     throw ValkeyClientError(.cancelled)
                 }
@@ -195,7 +196,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             } onCancel: {
                 self.cancel(requestID: requestID)
             }
-            return try .init(token)
         } catch let error as ValkeyClientError {
             #if DistributedTracingSupport
             if let span {
@@ -215,6 +215,11 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             }
             #endif
             throw ValkeyClientError(.unrecognisedError, error: error)
+        }
+        do {
+            return try .init(token)
+        } catch {
+            throw ValkeyClientError(.respDecodeError, error: error)
         }
     }
 
@@ -363,7 +368,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func execute<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         self.logger.trace("execute", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
 
         #if DistributedTracingSupport
@@ -394,10 +399,19 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             valkeyPromises: promises.map { .nio($0) }
         ) { promises in
             // get response from channel handler
-            var results: [Result<RESPToken, any Error>] = .init()
+            var results: [Result<RESPToken, ValkeyClientError>] = .init()
             results.reserveCapacity(count)
             for promise in promises {
-                await results.append(promise.futureResult._result())
+                await results.append(
+                    promise.futureResult._result().mapError {
+                        switch $0 {
+                        case let error as ValkeyClientError:
+                            error
+                        default:
+                            ValkeyClientError(.unrecognisedError, error: $0)
+                        }
+                    }
+                )
             }
             return results
         }
@@ -481,7 +495,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @usableFromInline
     func executeWithAsk(
         _ commands: some Collection<any ValkeyCommand>
-    ) async -> [Result<RESPToken, any Error>] {
+    ) async -> [Result<RESPToken, ValkeyClientError>] {
         self.logger.trace("asking", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -504,10 +518,19 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             valkeyPromises: valkeyPromises
         ) { promises in
             // get response from channel handler
-            var results: [Result<RESPToken, Error>] = .init()
+            var results: [Result<RESPToken, ValkeyClientError>] = .init()
             results.reserveCapacity(count)
             for promise in promises {
-                await results.append(promise.futureResult._result())
+                await results.append(
+                    promise.futureResult._result().mapError {
+                        switch $0 {
+                        case let error as ValkeyClientError:
+                            error
+                        default:
+                            ValkeyClientError(.unrecognisedError, error: $0)
+                        }
+                    }
+                )
             }
             return results
         }
@@ -944,6 +967,19 @@ extension Result where Success == RESPToken, Failure == any Error {
                 error
             default:
                 ValkeyClientError(.unrecognisedError, error: $0)
+            }
+        }
+    }
+}
+
+extension Result where Success == RESPToken, Failure == ValkeyClientError {
+    @usableFromInline
+    func convertFromRESP<Response: RESPTokenDecodable>(to: Response.Type) -> Result<Response, ValkeyClientError> {
+        self.flatMap {
+            do {
+                return try .success(Response($0))
+            } catch {
+                return .failure(.init(.respDecodeError, error: error))
             }
         }
     }
