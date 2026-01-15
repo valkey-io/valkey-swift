@@ -17,7 +17,7 @@ extension LCS {
             public let first: ClosedRange<Int>
             public let second: ClosedRange<Int>
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 (self.first, self.second) = try token.decodeArrayElements()
             }
         }
@@ -26,14 +26,14 @@ extension LCS {
             public let matches: [Match]
             public let length: Int64
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 (self.matches, self.length) = try token.decodeMapValues("matches", "len")
             }
         }
 
         let token: RESPToken
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             self.token = token
         }
 

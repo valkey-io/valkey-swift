@@ -38,8 +38,8 @@ public struct RESPToken: Hashable, Sendable {
         }
 
         @usableFromInline
-        internal func asMap() throws -> Map {
-            guard (self.count & 1) == 0 else { throw RESPParsingError(code: .invalidElementCount, buffer: self.buffer) }
+        internal func asMap() throws(RESPDecodeError) -> Map {
+            guard (self.count & 1) == 0 else { throw RESPDecodeError.invalidArraySize(self) }
             return Map(count: self.count / 2, buffer: self.buffer)
         }
     }

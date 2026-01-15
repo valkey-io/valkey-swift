@@ -10,7 +10,7 @@ extension SSCAN {
         public let cursor: Int
         public let elements: RESPToken.Array
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             // cursor is encoded as a bulkString, but should be
             let (cursor, elements) = try token.decodeArrayElements(as: (Int, RESPToken.Array).self)
             self.cursor = cursor

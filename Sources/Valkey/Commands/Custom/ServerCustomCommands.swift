@@ -15,7 +15,7 @@ extension ACL {
                 self.rawValue = rawValue
             }
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 let string = try String(token)
                 self = .init(rawValue: string)
             }
@@ -37,7 +37,7 @@ extension ACL {
             public let keys: String
             public let channels: String?
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 (self.commands, self.keys, self.channels) = try token.decodeMapValues("commands", "keys", "channels")
             }
         }
@@ -49,7 +49,7 @@ extension ACL {
         public let channels: String?
         public let selectors: [Selector]?
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.flags, self.passwords, self.commands, self.keys, self.channels, self.selectors) = try token.decodeMapValues(
                 "flags",
                 "passwords",
@@ -73,7 +73,7 @@ extension COMMAND {
                 self.rawValue = rawValue
             }
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 let string = try String(token)
                 self = .init(rawValue: string)
             }
@@ -95,7 +95,7 @@ extension COMMAND {
         public let key: ValkeyKey
         public let flags: [Flags]
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.key, self.flags) = try token.decodeArrayElements()
         }
     }
@@ -117,7 +117,7 @@ extension ROLE {
                 public let port: Int
                 public let replicationOffset: Int
 
-                public init(_ token: RESPToken) throws {
+                public init(_ token: RESPToken) throws(RESPDecodeError) {
                     (self.ip, self.port, self.replicationOffset) = try token.decodeArrayElements()
                 }
             }
@@ -141,7 +141,7 @@ extension ROLE {
                     self.rawValue = rawValue
                 }
 
-                public init(_ token: RESPToken) throws {
+                public init(_ token: RESPToken) throws(RESPDecodeError) {
                     let string = try String(token)
                     self = .init(rawValue: string)
                 }
@@ -189,7 +189,7 @@ extension ROLE {
         case replica(Replica)
         case sentinel(Sentinel)
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             switch token.value {
             case .array(let array):
                 do {
@@ -213,6 +213,10 @@ extension ROLE {
                     }
                 } catch let error as MissingValueDecodeError {
                     throw RESPDecodeError.invalidArraySize(array, expectedSize: error.expectedNumberOfValues + 1)
+                } catch let error as RESPDecodeError {
+                    throw error
+                } catch {
+                    preconditionFailure("Shouldn't get here")
                 }
             default:
                 throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
@@ -229,7 +233,7 @@ extension MEMORY.STATS {
             self.rawValue = rawValue
         }
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             let string = try String(token)
             self = .init(rawValue: string)
         }
@@ -317,7 +321,7 @@ extension MODULE.LIST {
         /// Module arguments
         public let args: [String]
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.name, self.version, self.path, self.args) = try token.decodeMapValues("name", "ver", "path", "args")
         }
     }
@@ -328,7 +332,7 @@ extension TIME {
         public let seconds: Int
         public let microSeconds: Int
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.seconds, self.microSeconds) = try token.decodeArrayElements()
         }
     }

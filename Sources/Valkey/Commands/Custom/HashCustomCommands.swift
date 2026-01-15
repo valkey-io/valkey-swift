@@ -18,7 +18,7 @@ public struct HashEntry: RESPTokenDecodable, Sendable {
         self.value = value
     }
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .array(let array):
             (self.field, self.value) = try array.decodeElements()
@@ -34,7 +34,7 @@ extension HSCAN {
             /// List of members and possibly scores.
             public let elements: RESPToken.Array
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 self.elements = try token.decode(as: RESPToken.Array.self)
             }
 
@@ -61,7 +61,7 @@ extension HSCAN {
         /// Sorted set members
         public let members: Members
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.cursor, self.members) = try token.decodeArrayElements()
         }
     }
@@ -73,7 +73,7 @@ extension HRANDFIELD {
         /// The raw RESP token containing the response
         public let token: RESPToken
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             self.token = token
         }
 

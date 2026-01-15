@@ -12,12 +12,12 @@ public struct XMessage: RESPTokenDecodable, Sendable {
     public let id: String
     public let fields: [(key: String, value: RESPBulkString)]
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .array(let array):
             let (id, values) = try array.decodeElements(as: (String, RESPToken.Array).self)
             let keyValuePairs = try values.asMap()
-                .map { try ($0.key.decode(as: String.self), $0.value.decode(as: RESPBulkString.self)) }
+                .map { (element) throws(RESPDecodeError) in try (element.key.decode(as: String.self), element.value.decode(as: RESPBulkString.self)) }
             self.id = id
             self.fields = keyValuePairs
         default:
@@ -66,13 +66,15 @@ public struct XREADGroupMessage: RESPTokenDecodable, Sendable {
     public let id: String
     public let fields: [(key: String, value: RESPBulkString)]?
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .array(let array):
             let (id, values) = try array.decodeElements(as: (String, RESPToken.Array?).self)
-            let keyValuePairs = try values.map {
-                try $0.asMap()
-                    .map { try ($0.key.decode(as: String.self), $0.value.decode(as: RESPBulkString.self)) }
+            let keyValuePairs = try values.map { (value) throws(RESPDecodeError) in
+                try value.asMap()
+                    .map { (element) throws(RESPDecodeError) in
+                        try (element.key.decode(as: String.self), element.value.decode(as: RESPBulkString.self))
+                    }
             }
             self.id = id
             self.fields = keyValuePairs
@@ -91,12 +93,12 @@ public struct XREADStreams<Message>: RESPTokenDecodable, Sendable where Message:
 
     public let streams: [Stream]
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .map(let map):
-            self.streams = try map.map {
-                let key = try $0.key.decode(as: ValkeyKey.self)
-                let messages = try $0.value.decode(as: [Message].self)
+            self.streams = try map.map { (element) throws(RESPDecodeError) in
+                let key = try element.key.decode(as: ValkeyKey.self)
+                let messages = try element.value.decode(as: [Message].self)
                 return Stream(key: key, messages: messages)
             }
         default:
@@ -111,7 +113,7 @@ public struct XAUTOCLAIMResponse: RESPTokenDecodable, Sendable {
     public let messages: [XMessage]
     public let deletedMessages: [String]
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .array(let array):
             (self.streamID, self.messages, self.deletedMessages) = try array.decodeElements()
@@ -129,7 +131,7 @@ public struct XCLAIMResponse: RESPTokenDecodable, Sendable {
     /// The raw RESP token containing the response
     public let token: RESPToken
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         self.token = token
     }
 
@@ -169,7 +171,7 @@ public struct XPENDINGResponse: RESPTokenDecodable, Sendable {
             public let consumer: String
             public let count: String
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 switch token.value {
                 case .array(let array):
                     (self.consumer, self.count) = try array.decodeElements()
@@ -183,7 +185,7 @@ public struct XPENDINGResponse: RESPTokenDecodable, Sendable {
         public let maximumID: String
         public let consumers: [Consumer]
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             switch token.value {
             case .array(let array):
                 (self.pendingMessageCount, self.minimumID, self.maximumID, self.consumers) = try array.decodeElements()
@@ -198,7 +200,7 @@ public struct XPENDINGResponse: RESPTokenDecodable, Sendable {
         public let millisecondsSinceDelivered: Int
         public let numberOfTimesDelivered: Int
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             switch token.value {
             case .array(let array):
                 (self.id, self.consumer, self.millisecondsSinceDelivered, self.numberOfTimesDelivered) = try array.decodeElements()
@@ -211,7 +213,7 @@ public struct XPENDINGResponse: RESPTokenDecodable, Sendable {
     /// The raw RESP token containing the response
     public let token: RESPToken
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         self.token = token
     }
 
@@ -244,7 +246,7 @@ extension XINFO {
         /// The number of milliseconds that have passed since the consumer's last successful interaction
         public let inactive: Int64?
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.name, self.pending, self.idle, self.inactive) = try token.decodeMapValues("name", "pending", "idle", "inactive")
         }
     }
@@ -257,7 +259,7 @@ extension XINFO {
         public let entriesRead: Int?
         public let lag: Int?
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.name, self.consumers, self.pending, self.lastDeliveredId, self.entriesRead, self.lag) = try token.decodeMapValues(
                 "name",
                 "consumers",
@@ -290,7 +292,7 @@ extension XINFO.STREAM {
             /// consumer name is omitted (redundant, since anyway we are in a specific consumer context)
             let pending: [XMessage]
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 (self.name, self.seenTime, self.activeTime, self.pelCount, self.pending) = try token.decodeMapValues(
                     "name",
                     "seen-time",
@@ -319,7 +321,7 @@ extension XINFO.STREAM {
             /// An array with consumers information
             public let consumers: [Consumer]
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 (self.name, self.lastDeliveredID, self.entriesRead, self.lag, self.pelCount, self.pending, self.consumers) =
                     try token.decodeMapValues(
                         "name",
@@ -355,7 +357,7 @@ extension XINFO.STREAM {
         /// Array of groups associated with stream
         public let groups: [Group]?
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             var groupsToken: RESPToken
             (
                 self.length,

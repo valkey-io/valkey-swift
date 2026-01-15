@@ -10,7 +10,7 @@ import NIOCore
 /// A type that can decode from a response token.
 public protocol RESPTokenDecodable {
     /// Initialize from RESPToken
-    init(_ token: RESPToken) throws
+    init(_ token: RESPToken) throws(RESPDecodeError)
 }
 
 extension RESPToken: RESPTokenDecodable {
@@ -19,12 +19,12 @@ extension RESPToken: RESPTokenDecodable {
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Value
     @inlinable
-    public func decode<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) throws -> Value {
+    public func decode<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) throws(RESPDecodeError) -> Value {
         try Value(self)
     }
 
     @inlinable
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         self = token
     }
 
@@ -35,7 +35,7 @@ extension RESPToken: RESPTokenDecodable {
     @inlinable
     public func decodeArrayElements<each Value: RESPTokenDecodable>(
         as: (repeat (each Value)).Type = (repeat (each Value)).self
-    ) throws -> (repeat each Value) {
+    ) throws(RESPDecodeError) -> (repeat each Value) {
         switch self.value {
         case .array(let array), .set(let array):
             try array.decodeElements()
@@ -58,7 +58,7 @@ extension RESPToken: RESPTokenDecodable {
     public func decodeMapValues<each Value: RESPTokenDecodable>(
         _ keys: String...,
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
-    ) throws -> (repeat each Value) {
+    ) throws(RESPDecodeError) -> (repeat each Value) {
         let map =
             switch self.value {
             case .array(let array):
@@ -239,7 +239,7 @@ extension Bool: RESPTokenDecodable {
 
 extension Optional: RESPTokenDecodable where Wrapped: RESPTokenDecodable {
     @inlinable
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .null:
             self = nil
@@ -251,12 +251,12 @@ extension Optional: RESPTokenDecodable where Wrapped: RESPTokenDecodable {
 
 extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
     @inlinable
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         self = try .init(token, decodeSingleElementAsArray: true)
     }
 
     @inlinable
-    public init(_ token: RESPToken, decodeSingleElementAsArray: Bool) throws {
+    public init(_ token: RESPToken, decodeSingleElementAsArray: Bool) throws(RESPDecodeError) {
         switch token.value {
         case .array(let respArray), .set(let respArray), .push(let respArray):
             do {
@@ -266,9 +266,9 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
                     array.append(element)
                 }
                 self = array
-            } catch let decodeError as RESPDecodeError {
-                guard decodeSingleElementAsArray else { throw decodeError }
-                switch decodeError.errorCode {
+            } catch {
+                guard decodeSingleElementAsArray else { throw error }
+                switch error.errorCode {
                 case .tokenMismatch:
                     // if decoding array failed it is possible `Element` is represented by an array and we have a single array
                     // that represents one element of `Element` instead of Array<Element>. We should attempt to decode this as a single element
@@ -276,10 +276,10 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
                         let value = try Element(token)
                         self = [value]
                     } catch {
-                        throw decodeError
+                        throw error
                     }
                 default:
-                    throw decodeError
+                    throw error
                 }
             }
         case .null:
@@ -293,7 +293,7 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
 
 extension Set: RESPTokenDecodable where Element: RESPTokenDecodable {
     @inlinable
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .set(let respSet):
             var set: Set<Element> = .init()
@@ -313,7 +313,7 @@ extension Set: RESPTokenDecodable where Element: RESPTokenDecodable {
 
 extension Dictionary: RESPTokenDecodable where Value: RESPTokenDecodable, Key: RESPTokenDecodable {
     @inlinable
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .map(let respMap), .attribute(let respMap):
             self = try respMap.decode(as: Self.self)
@@ -324,7 +324,7 @@ extension Dictionary: RESPTokenDecodable where Value: RESPTokenDecodable, Key: R
 }
 
 extension ClosedRange: RESPTokenDecodable where Bound: RESPTokenDecodable {
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         let (min, max) = try token.decodeArrayElements(as: (Bound, Bound).self)
         self = min...max
     }
@@ -346,8 +346,10 @@ extension RESPToken.Array: RESPTokenDecodable {
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Array of Value
     @inlinable
-    public func decode<Value: RESPTokenDecodable>(as type: [Value].Type = [Value].self) throws -> [Value] {
-        try self.map { try $0.decode() }
+    public func decode<Value: RESPTokenDecodable>(as type: [Value].Type = [Value].self) throws(RESPDecodeError) -> [Value] {
+        try self.map { (element) throws(RESPDecodeError) in
+            try element.decode()
+        }
     }
 
     /// Convert RESPToken Array to a parameter pack of values
@@ -357,8 +359,8 @@ extension RESPToken.Array: RESPTokenDecodable {
     @inlinable
     public func decodeElements<each Value: RESPTokenDecodable>(
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
-    ) throws -> (repeat each Value) {
-        func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) throws -> T {
+    ) throws(RESPDecodeError) -> (repeat each Value) {
+        func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) throws(RESPDecodeError) -> T {
             switch token {
             case .some(let value):
                 return try T(value)
@@ -409,7 +411,7 @@ extension RESPToken.Array: RESPTokenDecodable {
     @inlinable
     public func decodeKeyValuePairs<Key: RESPTokenDecodable, Value: RESPTokenDecodable>(
         as: [(Key, Value)].Type = [(Key, Value)].self
-    ) throws -> [(Key, Value)] {
+    ) throws(RESPDecodeError) -> [(Key, Value)] {
         try self.asMap().decode()
     }
 
@@ -444,7 +446,7 @@ extension RESPToken.Map: RESPTokenDecodable {
     @inlinable
     public func decode<Key: RESPTokenDecodable & Hashable, Value: RESPTokenDecodable>(
         as type: [Key: Value].Type = [Key: Value].self
-    ) throws -> [Key: Value] {
+    ) throws(RESPDecodeError) -> [Key: Value] {
         let array = try self.decode(as: [(Key, Value)].self)
         return .init(array) { first, _ in first }
     }
@@ -456,9 +458,9 @@ extension RESPToken.Map: RESPTokenDecodable {
     @inlinable
     public func decode<Key: RESPTokenDecodable, Value: RESPTokenDecodable>(
         as type: [(Key, Value)].Type = [(Key, Value)].self
-    ) throws -> [(Key, Value)] {
-        try self.map {
-            try (Key($0.key), Value($0.value))
+    ) throws(RESPDecodeError) -> [(Key, Value)] {
+        try self.map { (element) throws(RESPDecodeError) in
+            try (Key(element.key), Value(element.value))
         }
     }
 
@@ -475,7 +477,7 @@ extension RESPToken.Map: RESPTokenDecodable {
     public func decodeValues<each Value: RESPTokenDecodable>(
         _ keys: String...,
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
-    ) throws -> (repeat each Value) {
+    ) throws(RESPDecodeError) -> (repeat each Value) {
         try decodeValues(keys)
     }
 
@@ -483,11 +485,11 @@ extension RESPToken.Map: RESPTokenDecodable {
     func decodeValues<each Value: RESPTokenDecodable>(
         _ keys: [String],
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
-    ) throws -> (repeat each Value) {
+    ) throws(RESPDecodeError) -> (repeat each Value) {
         var encoder = ValkeyCommandEncoder()
         var mapIterator = self.makeIterator()
 
-        func decodeRESPToken<T: RESPTokenDecodable>(named name: String?, map: RESPToken.Map, as: T.Type) throws -> T {
+        func decodeRESPToken<T: RESPTokenDecodable>(named name: String?, map: RESPToken.Map, as: T.Type) throws(RESPDecodeError) -> T {
             guard let name else { preconditionFailure("Invalid number of keys") }
             encoder.reset()
             encoder.encodeBulkString(name)

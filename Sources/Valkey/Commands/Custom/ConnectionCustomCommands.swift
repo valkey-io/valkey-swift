@@ -16,7 +16,7 @@ extension CLIENT.TRACKINGINFO {
                 self.rawValue = rawValue
             }
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 let string = try String(token)
                 self = .init(rawValue: string)
             }
@@ -47,7 +47,7 @@ extension CLIENT.TRACKINGINFO {
         public let redirect: Int
         public let prefixes: [String]
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.flags, self.redirect, self.prefixes) = try token.decodeMapValues("flags", "redirect", "prefixes")
         }
     }

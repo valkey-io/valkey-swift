@@ -125,7 +125,7 @@ extension RESPBulkString {
 
 extension RESPBulkString: RESPTokenDecodable {
     @inlinable
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         self.buffer = try .init(token)
         self.range = buffer.readerIndex..<buffer.writerIndex
     }

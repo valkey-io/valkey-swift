@@ -21,7 +21,7 @@ extension FUNCTION.LIST {
             public let description: String?
             public let flags: [String]
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 let map = try [String: RESPToken](token)
                 guard let name = map["name"] else { throw RESPDecodeError.missingToken(key: "name", token: token) }
                 guard let description = map["description"] else { throw RESPDecodeError.missingToken(key: "description", token: token) }
@@ -36,7 +36,7 @@ extension FUNCTION.LIST {
         public let functions: [Function]
         public let libraryCode: String?
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             let map = try [String: RESPToken](token)
             guard let libraryName = map["library_name"] else { throw RESPDecodeError.missingToken(key: "library_name", token: token) }
             guard let engine = map["engine"] else { throw RESPDecodeError.missingToken(key: "engine", token: token) }
@@ -45,7 +45,7 @@ extension FUNCTION.LIST {
             self.libraryName = try String(libraryName)
             self.engine = try String(engine)
             self.functions = try [Function](functions)
-            self.libraryCode = try libraryCode.map { try String($0) }
+            self.libraryCode = try libraryCode.map { (libraryCode) throws(RESPDecodeError) in try String(libraryCode) }
         }
     }
 }
@@ -62,7 +62,7 @@ extension FUNCTION.STATS {
             public let command: [RESPBulkString]
             public let durationInMilliseconds: Double
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 let map = try [String: RESPToken](token)
                 guard let name = map["name"] else { throw RESPDecodeError.missingToken(key: "name", token: token) }
                 guard let command = map["command"] else { throw RESPDecodeError.missingToken(key: "command", token: token) }
@@ -76,7 +76,7 @@ extension FUNCTION.STATS {
             public let libraryCount: Int
             public let functionCount: Int
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 let map = try [String: RESPToken](token)
                 guard let libraryCount = map["libraries_count"] else { throw RESPDecodeError.missingToken(key: "libraries_count", token: token) }
                 guard let functionCount = map["functions_count"] else { throw RESPDecodeError.missingToken(key: "functions_count", token: token) }
@@ -86,7 +86,7 @@ extension FUNCTION.STATS {
         }
         public let runningScript: Script
         public let engines: [String: Engine]
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             let map = try [String: RESPToken](token)
             guard let runningScript = map["running_script"] else { throw RESPDecodeError.missingToken(key: "running_script", token: token) }
             guard let engines = map["engines"] else { throw RESPDecodeError.missingToken(key: "engines", token: token) }

@@ -13,7 +13,7 @@ public struct GeoCoordinates: RESPTokenDecodable, Sendable {
     public let longitude: Double
     public let latitude: Double
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         (self.longitude, self.latitude) = try token.decodeArrayElements()
     }
 }
@@ -39,7 +39,7 @@ public struct GeoSearchEntries: RESPTokenDecodable, Sendable {
 
     private let array: RESPToken.Array
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .array(let array):
             self.array = array
