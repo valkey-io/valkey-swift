@@ -381,8 +381,8 @@ extension RESPToken.Array: RESPTokenDecodable {
     @inlinable
     func decodeExecResults<each Value: RESPTokenDecodable>(
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
-    ) -> (repeat Result<(each Value), any Error>) {
-        func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) -> Result<T, any Error> {
+    ) -> (repeat Result<(each Value), ValkeyClientError>) {
+        func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) -> Result<T, ValkeyClientError> {
             switch token {
             case .some(let value):
                 switch value.identifier {
@@ -392,11 +392,16 @@ extension RESPToken.Array: RESPTokenDecodable {
                     do {
                         return try .success(T(value))
                     } catch {
-                        return .failure(error)
+                        return .failure(ValkeyClientError(.respDecodeError, error: error))
                     }
                 }
             case .none:
-                return .failure(RESPDecodeError.invalidArraySize(self, expectedSize: self._parameterPackTypeSize(type)))
+                return .failure(
+                    ValkeyClientError(
+                        .respDecodeError,
+                        error: RESPDecodeError.invalidArraySize(self, expectedSize: self._parameterPackTypeSize(type))
+                    )
+                )
             }
         }
         var iterator = self.makeIterator()

@@ -336,7 +336,7 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async throws -> sending (repeat Result<(each Command).Response, any Error>) {
+    ) async throws -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
         let results = try await self.transaction([any ValkeyCommand](commands: repeat each commands))
         var index = AutoIncrementingInteger()
         return (repeat results[index.next()].convertFromRESP(to: (each Command).Response.self))
@@ -363,7 +363,7 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async throws -> [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+    ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         let hashSlot = try self.hashSlot(for: commands.flatMap { $0.keysAffected })
         let readOnlyCommand = commands.reduce(true) { $0 && $1.isReadOnly }
         let nodeSelection = getNodeSelection(readOnly: readOnlyCommand)
