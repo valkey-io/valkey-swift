@@ -283,7 +283,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async throws(ValkeyClientError) -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
+    ) async throws(ValkeyTransactionError) -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
         self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(repeat each commands).string)])
 
         #if DistributedTracingSupport
@@ -317,22 +317,31 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 buffer: encoder.buffer,
                 promises: promises,
                 valkeyPromises: promises.map { .nio($0) }
-            ) { promises -> sending Result<(repeat Result<(each Command).Response, ValkeyClientError>), any Error> in
+            ) { promises -> sending Result<(repeat Result<(each Command).Response, ValkeyClientError>), ValkeyTransactionError> in
                 let responses: EXEC.Response
                 do {
                     let execFutureResult = promises.last!.futureResult
                     responses = try await execFutureResult.get().decode(as: EXEC.Response.self)
-                } catch let error as ValkeyClientError where error.errorCode == .commandError {
+                } catch {
                     // we received an error while running the EXEC command. Extract queuing
                     // results and throw error
-                    var results: [Result<RESPToken, Error>] = .init()
+                    var results: [Result<RESPToken, ValkeyClientError>] = .init()
                     results.reserveCapacity(promises.count - 2)
                     for promise in promises[1..<(promises.count - 1)] {
-                        results.append(await promise.futureResult._result())
+                        results.append(
+                            await promise.futureResult._valkeyErrorResult()
+                        )
                     }
-                    return .failure(ValkeyTransactionError.transactionErrors(queuedResults: results, execError: error))
-                } catch {
-                    return .failure(error)
+                    let valkeyError =
+                        switch error {
+                        case let error as ValkeyClientError:
+                            error
+                        case let error as RESPDecodeError:
+                            ValkeyClientError(.respDecodeError, error: error)
+                        default:
+                            ValkeyClientError(.unrecognisedError, error: error)
+                        }
+                    return .failure(ValkeyTransactionError.transactionErrors(queuedResults: results, execError: valkeyError))
                 }
                 // If EXEC returned nil then transaction was aborted because a
                 // WATCHed variable changed
@@ -352,14 +361,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 span.setStatus(SpanStatus(code: .error))
             }
             #endif
-            switch error {
-            case let clientError as ValkeyClientError:
-                throw clientError
-            case let transactionError as ValkeyTransactionError:
-                throw ValkeyClientError(.transactionError, error: transactionError)
-            default:
-                throw ValkeyClientError(.unrecognisedError, error: error)
-            }
+            throw error
         }
     }
 
@@ -412,14 +414,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             results.reserveCapacity(count)
             for promise in promises {
                 await results.append(
-                    promise.futureResult._result().mapError {
-                        switch $0 {
-                        case let error as ValkeyClientError:
-                            error
-                        default:
-                            ValkeyClientError(.unrecognisedError, error: $0)
-                        }
-                    }
+                    promise.futureResult._valkeyErrorResult()
                 )
             }
             return results
@@ -445,7 +440,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async throws(ValkeyClientError) -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
+    ) async throws(ValkeyTransactionError) -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
 
         #if DistributedTracingSupport
@@ -487,14 +482,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 span.setStatus(SpanStatus(code: .error))
             }
             #endif
-            switch error {
-            case let clientError as ValkeyClientError:
-                throw clientError
-            case let transactionError as ValkeyTransactionError:
-                throw ValkeyClientError(.transactionError, error: transactionError)
-            default:
-                throw ValkeyClientError(.unrecognisedError, error: error)
-            }
+            throw error
         }
     }
 
@@ -564,7 +552,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @usableFromInline
     func transactionWithAsk(
         _ commands: some Collection<any ValkeyCommand>
-    ) async throws -> [Result<RESPToken, ValkeyClientError>] {
+    ) async throws(ValkeyTransactionError) -> [Result<RESPToken, ValkeyClientError>] {
         self.logger.trace("transaction asking", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
         var promises: [EventLoopPromise<RESPToken>] = []
         promises.reserveCapacity(commands.count)
@@ -627,22 +615,29 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @usableFromInline
     func _processTransactionPromises(
         _ promises: [EventLoopPromise<RESPToken>]
-    ) async -> sending Result<[Result<RESPToken, ValkeyClientError>], any Error> {
+    ) async -> sending Result<[Result<RESPToken, ValkeyClientError>], ValkeyTransactionError> {
         let responses: EXEC.Response
         do {
             let execFutureResult = promises.last!.futureResult
             responses = try await execFutureResult.get().decode(as: EXEC.Response.self)
-        } catch let error as ValkeyClientError where error.errorCode == .commandError {
+        } catch {
             // we received an error while running the EXEC command. Extract queuing
             // results and throw error
-            var results: [Result<RESPToken, Error>] = .init()
+            var results: [Result<RESPToken, ValkeyClientError>] = .init()
             results.reserveCapacity(promises.count - 2)
             for promise in promises[1..<(promises.count - 1)] {
-                results.append(await promise.futureResult._result())
+                results.append(await promise.futureResult._valkeyErrorResult())
             }
-            return .failure(ValkeyTransactionError.transactionErrors(queuedResults: results, execError: error))
-        } catch {
-            return .failure(error)
+            let valkeyError =
+                switch error {
+                case let error as ValkeyClientError:
+                    error
+                case let error as RESPDecodeError:
+                    ValkeyClientError(.respDecodeError, error: error)
+                default:
+                    ValkeyClientError(.unrecognisedError, error: error)
+                }
+            return .failure(.transactionErrors(queuedResults: results, execError: valkeyError))
         }
         // If EXEC returned nil then transaction was aborted because a
         // WATCHed variable changed

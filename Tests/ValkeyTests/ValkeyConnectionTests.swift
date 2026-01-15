@@ -319,16 +319,13 @@ struct ConnectionTests {
         do {
             _ = try await asyncResults
             Issue.record("Transaction should fail")
-        } catch let error as ValkeyClientError where error.errorCode == .transactionError {
-            if case .some(ValkeyTransactionError.transactionErrors(let results, _)) = error.underlyingError {
-                switch results[1] {
-                case .failure(let error):
-                    let valkeyError = try #require(error as? ValkeyClientError)
-                    #expect(valkeyError.errorCode == .commandError)
-                    #expect(valkeyError.message == "ERROR")
-                case .success:
-                    Issue.record("Should receive an error")
-                }
+        } catch ValkeyTransactionError.transactionErrors(let results, _) {
+            switch results[1] {
+            case .failure(let error):
+                #expect(error.errorCode == .commandError)
+                #expect(error.message == "ERROR")
+            case .success:
+                Issue.record("Should receive an error")
             }
         }
     }
@@ -415,9 +412,8 @@ struct ConnectionTests {
         } catch ValkeyTransactionError.transactionErrors(let results, _) {
             switch results[1] {
             case .failure(let error):
-                let valkeyError = try #require(error as? ValkeyClientError)
-                #expect(valkeyError.errorCode == .commandError)
-                #expect(valkeyError.message == "ERROR")
+                #expect(error.errorCode == .commandError)
+                #expect(error.message == "ERROR")
             case .success:
                 Issue.record("Should receive an error")
             }
@@ -1030,7 +1026,7 @@ struct ConnectionTests {
             #expect(span.errors.count == 1)
             let error = try #require(span.errors.first?.error as? ValkeyTransactionError)
             switch error {
-            case .transactionErrors(_, let execError as ValkeyClientError):
+            case .transactionErrors(_, let execError):
                 #expect(execError == ValkeyClientError(.commandError, message: "EXECABORT"))
             default:
                 Issue.record()
