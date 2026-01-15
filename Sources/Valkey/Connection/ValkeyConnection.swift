@@ -283,7 +283,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async throws -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
+    ) async throws(ValkeyClientError) -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
         self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(repeat each commands).string)])
 
         #if DistributedTracingSupport
@@ -445,7 +445,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
+    ) async throws(ValkeyClientError) -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
 
         #if DistributedTracingSupport
@@ -487,7 +487,14 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 span.setStatus(SpanStatus(code: .error))
             }
             #endif
-            throw error
+            switch error {
+            case let clientError as ValkeyClientError:
+                throw clientError
+            case let transactionError as ValkeyTransactionError:
+                throw ValkeyClientError(.transactionError, error: transactionError)
+            default:
+                throw ValkeyClientError(.unrecognisedError, error: error)
+            }
         }
     }
 
