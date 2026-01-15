@@ -198,7 +198,8 @@ extension ValkeyNodeClient {
     ) async -> sending (repeat Result<(each Command).Response, any Error>) {
         do {
             return try await self.withConnection { connection in
-                await connection.execute(repeat (each commands))
+                let results = await connection.execute(repeat (each commands))
+                return (repeat (each results).mapError { $0 })
             }
         } catch {
             return (repeat Result<(each Command).Response, any Error>.failure(error))

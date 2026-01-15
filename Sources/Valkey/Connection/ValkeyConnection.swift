@@ -228,7 +228,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
+    ) async -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
         self.logger.trace("execute", metadata: ["commands": .string(Self.concatenateCommandNames(repeat each commands).string)])
 
         #if DistributedTracingSupport
