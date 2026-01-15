@@ -348,13 +348,14 @@ struct ClientIntegratedTests {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
-            let error = await #expect(throws: ValkeyTransactionError.self) {
+            let error = await #expect(throws: ValkeyClientError(.transactionError)) {
                 try await client.transaction(
                     GET("test"),
                     INVALID()
                 )
             }
-            guard case .some(.transactionErrors(let results, _)) = error else {
+            let transactionError = try #require(error?.underlyingError as? ValkeyTransactionError)
+            guard case .transactionErrors(let results, _) = transactionError else {
                 Issue.record("Expected a transaction error")
                 return
             }
@@ -386,12 +387,13 @@ struct ClientIntegratedTests {
                         try await connection.watch(keys: ["testWatch"])
                         cont2.yield()
                         await stream.first { _ in true }
-                        let error = await #expect(throws: ValkeyTransactionError.self) {
+                        let error = await #expect(throws: ValkeyClientError.self) {
                             _ = try await connection.transaction(
                                 SET("testWatch", value: "value2")
                             )
                         }
-                        guard case .transactionAborted = error else {
+                        let transactionError = try #require(error?.underlyingError as? ValkeyTransactionError)
+                        guard case .transactionAborted = transactionError else {
                             Issue.record("Unexpected error")
                             return
                         }

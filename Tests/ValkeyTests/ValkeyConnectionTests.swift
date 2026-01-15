@@ -319,14 +319,16 @@ struct ConnectionTests {
         do {
             _ = try await asyncResults
             Issue.record("Transaction should fail")
-        } catch ValkeyTransactionError.transactionErrors(let results, _) {
-            switch results[1] {
-            case .failure(let error):
-                let valkeyError = try #require(error as? ValkeyClientError)
-                #expect(valkeyError.errorCode == .commandError)
-                #expect(valkeyError.message == "ERROR")
-            case .success:
-                Issue.record("Should receive an error")
+        } catch let error as ValkeyClientError where error.errorCode == .transactionError {
+            if case .some(ValkeyTransactionError.transactionErrors(let results, _)) = error.underlyingError {
+                switch results[1] {
+                case .failure(let error):
+                    let valkeyError = try #require(error as? ValkeyClientError)
+                    #expect(valkeyError.errorCode == .commandError)
+                    #expect(valkeyError.message == "ERROR")
+                case .success:
+                    Issue.record("Should receive an error")
+                }
             }
         }
     }

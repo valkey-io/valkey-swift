@@ -248,9 +248,19 @@ extension ValkeyNodeClient {
     @inlinable
     func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
-        try await self.withConnection { connection in
-            try await connection.transaction(repeat (each commands))
+    ) async throws -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
+        do {
+            return try await self.withConnection { connection in
+                try await connection.transaction(repeat (each commands))
+            }
+        } catch let error as ValkeyClientError {
+            if error.errorCode != .transactionError {
+                return (repeat Result<(each Command).Response, ValkeyClientError>.failure(error))
+            } else {
+                throw error
+            }
+        } catch {
+            return (repeat Result<(each Command).Response, ValkeyClientError>.failure(ValkeyClientError(.unrecognisedError, error: error)))
         }
     }
 
@@ -272,7 +282,7 @@ extension ValkeyNodeClient {
     @inlinable
     func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async throws -> [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+    ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         try await self.withConnection { connection in
             try await connection.transaction(commands)
         }
@@ -299,7 +309,7 @@ extension ValkeyNodeClient {
     @usableFromInline
     func transactionWithAsk<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async throws -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
+    ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         try await self.withConnection { connection in
             try await connection.transactionWithAsk(commands)
         }
