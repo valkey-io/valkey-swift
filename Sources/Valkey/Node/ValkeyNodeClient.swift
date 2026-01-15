@@ -249,18 +249,8 @@ extension ValkeyNodeClient {
     func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async throws -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
-        do {
-            return try await self.withConnection { connection in
-                try await connection.transaction(repeat (each commands))
-            }
-        } catch let error as ValkeyClientError {
-            if error.errorCode != .transactionError {
-                return (repeat Result<(each Command).Response, ValkeyClientError>.failure(error))
-            } else {
-                throw error
-            }
-        } catch {
-            return (repeat Result<(each Command).Response, ValkeyClientError>.failure(ValkeyClientError(.unrecognisedError, error: error)))
+        try await self.withConnection { connection in
+            try await connection.transaction(repeat (each commands))
         }
     }
 
