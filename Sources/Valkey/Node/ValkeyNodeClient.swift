@@ -177,7 +177,7 @@ extension ValkeyNodeClient {
     /// - Returns: Response from Valkey command
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
-        try await self.withConnection { connection in
+        try await self.withConnection { (connection) in
             try await connection.execute(command)
         }
     }

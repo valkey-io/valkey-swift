@@ -6,10 +6,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 /// Errors returned by a Valkey client.
-public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
+public struct ValkeyClientError: Error, CustomStringConvertible {
 
     /// Valkey client error codes
-    public struct ErrorCode: Equatable, Sendable {
+    public struct ErrorCode: Equatable, Sendable, CustomStringConvertible {
         fileprivate enum _Internal: Equatable, Sendable {
             case connectionClosing
             case connectionClosed
@@ -22,6 +22,10 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             case timeout
             case clientIsShutDown
             case connectionCreationCircuitBreakerTripped
+            case respDecodeError
+            case transactionError
+            case clusterError
+            case unrecognisedError
         }
 
         fileprivate let value: _Internal
@@ -53,35 +57,56 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         public static var clientIsShutDown: Self { .init(.clientIsShutDown) }
         /// Connection pool connection creation circuit breaker triggered
         public static var connectionCreationCircuitBreakerTripped: Self { .init(.connectionCreationCircuitBreakerTripped) }
+        /// RESPToken decode error
+        public static var respDecodeError: Self { .init(.respDecodeError) }
+        /// Transaction error
+        public static var transactionError: Self { .init(.transactionError) }
+        /// Cluster error
+        public static var clusterError: Self { .init(.clusterError) }
+        /// Unrecognised error
+        public static var unrecognisedError: Self { .init(.unrecognisedError) }
+
+        /// The string representation of the error.
+        public var description: String {
+            switch self.value {
+            case .connectionClosing: "Connection is closing."
+            case .connectionClosed: "Connection has been closed."
+            case .commandError: "Valkey command returned an error."
+            case .subscriptionError: "Received invalid subscription push event."
+            case .unsolicitedToken: "Received unsolicited token from Valkey server."
+            case .tokenDoesNotExist: "Expected token does not exist."
+            case .cancelled: "Task was cancelled."
+            case .connectionClosedDueToCancellation: "Connection was closed because another command was cancelled."
+            case .timeout: "Connection was closed because it timed out."
+            case .clientIsShutDown: "Client is shutdown and not serving requests."
+            case .connectionCreationCircuitBreakerTripped: "Connection pool connection creation circuit breaker triggered."
+            case .respDecodeError: "Error thrown while decoding a RESPToken."
+            case .transactionError: "Transaction EXEC command failed."
+            case .clusterError: "Cluster reported an error."
+            case .unrecognisedError: "Unrecognised error."
+            }
+        }
     }
 
     /// The error code
     public let errorCode: ErrorCode
     /// An optional message associated with the error code
     public let message: String?
+    /// If there is an underlying error it will be stored here
+    public let underlyingError: Error?
+
     /// Create a new error code.
     /// - Parameters:
     ///   - errorCode: The error code.
     ///   - message: The message to include.
-    public init(_ errorCode: ErrorCode, message: String? = nil) {
+    public init(_ errorCode: ErrorCode, message: String? = nil, error: Error? = nil) {
         self.errorCode = errorCode
         self.message = message
+        self.underlyingError = error
     }
 
     /// The string representation of the error.
     public var description: String {
-        switch self.errorCode.value {
-        case .connectionClosing: "Connection is closing"
-        case .connectionClosed: "Connection has been closed"
-        case .commandError: self.message ?? "Valkey command returned an error"
-        case .subscriptionError: self.message ?? "Received invalid subscription push event"
-        case .unsolicitedToken: self.message ?? "Received unsolicited token from Valkey server"
-        case .tokenDoesNotExist: self.message ?? "Expected token does not exist."
-        case .cancelled: self.message ?? "Task was cancelled."
-        case .connectionClosedDueToCancellation: self.message ?? "Connection was closed because another command was cancelled."
-        case .timeout: self.message ?? "Connection was closed because it timed out."
-        case .clientIsShutDown: self.message ?? "Client is shutdown and not serving requests."
-        case .connectionCreationCircuitBreakerTripped: self.message ?? "Connection pool connection creation circuit breaker triggered."
-        }
+        "\(self.errorCode)\(self.message.map { " \($0)"} ?? "")\(self.underlyingError.map { "\nUnderlying error: \($0)" } ?? "")"
     }
 }

@@ -780,3 +780,10 @@ struct SubscriptionTests {
         }
     }
 }
+
+extension ValkeyClientError: Equatable {
+    /// Add equatable for tests, doesn't test for the underlying error
+    public static func == (lhs: ValkeyClientError, rhs: ValkeyClientError) -> Bool {
+        lhs.errorCode == rhs.errorCode && lhs.message == rhs.message
+    }
+}
