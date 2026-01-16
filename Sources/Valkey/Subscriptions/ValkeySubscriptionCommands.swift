@@ -16,7 +16,7 @@ struct ValkeySubscriptionCommandStack {
     struct SubscribeCommand {
         var filters: [ValkeySubscriptionFilter]
 
-        mutating func received(_ subscription: ValkeySubscriptionFilter) throws -> Bool {
+        mutating func received(_ subscription: ValkeySubscriptionFilter) throws(ValkeyClientError) -> Bool {
             guard let index = self.filters.firstIndex(of: subscription) else {
                 throw ValkeyClientError(.subscriptionError, message: "Received unexpected push")
             }
@@ -42,7 +42,7 @@ struct ValkeySubscriptionCommandStack {
         self.commands.popFirst()
     }
 
-    mutating func received(_ subscription: ValkeySubscriptionFilter) throws -> SubscribeCommand? {
+    mutating func received(_ subscription: ValkeySubscriptionFilter) throws(ValkeyClientError) -> SubscribeCommand? {
         if commands.first != nil,
             try commands[commands.startIndex].received(subscription)
         {

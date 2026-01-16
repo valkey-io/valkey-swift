@@ -31,7 +31,7 @@ struct ValkeySubscriptions {
     }
 
     /// We received a push notification
-    mutating func notify(_ token: RESPToken) throws -> Bool {
+    mutating func notify(_ token: RESPToken) throws(ValkeyClientError) -> Bool {
         let pushToken: PushToken
         do {
             pushToken = try PushToken(token)
@@ -42,7 +42,7 @@ struct ValkeySubscriptions {
                 subscription.sendError(error)
             }
             self.subscriptionIDMap = [:]
-            throw error
+            throw ValkeyClientError(.respDecodeError, error: error)
         }
 
         self.logger.trace("Received PUSH token", metadata: ["subscription": "\(pushToken.value)", "type": "\(pushToken.type)"])
