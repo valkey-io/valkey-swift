@@ -43,7 +43,7 @@ struct ValkeySubscriptions {
                 subscription.sendError(error)
             }
             self.subscriptionIDMap = [:]
-            throw ValkeyClientError(.respDecodeError, error: error)
+            throw error
         }
 
         self.logger.trace("Received PUSH token", metadata: ["subscription": "\(pushToken.value)", "type": "\(pushToken.type)"])
