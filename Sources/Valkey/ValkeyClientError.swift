@@ -23,7 +23,6 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
             case clientIsShutDown
             case connectionCreationCircuitBreakerTripped
             case respDecodeError
-            case transactionError
             case clusterError
             case unrecognisedError
         }
@@ -59,8 +58,6 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
         public static var connectionCreationCircuitBreakerTripped: Self { .init(.connectionCreationCircuitBreakerTripped) }
         /// RESPToken decode error
         public static var respDecodeError: Self { .init(.respDecodeError) }
-        /// Transaction error
-        public static var transactionError: Self { .init(.transactionError) }
         /// Cluster error
         public static var clusterError: Self { .init(.clusterError) }
         /// Unrecognised error
@@ -81,7 +78,6 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
             case .clientIsShutDown: "Client is shutdown and not serving requests."
             case .connectionCreationCircuitBreakerTripped: "Connection pool connection creation circuit breaker triggered."
             case .respDecodeError: "Error thrown while decoding a RESPToken."
-            case .transactionError: "Transaction EXEC command failed."
             case .clusterError: "Cluster reported an error."
             case .unrecognisedError: "Unrecognised error."
             }

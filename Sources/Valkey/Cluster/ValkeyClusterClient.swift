@@ -298,7 +298,7 @@ public final class ValkeyClusterClient: Sendable {
                     }
                 }
                 var results = [Result<RESPToken, ValkeyClientError>](
-                    repeating: .failure(.init(.transactionError, error: ValkeyClusterError._pipelinedResultNotReturned)),
+                    repeating: .failure(.init(.clusterError, error: ValkeyClusterError._pipelinedResultNotReturned)),
                     count: commands.count
                 )
                 // get results for each node
