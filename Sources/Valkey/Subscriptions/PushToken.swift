@@ -43,7 +43,7 @@ struct PushToken: RESPTokenDecodable {
         case .push(let respArray):
             var arrayIterator = respArray.makeIterator()
             guard let first = arrayIterator.next() else {
-                throw RESPDecodeError.invalidArraySize(respArray, minExpectedSize: 1)
+                throw RESPDecodeError.invalidArraySize(token, minExpectedSize: 1)
             }
             guard case .bulkString(let notification) = first.value else {
                 throw RESPDecodeError.tokenMismatch(expected: [.bulkString], token: first)
@@ -51,21 +51,21 @@ struct PushToken: RESPTokenDecodable {
             switch notification {
             case Self.subscribeString:
                 guard respArray.count == 3 else {
-                    throw RESPDecodeError.invalidArraySize(respArray, expectedSize: 3)
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 3)
                 }
                 self.value = .channel(try String(arrayIterator.next()!))
                 self.type = try TokenType.subscribe(subscriptionCount: Int(arrayIterator.next()!))
 
             case Self.unsubscribeString:
                 guard respArray.count == 3 else {
-                    throw RESPDecodeError.invalidArraySize(respArray, expectedSize: 3)
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 3)
                 }
                 self.value = .channel(try String(arrayIterator.next()!))
                 self.type = try TokenType.unsubscribe(subscriptionCount: Int(arrayIterator.next()!))
 
             case Self.messageString:
                 guard respArray.count == 3 else {
-                    throw RESPDecodeError.invalidArraySize(respArray, expectedSize: 3)
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 3)
                 }
                 let channel = try String(arrayIterator.next()!)
                 self.value = .channel(channel)
@@ -73,21 +73,21 @@ struct PushToken: RESPTokenDecodable {
 
             case Self.psubscribeString:
                 guard respArray.count == 3 else {
-                    throw RESPDecodeError.invalidArraySize(respArray, expectedSize: 3)
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 3)
                 }
                 self.value = .pattern(try String(arrayIterator.next()!))
                 self.type = try TokenType.subscribe(subscriptionCount: Int(arrayIterator.next()!))
 
             case Self.punsubscribeString:
                 guard respArray.count == 3 else {
-                    throw RESPDecodeError.invalidArraySize(respArray, expectedSize: 3)
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 3)
                 }
                 self.value = .pattern(try String(arrayIterator.next()!))
                 self.type = try TokenType.unsubscribe(subscriptionCount: Int(arrayIterator.next()!))
 
             case Self.pmessageString:
                 guard respArray.count == 4 else {
-                    throw RESPDecodeError.invalidArraySize(respArray, expectedSize: 4)
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 4)
                 }
                 self.value = .pattern(try String(arrayIterator.next()!))
                 self.type = try TokenType.message(

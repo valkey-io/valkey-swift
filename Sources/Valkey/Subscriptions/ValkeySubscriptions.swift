@@ -36,13 +36,14 @@ struct ValkeySubscriptions {
         do {
             pushToken = try PushToken(token)
         } catch {
+            let error = ValkeyClientError(.respDecodeError, error: error)
             // push error to all subscriptions on this channel. We're about to close
             // the channel we should tell them why
             for subscription in self.subscriptionIDMap.values {
                 subscription.sendError(error)
             }
             self.subscriptionIDMap = [:]
-            throw ValkeyClientError(.respDecodeError, error: error)
+            throw error
         }
 
         self.logger.trace("Received PUSH token", metadata: ["subscription": "\(pushToken.value)", "type": "\(pushToken.type)"])
