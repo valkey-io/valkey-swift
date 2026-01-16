@@ -506,7 +506,15 @@ struct SubscriptionTests {
             group.addTask {
                 try await connection.subscribe(to: "test") { subscription in
                     var iterator = subscription.makeAsyncIterator()
-                    await #expect(throws: ValkeyClientError(.subscriptionError, message: "Received invalid message push notification")) {
+                    await #expect(
+                        throws: ValkeyClientError(
+                            .respDecodeError,
+                            error: RESPDecodeError.invalidArraySize(
+                                .init(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!"), .number(1)])),
+                                expectedSize: 3
+                            )
+                        )
+                    ) {
                         _ = try await iterator.next()
                     }
                 }
@@ -518,7 +526,15 @@ struct SubscriptionTests {
                 // push subscribe
                 try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
                 // push invalid message
-                await #expect(throws: ValkeyClientError(.subscriptionError, message: "Received invalid message push notification")) {
+                await #expect(
+                    throws: ValkeyClientError(
+                        .respDecodeError,
+                        error: RESPDecodeError.invalidArraySize(
+                            .init(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!"), .number(1)])),
+                            expectedSize: 3
+                        )
+                    )
+                ) {
                     try await channel.writeInbound(
                         RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!"), .number(1)])).base
                     )
@@ -778,5 +794,12 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
+    }
+}
+
+extension ValkeyClientError: Equatable {
+    /// Add equatable for tests, doesn't test for the underlying error
+    public static func == (lhs: ValkeyClientError, rhs: ValkeyClientError) -> Bool {
+        lhs.errorCode == rhs.errorCode && lhs.message == rhs.message
     }
 }

@@ -120,8 +120,9 @@ struct ConnectionTests {
         do {
             _ = try await fooResult
             Issue.record()
-        } catch let error as RESPParsingError {
-            #expect(error.code == .invalidLeadingByte)
+        } catch let valkeyError as ValkeyClientError {
+            #expect(valkeyError.errorCode == .unrecognisedError)
+            #expect((valkeyError.underlyingError as? RESPParsingError)?.code == .invalidLeadingByte)
         }
         #expect(channel.isActive == false)
     }
@@ -737,7 +738,10 @@ struct ConnectionTests {
             do {
                 _ = try await fooResult
                 Issue.record()
-            } catch is RESPParsingError {}
+            } catch let error as ValkeyClientError {
+                #expect(error.errorCode == .unrecognisedError)
+                #expect((error.underlyingError as? RESPParsingError)?.code == .invalidLeadingByte)
+            }
 
             #expect(tracer.finishedSpans.count == 1)
             let span = try #require(tracer.finishedSpans.first)
@@ -745,7 +749,8 @@ struct ConnectionTests {
             #expect(span.kind == .client)
             #expect(span.errors.count == 1)
             let error = try #require(span.errors.first)
-            #expect((error.error as? RESPParsingError)?.code == .invalidLeadingByte)
+            let parsingError = try #require(error.error as? RESPParsingError)
+            #expect(parsingError.code == .invalidLeadingByte)
             #expect(
                 span.attributes == [
                     "db.system.name": "valkey",

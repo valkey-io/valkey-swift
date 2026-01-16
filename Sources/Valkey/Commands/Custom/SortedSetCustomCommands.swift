@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -18,7 +18,7 @@ public struct SortedSetEntry: RESPTokenDecodable, Sendable {
         self.score = score
     }
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .array(let array):
             (self.value, self.score) = try array.decodeElements()
@@ -56,7 +56,7 @@ extension ZMPOP {
         public let key: ValkeyKey
         public let values: [SortedSetEntry]
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             switch token.value {
             case .array(let array):
                 (self.key, self.values) = try array.decodeElements()
@@ -88,7 +88,7 @@ extension ZSCAN {
             /// List of members and possibly scores.
             public let elements: RESPToken.Array
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 self.elements = try token.decode(as: RESPToken.Array.self)
             }
 
@@ -115,7 +115,7 @@ extension ZSCAN {
         /// Sorted set members
         public let members: Members
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.cursor, self.members) = try token.decodeArrayElements()
         }
     }
@@ -127,7 +127,7 @@ extension ZRANDMEMBER {
         /// The raw RESP token containing the response
         public let token: RESPToken
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             self.token = token
         }
 

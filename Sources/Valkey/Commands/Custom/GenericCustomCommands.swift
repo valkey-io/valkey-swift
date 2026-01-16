@@ -12,7 +12,7 @@ extension SCAN {
         public let cursor: Int
         public let keys: RESPToken.Array
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.cursor, self.keys) = try token.decodeArrayElements(as: (Int, RESPToken.Array).self)
         }
     }
@@ -26,7 +26,7 @@ extension WAITAOF {
         /// context of the current connection
         public let numberOfReplicasSynced: Int
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             let localSynced: Int
             (localSynced, self.numberOfReplicasSynced) = try token.decodeArrayElements()
             self.localSynced = localSynced == 1 ? true : false

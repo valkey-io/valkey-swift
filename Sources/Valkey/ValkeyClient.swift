@@ -213,9 +213,15 @@ extension ValkeyClient: ValkeyClientProtocol {
     /// - Parameter command: Valkey command
     /// - Returns: Response from Valkey command
     @inlinable
-    public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
-        try await self.withConnection(readOnly: command.isReadOnly) { connection in
-            try await connection.execute(command)
+    public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
+        do {
+            return try await self.withConnection(readOnly: command.isReadOnly) { connection in
+                try await connection.execute(command)
+            }
+        } catch let error as ValkeyClientError {
+            throw error
+        } catch {
+            throw ValkeyClientError(.unrecognisedError, error: error)
         }
     }
 }
