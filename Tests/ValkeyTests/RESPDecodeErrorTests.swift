@@ -35,7 +35,7 @@ struct RESPDecodeErrorTests {
         struct Test: RESPTokenDecodable {
             let number: Double
             let number2: Double
-            init(_ token: RESPToken) throws {
+            init(_ token: RESPToken) throws(RESPDecodeError) {
                 (self.number, self.number2) = try token.decodeArrayElements()
             }
         }

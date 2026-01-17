@@ -31,11 +31,12 @@ struct ValkeySubscriptions {
     }
 
     /// We received a push notification
-    mutating func notify(_ token: RESPToken) throws -> Bool {
+    mutating func notify(_ token: RESPToken) throws(ValkeyClientError) -> Bool {
         let pushToken: PushToken
         do {
             pushToken = try PushToken(token)
         } catch {
+            let error = ValkeyClientError(.respDecodeError, error: error)
             // push error to all subscriptions on this channel. We're about to close
             // the channel we should tell them why
             for subscription in self.subscriptionIDMap.values {

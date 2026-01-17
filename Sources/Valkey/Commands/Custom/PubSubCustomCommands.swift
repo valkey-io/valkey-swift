@@ -12,7 +12,7 @@ import NIOCore
 public struct PubSubSubscriptionCounts: RESPTokenDecodable & Sendable {
     public let channels: [(name: String, numberOfSubscribers: Int)]
 
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .array(let array):
             var iterator = array.makeIterator()

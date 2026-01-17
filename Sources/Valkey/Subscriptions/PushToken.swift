@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -38,34 +38,34 @@ struct PushToken: RESPTokenDecodable {
     let value: ValkeySubscriptionFilter
     let type: TokenType
 
-    init(_ token: RESPToken) throws {
+    init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .push(let respArray):
             var arrayIterator = respArray.makeIterator()
             guard let first = arrayIterator.next() else {
-                throw ValkeyClientError(.subscriptionError, message: "Received empty notification")
+                throw RESPDecodeError.invalidArraySize(token, minExpectedSize: 1)
             }
             guard case .bulkString(let notification) = first.value else {
-                throw ValkeyClientError(.subscriptionError, message: "Invalid notification identifier")
+                throw RESPDecodeError.tokenMismatch(expected: [.bulkString], token: first)
             }
             switch notification {
             case Self.subscribeString:
                 guard respArray.count == 3 else {
-                    throw ValkeyClientError(.subscriptionError, message: "Received invalid subscribe push notification")
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 3)
                 }
                 self.value = .channel(try String(arrayIterator.next()!))
                 self.type = try TokenType.subscribe(subscriptionCount: Int(arrayIterator.next()!))
 
             case Self.unsubscribeString:
                 guard respArray.count == 3 else {
-                    throw ValkeyClientError(.subscriptionError, message: "Received invalid unsubscribe push notification")
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 3)
                 }
                 self.value = .channel(try String(arrayIterator.next()!))
                 self.type = try TokenType.unsubscribe(subscriptionCount: Int(arrayIterator.next()!))
 
             case Self.messageString:
                 guard respArray.count == 3 else {
-                    throw ValkeyClientError(.subscriptionError, message: "Received invalid message push notification")
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 3)
                 }
                 let channel = try String(arrayIterator.next()!)
                 self.value = .channel(channel)
@@ -73,21 +73,21 @@ struct PushToken: RESPTokenDecodable {
 
             case Self.psubscribeString:
                 guard respArray.count == 3 else {
-                    throw ValkeyClientError(.subscriptionError, message: "Received invalid psubscribe push notification")
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 3)
                 }
                 self.value = .pattern(try String(arrayIterator.next()!))
                 self.type = try TokenType.subscribe(subscriptionCount: Int(arrayIterator.next()!))
 
             case Self.punsubscribeString:
                 guard respArray.count == 3 else {
-                    throw ValkeyClientError(.subscriptionError, message: "Received invalid punsubscribe push notification")
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 3)
                 }
                 self.value = .pattern(try String(arrayIterator.next()!))
                 self.type = try TokenType.unsubscribe(subscriptionCount: Int(arrayIterator.next()!))
 
             case Self.pmessageString:
                 guard respArray.count == 4 else {
-                    throw ValkeyClientError(.subscriptionError, message: "Received invalid pmessage push notification")
+                    throw RESPDecodeError.invalidArraySize(token, expectedSize: 4)
                 }
                 self.value = .pattern(try String(arrayIterator.next()!))
                 self.type = try TokenType.message(
@@ -97,21 +97,21 @@ struct PushToken: RESPTokenDecodable {
 
             case Self.ssubscribeString:
                 guard respArray.count == 3 else {
-                    throw ValkeyClientError(.subscriptionError, message: "Received invalid ssubscribe push notification")
+                    throw RESPDecodeError.invalidArraySize(respArray, expectedSize: 3)
                 }
                 self.value = .shardChannel(try String(arrayIterator.next()!))
                 self.type = try TokenType.subscribe(subscriptionCount: Int(arrayIterator.next()!))
 
             case Self.sunsubscribeString:
                 guard respArray.count == 3 else {
-                    throw ValkeyClientError(.subscriptionError, message: "Received invalid sunsubscribe push notification")
+                    throw RESPDecodeError.invalidArraySize(respArray, expectedSize: 3)
                 }
                 self.value = .shardChannel(try String(arrayIterator.next()!))
                 self.type = try TokenType.unsubscribe(subscriptionCount: Int(arrayIterator.next()!))
 
             case Self.smessageString:
                 guard respArray.count == 3 else {
-                    throw ValkeyClientError(.subscriptionError, message: "Received invalid smessage push notification")
+                    throw RESPDecodeError.invalidArraySize(respArray, expectedSize: 3)
                 }
                 let channel = try String(arrayIterator.next()!)
                 self.value = .shardChannel(channel)
@@ -119,12 +119,12 @@ struct PushToken: RESPTokenDecodable {
 
             case Self.invalidateString:
                 guard respArray.count == 2 else {
-                    throw ValkeyClientError(.subscriptionError, message: "Received invalid invalidate push notification")
+                    throw RESPDecodeError.invalidArraySize(respArray, expectedSize: 2)
                 }
                 self.value = .channel(ValkeySubscriptions.invalidateChannel)
                 self.type = try TokenType.invalidate(keys: [ValkeyKey](arrayIterator.next()!))
             default:
-                throw ValkeyClientError(.subscriptionError, message: "Received unrecognised notification \(String(buffer: notification))")
+                throw RESPDecodeError(.unexpectedToken, token: first, message: "Unexpected Push notification \(String(buffer: notification))")
             }
         case .simpleString,
             .bulkString,

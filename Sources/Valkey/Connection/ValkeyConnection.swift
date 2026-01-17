@@ -169,7 +169,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// - Parameter command: ValkeyCommand structure
     /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
-    public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
+    public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
         #if DistributedTracingSupport
         let span = self.tracer?.startSpan(Command.name, ofKind: .client)
         defer { span?.end() }
@@ -214,7 +214,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 span.setStatus(SpanStatus(code: .error))
             }
             #endif
-            throw error
+            throw ValkeyClientError(.unrecognisedError, error: error)
         }
     }
 
@@ -924,6 +924,26 @@ extension Result where Success == RESPToken, Failure == any Error {
                 return try .success(Response($0))
             } catch {
                 return .failure(error)
+            }
+        }
+    }
+}
+
+extension Result where Success == RESPToken, Failure == any Error {
+    @usableFromInline
+    func convertFromRESP<Response: RESPTokenDecodable>(to: Response.Type) -> Result<Response, ValkeyClientError> {
+        self.flatMap {
+            do {
+                return try .success(Response($0))
+            } catch {
+                return .failure(error)
+            }
+        }.mapError {
+            switch $0 {
+            case let error as ValkeyClientError:
+                error
+            default:
+                ValkeyClientError(.unrecognisedError, error: $0)
             }
         }
     }

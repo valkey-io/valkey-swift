@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -56,7 +56,7 @@ public struct ValkeyKey: Sendable, Equatable, Hashable {
 
 extension ValkeyKey: RESPTokenDecodable {
     @inlinable
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .simpleString(let buffer), .bulkString(let buffer):
             self._storage = .buffer(buffer)

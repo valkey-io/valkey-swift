@@ -1,6 +1,6 @@
 //
 // This source file is part of the valkey-swift project
-// Copyright (c) 2025 the valkey-swift project authors
+// Copyright (c) 2025-2026 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
@@ -17,7 +17,7 @@ extension LCS {
             public let first: ClosedRange<Int>
             public let second: ClosedRange<Int>
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 (self.first, self.second) = try token.decodeArrayElements()
             }
         }
@@ -26,14 +26,14 @@ extension LCS {
             public let matches: [Match]
             public let length: Int64
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 (self.matches, self.length) = try token.decodeMapValues("matches", "len")
             }
         }
 
         let token: RESPToken
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             self.token = token
         }
 

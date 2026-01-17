@@ -48,7 +48,7 @@ public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster nodes response from the response token you provide.
     /// - Parameter token: The response token containing cluster nodes data.
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         self.nodes = try Self.makeClusterNodes(token: token)
     }
 
@@ -88,7 +88,7 @@ public struct ValkeyClusterNode: Hashable, Sendable, RESPTokenDecodable {
             self.rawValue = rawValue
         }
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             let string = try String(token)
             self = .init(rawValue: string)
         }
@@ -168,7 +168,7 @@ public struct ValkeyClusterNode: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster node from the response token you provide.
     /// - Parameter respToken: The response token containing cluster node data.
-    public init(_ respToken: RESPToken) throws {
+    public init(_ respToken: RESPToken) throws(RESPDecodeError) {
         let nodeString = try String(respToken)
         self = try Self.parseNodeLine(nodeString)
     }
@@ -218,7 +218,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
     struct TokenDecodableHashSlots: RESPTokenDecodable {
         let slots: HashSlots
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             guard case .array(let array) = token.value else {
                 throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
             }
@@ -249,7 +249,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             /// The node is a replica.
             public static let replica = Role(base: .replica)
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 let string = try token.decode(as: String.self)
                 guard let baseValue = Base(rawValue: string) else {
                     throw RESPDecodeError(.unexpectedToken, token: token, message: "Invalid Role String: \(string)")
@@ -279,7 +279,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             /// The node is loading.
             public static let loading = Health(base: .loading)
 
-            public init(_ token: RESPToken) throws {
+            public init(_ token: RESPToken) throws(RESPDecodeError) {
                 let string = try token.decode(as: String.self)
                 guard let baseValue = Base(rawValue: string) else {
                     throw RESPDecodeError(.unexpectedToken, token: token, message: "Invalid Node Health String: \(string)")
@@ -352,7 +352,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             self.health = health
         }
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.id, self.port, self.tlsPort, self.ip, self.hostname, self.endpoint, self.role, self.replicationOffset, self.health) =
                 try token.decodeMapValues("id", "port", "tls-port", "ip", "hostname", "endpoint", "role", "replication-offset", "health")
         }
@@ -374,7 +374,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             self.nodes = nodes
         }
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             let hashSlots: TokenDecodableHashSlots
             (hashSlots, self.nodes) = try token.decodeMapValues("slots", "nodes")
             self.slots = hashSlots.slots
@@ -386,7 +386,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster description from the response token you provide.
     /// - Parameter respToken: The response token.
-    public init(_ respToken: RESPToken) throws {
+    public init(_ respToken: RESPToken) throws(RESPDecodeError) {
         self.shards = try [Shard](respToken, decodeSingleElementAsArray: false)
     }
 
@@ -408,7 +408,7 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
         /// The link is accepted by the local node from the peer.
         public static var from: Direction { Direction(base: .from) }
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             let string = try token.decode(as: String.self)
             guard let baseValue = Base(rawValue: string) else {
                 throw RESPDecodeError(.unexpectedToken, token: token, message: "Cannot construct \(Self.self) from \(string)")
@@ -467,7 +467,7 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster link from the response token you provide.
     /// - Parameter token: The response token.
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         (self.direction, self.node, self.createTime, self.events, self.sendBufferAllocated, self.sendBufferUsed) = try token.decodeMapValues(
             "direction",
             "node",
@@ -496,7 +496,7 @@ public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster slot stats from the response token you provide.
     /// - Parameter token: The response token.
-    public init(_ token: RESPToken) throws {
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
         let slotAndStats: (Int, RESPToken) =
             switch token.value {
             case .array(let array):
@@ -529,7 +529,7 @@ public struct ValkeyClusterSlotRange: Hashable, Sendable, RESPTokenDecodable {
         /// Additional networking metadata
         public var metadata: [String: String]
 
-        public init(_ token: RESPToken) throws {
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
             (self.ip, self.port, self.nodeId, self.metadata) = try token.decodeArrayElements()
         }
     }
@@ -554,11 +554,11 @@ public struct ValkeyClusterSlotRange: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster slot range from the response token you provide.
     /// - Parameter respToken: The response token.
-    public init(_ respToken: RESPToken) throws {
+    public init(_ respToken: RESPToken) throws(RESPDecodeError) {
         self = try Self.makeClusterSlotRange(respToken: respToken)
     }
 
-    fileprivate static func makeClusterSlotRange(respToken: RESPToken) throws -> ValkeyClusterSlotRange {
+    fileprivate static func makeClusterSlotRange(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterSlotRange {
         guard case .array(let array) = respToken.value else {
             throw RESPDecodeError.tokenMismatch(expected: [.array], token: respToken)
         }

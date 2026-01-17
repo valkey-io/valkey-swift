@@ -8,7 +8,7 @@ The wire protocol valkey-swift uses is RESP3. It is simple, human readable and a
 
 We represent a raw RESP token using the type ``RESPToken``. A parsed RESP value is represented by the enum ``RESPToken/Value``. This includes cases for the different datatypes a RESP token can represent.
 
-The majority of the Valkey commands return the Swift types equivalent to their expected response. eg `GET` returns a `ByteBuffer` containing the contents of the key, `STRLEN` returns the length of the contents as an `Int`. But there are a number of reasons for commands to not have a defined return type and in these cases a command may return the type ``RESPToken`` or one of the sequence types ``RESPToken/Array`` or ``RESPToken/Map``.
+The majority of the Valkey commands return the Swift types equivalent to their expected response. eg `STRLEN` returns the length of the contents or a key as an `Int` and `GET` returns a ``RESPBulkString`` containing the contents of the key. But there are a number of reasons for commands to not have a defined return type and in these cases a command may return the type ``RESPToken`` or one of the sequence types ``RESPToken/Array`` or ``RESPToken/Map``.
 
 ### Decoding RESPToken
 
@@ -50,7 +50,7 @@ let (member, score) = respToken.decodeArrayElements(as: (String, Int).self)
 
 ### Decoding RESPToken.Map
 
-When a command returns a dictionary it is returned as a ``RESPToken/Map``. This can be to avoid the additional memory allocation of creating a Swift `Dictionary`, or a more complex type is being represented. `RESPToken.Map` conforms to `Sequence` and its element type is a key value pair of two `RESPToken`. You can iterate over its contents and decode its elements as follows.
+When a command returns a dictionary it is returned as a ``RESPToken/Map``. This can be to avoid the additional memory allocation of creating a Swift `Dictionary`, or a more complex type is being represented. `RESPToken.Map` conforms to `Sequence` and its element type is a key value pair of two `RESPTokens`. You can iterate over its contents and decode its elements as follows.
 
 ```swift
 let values = try await client.hgetall("hashKey")
