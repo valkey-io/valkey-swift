@@ -85,7 +85,7 @@ public struct GeoSearchEntries: RESPTokenDecodable, Sendable {
         ///   - distance: Optional distance from center.
         ///   - hash: Optional geohash integer.
         ///   - coordinates: Optional coordinates.
-        public init(
+        init(
             member: String,
             distance: Double? = nil,
             hash: Int64? = nil,
