@@ -419,8 +419,6 @@ extension CLIENT {
                 }
             }
         }
-        public typealias Response = RESPBulkString
-
         @inlinable public static var name: String { "CLIENT LIST" }
 
         public var clientType: ClientType?
@@ -1131,7 +1129,7 @@ extension ValkeyClientProtocol {
     ///     * 8.1.0: Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE.
     ///     * 9.0.0: Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP.
     /// - Complexity: O(N) where N is the number of client connections
-    /// - Response: [String]: Information and statistics about client connections
+    /// - Response: Array of client information dictionaries
     @inlinable
     @discardableResult
     public func clientList(
@@ -1162,7 +1160,7 @@ extension ValkeyClientProtocol {
         notDb: Int? = nil,
         notCapa: String? = nil,
         notIp: String? = nil
-    ) async throws -> RESPBulkString {
+    ) async throws -> CLIENT.LIST.Response {
         try await execute(
             CLIENT.LIST(
                 clientType: clientType,

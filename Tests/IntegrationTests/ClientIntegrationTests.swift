@@ -614,9 +614,16 @@ struct ClientIntegratedTests {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
-            let clients = String(try await client.clientList())
-            #expect(clients.firstRange(of: "lib-name=\(valkeySwiftLibraryName)") != nil)
-            #expect(clients.firstRange(of: "lib-ver=\(valkeySwiftLibraryVersion)") != nil)
+            let result = try await client.clientList()
+            // Check if any client has the expected lib-name and lib-ver
+            let hasLibName = result.clients.contains { client in
+                (try? client[.libName]?.decode(as: String.self)) == valkeySwiftLibraryName
+            }
+            let hasLibVer = result.clients.contains { client in
+                (try? client[.libVer]?.decode(as: String.self)) == valkeySwiftLibraryVersion
+            }
+            #expect(hasLibName)
+            #expect(hasLibVer)
         }
     }
 

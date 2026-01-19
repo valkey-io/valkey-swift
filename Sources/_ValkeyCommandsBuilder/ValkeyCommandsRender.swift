@@ -18,6 +18,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "BZPOPMAX",
     "BZPOPMIN",
     "CLIENT TRACKINGINFO",
+    "CLIENT LIST",
     "CLUSTER SLOTS",
     "CLUSTER SLOT-STATS",
     "CLUSTER LINKS",
