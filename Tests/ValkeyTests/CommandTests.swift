@@ -73,7 +73,10 @@ struct CommandTests {
                 (
                     request: .command(["CLIENT", "LIST"]),
                     response: .verbatimString(
-                        ByteBuffer(string: "txt:id=3 addr=127.0.0.1:52698 laddr=127.0.0.1:6379 fd=8 name= age=5 idle=0 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 qbuf=26 qbuf-free=20448 argv-mem=10 multi-mem=0 obl=0 oll=0 omem=0 tot-mem=61466 events=r cmd=client|list user=default redir=-1 resp=3 lib-name=valkey-swift lib-ver=1.0.0\nid=5 addr=127.0.0.1:52699 laddr=127.0.0.1:6379 fd=9 name=myconnection age=3 idle=1 flags=N db=1 sub=0 psub=0 ssub=0 multi=-1 qbuf=0 qbuf-free=0 argv-mem=0 multi-mem=0 obl=0 oll=0 omem=0 tot-mem=20504 events=r cmd=get user=default redir=-1 resp=3")
+                        ByteBuffer(
+                            string:
+                                "txt:id=3 addr=127.0.0.1:52698 laddr=127.0.0.1:6379 fd=8 name= age=5 idle=0 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 qbuf=26 qbuf-free=20448 argv-mem=10 multi-mem=0 obl=0 oll=0 omem=0 tot-mem=61466 events=r cmd=client|list user=default redir=-1 resp=3 lib-name=valkey-swift lib-ver=1.0.0\nid=5 addr=127.0.0.1:52699 laddr=127.0.0.1:6379 fd=9 name=myconnection age=3 idle=1 flags=N db=1 sub=0 psub=0 ssub=0 multi=-1 qbuf=0 qbuf-free=0 argv-mem=0 multi-mem=0 obl=0 oll=0 omem=0 tot-mem=20504 events=r cmd=get user=default redir=-1 resp=3"
+                        )
                     )
                 )
             ) { connection in

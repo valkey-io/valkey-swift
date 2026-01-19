@@ -147,10 +147,10 @@ extension CLIENT.LIST {
         /// - Parameter token: The response token containing CLIENT LIST data.
         public init(_ token: RESPToken) throws(RESPDecodeError) {
             switch token.value {
-                 case .verbatimString, .bulkString:
-                    var string = try String(token)
+            case .verbatimString, .bulkString:
+                var string = try String(token)
 
-                print (string)
+                print(string)
 
                 if let colonIndex = string.firstIndex(of: ":"), colonIndex.utf16Offset(in: string) < 10 {
                     // Check if this looks like an encoding prefix (short prefix before colon)
@@ -160,7 +160,7 @@ extension CLIENT.LIST {
                     }
                 }
 
-                print (string)
+                print(string)
 
                 let lines = string.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
 
