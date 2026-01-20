@@ -24,7 +24,7 @@ final class SSLContextCache: ValkeySSLContextProvider {
 
     enum State: ~Copyable {
         case initialized
-        case producing([ValkeyPromise<NIOSSLContext>])
+        case producing([CheckedContinuation<NIOSSLContext, any Error>])
         case cached(NIOSSLContext)
         case failed(any Error)
     }
@@ -45,7 +45,7 @@ final class SSLContextCache: ValkeySSLContextProvider {
             let action = self.stateLock.withLock { state -> Action in
                 switch consume state {
                 case .initialized:
-                    state = .producing([.swift(continuation)])
+                    state = .producing([continuation])
                     return .produce
 
                 case .cached(let context):
@@ -57,7 +57,7 @@ final class SSLContextCache: ValkeySSLContextProvider {
                     return .fail(error)
 
                 case .producing(var continuations):
-                    continuations.append(.swift(continuation))
+                    continuations.append(continuation)
                     state = .producing(continuations)
                     return .wait
                 }
@@ -85,8 +85,8 @@ final class SSLContextCache: ValkeySSLContextProvider {
 
     private func reportProduceSSLContextResult(_ result: Result<NIOSSLContext, any Error>, for tlsConfiguration: TLSConfiguration) {
         enum Action {
-            case fail(any Error, [ValkeyPromise<NIOSSLContext>])
-            case succeed(NIOSSLContext, [ValkeyPromise<NIOSSLContext>])
+            case fail(any Error, [CheckedContinuation<NIOSSLContext, any Error>])
+            case succeed(NIOSSLContext, [CheckedContinuation<NIOSSLContext, any Error>])
             case none
         }
 
@@ -121,10 +121,10 @@ final class SSLContextCache: ValkeySSLContextProvider {
             break
 
         case .succeed(let context, let continuations):
-            for continuation in continuations { continuation.succeed(context) }
+            for continuation in continuations { continuation.resume(returning: context) }
 
         case .fail(let error, let continuations):
-            for continuation in continuations { continuation.fail(error) }
+            for continuation in continuations { continuation.resume(throwing: error) }
         }
     }
 }
