@@ -13,7 +13,7 @@ import NIOCore
 @available(valkeySwift 1.0, *)
 enum ValkeyPromise<T: Sendable>: Sendable {
     case nio(EventLoopPromise<T>)
-    case swift(CheckedContinuation<T, any Error>)
+    case swift(CheckedContinuation<Result<T, ValkeyClientError>, Never>)
     case forget
 
     func succeed(_ t: T) {
@@ -21,18 +21,18 @@ enum ValkeyPromise<T: Sendable>: Sendable {
         case .nio(let eventLoopPromise):
             eventLoopPromise.succeed(t)
         case .swift(let checkedContinuation):
-            checkedContinuation.resume(returning: t)
+            checkedContinuation.resume(returning: .success(t))
         case .forget:
             break
         }
     }
 
-    func fail(_ e: any Error) {
+    func fail(_ e: ValkeyClientError) {
         switch self {
         case .nio(let eventLoopPromise):
             eventLoopPromise.fail(e)
         case .swift(let checkedContinuation):
-            checkedContinuation.resume(throwing: e)
+            checkedContinuation.resume(returning: .failure(e))
         case .forget:
             break
         }
@@ -132,7 +132,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     ///   - request: Valkey command request
     ///   - promise: Promise to fulfill when command is complete
     @inlinable
-    func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
+    func write<Command: ValkeyCommand>(
+        command: Command,
+        continuation: CheckedContinuation<Result<RESPToken, ValkeyClientError>, Never>,
+        requestID: Int
+    ) {
         self.eventLoop.assertInEventLoop()
         let deadline: NIODeadline =
             command.isBlocking ? .now() + self.configuration.blockingCommandTimeout : .now() + self.configuration.commandTimeout
@@ -152,7 +156,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             }
 
         case .throwError(let error):
-            continuation.resume(throwing: error)
+            continuation.resume(returning: .failure(error))
         }
     }
 
@@ -213,7 +217,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 case .failure(let error):
                     self.subscriptions.removeSubscription(id: subscriptionID)
                     self.subscriptions.removeUnhandledCommand()
-                    promise.fail(error)
+                    if let valkeyError = error as? ValkeyClientError {
+                        promise.fail(valkeyError)
+                    } else {
+                        promise.fail(ValkeyClientError(.unrecognisedError, error: error))
+                    }
                 }
             }
 
@@ -269,7 +277,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 promise.succeed(())
             case .failure(let error):
                 self.subscriptions.removeUnhandledCommand()
-                promise.fail(error)
+                if let valkeyError = error as? ValkeyClientError {
+                    promise.fail(valkeyError)
+                } else {
+                    promise.fail(ValkeyClientError(.unrecognisedError, error: error))
+                }
             }
         }
     }

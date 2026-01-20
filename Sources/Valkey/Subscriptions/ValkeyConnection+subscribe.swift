@@ -112,7 +112,7 @@ extension ValkeyConnection {
         if Task.isCancelled {
             throw ValkeyClientError(.cancelled)
         }
-        let subscriptionID: Int = try await withCheckedThrowingContinuation(isolation: self) { continuation in
+        let subscriptionID: Int = try await withCheckedContinuation(isolation: self) { continuation in
             self.channelHandler.subscribe(
                 command: command,
                 streamContinuation: streamContinuation,
@@ -120,16 +120,16 @@ extension ValkeyConnection {
                 promise: .swift(continuation),
                 requestID: requestID
             )
-        }
+        }.get()
         return (subscriptionID, stream)
     }
 
     @usableFromInline
     func unsubscribe(id: Int) async throws {
         let requestID = Self.requestIDGenerator.next()
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedContinuation { continuation in
             self.channelHandler.unsubscribe(id: id, promise: .swift(continuation), requestID: requestID)
-        }
+        }.get()
     }
 
     /// DEBUG function to check if the internal subscription state machine is empty

@@ -189,13 +189,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 if Task.isCancelled {
                     throw ValkeyClientError(.cancelled)
                 }
-                return try await withCheckedThrowingContinuation { continuation in
+                return await withCheckedContinuation { (continuation: CheckedContinuation<Result<RESPToken, ValkeyClientError>, Never>) in
                     self.channelHandler.write(command: command, continuation: continuation, requestID: requestID)
                 }
             } onCancel: {
                 self.cancel(requestID: requestID)
             }
-            return try .init(token)
+            return try .init(token.get())
         } catch let error as ValkeyClientError {
             #if DistributedTracingSupport
             if let span {
