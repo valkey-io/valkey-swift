@@ -283,7 +283,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
     @discardableResult
-    public func bfAdd<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> RESPToken {
+    public func bfAdd<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws(ValkeyClientError) -> RESPToken {
         try await execute(BF.ADD(key, value: value))
     }
 
@@ -293,7 +293,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
-    public func bfCard(_ key: ValkeyKey) async throws -> BF.CARD.Response {
+    public func bfCard(_ key: ValkeyKey) async throws(ValkeyClientError) -> BF.CARD.Response {
         try await execute(BF.CARD(key))
     }
 
@@ -303,7 +303,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
     @discardableResult
-    public func bfExists<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> RESPToken {
+    public func bfExists<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws(ValkeyClientError) -> RESPToken {
         try await execute(BF.EXISTS(key, value: value))
     }
 
@@ -313,7 +313,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
-    public func bfInfo(_ key: ValkeyKey, sortby: BF.INFO.Sortby? = nil) async throws -> BF.INFO.Response {
+    public func bfInfo(_ key: ValkeyKey, sortby: BF.INFO.Sortby? = nil) async throws(ValkeyClientError) -> BF.INFO.Response {
         try await execute(BF.INFO(key, sortby: sortby))
     }
 
@@ -334,7 +334,7 @@ extension ValkeyClientProtocol {
         nonscaling: Bool = false,
         nocreate: Bool = false,
         values: [String] = []
-    ) async throws -> BF.INSERT.Response {
+    ) async throws(ValkeyClientError) -> BF.INSERT.Response {
         try await execute(
             BF.INSERT(
                 key,
@@ -357,7 +357,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N), where N is the capacity
     @inlinable
     @discardableResult
-    public func bfLoad<Dump: RESPStringRenderable>(_ key: ValkeyKey, dump: Dump) async throws -> RESPToken {
+    public func bfLoad<Dump: RESPStringRenderable>(_ key: ValkeyKey, dump: Dump) async throws(ValkeyClientError) -> RESPToken {
         try await execute(BF.LOAD(key, dump: dump))
     }
 
@@ -367,7 +367,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added
     @inlinable
     @discardableResult
-    public func bfMadd<Value: RESPStringRenderable>(_ key: ValkeyKey, values: [Value]) async throws -> RESPToken {
+    public func bfMadd<Value: RESPStringRenderable>(_ key: ValkeyKey, values: [Value]) async throws(ValkeyClientError) -> RESPToken {
         try await execute(BF.MADD(key, values: values))
     }
 
@@ -377,7 +377,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(K * N), where N is the number of hash functions used by the bloom filter and K is the number of items
     @inlinable
     @discardableResult
-    public func bfMexists<Value: RESPStringRenderable>(_ key: ValkeyKey, values: [Value]) async throws -> RESPToken {
+    public func bfMexists<Value: RESPStringRenderable>(_ key: ValkeyKey, values: [Value]) async throws(ValkeyClientError) -> RESPToken {
         try await execute(BF.MEXISTS(key, values: values))
     }
 
@@ -393,7 +393,7 @@ extension ValkeyClientProtocol {
         capacity: Int,
         expansion: Int? = nil,
         nonscaling: Bool = false
-    ) async throws -> BF.RESERVE.Response {
+    ) async throws(ValkeyClientError) -> BF.RESERVE.Response {
         try await execute(BF.RESERVE(key, errorRate: errorRate, capacity: capacity, expansion: expansion, nonscaling: nonscaling))
     }
 

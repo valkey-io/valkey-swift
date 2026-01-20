@@ -95,7 +95,7 @@ extension ValkeyConnection {
     /// - Available: 2.0.0
     /// - Complexity: O(N), when N is the number of queued commands
     @inlinable
-    public func discard() async throws {
+    public func discard() async throws(ValkeyClientError) {
         _ = try await execute(DISCARD())
     }
 
@@ -109,7 +109,7 @@ extension ValkeyConnection {
     ///     * [Null]: The transaction was aborted because a `WATCH`ed key was touched
     @inlinable
     @discardableResult
-    public func exec() async throws -> RESPToken.Array? {
+    public func exec() async throws(ValkeyClientError) -> RESPToken.Array? {
         try await execute(EXEC())
     }
 
@@ -119,7 +119,7 @@ extension ValkeyConnection {
     /// - Available: 1.2.0
     /// - Complexity: O(1)
     @inlinable
-    public func multi() async throws {
+    public func multi() async throws(ValkeyClientError) {
         _ = try await execute(MULTI())
     }
 
@@ -129,7 +129,7 @@ extension ValkeyConnection {
     /// - Available: 2.2.0
     /// - Complexity: O(1)
     @inlinable
-    public func unwatch() async throws {
+    public func unwatch() async throws(ValkeyClientError) {
         _ = try await execute(UNWATCH())
     }
 
@@ -139,7 +139,7 @@ extension ValkeyConnection {
     /// - Available: 2.2.0
     /// - Complexity: O(1) for every key.
     @inlinable
-    public func watch(keys: [ValkeyKey]) async throws {
+    public func watch(keys: [ValkeyKey]) async throws(ValkeyClientError) {
         _ = try await execute(WATCH(keys: keys))
     }
 

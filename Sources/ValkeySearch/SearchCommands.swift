@@ -1220,7 +1220,7 @@ extension ValkeyClientProtocol {
         scorer: FT.AGGREGATE<Query>.Scorer? = nil,
         addscores: Bool = false,
         dialect: FT.AGGREGATE<Query>.Dialect? = nil
-    ) async throws -> RESPToken {
+    ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(
             FT.AGGREGATE(
                 index: index,
@@ -1254,7 +1254,7 @@ extension ValkeyClientProtocol {
         on: FT.CREATE<IndexName, FieldIdentifier>.On? = nil,
         prefix: FT.CREATE<IndexName, FieldIdentifier>.Prefix? = nil,
         schema: FT.CREATE<IndexName, FieldIdentifier>.Schema
-    ) async throws -> RESPToken {
+    ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(FT.CREATE(indexName: indexName, on: on, prefix: prefix, schema: schema))
     }
 
@@ -1264,7 +1264,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N)
     @inlinable
     @discardableResult
-    public func ftDropindex(_ key: ValkeyKey) async throws -> FT.DROPINDEX.Response {
+    public func ftDropindex(_ key: ValkeyKey) async throws(ValkeyClientError) -> FT.DROPINDEX.Response {
         try await execute(FT.DROPINDEX(key))
     }
 
@@ -1274,7 +1274,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
-    public func ftInfo(_ key: ValkeyKey, scope: FT.INFO.Scope? = nil) async throws -> FT.INFO.Response {
+    public func ftInfo(_ key: ValkeyKey, scope: FT.INFO.Scope? = nil) async throws(ValkeyClientError) -> FT.INFO.Response {
         try await execute(FT.INFO(key, scope: scope))
     }
 
@@ -1294,7 +1294,7 @@ extension ValkeyClientProtocol {
         limit: FT.SEARCH<Query>.Limit? = nil,
         dialect: FT.SEARCH<Query>.Dialect? = nil,
         localonly: Bool = false
-    ) async throws -> RESPToken {
+    ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(
             FT.SEARCH(
                 index: index,
@@ -1316,7 +1316,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
-    public func ftDebug() async throws -> FT.DEBUG.Response {
+    public func ftDebug() async throws(ValkeyClientError) -> FT.DEBUG.Response {
         try await execute(FT.DEBUG())
     }
 
@@ -1326,7 +1326,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
-    public func ftList() async throws -> FT.LIST.Response {
+    public func ftList() async throws(ValkeyClientError) -> FT.LIST.Response {
         try await execute(FT.LIST())
     }
 

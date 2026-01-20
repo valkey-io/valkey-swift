@@ -974,7 +974,11 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
     @inlinable
     @discardableResult
-    public func xack<Group: RESPStringRenderable, Id: RESPStringRenderable>(_ key: ValkeyKey, group: Group, ids: [Id]) async throws -> Int {
+    public func xack<Group: RESPStringRenderable, Id: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        group: Group,
+        ids: [Id]
+    ) async throws(ValkeyClientError) -> Int {
         try await execute(XACK(key, group: group, ids: ids))
     }
 
@@ -997,7 +1001,7 @@ extension ValkeyClientProtocol {
         trim: XADD<Field, Value>.Trim? = nil,
         idSelector: XADD<Field, Value>.IdSelector,
         data: [XADD<Field, Value>.Data]
-    ) async throws -> RESPBulkString? {
+    ) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(XADD(key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 
@@ -1026,7 +1030,7 @@ extension ValkeyClientProtocol {
         start: Start,
         count: Int? = nil,
         justid: Bool = false
-    ) async throws -> XAUTOCLAIMResponse {
+    ) async throws(ValkeyClientError) -> XAUTOCLAIMResponse {
         try await execute(XAUTOCLAIM(key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
     }
 
@@ -1050,7 +1054,7 @@ extension ValkeyClientProtocol {
         force: Bool = false,
         justid: Bool = false,
         lastid: String? = nil
-    ) async throws -> XCLAIMResponse {
+    ) async throws(ValkeyClientError) -> XCLAIMResponse {
         try await execute(
             XCLAIM(
                 key,
@@ -1076,7 +1080,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of entries actually deleted
     @inlinable
     @discardableResult
-    public func xdel<Id: RESPStringRenderable>(_ key: ValkeyKey, ids: [Id]) async throws -> Int {
+    public func xdel<Id: RESPStringRenderable>(_ key: ValkeyKey, ids: [Id]) async throws(ValkeyClientError) -> Int {
         try await execute(XDEL(key, ids: ids))
     }
 
@@ -1094,7 +1098,7 @@ extension ValkeyClientProtocol {
         idSelector: XGROUP.CREATE<Group>.IdSelector,
         mkstream: Bool = false,
         entriesread: Int? = nil
-    ) async throws {
+    ) async throws(ValkeyClientError) {
         _ = try await execute(XGROUP.CREATE(key, group: group, idSelector: idSelector, mkstream: mkstream, entriesread: entriesread))
     }
 
@@ -1110,7 +1114,7 @@ extension ValkeyClientProtocol {
         _ key: ValkeyKey,
         group: Group,
         consumer: Consumer
-    ) async throws -> Int {
+    ) async throws(ValkeyClientError) -> Int {
         try await execute(XGROUP.CREATECONSUMER(key, group: group, consumer: consumer))
     }
 
@@ -1126,7 +1130,7 @@ extension ValkeyClientProtocol {
         _ key: ValkeyKey,
         group: Group,
         consumer: Consumer
-    ) async throws -> Int {
+    ) async throws(ValkeyClientError) -> Int {
         try await execute(XGROUP.DELCONSUMER(key, group: group, consumer: consumer))
     }
 
@@ -1138,7 +1142,7 @@ extension ValkeyClientProtocol {
     /// - Response: The number of destroyed consumer groups (0 or 1)
     @inlinable
     @discardableResult
-    public func xgroupDestroy<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws -> Int {
+    public func xgroupDestroy<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws(ValkeyClientError) -> Int {
         try await execute(XGROUP.DESTROY(key, group: group))
     }
 
@@ -1150,7 +1154,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     @discardableResult
-    public func xgroupHelp() async throws -> RESPToken.Array {
+    public func xgroupHelp() async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(XGROUP.HELP())
     }
 
@@ -1167,7 +1171,7 @@ extension ValkeyClientProtocol {
         group: Group,
         idSelector: XGROUP.SETID<Group>.IdSelector,
         entriesread: Int? = nil
-    ) async throws {
+    ) async throws(ValkeyClientError) {
         _ = try await execute(XGROUP.SETID(key, group: group, idSelector: idSelector, entriesread: entriesread))
     }
 
@@ -1180,7 +1184,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Array list of consumers
     @inlinable
-    public func xinfoConsumers<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws -> [XINFO.Consumer] {
+    public func xinfoConsumers<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws(ValkeyClientError) -> [XINFO.Consumer] {
         try await execute(XINFO.CONSUMERS(key, group: group))
     }
 
@@ -1192,7 +1196,7 @@ extension ValkeyClientProtocol {
     ///     * 7.0.0: Added the `entries-read` and `lag` fields
     /// - Complexity: O(1)
     @inlinable
-    public func xinfoGroups(_ key: ValkeyKey) async throws -> XINFO.GROUPS.Response {
+    public func xinfoGroups(_ key: ValkeyKey) async throws(ValkeyClientError) -> XINFO.GROUPS.Response {
         try await execute(XINFO.GROUPS(key))
     }
 
@@ -1204,7 +1208,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     @discardableResult
-    public func xinfoHelp() async throws -> RESPToken.Array {
+    public func xinfoHelp() async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(XINFO.HELP())
     }
 
@@ -1221,7 +1225,7 @@ extension ValkeyClientProtocol {
     ///     * [Map]: Summary form, in case `FULL` was not given.
     ///     * [Map]: Extended form, in case `FULL` was given.
     @inlinable
-    public func xinfoStream(_ key: ValkeyKey, fullBlock: XINFO.STREAM.FullBlock? = nil) async throws -> XINFO.STREAM.Response {
+    public func xinfoStream(_ key: ValkeyKey, fullBlock: XINFO.STREAM.FullBlock? = nil) async throws(ValkeyClientError) -> XINFO.STREAM.Response {
         try await execute(XINFO.STREAM(key, fullBlock: fullBlock))
     }
 
@@ -1232,7 +1236,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The number of entries of the stream at key
     @inlinable
-    public func xlen(_ key: ValkeyKey) async throws -> Int {
+    public func xlen(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(XLEN(key))
     }
 
@@ -1251,7 +1255,7 @@ extension ValkeyClientProtocol {
         _ key: ValkeyKey,
         group: Group,
         filters: XPENDING<Group>.Filters? = nil
-    ) async throws -> XPENDINGResponse {
+    ) async throws(ValkeyClientError) -> XPENDINGResponse {
         try await execute(XPENDING(key, group: group, filters: filters))
     }
 
@@ -1269,7 +1273,7 @@ extension ValkeyClientProtocol {
         start: Start,
         end: End,
         count: Int? = nil
-    ) async throws -> [XMessage] {
+    ) async throws(ValkeyClientError) -> [XMessage] {
         try await execute(XRANGE(key, start: start, end: end, count: count))
     }
 
@@ -1285,7 +1289,7 @@ extension ValkeyClientProtocol {
         count: Int? = nil,
         milliseconds: Int? = nil,
         streams: XREAD<Id>.Streams
-    ) async throws -> XREADStreams<XMessage>? {
+    ) async throws(ValkeyClientError) -> XREADStreams<XMessage>? {
         try await execute(XREAD(count: count, milliseconds: milliseconds, streams: streams))
     }
 
@@ -1305,7 +1309,7 @@ extension ValkeyClientProtocol {
         milliseconds: Int? = nil,
         noack: Bool = false,
         streams: XREADGROUP<Group, Consumer, Id>.Streams
-    ) async throws -> XREADStreams<XREADGroupMessage>? {
+    ) async throws(ValkeyClientError) -> XREADStreams<XREADGroupMessage>? {
         try await execute(XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
@@ -1323,7 +1327,7 @@ extension ValkeyClientProtocol {
         end: End,
         start: Start,
         count: Int? = nil
-    ) async throws -> [XMessage] {
+    ) async throws(ValkeyClientError) -> [XMessage] {
         try await execute(XREVRANGE(key, end: end, start: start, count: count))
     }
 
@@ -1340,7 +1344,7 @@ extension ValkeyClientProtocol {
         lastId: LastId,
         entriesAdded: Int? = nil,
         maxDeletedId: String? = nil
-    ) async throws {
+    ) async throws(ValkeyClientError) {
         _ = try await execute(XSETID(key, lastId: lastId, entriesAdded: entriesAdded, maxDeletedId: maxDeletedId))
     }
 
@@ -1354,7 +1358,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of entries deleted from the stream.
     @inlinable
     @discardableResult
-    public func xtrim<Threshold: RESPStringRenderable>(_ key: ValkeyKey, trim: XTRIM<Threshold>.Trim) async throws -> Int {
+    public func xtrim<Threshold: RESPStringRenderable>(_ key: ValkeyKey, trim: XTRIM<Threshold>.Trim) async throws(ValkeyClientError) -> Int {
         try await execute(XTRIM(key, trim: trim))
     }
 

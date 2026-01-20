@@ -415,7 +415,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
     @discardableResult
-    public func sadd<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
+    public func sadd<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws(ValkeyClientError) -> Int {
         try await execute(SADD(key, members: members))
     }
 
@@ -426,7 +426,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The cardinality (number of elements) of the set, or 0 if key does not exist.
     @inlinable
-    public func scard(_ key: ValkeyKey) async throws -> Int {
+    public func scard(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(SCARD(key))
     }
 
@@ -437,7 +437,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
-    public func sdiff(keys: [ValkeyKey]) async throws -> RESPToken.Array {
+    public func sdiff(keys: [ValkeyKey]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SDIFF(keys: keys))
     }
 
@@ -449,7 +449,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Number of the elements in the resulting set.
     @inlinable
     @discardableResult
-    public func sdiffstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
+    public func sdiffstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws(ValkeyClientError) -> Int {
         try await execute(SDIFFSTORE(destination: destination, keys: keys))
     }
 
@@ -460,7 +460,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
-    public func sinter(keys: [ValkeyKey]) async throws -> RESPToken.Array {
+    public func sinter(keys: [ValkeyKey]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SINTER(keys: keys))
     }
 
@@ -471,7 +471,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Response: [Integer]: Number of the elements in the resulting intersection.
     @inlinable
-    public func sintercard(keys: [ValkeyKey], limit: Int? = nil) async throws -> Int {
+    public func sintercard(keys: [ValkeyKey], limit: Int? = nil) async throws(ValkeyClientError) -> Int {
         try await execute(SINTERCARD(keys: keys, limit: limit))
     }
 
@@ -483,7 +483,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Number of the elements in the result set.
     @inlinable
     @discardableResult
-    public func sinterstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
+    public func sinterstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws(ValkeyClientError) -> Int {
         try await execute(SINTERSTORE(destination: destination, keys: keys))
     }
 
@@ -496,7 +496,7 @@ extension ValkeyClientProtocol {
     ///     * 0: The element is not a member of the set, or the key does not exist.
     ///     * 1: The element is a member of the set.
     @inlinable
-    public func sismember<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member) async throws -> Int {
+    public func sismember<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member) async throws(ValkeyClientError) -> Int {
         try await execute(SISMEMBER(key, member: member))
     }
 
@@ -507,7 +507,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the set cardinality.
     /// - Response: [Array]: All elements of the set.
     @inlinable
-    public func smembers(_ key: ValkeyKey) async throws -> RESPToken.Array {
+    public func smembers(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SMEMBERS(key))
     }
 
@@ -518,7 +518,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of elements being checked for membership
     /// - Response: [Array]: List representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public func smismember<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> RESPToken.Array {
+    public func smismember<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SMISMEMBER(key, members: members))
     }
 
@@ -532,7 +532,8 @@ extension ValkeyClientProtocol {
     ///     * 0: The element is not a member of source and no operation was performed.
     @inlinable
     @discardableResult
-    public func smove<Member: RESPStringRenderable>(source: ValkeyKey, destination: ValkeyKey, member: Member) async throws -> Int {
+    public func smove<Member: RESPStringRenderable>(source: ValkeyKey, destination: ValkeyKey, member: Member) async throws(ValkeyClientError) -> Int
+    {
         try await execute(SMOVE(source: source, destination: destination, member: member))
     }
 
@@ -549,7 +550,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: List to the removed members when 'COUNT' is given.
     @inlinable
     @discardableResult
-    public func spop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func spop(_ key: ValkeyKey, count: Int? = nil) async throws(ValkeyClientError) -> RESPToken? {
         try await execute(SPOP(key, count: count))
     }
 
@@ -566,7 +567,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: In case `count` is given, an array of elements
     ///     * [Array]: In case `count` is given and key doesn't exist
     @inlinable
-    public func srandmember(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func srandmember(_ key: ValkeyKey, count: Int? = nil) async throws(ValkeyClientError) -> RESPToken? {
         try await execute(SRANDMEMBER(key, count: count))
     }
 
@@ -580,7 +581,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Number of members that were removed from the set, not including non existing members.
     @inlinable
     @discardableResult
-    public func srem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
+    public func srem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws(ValkeyClientError) -> Int {
         try await execute(SREM(key, members: members))
     }
 
@@ -591,7 +592,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func sscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> SSCAN.Response {
+    public func sscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws(ValkeyClientError) -> SSCAN.Response {
         try await execute(SSCAN(key, cursor: cursor, pattern: pattern, count: count))
     }
 
@@ -602,7 +603,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
-    public func sunion(keys: [ValkeyKey]) async throws -> RESPToken.Array {
+    public func sunion(keys: [ValkeyKey]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SUNION(keys: keys))
     }
 
@@ -614,7 +615,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Number of the elements in the resulting set.
     @inlinable
     @discardableResult
-    public func sunionstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
+    public func sunionstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws(ValkeyClientError) -> Int {
         try await execute(SUNIONSTORE(destination: destination, keys: keys))
     }
 
