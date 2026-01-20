@@ -21,7 +21,7 @@ struct ValkeyClientStateMachineTests {
     func testSetGetPrimary() {
         let factory = MockClientFactory<ValkeyClientNodeDescription>()
         var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init())
-        switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000)) {
+        switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000), readOnly: false) {
         case .runNode(let client):
             #expect(client.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
             #expect(client.nodeDescription.readOnly == false)
@@ -39,7 +39,7 @@ struct ValkeyClientStateMachineTests {
     func testSetPrimaryAndReplicas() {
         let factory = MockClientFactory<ValkeyClientNodeDescription>()
         var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas))
-        switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000)) {
+        switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000), readOnly: false) {
         case .runNodeAndFindReplicas(let client):
             #expect(client.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
             #expect(client.nodeDescription.readOnly == false)
@@ -70,7 +70,7 @@ struct ValkeyClientStateMachineTests {
     func testReplaceReplicas() {
         let factory = MockClientFactory<ValkeyClientNodeDescription>()
         var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas))
-        _ = stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000))
+        _ = stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000), readOnly: false)
         _ = stateMachine.addReplicas(nodeIDs: [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9002)])
         let addReplicasAction = stateMachine.addReplicas(nodeIDs: [.hostname("127.0.0.1", port: 9002), .hostname("127.0.0.1", port: 9003)])
         #expect(addReplicasAction.clientsToRun.count == 1)

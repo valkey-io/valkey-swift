@@ -157,7 +157,8 @@ public struct ValkeyConnectionConfiguration: Sendable {
         tls: TLS = .disable,
         clientName: String? = nil,
         readOnly: Bool = false,
-        databaseNumber: Int = 0
+        databaseNumber: Int = 0,
+        enableClientRedirect: Bool = true
     ) {
         self.authentication = authentication
         self.commandTimeout = commandTimeout
@@ -166,7 +167,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
         self.clientName = clientName
         self.readOnly = readOnly
         self.databaseNumber = databaseNumber
-        self.enableClientRedirect = true
+        self.enableClientRedirect = enableClientRedirect
     }
 }
 

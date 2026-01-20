@@ -8,7 +8,8 @@
 import Foundation
 import Logging
 import Testing
-import Valkey
+
+@testable import Valkey
 
 @Suite(
     "Standalone Replica Integration Tests",
@@ -18,20 +19,30 @@ import Valkey
 struct StandaloneReplicaIntegrationTests {
     @available(valkeySwift 1.0, *)
     @Test func testReadonlySelection() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
+        let logger = {
+            var logger = Logger(label: "Valkey")
+            logger.logLevel = .debug
+            return logger
+        }()
         try await withValkeyClient(.hostname(primaryHostname!, port: primaryPort!), logger: logger) { client in
             try await withKey(client) { key in
-                // wait 100 milliseconds to ensure ROLE has returned replicas
-                try await Task.sleep(for: .milliseconds(100))
-                try await client.withConnection(readOnly: true) { connection in
-                    _ = try await connection.get(key)
-                    let error = await #expect(throws: ValkeyClientError.self) {
-                        try await connection.set(key, value: "readonly")
+                while true {
+                    let finished = try await client.withConnection(readOnly: true) { connection in
+                        // verify connection is readonly
+                        guard await connection.configuration.readOnly else { return false }
+                        _ = try await connection.get(key)
+                        let error = await #expect(throws: ValkeyClientError.self) {
+                            try await connection.set(key, value: "readonly")
+                        }
+                        #expect(error?.errorCode == .commandError)
+                        let errorMessage = try #require(error?.message)
+                        #expect(errorMessage.hasPrefix("READONLY") || errorMessage.hasPrefix("REDIRECT") == true)
+                        return true
                     }
-                    #expect(error?.errorCode == .commandError)
-                    let errorMessage = try #require(error?.message)
-                    #expect(errorMessage.hasPrefix("READONLY") || errorMessage.hasPrefix("REDIRECT") == true)
+                    if finished {
+                        break
+                    }
+                    try await Task.sleep(for: .milliseconds(100))
                 }
             }
         }
@@ -40,7 +51,7 @@ struct StandaloneReplicaIntegrationTests {
     @available(valkeySwift 1.0, *)
     @Test func testRoleRedirectFromReplica() async throws {
         struct UnexpectedRoleError: Error {}
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "ValkeyRoleRedirect")
         logger.logLevel = .debug
         // get replica address
         let replicaAddress = try await withValkeyClient(.hostname(primaryHostname!, port: primaryPort!), logger: logger) { client in
@@ -58,8 +69,41 @@ struct StandaloneReplicaIntegrationTests {
         try await withValkeyClient(replicaAddress, logger: logger) { client in
             try await withKey(client) { key in
                 // wait 100 milliseconds to ensure ROLE has returned replica status
-                try await Task.sleep(for: .milliseconds(100))
+                try await Task.sleep(for: .milliseconds(200))
                 try await client.set(key, value: "redirect")
+            }
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test func testRedirectErrorFromReplica() async throws {
+        struct UnexpectedRoleError: Error {}
+        let logger = {
+            var logger = Logger(label: "Valkey")
+            logger.logLevel = .debug
+            return logger
+        }()
+        // get replica address
+        try await withValkeyClient(.hostname(primaryHostname!, port: primaryPort!), logger: logger) { client in
+            try await withKey(client) { key in
+                let role = try await client.role()
+                switch role {
+                case .primary(let primary):
+                    let replica = try #require(primary.replicas.first)
+                    let replicaAddress = ValkeyServerAddress.hostname(replica.ip, port: replica.port)
+                    // connect to replica
+                    _ = try await withValkeyClient(
+                        replicaAddress,
+                        configuration: .init(connectToReplica: true),
+                        logger: logger
+                    ) { client in
+                        await #expect(throws: ValkeyClientError(.commandError, message: "REDIRECT \(primaryHostname!):\(primaryPort!)")) {
+                            try await client.set(key, value: "redirect")
+                        }
+                    }
+                default:
+                    throw UnexpectedRoleError()
+                }
             }
         }
     }
@@ -72,7 +116,7 @@ struct StandaloneReplicaIntegrationTests {
         logger.logLevel = .trace
         try await withValkeyClient(.hostname(primaryHostname!, port: primaryPort!), logger: logger) { client in
             // wait 100 milliseconds to ensure ROLE has returned status
-            try await Task.sleep(for: .milliseconds(100))
+            try await Task.sleep(for: .milliseconds(200))
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
                     try await client.withConnection { connection in

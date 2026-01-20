@@ -49,9 +49,9 @@ struct ValkeyClientStateMachine<
         case findReplicas
         case doNothing
     }
-    mutating func setPrimary(_ address: ValkeyServerAddress) -> SetPrimaryAction {
+    mutating func setPrimary(_ address: ValkeyServerAddress, readOnly: Bool) -> SetPrimaryAction {
         let nodes = ValkeyNodeIDs(primary: address)
-        let action = self.runningClients.addNode(.init(address: address, readOnly: false))
+        let action = self.runningClients.addNode(.init(address: address, readOnly: readOnly))
         self.state = .running(nodes)
         if self.findReplicas {
             return switch action {

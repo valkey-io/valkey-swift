@@ -24,7 +24,7 @@ services:
     security_opt:
       - seccomp=unconfined
     environment:
-      - VALKEY_PRIMARY_HOSTNAME=localhost
+      - VALKEY_PRIMARY_HOSTNAME=127.0.0.1
       - VALKEY_PRIMARY_PORT=9000
     command: sleep infinity
 

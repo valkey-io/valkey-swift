@@ -87,7 +87,7 @@ public final class ValkeyClient: Sendable {
         self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
 
-        let action = self.stateMachine.withLock { $0.setPrimary(address) }
+        let action = self.stateMachine.withLock { $0.setPrimary(address, readOnly: configuration.connectToReplica) }
         switch action {
         case .runNode(let client):
             self.queueAction(.runNodeClient(client))
@@ -174,21 +174,24 @@ extension ValkeyClient {
                     self.logger.debug("Found replicas \(replicas)")
 
                 case .replica(let replica):
-                    // if client is pointing to a replica then redirect to the primary
-                    let action = self.stateMachine.withLock { $0.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort)) }
-                    self.logger.debug("Client is a connected to a replica redirecting to primary \(replica.primaryIP):\(replica.primaryPort)")
-                    switch action {
-                    case .runNode(let client):
-                        self.queueAction(.runNodeClient(client))
-                    case .runNodeAndFindReplicas(let client):
-                        self.queueAction(.runNodeClient(client))
-                        self.queueAction(.runRole)
-                    case .findReplicas:
-                        self.queueAction(.runRole)
-                    case .doNothing:
-                        break
+                    if !self.configuration.connectToReplica {
+                        // if client is pointing to a replica then redirect to the primary
+                        let action = self.stateMachine.withLock {
+                            $0.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort), readOnly: false)
+                        }
+                        self.logger.debug("Client is a connected to a replica redirecting to primary \(replica.primaryIP):\(replica.primaryPort)")
+                        switch action {
+                        case .runNode(let client):
+                            self.queueAction(.runNodeClient(client))
+                        case .runNodeAndFindReplicas(let client):
+                            self.queueAction(.runNodeClient(client))
+                            self.queueAction(.runRole)
+                        case .findReplicas:
+                            self.queueAction(.runRole)
+                        case .doNothing:
+                            break
+                        }
                     }
-
                     break
                 case .sentinel:
                     preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
