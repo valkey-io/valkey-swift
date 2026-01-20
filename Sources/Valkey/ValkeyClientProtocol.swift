@@ -8,7 +8,7 @@
 /// A type that provides the ability to send a Valkey command and get a response.
 @available(valkeySwift 1.0, *)
 public protocol ValkeyClientProtocol: Sendable {
-    associatedtype Subscription: AsyncSequence<ValkeySubscriptionMessage, any Error>
+    associatedtype Subscription: AsyncSequence<ValkeySubscriptionMessage, ValkeyClientError>
     /// Send RESP command to Valkey connection
     /// - Parameter command: ValkeyCommand structure
     /// - Returns: The command response as defined in the ValkeyCommand

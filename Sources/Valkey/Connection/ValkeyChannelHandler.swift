@@ -356,7 +356,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 self.handleToken(context: context, token: token)
             }
         } catch let error as RESPParsingError {
-            self.handleError(context: context, error: error)
+            self.handleError(context: context, error: ValkeyClientError(.respParsingError, error: error))
         } catch {
             preconditionFailure("Expected to only get RESPParsingError from the RESPTokenDecoder.")
         }
@@ -374,7 +374,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 self.handleToken(context: context, token: token)
             }
         } catch let error as RESPParsingError {
-            self.handleError(context: context, error: error)
+            self.handleError(context: context, error: ValkeyClientError(.respParsingError, error: error))
         } catch {
             preconditionFailure("Expected to only get RESPParsingError from the RESPTokenDecoder.")
         }
@@ -459,7 +459,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         }
     }
 
-    func handleError(context: ChannelHandlerContext, error: any Error) {
+    func handleError(context: ChannelHandlerContext, error: ValkeyClientError) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
         switch self.stateMachine.close() {
         case .failPendingCommandsAndClose(let context, let commands):
@@ -494,7 +494,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         }
     }
 
-    private func closeSubscriptionsAndConnection(context: ChannelHandlerContext, error: (any Error)? = nil) {
+    private func closeSubscriptionsAndConnection(context: ChannelHandlerContext, error: ValkeyClientError? = nil) {
         if let error {
             context.fireErrorCaught(error)
             self.subscriptions.close(error: error)
