@@ -43,12 +43,14 @@ struct ValkeyClientStateMachine<
         }
     }
 
+    @usableFromInline
     enum SetPrimaryAction {
         case runNodeAndFindReplicas(ConnectionPool)
         case runNode(ConnectionPool)
         case findReplicas
         case doNothing
     }
+    @usableFromInline
     mutating func setPrimary(_ address: ValkeyServerAddress, readOnly: Bool) -> SetPrimaryAction {
         let nodes = ValkeyNodeIDs(primary: address)
         let action = self.runningClients.addNode(.init(address: address, readOnly: readOnly))

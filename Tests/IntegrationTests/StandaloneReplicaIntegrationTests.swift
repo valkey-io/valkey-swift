@@ -97,10 +97,11 @@ struct StandaloneReplicaIntegrationTests {
                         configuration: .init(connectToReplica: true),
                         logger: logger
                     ) { client in
-                        await #expect(throws: ValkeyClientError(.commandError, message: "REDIRECT \(primaryHostname!):\(primaryPort!)")) {
-                            try await client.set(key, value: "redirect")
-                        }
+                        try await client.set(key, value: "redirect")
                     }
+                    let value = try await client.get(key).map { String($0) }
+                    #expect(value == "redirect")
+
                 default:
                     throw UnexpectedRoleError()
                 }

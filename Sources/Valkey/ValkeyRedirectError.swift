@@ -28,8 +28,8 @@ package struct ValkeyRedirectError: Hashable, Sendable {
     }
 
     @usableFromInline
-    package var nodeID: ValkeyNodeID {
-        ValkeyNodeID(endpoint: self.endpoint, port: self.port)
+    package var address: ValkeyServerAddress {
+        .hostname(self.endpoint, port: self.port)
     }
 }
 
