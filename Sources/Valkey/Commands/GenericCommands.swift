@@ -1069,7 +1069,12 @@ extension ValkeyClientProtocol {
     ///     * 0: Source was not copied when the destination key already exists
     @inlinable
     @discardableResult
-    public func copy(source: ValkeyKey, destination: ValkeyKey, destinationDb: Int? = nil, replace: Bool = false) async throws -> Int {
+    public func copy(
+        source: ValkeyKey,
+        destination: ValkeyKey,
+        destinationDb: Int? = nil,
+        replace: Bool = false
+    ) async throws(ValkeyClientError) -> Int {
         try await execute(COPY(source: source, destination: destination, destinationDb: destinationDb, replace: replace))
     }
 
@@ -1081,7 +1086,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of keys that were removed.
     @inlinable
     @discardableResult
-    public func del(keys: [ValkeyKey]) async throws -> Int {
+    public func del(keys: [ValkeyKey]) async throws(ValkeyClientError) -> Int {
         try await execute(DEL(keys: keys))
     }
 
@@ -1094,7 +1099,7 @@ extension ValkeyClientProtocol {
     ///     * [String]: The serialized value.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func dump(_ key: ValkeyKey) async throws -> RESPBulkString? {
+    public func dump(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(DUMP(key))
     }
 
@@ -1107,7 +1112,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of keys to check.
     /// - Response: [Integer]: Number of keys that exist from those specified as arguments.
     @inlinable
-    public func exists(keys: [ValkeyKey]) async throws -> Int {
+    public func exists(keys: [ValkeyKey]) async throws(ValkeyClientError) -> Int {
         try await execute(EXISTS(keys: keys))
     }
 
@@ -1123,7 +1128,7 @@ extension ValkeyClientProtocol {
     ///     * 1: The timeout was set.
     @inlinable
     @discardableResult
-    public func expire(_ key: ValkeyKey, seconds: Int, condition: EXPIRE.Condition? = nil) async throws -> Int {
+    public func expire(_ key: ValkeyKey, seconds: Int, condition: EXPIRE.Condition? = nil) async throws(ValkeyClientError) -> Int {
         try await execute(EXPIRE(key, seconds: seconds, condition: condition))
     }
 
@@ -1139,7 +1144,7 @@ extension ValkeyClientProtocol {
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     @inlinable
     @discardableResult
-    public func expireat(_ key: ValkeyKey, unixTimeSeconds: Date, condition: EXPIREAT.Condition? = nil) async throws -> Int {
+    public func expireat(_ key: ValkeyKey, unixTimeSeconds: Date, condition: EXPIREAT.Condition? = nil) async throws(ValkeyClientError) -> Int {
         try await execute(EXPIREAT(key, unixTimeSeconds: unixTimeSeconds, condition: condition))
     }
 
@@ -1153,7 +1158,7 @@ extension ValkeyClientProtocol {
     ///     * -1: The key exists but has no associated expiration time.
     ///     * -2: The key does not exist.
     @inlinable
-    public func expiretime(_ key: ValkeyKey) async throws -> Int {
+    public func expiretime(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(EXPIRETIME(key))
     }
 
@@ -1164,7 +1169,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) with N being the number of keys in the database, under the assumption that the key names in the database and the given pattern have limited length.
     /// - Response: [Array]: List of keys matching pattern.
     @inlinable
-    public func keys(pattern: String) async throws -> RESPToken.Array {
+    public func keys(pattern: String) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(KEYS(pattern: pattern))
     }
 
@@ -1193,7 +1198,7 @@ extension ValkeyClientProtocol {
         replace: Bool = false,
         authentication: MIGRATE<Host>.Authentication? = nil,
         keys: [ValkeyKey] = []
-    ) async throws -> String? {
+    ) async throws(ValkeyClientError) -> String? {
         try await execute(
             MIGRATE(
                 host: host,
@@ -1219,7 +1224,7 @@ extension ValkeyClientProtocol {
     ///     * 0: Key wasn't moved. When key already exists in the destination database, or it does not exist in the source database
     @inlinable
     @discardableResult
-    public func move(_ key: ValkeyKey, db: Int) async throws -> Int {
+    public func move(_ key: ValkeyKey, db: Int) async throws(ValkeyClientError) -> Int {
         try await execute(MOVE(key, db: db))
     }
 
@@ -1232,7 +1237,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Key doesn't exist.
     ///     * [String]: Encoding of the object.
     @inlinable
-    public func objectEncoding(_ key: ValkeyKey) async throws -> RESPBulkString? {
+    public func objectEncoding(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(OBJECT.ENCODING(key))
     }
 
@@ -1243,7 +1248,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The counter's value.
     @inlinable
-    public func objectFreq(_ key: ValkeyKey) async throws -> Int {
+    public func objectFreq(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(OBJECT.FREQ(key))
     }
 
@@ -1255,7 +1260,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     @discardableResult
-    public func objectHelp() async throws -> RESPToken.Array {
+    public func objectHelp() async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(OBJECT.HELP())
     }
 
@@ -1266,7 +1271,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The idle time in seconds.
     @inlinable
-    public func objectIdletime(_ key: ValkeyKey) async throws -> Int {
+    public func objectIdletime(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(OBJECT.IDLETIME(key))
     }
 
@@ -1277,7 +1282,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The number of references.
     @inlinable
-    public func objectRefcount(_ key: ValkeyKey) async throws -> Int {
+    public func objectRefcount(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(OBJECT.REFCOUNT(key))
     }
 
@@ -1291,7 +1296,7 @@ extension ValkeyClientProtocol {
     ///     * 1: The timeout has been removed.
     @inlinable
     @discardableResult
-    public func persist(_ key: ValkeyKey) async throws -> Int {
+    public func persist(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(PERSIST(key))
     }
 
@@ -1307,7 +1312,7 @@ extension ValkeyClientProtocol {
     ///     * 1: The timeout was set.
     @inlinable
     @discardableResult
-    public func pexpire(_ key: ValkeyKey, milliseconds: Int, condition: PEXPIRE.Condition? = nil) async throws -> Int {
+    public func pexpire(_ key: ValkeyKey, milliseconds: Int, condition: PEXPIRE.Condition? = nil) async throws(ValkeyClientError) -> Int {
         try await execute(PEXPIRE(key, milliseconds: milliseconds, condition: condition))
     }
 
@@ -1323,7 +1328,8 @@ extension ValkeyClientProtocol {
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     @inlinable
     @discardableResult
-    public func pexpireat(_ key: ValkeyKey, unixTimeMilliseconds: Date, condition: PEXPIREAT.Condition? = nil) async throws -> Int {
+    public func pexpireat(_ key: ValkeyKey, unixTimeMilliseconds: Date, condition: PEXPIREAT.Condition? = nil) async throws(ValkeyClientError) -> Int
+    {
         try await execute(PEXPIREAT(key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition))
     }
 
@@ -1337,7 +1343,7 @@ extension ValkeyClientProtocol {
     ///     * -1: The key exists but has no associated expiration time.
     ///     * -2: The key does not exist.
     @inlinable
-    public func pexpiretime(_ key: ValkeyKey) async throws -> Int {
+    public func pexpiretime(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(PEXPIRETIME(key))
     }
 
@@ -1353,7 +1359,7 @@ extension ValkeyClientProtocol {
     ///     * -1: The key exists but has no associated expire.
     ///     * -2: The key does not exist.
     @inlinable
-    public func pttl(_ key: ValkeyKey) async throws -> Int {
+    public func pttl(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(PTTL(key))
     }
 
@@ -1366,7 +1372,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: When the database is empty.
     ///     * [String]: Random key in db.
     @inlinable
-    public func randomkey() async throws -> RESPBulkString? {
+    public func randomkey() async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(RANDOMKEY())
     }
 
@@ -1376,7 +1382,7 @@ extension ValkeyClientProtocol {
     /// - Available: 1.0.0
     /// - Complexity: O(1)
     @inlinable
-    public func rename(_ key: ValkeyKey, newkey: ValkeyKey) async throws {
+    public func rename(_ key: ValkeyKey, newkey: ValkeyKey) async throws(ValkeyClientError) {
         _ = try await execute(RENAME(key, newkey: newkey))
     }
 
@@ -1392,7 +1398,7 @@ extension ValkeyClientProtocol {
     ///     * 0: New key already exists.
     @inlinable
     @discardableResult
-    public func renamenx(_ key: ValkeyKey, newkey: ValkeyKey) async throws -> Int {
+    public func renamenx(_ key: ValkeyKey, newkey: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(RENAMENX(key, newkey: newkey))
     }
 
@@ -1414,7 +1420,7 @@ extension ValkeyClientProtocol {
         absttl: Bool = false,
         seconds: Int? = nil,
         frequency: Int? = nil
-    ) async throws {
+    ) async throws(ValkeyClientError) {
         _ = try await execute(
             RESTORE(key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency)
         )
@@ -1429,7 +1435,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws -> SCAN.Response {
+    public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws(ValkeyClientError) -> SCAN.Response {
         try await execute(SCAN(cursor: cursor, pattern: pattern, count: count, type: type))
     }
 
@@ -1451,7 +1457,7 @@ extension ValkeyClientProtocol {
         order: SORT.Order? = nil,
         sorting: Bool = false,
         destination: ValkeyKey? = nil
-    ) async throws -> SORT.Response {
+    ) async throws(ValkeyClientError) -> SORT.Response {
         try await execute(
             SORT(key, byPattern: byPattern, limit: limit, getPatterns: getPatterns, order: order, sorting: sorting, destination: destination)
         )
@@ -1471,7 +1477,7 @@ extension ValkeyClientProtocol {
         getPatterns: [String] = [],
         order: SORTRO.Order? = nil,
         sorting: Bool = false
-    ) async throws -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SORTRO(key, byPattern: byPattern, limit: limit, getPatterns: getPatterns, order: order, sorting: sorting))
     }
 
@@ -1482,7 +1488,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of keys that will be touched.
     /// - Response: [Integer]: The number of touched keys.
     @inlinable
-    public func touch(keys: [ValkeyKey]) async throws -> Int {
+    public func touch(keys: [ValkeyKey]) async throws(ValkeyClientError) -> Int {
         try await execute(TOUCH(keys: keys))
     }
 
@@ -1498,7 +1504,7 @@ extension ValkeyClientProtocol {
     ///     * -1: The key exists but has no associated expire.
     ///     * -2: The key does not exist.
     @inlinable
-    public func ttl(_ key: ValkeyKey) async throws -> Int {
+    public func ttl(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(TTL(key))
     }
 
@@ -1511,7 +1517,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Key doesn't exist
     ///     * [String]: Type of the key
     @inlinable
-    public func type(_ key: ValkeyKey) async throws -> RESPBulkString? {
+    public func type(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(TYPE(key))
     }
 
@@ -1523,7 +1529,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of keys that were unlinked.
     @inlinable
     @discardableResult
-    public func unlink(keys: [ValkeyKey]) async throws -> Int {
+    public func unlink(keys: [ValkeyKey]) async throws(ValkeyClientError) -> Int {
         try await execute(UNLINK(keys: keys))
     }
 
@@ -1535,7 +1541,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of replicas reached by all the writes performed in the context of the current connection.
     @inlinable
     @discardableResult
-    public func wait(numreplicas: Int, timeout: Int) async throws -> Int {
+    public func wait(numreplicas: Int, timeout: Int) async throws(ValkeyClientError) -> Int {
         try await execute(WAIT(numreplicas: numreplicas, timeout: timeout))
     }
 
@@ -1547,7 +1553,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Number of local and remote AOF files in sync.
     @inlinable
     @discardableResult
-    public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws -> WAITAOF.Response {
+    public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws(ValkeyClientError) -> WAITAOF.Response {
         try await execute(WAITAOF(numlocal: numlocal, numreplicas: numreplicas, timeout: timeout))
     }
 

@@ -567,7 +567,9 @@ extension String {
             if command.commandFlags?.contains("READONLY") != true, returnType != "" {
                 self.append("    @discardableResult\n")
             }
-            self.append("    public func \(name.swiftFunction)\(genericTypeParameters)(\(parametersString)) async throws\(returnType) {\n")
+            self.append(
+                "    public func \(name.swiftFunction)\(genericTypeParameters)(\(parametersString)) async throws(ValkeyClientError)\(returnType) {\n"
+            )
             let commandArguments: [String] =
                 if let firstArgument = arguments.first, firstArgument.shouldRemoveArgumentLabel == true {
                     [firstArgument.swiftVariable] + (arguments.dropFirst()).map { "\($0.swiftArgument): \($0.swiftVariable)" }

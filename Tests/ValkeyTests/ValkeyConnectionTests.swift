@@ -114,14 +114,14 @@ struct ConnectionTests {
         async let fooResult = connection.get("foo")
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
 
-        await #expect(throws: RESPParsingError.self) {
+        await #expect(throws: ValkeyClientError(.respParsingError)) {
             try await channel.writeInbound(ByteBuffer(string: "invalid resp token"))
         }
         do {
             _ = try await fooResult
             Issue.record()
         } catch let valkeyError as ValkeyClientError {
-            #expect(valkeyError.errorCode == .unrecognisedError)
+            #expect(valkeyError.errorCode == .respParsingError)
             #expect((valkeyError.underlyingError as? RESPParsingError)?.code == .invalidLeadingByte)
         }
         #expect(channel.isActive == false)
@@ -730,14 +730,14 @@ struct ConnectionTests {
             async let fooResult = connection.get("foo")
             _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
 
-            await #expect(throws: RESPParsingError.self) {
+            await #expect(throws: ValkeyClientError(.respParsingError)) {
                 try await channel.writeInbound(ByteBuffer(string: "invalid resp token"))
             }
             do {
                 _ = try await fooResult
                 Issue.record()
             } catch let error as ValkeyClientError {
-                #expect(error.errorCode == .unrecognisedError)
+                #expect(error.errorCode == .respParsingError)
                 #expect((error.underlyingError as? RESPParsingError)?.code == .invalidLeadingByte)
             }
 
@@ -747,7 +747,8 @@ struct ConnectionTests {
             #expect(span.kind == .client)
             #expect(span.errors.count == 1)
             let error = try #require(span.errors.first)
-            let parsingError = try #require(error.error as? RESPParsingError)
+            let valkeyError = try #require(error.error as? ValkeyClientError)
+            let parsingError = try #require(valkeyError.underlyingError as? RESPParsingError)
             #expect(parsingError.code == .invalidLeadingByte)
             #expect(
                 span.attributes == [
