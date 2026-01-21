@@ -91,7 +91,7 @@ extension ValkeyClientProtocol {
     ///     * 0: If no HyperLogLog internal register were altered.
     @inlinable
     @discardableResult
-    public func pfadd(_ key: ValkeyKey, elements: [String] = []) async throws -> Int {
+    public func pfadd(_ key: ValkeyKey, elements: [String] = []) async throws(ValkeyClientError) -> Int {
         try await execute(PFADD(key, elements: elements))
     }
 
@@ -102,7 +102,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
     /// - Response: [Integer]: The approximated number of unique elements observed via PFADD
     @inlinable
-    public func pfcount(keys: [ValkeyKey]) async throws -> Int {
+    public func pfcount(keys: [ValkeyKey]) async throws(ValkeyClientError) -> Int {
         try await execute(PFCOUNT(keys: keys))
     }
 
@@ -112,7 +112,7 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.9
     /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
     @inlinable
-    public func pfmerge(destkey: ValkeyKey, sourcekeys: [ValkeyKey] = []) async throws {
+    public func pfmerge(destkey: ValkeyKey, sourcekeys: [ValkeyKey] = []) async throws(ValkeyClientError) {
         _ = try await execute(PFMERGE(destkey: destkey, sourcekeys: sourcekeys))
     }
 

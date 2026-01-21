@@ -58,7 +58,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         switch stateMachine.receivedResponse(token: RESPToken(.bulkError("Connect failed"))) {
         case .respondAndClose(let command, let error):
             #expect(command.requestID == 0)
-            let valkeyError = try #require(error as? ValkeyClientError)
+            let valkeyError = try #require(error)
             #expect(valkeyError.errorCode == .commandError)
             #expect(valkeyError.message == "Connect failed")
             command.promise.fail(error ?? ValkeyClientError(.commandError))
@@ -67,7 +67,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         }
         switch stateMachine.waitOnActive() {
         case .reportedClosed(let error):
-            let valkeyError = try #require(error as? ValkeyClientError)
+            let valkeyError = try #require(error)
             #expect(valkeyError.errorCode == .commandError)
             #expect(valkeyError.message == "Connect failed")
         case .done, .waitForPromise:
@@ -90,7 +90,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         switch stateMachine.receivedResponse(token: RESPToken(.bulkError("Connect failed"))) {
         case .respondAndClose(let command, let error):
             #expect(command.requestID == 0)
-            let valkeyError = try #require(error as? ValkeyClientError)
+            let valkeyError = try #require(error)
             #expect(valkeyError.errorCode == .commandError)
             #expect(valkeyError.message == "Connect failed")
             command.promise.fail(error ?? ValkeyClientError(.commandError))
@@ -133,7 +133,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         }
         switch stateMachine.waitOnActive() {
         case .reportedClosed(let error):
-            let valkeyError = try #require(error as? ValkeyClientError)
+            let valkeyError = try #require(error)
             #expect(valkeyError.errorCode == .timeout)
         case .done, .waitForPromise:
             Issue.record("Invalid waitOnActive action")
@@ -267,8 +267,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         switch stateMachine.receivedResponse(token: .ok) {
         case .respond, .respondAndClose:
             Issue.record("Invalid receivedResponse action")
-        case .closeWithError(let error):
-            let valkeyError = try #require(error as? ValkeyClientError)
+        case .closeWithError(let valkeyError):
             #expect(valkeyError.errorCode == .unsolicitedToken)
         }
         expect(stateMachine.state == .closed(nil))
@@ -302,7 +301,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid cancel action")
         }
-        expect(stateMachine.state == .closed(CancellationError()))
+        expect(stateMachine.state == .closed(ValkeyClientError(.cancelled)))
         promise.fail(CancellationError())
     }
 
@@ -343,7 +342,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid cancel action")
         }
-        expect(stateMachine.state == .closed(CancellationError()))
+        expect(stateMachine.state == .closed(ValkeyClientError(.cancelled)))
         promise.fail(CancellationError())
     }
 
@@ -485,10 +484,7 @@ extension ValkeyChannelHandler.StateMachine<String>.State {
             case .closed(let rhs):
                 switch (lhs, rhs) {
                 case (.some(let lhs), .some(let rhs)):
-                    if let lhsError = lhs as? ValkeyClientError, let rhsError = rhs as? ValkeyClientError {
-                        return lhsError == rhsError
-                    }
-                    return type(of: lhs) == type(of: rhs)
+                    return lhs == rhs
                 case (.none, .none):
                     return true
                 default:

@@ -667,7 +667,7 @@ extension ValkeyClientProtocol {
         wherefrom: BLMOVE.Wherefrom,
         whereto: BLMOVE.Whereto,
         timeout: Double
-    ) async throws -> RESPBulkString? {
+    ) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 
@@ -681,7 +681,8 @@ extension ValkeyClientProtocol {
     ///     * [Array]: The key from which elements were popped and the popped elements
     @inlinable
     @discardableResult
-    public func blmpop(timeout: Double, keys: [ValkeyKey], where: BLMPOP.Where, count: Int? = nil) async throws -> BLMPOP.Response {
+    public func blmpop(timeout: Double, keys: [ValkeyKey], where: BLMPOP.Where, count: Int? = nil) async throws(ValkeyClientError) -> BLMPOP.Response
+    {
         try await execute(BLMPOP(timeout: timeout, keys: keys, where: `where`, count: count))
     }
 
@@ -697,7 +698,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: The key from which the element was popped and the value of the popped element
     @inlinable
     @discardableResult
-    public func blpop(keys: [ValkeyKey], timeout: Double) async throws -> BLPOP.Response {
+    public func blpop(keys: [ValkeyKey], timeout: Double) async throws(ValkeyClientError) -> BLPOP.Response {
         try await execute(BLPOP(keys: keys, timeout: timeout))
     }
 
@@ -713,7 +714,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: The name of the key where an element was popped
     @inlinable
     @discardableResult
-    public func brpop(keys: [ValkeyKey], timeout: Double) async throws -> BRPOP.Response {
+    public func brpop(keys: [ValkeyKey], timeout: Double) async throws(ValkeyClientError) -> BRPOP.Response {
         try await execute(BRPOP(keys: keys, timeout: timeout))
     }
 
@@ -730,7 +731,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Timeout is reached.
     @inlinable
     @discardableResult
-    public func brpoplpush(source: ValkeyKey, destination: ValkeyKey, timeout: Double) async throws -> RESPBulkString? {
+    public func brpoplpush(source: ValkeyKey, destination: ValkeyKey, timeout: Double) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(BRPOPLPUSH(source: source, destination: destination, timeout: timeout))
     }
 
@@ -743,7 +744,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Index is out of range
     ///     * [String]: The requested element
     @inlinable
-    public func lindex(_ key: ValkeyKey, index: Int) async throws -> RESPBulkString? {
+    public func lindex(_ key: ValkeyKey, index: Int) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(LINDEX(key, index: index))
     }
 
@@ -763,7 +764,7 @@ extension ValkeyClientProtocol {
         where: LINSERT<Pivot, Element>.Where,
         pivot: Pivot,
         element: Element
-    ) async throws -> Int {
+    ) async throws(ValkeyClientError) -> Int {
         try await execute(LINSERT(key, where: `where`, pivot: pivot, element: element))
     }
 
@@ -774,7 +775,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: List length.
     @inlinable
-    public func llen(_ key: ValkeyKey) async throws -> Int {
+    public func llen(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(LLEN(key))
     }
 
@@ -786,7 +787,12 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The element being popped and pushed.
     @inlinable
     @discardableResult
-    public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> LMOVE.Response {
+    public func lmove(
+        source: ValkeyKey,
+        destination: ValkeyKey,
+        wherefrom: LMOVE.Wherefrom,
+        whereto: LMOVE.Whereto
+    ) async throws(ValkeyClientError) -> LMOVE.Response {
         try await execute(LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
     }
 
@@ -800,7 +806,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: List key from which elements were popped.
     @inlinable
     @discardableResult
-    public func lmpop(keys: [ValkeyKey], where: LMPOP.Where, count: Int? = nil) async throws -> LMPOP.Response {
+    public func lmpop(keys: [ValkeyKey], where: LMPOP.Where, count: Int? = nil) async throws(ValkeyClientError) -> LMPOP.Response {
         try await execute(LMPOP(keys: keys, where: `where`, count: count))
     }
 
@@ -817,7 +823,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: In case `count` argument was given, a list of popped elements
     @inlinable
     @discardableResult
-    public func lpop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func lpop(_ key: ValkeyKey, count: Int? = nil) async throws(ValkeyClientError) -> RESPToken? {
         try await execute(LPOP(key, count: count))
     }
 
@@ -837,7 +843,7 @@ extension ValkeyClientProtocol {
         rank: Int? = nil,
         numMatches: Int? = nil,
         len: Int? = nil
-    ) async throws -> [Int]? {
+    ) async throws(ValkeyClientError) -> [Int]? {
         try await execute(LPOS(key, element: element, rank: rank, numMatches: numMatches, len: len))
     }
 
@@ -851,7 +857,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Length of the list after the push operations.
     @inlinable
     @discardableResult
-    public func lpush<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
+    public func lpush<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws(ValkeyClientError) -> Int {
         try await execute(LPUSH(key, elements: elements))
     }
 
@@ -865,7 +871,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The length of the list after the push operation.
     @inlinable
     @discardableResult
-    public func lpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
+    public func lpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws(ValkeyClientError) -> Int {
         try await execute(LPUSHX(key, elements: elements))
     }
 
@@ -876,7 +882,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(S+N) where S is the distance of start offset from HEAD for small lists, from nearest end (HEAD or TAIL) for large lists; and N is the number of elements in the specified range.
     /// - Response: [Array]: List of elements in the specified range
     @inlinable
-    public func lrange(_ key: ValkeyKey, start: Int, stop: Int) async throws -> RESPToken.Array {
+    public func lrange(_ key: ValkeyKey, start: Int, stop: Int) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(LRANGE(key, start: start, stop: stop))
     }
 
@@ -888,7 +894,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of removed elements.
     @inlinable
     @discardableResult
-    public func lrem<Element: RESPStringRenderable>(_ key: ValkeyKey, count: Int, element: Element) async throws -> Int {
+    public func lrem<Element: RESPStringRenderable>(_ key: ValkeyKey, count: Int, element: Element) async throws(ValkeyClientError) -> Int {
         try await execute(LREM(key, count: count, element: element))
     }
 
@@ -898,7 +904,7 @@ extension ValkeyClientProtocol {
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the length of the list. Setting either the first or the last element of the list is O(1).
     @inlinable
-    public func lset<Element: RESPStringRenderable>(_ key: ValkeyKey, index: Int, element: Element) async throws {
+    public func lset<Element: RESPStringRenderable>(_ key: ValkeyKey, index: Int, element: Element) async throws(ValkeyClientError) {
         _ = try await execute(LSET(key, index: index, element: element))
     }
 
@@ -908,7 +914,7 @@ extension ValkeyClientProtocol {
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the number of elements to be removed by the operation.
     @inlinable
-    public func ltrim(_ key: ValkeyKey, start: Int, stop: Int) async throws {
+    public func ltrim(_ key: ValkeyKey, start: Int, stop: Int) async throws(ValkeyClientError) {
         _ = try await execute(LTRIM(key, start: start, stop: stop))
     }
 
@@ -925,7 +931,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: When 'COUNT' was given, list of popped elements.
     @inlinable
     @discardableResult
-    public func rpop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func rpop(_ key: ValkeyKey, count: Int? = nil) async throws(ValkeyClientError) -> RESPToken? {
         try await execute(RPOP(key, count: count))
     }
 
@@ -940,7 +946,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Source list is empty.
     @inlinable
     @discardableResult
-    public func rpoplpush(source: ValkeyKey, destination: ValkeyKey) async throws -> RESPBulkString? {
+    public func rpoplpush(source: ValkeyKey, destination: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(RPOPLPUSH(source: source, destination: destination))
     }
 
@@ -954,7 +960,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Length of the list after the push operations.
     @inlinable
     @discardableResult
-    public func rpush<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
+    public func rpush<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws(ValkeyClientError) -> Int {
         try await execute(RPUSH(key, elements: elements))
     }
 
@@ -968,7 +974,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Length of the list after the push operation.
     @inlinable
     @discardableResult
-    public func rpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
+    public func rpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws(ValkeyClientError) -> Int {
         try await execute(RPUSHX(key, elements: elements))
     }
 

@@ -184,8 +184,9 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
         let requestID = Self.requestIDGenerator.next()
 
+        let token: RESPToken
         do {
-            let token = try await withTaskCancellationHandler {
+            token = try await withTaskCancellationHandler {
                 if Task.isCancelled {
                     throw ValkeyClientError(.cancelled)
                 }
@@ -195,7 +196,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             } onCancel: {
                 self.cancel(requestID: requestID)
             }
-            return try .init(token)
         } catch let error as ValkeyClientError {
             #if DistributedTracingSupport
             if let span {
@@ -215,6 +215,11 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             }
             #endif
             throw ValkeyClientError(.unrecognisedError, error: error)
+        }
+        do {
+            return try .init(token)
+        } catch {
+            throw ValkeyClientError(.respDecodeError, error: error)
         }
     }
 
