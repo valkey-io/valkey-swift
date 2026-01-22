@@ -264,7 +264,7 @@ extension String {
         self.append("\(tab)/// \(command.summary)\n")
     }
 
-    mutating func appendFunctionCommentHeader(command: ValkeyCommand, name: String) {
+    mutating func appendFunctionCommentHeader(command: ValkeyCommand, name: String, disableResponseCalculation: Bool) {
         let linkName = name.replacingOccurrences(of: " ", with: "-").lowercased()
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
@@ -288,7 +288,7 @@ extension String {
         if let complexity = command.complexity {
             self.append("    /// - Complexity: \(complexity)\n")
         }
-        if let replySchema = command.replySchema {
+        if !disableResponseCalculation, let replySchema = command.replySchema {
             let responses = responseTypeComment(replySchema)
             if responses.count == 1 {
                 self.append("    /// - Response: \(responses[0])\n")
@@ -553,7 +553,7 @@ extension String {
 
         func _appendFunction(isArray: Bool) {
             // Comment header
-            self.appendFunctionCommentHeader(command: command, name: name)
+            self.appendFunctionCommentHeader(command: command, name: name, disableResponseCalculation: disableResponseCalculation)
             // Operation function
             var parametersString =
                 arguments
