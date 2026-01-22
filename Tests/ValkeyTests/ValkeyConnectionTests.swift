@@ -322,9 +322,8 @@ struct ConnectionTests {
         } catch ValkeyTransactionError.transactionErrors(let results, _) {
             switch results[1] {
             case .failure(let error):
-                let valkeyError = try #require(error as? ValkeyClientError)
-                #expect(valkeyError.errorCode == .commandError)
-                #expect(valkeyError.message == "ERROR")
+                #expect(error.errorCode == .commandError)
+                #expect(error.message == "ERROR")
             case .success:
                 Issue.record("Should receive an error")
             }
@@ -413,9 +412,8 @@ struct ConnectionTests {
         } catch ValkeyTransactionError.transactionErrors(let results, _) {
             switch results[1] {
             case .failure(let error):
-                let valkeyError = try #require(error as? ValkeyClientError)
-                #expect(valkeyError.errorCode == .commandError)
-                #expect(valkeyError.message == "ERROR")
+                #expect(error.errorCode == .commandError)
+                #expect(error.message == "ERROR")
             case .success:
                 Issue.record("Should receive an error")
             }
@@ -1029,7 +1027,7 @@ struct ConnectionTests {
             #expect(span.errors.count == 1)
             let error = try #require(span.errors.first?.error as? ValkeyTransactionError)
             switch error {
-            case .transactionErrors(_, let execError as ValkeyClientError):
+            case .transactionErrors(_, let execError):
                 #expect(execError == ValkeyClientError(.commandError, message: "EXECABORT"))
             default:
                 Issue.record()

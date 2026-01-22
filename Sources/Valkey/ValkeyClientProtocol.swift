@@ -26,7 +26,7 @@ public protocol ValkeyClientProtocol: Sendable {
     ///
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
-    func execute(_ commands: [any ValkeyCommand]) async -> [Result<RESPToken, any Error>]
+    func execute(_ commands: [any ValkeyCommand]) async -> [Result<RESPToken, ValkeyClientError>]
 
     /// Pipeline a series of commands as a transaction to Valkey connection
     ///
@@ -44,7 +44,7 @@ public protocol ValkeyClientProtocol: Sendable {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     /// - Throws: ValkeyTransactionError when EXEC aborts
-    func transaction(_ commands: [any ValkeyCommand]) async throws -> [Result<RESPToken, any Error>]
+    func transaction(_ commands: [any ValkeyCommand]) async throws -> [Result<RESPToken, ValkeyClientError>]
 
     /// Execute subscribe command and run closure using related ``ValkeySubscription``
     /// AsyncSequence
