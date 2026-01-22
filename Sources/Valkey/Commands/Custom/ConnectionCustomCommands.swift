@@ -147,54 +147,58 @@ extension CLIENT.LIST {
         /// - Parameter token: The response token containing CLIENT LIST data.
         public init(_ token: RESPToken) throws(RESPDecodeError) {
             switch token.value {
-            case .verbatimString, .bulkString:
-                var string = try String(token)
+            case .verbatimString:
+                let fullString = try String(token)
 
-                print(string)
-
-                if let colonIndex = string.firstIndex(of: ":"), colonIndex.utf16Offset(in: string) < 10 {
-                    // Check if this looks like an encoding prefix (short prefix before colon)
-                    let prefix = string[..<colonIndex]
-                    if prefix.count <= 5 && prefix.allSatisfy({ $0.isLetter }) {
-                        string = String(string[string.index(after: colonIndex)...])
-                    }
+                // Verbatim strings must have a 3-letter encoding prefix followed by colon (e.g., "txt:")
+                guard fullString.count >= 4,
+                      fullString.prefix(3).allSatisfy({ $0.isLetter }),
+                      fullString.dropFirst(3).first == ":" else {
+                    throw RESPDecodeError(.cannotParseVerbatimString, token: token)
                 }
 
-                print(string)
+                // Strip the "xxx:" prefix to get the actual content
+                let string = String(fullString.dropFirst(4))
+                self.clients = Self.parseClientListData(string)
 
-                let lines = string.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
+            case .bulkString:
+                let string = try String(token)
+                self.clients = Self.parseClientListData(string)
 
-                var clients: [[Field: RESPToken]] = []
-
-                for line in lines {
-                    var client: [Field: RESPToken] = [:]
-
-                    // Split by spaces and parse key=value pairs
-                    let components = line.split(separator: " ").map(String.init)
-                    for component in components {
-                        let parts = component.split(separator: "=", maxSplits: 1).map(String.init)
-                        var buffer = ByteBuffer()
-                        if parts.count == 2 {
-                            let field = Field(rawValue: parts[0])
-                            // Create a proper RESP bulk string token
-                            let value = parts[1]
-                            buffer.writeString("$\(value.utf8.count)\r\n\(value)\r\n")
-                            client[field] = RESPToken(validated: buffer)
-                        } else if parts.count == 1 && component.contains("=") {
-                            // Handle edge case where value is empty (e.g., "name=")
-                            let field = Field(rawValue: parts[0])
-                            buffer.writeString("$0\r\n\r\n")
-                            client[field] = RESPToken(validated: buffer)
-                        }
-                    }
-
-                    clients.append(client)
-                }
-
-                self.clients = clients
             default:
-                throw RESPDecodeError.tokenMismatch(expected: [.bulkString, .verbatimString, .array], token: token)
+                throw RESPDecodeError.tokenMismatch(expected: [.bulkString, .verbatimString], token: token)
             }
+        }
+
+        /// Parse CLIENT LIST data from a string into client dictionaries
+        private static func parseClientListData(_ string: String) -> [[Field: RESPToken]] {
+            var clients: [[Field: RESPToken]] = []
+
+            // Use SplitStringSequence for efficient parsing
+            for line in string.splitSequence(separator: "\n") {
+                var client: [Field: RESPToken] = [:]
+
+                // Split by spaces and parse key=value pairs
+                for component in line.splitSequence(separator: " ") {
+                    if !component.contains("=") {
+                        continue
+                    }
+                    let parts = Array(component.splitMaxSplitsSequence(separator: "=", maxSplits: 1))
+                    if parts.count == 2 {
+                        let field = Field(rawValue: String(parts[0]))
+                        let value = String(parts[1])
+                        client[field] = .bulkString(from: value)
+                    } else if parts.count == 1 {
+                        // Handle edge case where value is empty (e.g., "name=")
+                        let field = Field(rawValue: String(parts[0]))
+                        client[field] = .bulkString(from: "")
+                    }
+                }
+
+                clients.append(client)
+            }
+
+            return clients
         }
     }
 }

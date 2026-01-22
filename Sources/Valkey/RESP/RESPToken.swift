@@ -287,6 +287,16 @@ public struct RESPToken: Hashable, Sendable {
 extension RESPToken {
     @usableFromInline
     static let nullToken = RESPToken(validated: .init(bytes: "_\r\n".utf8))
+
+    /// Create a RESPToken by converting a Swift String into a RESP bulk string.
+    ///
+    /// - Parameter string: The Swift string to convert into a RESP bulk string token
+    /// - Returns: A RESPToken containing the properly formatted bulk string
+    public static func bulkString(from string: String) -> RESPToken {
+        var buffer = ByteBuffer()
+        buffer.writeString("$\(string.utf8.count)\r\n\(string)\r\n")
+        return RESPToken(validated: buffer)
+    }
 }
 
 extension ByteBuffer {
