@@ -152,8 +152,9 @@ extension CLIENT.LIST {
 
                 // Verbatim strings must have a 3-letter encoding prefix followed by colon (e.g., "txt:")
                 guard fullString.count >= 4,
-                      fullString.prefix(3).allSatisfy({ $0.isLetter }),
-                      fullString.dropFirst(3).first == ":" else {
+                    fullString.prefix(3).allSatisfy({ $0.isLetter }),
+                    fullString.dropFirst(3).first == ":"
+                else {
                     throw RESPDecodeError(.cannotParseVerbatimString, token: token)
                 }
 
