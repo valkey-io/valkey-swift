@@ -41,9 +41,6 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     /// This property is required and is used as part of the node's unique identifier.
     package var port: Int
 
-    /// Is node a readonly replica
-    package var readOnly: Bool
-
     /// Creates a node description from any type conforming to the `ValkeyNodeDescriptionProtocol`.
     ///
     /// This initializer allows for easy conversion from various node description types
@@ -54,17 +51,15 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     package init(description: any ValkeyNodeDescriptionProtocol) {
         self.endpoint = description.endpoint
         self.port = description.port
-        self.readOnly = description.readOnly
     }
 
     /// Creates a node description.
     ///
     /// - Parameter description: A value conforming to `ValkeyNodeDescriptionProtocol` that provides
     ///                         the necessary node information.
-    package init(endpoint: String, port: Int, readOnly: Bool) {
+    package init(endpoint: String, port: Int) {
         self.endpoint = endpoint
         self.port = port
-        self.readOnly = readOnly
     }
 
     /// Creates a node description from a cluster node description.
@@ -78,7 +73,6 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     package init(description: ValkeyClusterDescription.Node) {
         self.endpoint = description.endpoint
         self.port = description.tlsPort ?? description.port ?? 6379
-        self.readOnly = description.role == .replica
     }
 
     /// Creates a node description from a redirection error.
@@ -89,7 +83,6 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     package init(redirectionError: ValkeyClusterRedirectionError) {
         self.endpoint = redirectionError.endpoint
         self.port = redirectionError.port
-        self.readOnly = false
     }
 
     /// Determines whether this node description matches a given cluster node description.
