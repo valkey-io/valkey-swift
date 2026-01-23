@@ -133,11 +133,11 @@ extension CLIENT.LIST {
     /// Response type for CLIENT LIST command.
     ///
     /// Returns an array of client information dictionaries, where each dictionary
-    /// maps field names to their RESP token values. This approach gracefully handles
+    /// maps field names to their string values. This approach gracefully handles
     /// new fields that may be added in future Valkey versions.
     public struct Response: RESPTokenDecodable, Sendable {
         /// Array of client information dictionaries
-        public let clients: [[Field: RESPToken]]
+        public let clients: [[Field: Substring]]
 
         /// Creates a CLIENT LIST response from the response token you provide.
         ///
@@ -172,28 +172,23 @@ extension CLIENT.LIST {
         }
 
         /// Parse CLIENT LIST data from a string into client dictionaries
-        private static func parseClientListData(_ string: String) -> [[Field: RESPToken]] {
-            var clients: [[Field: RESPToken]] = []
+        private static func parseClientListData(_ string: String) -> [[Field: Substring]] {
+            var clients: [[Field: Substring]] = []
 
             // Use SplitStringSequence for efficient parsing
             for line in string.splitSequence(separator: "\n") {
-                var client: [Field: RESPToken] = [:]
+                var client: [Field: Substring] = [:]
 
                 // Split by spaces and parse key=value pairs
                 for component in line.splitSequence(separator: " ") {
                     if !component.contains("=") {
                         continue
                     }
-                    let parts = Array(component.splitMaxSplitsSequence(separator: "=", maxSplits: 1))
-                    if parts.count == 2 {
-                        let field = Field(rawValue: String(parts[0]))
-                        let value = String(parts[1])
-                        client[field] = .bulkString(from: value)
-                    } else if parts.count == 1 {
-                        // Handle edge case where value is empty (e.g., "name=")
-                        let field = Field(rawValue: String(parts[0]))
-                        client[field] = .bulkString(from: "")
-                    }
+                    let parts = component.splitMaxSplitsSequence(separator: "=", maxSplits: 1)
+                    var partsIterator = parts.makeIterator()
+                    guard let key = partsIterator.next() else { continue }
+                    let field = Field(rawValue: String(key))
+                    client[field] = partsIterator.next() ?? ""
                 }
 
                 clients.append(client)

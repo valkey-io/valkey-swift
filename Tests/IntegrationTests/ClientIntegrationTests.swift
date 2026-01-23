@@ -617,10 +617,10 @@ struct ClientIntegratedTests {
             let result = try await client.clientList()
             // Check if any client has the expected lib-name and lib-ver
             let hasLibName = result.clients.contains { client in
-                (try? client[.libName]?.decode(as: String.self)) == valkeySwiftLibraryName
+                client[.libName].map { String($0) } == valkeySwiftLibraryName
             }
             let hasLibVer = result.clients.contains { client in
-                (try? client[.libVer]?.decode(as: String.self)) == valkeySwiftLibraryVersion
+                client[.libVer].map { String($0) } == valkeySwiftLibraryVersion
             }
             #expect(hasLibName)
             #expect(hasLibVer)
