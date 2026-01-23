@@ -144,7 +144,7 @@ public struct ValkeyClusterNode: Hashable, Sendable, RESPTokenDecodable {
     ///   - configEpoch: Configuration epoch
     ///   - linkState: Link state to this node
     ///   - slots: Hash slots served by this node
-    public init(
+    init(
         nodeId: String,
         endpoint: String,
         flags: Set<Flag>,
@@ -330,7 +330,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
         ///   - role: The node role
         ///   - replicationOffset: The replication offset
         ///   - health: The node health
-        public init(
+        package init(
             id: String,
             port: Int?,
             tlsPort: Int?,
@@ -369,7 +369,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
         /// - Parameters:
         ///   - slots: The slots in the shard.
         ///   - nodes: The nodes in the shard.
-        public init(slots: HashSlots, nodes: [Node]) {
+        package init(slots: HashSlots, nodes: [Node]) {
             self.slots = slots
             self.nodes = nodes
         }
@@ -392,7 +392,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
 
     /// Creates a cluster description from a list of shards you provide.
     /// - Parameter shards: The shards that make up the cluster.
-    public init(_ shards: [ValkeyClusterDescription.Shard]) {
+    package init(_ shards: [ValkeyClusterDescription.Shard]) {
         self.shards = shards
     }
 }
@@ -449,7 +449,7 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
     ///   - events: Events registered for the link
     ///   - sendBufferAllocated: Allocated send buffer size
     ///   - sendBufferUsed: Used send buffer size
-    public init(
+    init(
         direction: Direction,
         node: String,
         createTime: Int,
@@ -546,7 +546,7 @@ public struct ValkeyClusterSlotRange: Hashable, Sendable, RESPTokenDecodable {
     ///   - startSlot: The start slot
     ///   - endSlot: The end slot
     ///   - nodes: The nodes serving this range
-    public init(startSlot: Int, endSlot: Int, nodes: [Node]) {
+    init(startSlot: Int, endSlot: Int, nodes: [Node]) {
         self.startSlot = startSlot
         self.endSlot = endSlot
         self.nodes = nodes
