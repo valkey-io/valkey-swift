@@ -22,8 +22,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
             case timeout
             case clientIsShutDown
             case connectionCreationCircuitBreakerTripped
+            case respParsingError
             case respDecodeError
-            case transactionError
             case clusterError
             case unrecognisedError
         }
@@ -57,10 +57,10 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
         public static var clientIsShutDown: Self { .init(.clientIsShutDown) }
         /// Connection pool connection creation circuit breaker triggered
         public static var connectionCreationCircuitBreakerTripped: Self { .init(.connectionCreationCircuitBreakerTripped) }
+        /// Found error while trying to parse RESP returned from server
+        public static var respParsingError: Self { .init(.respParsingError) }
         /// RESPToken decode error
         public static var respDecodeError: Self { .init(.respDecodeError) }
-        /// Transaction error
-        public static var transactionError: Self { .init(.transactionError) }
         /// Cluster error
         public static var clusterError: Self { .init(.clusterError) }
         /// Unrecognised error
@@ -80,8 +80,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
             case .timeout: "Connection was closed because it timed out."
             case .clientIsShutDown: "Client is shutdown and not serving requests."
             case .connectionCreationCircuitBreakerTripped: "Connection pool connection creation circuit breaker triggered."
+            case .respParsingError: "Found error while trying to parse RESP returned from server."
             case .respDecodeError: "Error thrown while decoding a RESPToken."
-            case .transactionError: "Transaction EXEC command failed."
             case .clusterError: "Cluster reported an error."
             case .unrecognisedError: "Unrecognised error."
             }

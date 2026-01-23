@@ -687,7 +687,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The length of the string after the append operation.
     @inlinable
     @discardableResult
-    public func append<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
+    public func append<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws(ValkeyClientError) -> Int {
         try await execute(APPEND(key, value: value))
     }
 
@@ -699,7 +699,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The value of the key after decrementing it.
     @inlinable
     @discardableResult
-    public func decr(_ key: ValkeyKey) async throws -> Int {
+    public func decr(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(DECR(key))
     }
 
@@ -711,7 +711,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The value of the key after decrementing it.
     @inlinable
     @discardableResult
-    public func decrby(_ key: ValkeyKey, decrement: Int) async throws -> Int {
+    public func decrby(_ key: ValkeyKey, decrement: Int) async throws(ValkeyClientError) -> Int {
         try await execute(DECRBY(key, decrement: decrement))
     }
 
@@ -725,7 +725,7 @@ extension ValkeyClientProtocol {
     ///     * 1: The key was deleted.
     @inlinable
     @discardableResult
-    public func delifeq<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
+    public func delifeq<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws(ValkeyClientError) -> Int {
         try await execute(DELIFEQ(key, value: value))
     }
 
@@ -738,7 +738,7 @@ extension ValkeyClientProtocol {
     ///     * [String]: The value of the key.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func get(_ key: ValkeyKey) async throws -> RESPBulkString? {
+    public func get(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(GET(key))
     }
 
@@ -752,7 +752,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: The key does not exist.
     @inlinable
     @discardableResult
-    public func getdel(_ key: ValkeyKey) async throws -> RESPBulkString? {
+    public func getdel(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(GETDEL(key))
     }
 
@@ -766,7 +766,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Key does not exist.
     @inlinable
     @discardableResult
-    public func getex(_ key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> RESPBulkString? {
+    public func getex(_ key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(GETEX(key, expiration: expiration))
     }
 
@@ -777,7 +777,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func getrange(_ key: ValkeyKey, start: Int, end: Int) async throws -> RESPBulkString {
+    public func getrange(_ key: ValkeyKey, start: Int, end: Int) async throws(ValkeyClientError) -> RESPBulkString {
         try await execute(GETRANGE(key, start: start, end: end))
     }
 
@@ -792,7 +792,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: The key does not exist.
     @inlinable
     @discardableResult
-    public func getset<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> RESPBulkString? {
+    public func getset<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(GETSET(key, value: value))
     }
 
@@ -804,7 +804,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The value of key after the increment
     @inlinable
     @discardableResult
-    public func incr(_ key: ValkeyKey) async throws -> Int {
+    public func incr(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(INCR(key))
     }
 
@@ -816,7 +816,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The value of the key after incrementing it.
     @inlinable
     @discardableResult
-    public func incrby(_ key: ValkeyKey, increment: Int) async throws -> Int {
+    public func incrby(_ key: ValkeyKey, increment: Int) async throws(ValkeyClientError) -> Int {
         try await execute(INCRBY(key, increment: increment))
     }
 
@@ -828,7 +828,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The value of the key after incrementing it.
     @inlinable
     @discardableResult
-    public func incrbyfloat(_ key: ValkeyKey, increment: Double) async throws -> RESPBulkString {
+    public func incrbyfloat(_ key: ValkeyKey, increment: Double) async throws(ValkeyClientError) -> RESPBulkString {
         try await execute(INCRBYFLOAT(key, increment: increment))
     }
 
@@ -849,7 +849,7 @@ extension ValkeyClientProtocol {
         idx: Bool = false,
         minMatchLen: Int? = nil,
         withmatchlen: Bool = false
-    ) async throws -> LCS.Response {
+    ) async throws(ValkeyClientError) -> LCS.Response {
         try await execute(LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
     }
 
@@ -860,7 +860,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of keys to retrieve.
     /// - Response: [Array]: List of values at the specified keys.
     @inlinable
-    public func mget(keys: [ValkeyKey]) async throws -> RESPToken.Array {
+    public func mget(keys: [ValkeyKey]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(MGET(keys: keys))
     }
 
@@ -870,7 +870,7 @@ extension ValkeyClientProtocol {
     /// - Available: 1.0.1
     /// - Complexity: O(N) where N is the number of keys to set.
     @inlinable
-    public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws {
+    public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws(ValkeyClientError) {
         _ = try await execute(MSET(data: data))
     }
 
@@ -884,7 +884,7 @@ extension ValkeyClientProtocol {
     ///     * 1: All the keys were set.
     @inlinable
     @discardableResult
-    public func msetnx<Value: RESPStringRenderable>(data: [MSETNX<Value>.Data]) async throws -> Int {
+    public func msetnx<Value: RESPStringRenderable>(data: [MSETNX<Value>.Data]) async throws(ValkeyClientError) -> Int {
         try await execute(MSETNX(data: data))
     }
 
@@ -895,7 +895,7 @@ extension ValkeyClientProtocol {
     /// - Deprecated since: 2.6.12. Replaced by `SET` with the `PX` argument.
     /// - Complexity: O(1)
     @inlinable
-    public func psetex<Value: RESPStringRenderable>(_ key: ValkeyKey, milliseconds: Int, value: Value) async throws {
+    public func psetex<Value: RESPStringRenderable>(_ key: ValkeyKey, milliseconds: Int, value: Value) async throws(ValkeyClientError) {
         _ = try await execute(PSETEX(key, milliseconds: milliseconds, value: value))
     }
 
@@ -923,7 +923,7 @@ extension ValkeyClientProtocol {
         condition: SET<Value>.Condition? = nil,
         get: Bool = false,
         expiration: SET<Value>.Expiration? = nil
-    ) async throws -> RESPBulkString? {
+    ) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(SET(key, value: value, condition: condition, get: get, expiration: expiration))
     }
 
@@ -934,7 +934,7 @@ extension ValkeyClientProtocol {
     /// - Deprecated since: 2.6.12. Replaced by `SET` with the `EX` argument.
     /// - Complexity: O(1)
     @inlinable
-    public func setex<Value: RESPStringRenderable>(_ key: ValkeyKey, seconds: Int, value: Value) async throws {
+    public func setex<Value: RESPStringRenderable>(_ key: ValkeyKey, seconds: Int, value: Value) async throws(ValkeyClientError) {
         _ = try await execute(SETEX(key, seconds: seconds, value: value))
     }
 
@@ -949,7 +949,7 @@ extension ValkeyClientProtocol {
     ///     * 1: The key was not set.
     @inlinable
     @discardableResult
-    public func setnx<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
+    public func setnx<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws(ValkeyClientError) -> Int {
         try await execute(SETNX(key, value: value))
     }
 
@@ -961,7 +961,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Length of the string after it was modified by the command.
     @inlinable
     @discardableResult
-    public func setrange<Value: RESPStringRenderable>(_ key: ValkeyKey, offset: Int, value: Value) async throws -> Int {
+    public func setrange<Value: RESPStringRenderable>(_ key: ValkeyKey, offset: Int, value: Value) async throws(ValkeyClientError) -> Int {
         try await execute(SETRANGE(key, offset: offset, value: value))
     }
 
@@ -972,7 +972,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The length of the string value stored at key, or 0 when key does not exist.
     @inlinable
-    public func strlen(_ key: ValkeyKey) async throws -> Int {
+    public func strlen(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(STRLEN(key))
     }
 
@@ -984,7 +984,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func substr(_ key: ValkeyKey, start: Int, end: Int) async throws -> RESPBulkString {
+    public func substr(_ key: ValkeyKey, start: Int, end: Int) async throws(ValkeyClientError) -> RESPBulkString {
         try await execute(SUBSTR(key, start: start, end: end))
     }
 

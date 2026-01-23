@@ -31,8 +31,9 @@ public struct ValkeySubscriptionMessage: Sendable, Equatable {
 public struct ValkeySubscription: AsyncSequence, Sendable {
     /// The type that the sequence produces.
     public typealias Element = ValkeySubscriptionMessage
+    public typealias Failure = ValkeyClientError
 
-    typealias BaseAsyncSequence = AsyncThrowingStream<ValkeySubscriptionMessage, any Error>
+    typealias BaseAsyncSequence = AsyncStream<Result<ValkeySubscriptionMessage, ValkeyClientError>>
     typealias Continuation = BaseAsyncSequence.Continuation
 
     let base: BaseAsyncSequence
@@ -53,17 +54,17 @@ public struct ValkeySubscription: AsyncSequence, Sendable {
 
         #if compiler(>=6.2)
         @concurrent
-        public mutating func next() async throws -> Element? {
-            try await self.base.next()
+        public mutating func next() async throws(ValkeyClientError) -> Element? {
+            try await self.base.next()?.get()
         }
         #else
-        public mutating func next() async throws -> Element? {
-            try await self.base.next()
+        public mutating func next() async throws(ValkeyClientError) -> Element? {
+            try await self.base.next()?.get()
         }
         #endif
 
-        public mutating func next(isolation actor: isolated (any Actor)?) async throws(any Error) -> ValkeySubscriptionMessage? {
-            try await self.base.next(isolation: actor)
+        public mutating func next(isolation actor: isolated (any Actor)?) async throws(ValkeyClientError) -> ValkeySubscriptionMessage? {
+            try await self.base.next(isolation: actor)?.get()
         }
     }
 }

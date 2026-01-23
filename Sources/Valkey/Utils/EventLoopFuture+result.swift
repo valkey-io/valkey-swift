@@ -23,4 +23,29 @@ extension EventLoopFuture {
             }
         }
     }
+
+    /// Get the result from an `EventLoopFuture` in an `async` context.
+    ///
+    /// - warning: This method currently violates Structured Concurrency because cancellation isn't respected.
+    ///
+    /// This function can be used to bridge an `EventLoopFuture` into the `async` world. Ie. if you're in an `async`
+    /// function and want to get the result of this future.
+    @inlinable
+    @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+    func _valkeyErrorResult() async -> Result<Value, ValkeyClientError> where Value: Sendable {
+        await withUnsafeContinuation { (cont: UnsafeContinuation<Result<Value, ValkeyClientError>, Never>) in
+            self.whenComplete { result in
+                cont.resume(
+                    returning: result.mapError {
+                        switch $0 {
+                        case let error as ValkeyClientError:
+                            error
+                        default:
+                            ValkeyClientError(.unrecognisedError, error: $0)
+                        }
+                    }
+                )
+            }
+        }
+    }
 }

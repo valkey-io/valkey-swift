@@ -1237,7 +1237,7 @@ extension ValkeyClientProtocol {
         condition: GEOADD<Member>.Condition? = nil,
         change: Bool = false,
         data: [GEOADD<Member>.Data]
-    ) async throws -> Int {
+    ) async throws(ValkeyClientError) -> Int {
         try await execute(GEOADD(key, condition: condition, change: change, data: data))
     }
 
@@ -1255,7 +1255,7 @@ extension ValkeyClientProtocol {
         member1: Member1,
         member2: Member2,
         unit: GEODIST<Member1, Member2>.Unit? = nil
-    ) async throws -> Double? {
+    ) async throws(ValkeyClientError) -> Double? {
         try await execute(GEODIST(key, member1: member1, member2: member2, unit: unit))
     }
 
@@ -1266,7 +1266,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for each member requested.
     /// - Response: [Array]: An array where each element is the Geohash corresponding to each member name passed as argument to the command.
     @inlinable
-    public func geohash(_ key: ValkeyKey, members: [String] = []) async throws -> RESPToken.Array {
+    public func geohash(_ key: ValkeyKey, members: [String] = []) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(GEOHASH(key, members: members))
     }
 
@@ -1277,7 +1277,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for each member requested.
     /// - Response: [Array]: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
     @inlinable
-    public func geopos(_ key: ValkeyKey, members: [String] = []) async throws -> GEOPOS.Response {
+    public func geopos(_ key: ValkeyKey, members: [String] = []) async throws(ValkeyClientError) -> GEOPOS.Response {
         try await execute(GEOPOS(key, members: members))
     }
 
@@ -1305,7 +1305,7 @@ extension ValkeyClientProtocol {
         countBlock: GEORADIUS.CountBlock? = nil,
         order: GEORADIUS.Order? = nil,
         store: GEORADIUS.Store? = nil
-    ) async throws -> GEORADIUS.Response {
+    ) async throws(ValkeyClientError) -> GEORADIUS.Response {
         try await execute(
             GEORADIUS(
                 key,
@@ -1346,7 +1346,7 @@ extension ValkeyClientProtocol {
         countBlock: GEORADIUSBYMEMBER<Member>.CountBlock? = nil,
         order: GEORADIUSBYMEMBER<Member>.Order? = nil,
         store: GEORADIUSBYMEMBER<Member>.Store? = nil
-    ) async throws -> GeoSearchEntries {
+    ) async throws(ValkeyClientError) -> GeoSearchEntries {
         try await execute(
             GEORADIUSBYMEMBER(
                 key,
@@ -1384,7 +1384,7 @@ extension ValkeyClientProtocol {
         withhash: Bool = false,
         countBlock: GEORADIUSBYMEMBERRO<Member>.CountBlock? = nil,
         order: GEORADIUSBYMEMBERRO<Member>.Order? = nil
-    ) async throws -> GeoSearchEntries {
+    ) async throws(ValkeyClientError) -> GeoSearchEntries {
         try await execute(
             GEORADIUSBYMEMBERRO(
                 key,
@@ -1422,7 +1422,7 @@ extension ValkeyClientProtocol {
         withhash: Bool = false,
         countBlock: GEORADIUSRO.CountBlock? = nil,
         order: GEORADIUSRO.Order? = nil
-    ) async throws -> GEORADIUSRO.Response {
+    ) async throws(ValkeyClientError) -> GEORADIUSRO.Response {
         try await execute(
             GEORADIUSRO(
                 key,
@@ -1458,7 +1458,7 @@ extension ValkeyClientProtocol {
         withcoord: Bool = false,
         withdist: Bool = false,
         withhash: Bool = false
-    ) async throws -> GEOSEARCH.Response {
+    ) async throws(ValkeyClientError) -> GEOSEARCH.Response {
         try await execute(
             GEOSEARCH(key, from: from, by: by, order: order, countBlock: countBlock, withcoord: withcoord, withdist: withdist, withhash: withhash)
         )
@@ -1483,7 +1483,7 @@ extension ValkeyClientProtocol {
         order: GEOSEARCHSTORE.Order? = nil,
         countBlock: GEOSEARCHSTORE.CountBlock? = nil,
         storedist: Bool = false
-    ) async throws -> Int {
+    ) async throws(ValkeyClientError) -> Int {
         try await execute(
             GEOSEARCHSTORE(destination: destination, source: source, from: from, by: by, order: order, countBlock: countBlock, storedist: storedist)
         )
