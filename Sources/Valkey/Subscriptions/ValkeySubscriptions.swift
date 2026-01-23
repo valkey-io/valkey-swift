@@ -43,7 +43,7 @@ struct ValkeySubscriptions {
                 subscription.sendError(error)
             }
             self.subscriptionIDMap = [:]
-            throw error
+            throw ValkeyClientError(.respDecodeError, error: error)
         }
 
         self.logger.trace("Received PUSH token", metadata: ["subscription": "\(pushToken.value)", "type": "\(pushToken.type)"])
@@ -93,7 +93,7 @@ struct ValkeySubscriptions {
     }
 
     /// Connection is closing lets inform all the subscriptions
-    mutating func close(error: any Error) {
+    mutating func close(error: ValkeyClientError) {
         for subscription in subscriptionIDMap.values {
             subscription.sendError(error)
         }
@@ -233,11 +233,11 @@ final class SubscriptionRef: Identifiable {
     }
 
     func sendMessage(_ message: ValkeySubscriptionMessage) {
-        self.continuation.yield(message)
+        self.continuation.yield(.success(message))
     }
 
-    func sendError(_ error: any Error) {
-        self.continuation.finish(throwing: error)
+    func sendError(_ error: ValkeyClientError) {
+        self.continuation.yield(.failure(error))
     }
 
     func finish() {

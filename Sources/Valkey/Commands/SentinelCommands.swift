@@ -587,7 +587,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: Returns OK if the current Sentinel configuration is able to reach the quorum needed to failover a primary, and the majority needed to authorize the failover.
     @inlinable
     @discardableResult
-    public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPBulkString {
+    public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPBulkString {
         try await execute(SENTINEL.CKQUORUM(primaryName: primaryName))
     }
 
@@ -603,7 +603,7 @@ extension ValkeyClientProtocol {
     ///     * "OK": When 'SENTINEL-CONFIG SET' is called, returns OK on success.
     @inlinable
     @discardableResult
-    public func sentinelConfig(action: SENTINEL.CONFIG.Action) async throws -> RESPToken.Map? {
+    public func sentinelConfig(action: SENTINEL.CONFIG.Action) async throws(ValkeyClientError) -> RESPToken.Map? {
         try await execute(SENTINEL.CONFIG(action: action))
     }
 
@@ -617,7 +617,7 @@ extension ValkeyClientProtocol {
     ///     * [Map]: List of configurable time parameters and their values (milliseconds).
     @inlinable
     @discardableResult
-    public func sentinelDebug(data: [SENTINEL.DEBUG.Data] = []) async throws -> RESPToken.Map? {
+    public func sentinelDebug(data: [SENTINEL.DEBUG.Data] = []) async throws(ValkeyClientError) -> RESPToken.Map? {
         try await execute(SENTINEL.DEBUG(data: data))
     }
 
@@ -629,7 +629,10 @@ extension ValkeyClientProtocol {
     ///     * 9.0.0: `COORDINATED` option.
     /// - Response: "OK": Force a fail over of the primary. Without options, the fail over is executed immediately as if the primary was not reachable. Using `COORDINATED`, fail over seeking agreement from other Sentinels and using coordinated fail over.
     @inlinable
-    public func sentinelFailover<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName, coordinated: Bool = false) async throws {
+    public func sentinelFailover<PrimaryName: RESPStringRenderable>(
+        primaryName: PrimaryName,
+        coordinated: Bool = false
+    ) async throws(ValkeyClientError) {
         _ = try await execute(SENTINEL.FAILOVER(primaryName: primaryName, coordinated: coordinated))
     }
 
@@ -640,7 +643,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: "OK": Force Sentinel to rewrite its configuration on disk, including the current Sentinel state.
     @inlinable
-    public func sentinelFlushconfig() async throws {
+    public func sentinelFlushconfig() async throws(ValkeyClientError) {
         _ = try await execute(SENTINEL.FLUSHCONFIG())
     }
 
@@ -653,7 +656,9 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: IP addr or hostname.
     @inlinable
     @discardableResult
-    public func sentinelGetMasterAddrByName<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
+    public func sentinelGetMasterAddrByName<PrimaryName: RESPStringRenderable>(
+        primaryName: PrimaryName
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.GETMASTERADDRBYNAME(primaryName: primaryName))
     }
 
@@ -665,7 +670,9 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: IP addr or hostname.
     @inlinable
     @discardableResult
-    public func sentinelGetPrimaryAddrByName<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
+    public func sentinelGetPrimaryAddrByName<PrimaryName: RESPStringRenderable>(
+        primaryName: PrimaryName
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.GETPRIMARYADDRBYNAME(primaryName: primaryName))
     }
 
@@ -677,7 +684,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     @discardableResult
-    public func sentinelHelp() async throws -> RESPToken.Array {
+    public func sentinelHelp() async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.HELP())
     }
 
@@ -689,7 +696,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: This is actually a map, the odd entries are a primary name, and the even entries are the last cached INFO output from that primary and all its replicas.
     @inlinable
     @discardableResult
-    public func sentinelInfoCache<Nodename: RESPStringRenderable>(nodenames: [Nodename]) async throws -> RESPToken.Array {
+    public func sentinelInfoCache<Nodename: RESPStringRenderable>(nodenames: [Nodename]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.INFOCACHE(nodenames: nodenames))
     }
 
@@ -709,7 +716,7 @@ extension ValkeyClientProtocol {
         port: Int,
         currentEpoch: Int,
         runid: Runid
-    ) async throws -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.ISMASTERDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
 
@@ -728,7 +735,7 @@ extension ValkeyClientProtocol {
         port: Int,
         currentEpoch: Int,
         runid: Runid
-    ) async throws -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.ISPRIMARYDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
 
@@ -741,7 +748,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Map]: The state and info of the specified primary.
     @inlinable
     @discardableResult
-    public func sentinelMaster<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Map {
+    public func sentinelMaster<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPToken.Map {
         try await execute(SENTINEL.MASTER(primaryName: primaryName))
     }
 
@@ -754,7 +761,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of monitored primaries, and their states.
     @inlinable
     @discardableResult
-    public func sentinelMasters() async throws -> RESPToken.Array {
+    public func sentinelMasters() async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.MASTERS())
     }
 
@@ -764,7 +771,12 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.4
     /// - Complexity: O(1)
     @inlinable
-    public func sentinelMonitor<Name: RESPStringRenderable, Ip: RESPStringRenderable>(name: Name, ip: Ip, port: Int, quorum: Int) async throws {
+    public func sentinelMonitor<Name: RESPStringRenderable, Ip: RESPStringRenderable>(
+        name: Name,
+        ip: Ip,
+        port: Int,
+        quorum: Int
+    ) async throws(ValkeyClientError) {
         _ = try await execute(SENTINEL.MONITOR(name: name, ip: ip, port: port, quorum: quorum))
     }
 
@@ -776,7 +788,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: Node ID of the sentinel instance.
     @inlinable
     @discardableResult
-    public func sentinelMyid() async throws -> RESPBulkString {
+    public func sentinelMyid() async throws(ValkeyClientError) -> RESPBulkString {
         try await execute(SENTINEL.MYID())
     }
 
@@ -787,7 +799,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of pending scripts.
     @inlinable
     @discardableResult
-    public func sentinelPendingScripts() async throws -> RESPToken.Array {
+    public func sentinelPendingScripts() async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.PENDINGSCRIPTS())
     }
 
@@ -799,7 +811,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of monitored primaries, and their states.
     @inlinable
     @discardableResult
-    public func sentinelPrimaries() async throws -> RESPToken.Array {
+    public func sentinelPrimaries() async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.PRIMARIES())
     }
 
@@ -811,7 +823,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Map]: The state and info of the specified primary.
     @inlinable
     @discardableResult
-    public func sentinelPrimary<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Map {
+    public func sentinelPrimary<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPToken.Map {
         try await execute(SENTINEL.PRIMARY(primaryName: primaryName))
     }
 
@@ -821,7 +833,7 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.4
     /// - Complexity: O(1)
     @inlinable
-    public func sentinelRemove<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws {
+    public func sentinelRemove<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) {
         _ = try await execute(SENTINEL.REMOVE(primaryName: primaryName))
     }
 
@@ -833,7 +845,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of replicas for this primary, and their state.
     @inlinable
     @discardableResult
-    public func sentinelReplicas<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
+    public func sentinelReplicas<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.REPLICAS(primaryName: primaryName))
     }
 
@@ -845,7 +857,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of primaries that were reset.
     @inlinable
     @discardableResult
-    public func sentinelReset(pattern: String) async throws -> Int {
+    public func sentinelReset(pattern: String) async throws(ValkeyClientError) -> Int {
         try await execute(SENTINEL.RESET(pattern: pattern))
     }
 
@@ -857,7 +869,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of sentinel instances, and their state.
     @inlinable
     @discardableResult
-    public func sentinelSentinels<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
+    public func sentinelSentinels<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.SENTINELS(primaryName: primaryName))
     }
 
@@ -870,7 +882,7 @@ extension ValkeyClientProtocol {
     public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(
         primaryName: PrimaryName,
         data: [SENTINEL.SET<PrimaryName, Option, Value>.Data]
-    ) async throws {
+    ) async throws(ValkeyClientError) {
         _ = try await execute(SENTINEL.SET(primaryName: primaryName, data: data))
     }
 
@@ -883,7 +895,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: Supported simulates flags. Returned in case `HELP` was used.
     @inlinable
     @discardableResult
-    public func sentinelSimulateFailure(modes: [SENTINEL.SIMULATEFAILURE.Mode] = []) async throws -> RESPToken.Array? {
+    public func sentinelSimulateFailure(modes: [SENTINEL.SIMULATEFAILURE.Mode] = []) async throws(ValkeyClientError) -> RESPToken.Array? {
         try await execute(SENTINEL.SIMULATEFAILURE(modes: modes))
     }
 
@@ -896,7 +908,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of monitored replicas, and their state.
     @inlinable
     @discardableResult
-    public func sentinelSlaves<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
+    public func sentinelSlaves<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SENTINEL.SLAVES(primaryName: primaryName))
     }
 

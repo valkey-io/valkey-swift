@@ -18,7 +18,7 @@ extension ValkeyChannelHandler {
             case connected(ConnectedState)
             case active(ActiveState)
             case closing(ActiveState)
-            case closed((any Error)?)
+            case closed(ValkeyClientError?)
 
             @usableFromInline
             var description: String {
@@ -92,7 +92,7 @@ extension ValkeyChannelHandler {
         @usableFromInline
         enum SendCommandAction {
             case sendCommand(Context)
-            case throwError(any Error)
+            case throwError(ValkeyClientError)
         }
 
         /// handler wants to send a command
@@ -132,8 +132,8 @@ extension ValkeyChannelHandler {
         @usableFromInline
         enum ReceivedResponseAction {
             case respond(PendingCommand, DeadlineCallbackAction)
-            case respondAndClose(PendingCommand, (any Error)?)
-            case closeWithError(any Error)
+            case respondAndClose(PendingCommand, ValkeyClientError?)
+            case closeWithError(ValkeyClientError)
         }
 
         /// handler wants to send a command
@@ -203,7 +203,7 @@ extension ValkeyChannelHandler {
         @usableFromInline
         enum WaitOnActiveAction {
             case waitForPromise(EventLoopPromise<RESPToken>)
-            case reportedClosed((any Error)?)
+            case reportedClosed(ValkeyClientError?)
             case done
         }
 
@@ -300,7 +300,7 @@ extension ValkeyChannelHandler {
             case .active(let state):
                 let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
                 if cancel.count > 0 {
-                    self = .closed(CancellationError())
+                    self = .closed(ValkeyClientError(.cancelled))
                     return .failPendingCommandsAndClose(
                         state.context,
                         cancel: cancel,
@@ -313,7 +313,7 @@ extension ValkeyChannelHandler {
             case .closing(let state):
                 let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
                 if cancel.count > 0 {
-                    self = .closed(CancellationError())
+                    self = .closed(ValkeyClientError(.cancelled))
                     return .failPendingCommandsAndClose(
                         state.context,
                         cancel: cancel,
@@ -438,7 +438,7 @@ extension ValkeyChannelHandler {
             StateMachine(.closing(state))
         }
 
-        private static func closed(_ error: (any Error)?) -> Self {
+        private static func closed(_ error: ValkeyClientError?) -> Self {
             StateMachine(.closed(error))
         }
     }

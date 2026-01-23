@@ -493,7 +493,11 @@ extension ValkeyClientProtocol {
     /// - Response: Return value depends on the script that is executed
     @inlinable
     @discardableResult
-    public func eval<Script: RESPStringRenderable>(script: Script, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
+    public func eval<Script: RESPStringRenderable>(
+        script: Script,
+        keys: [ValkeyKey] = [],
+        args: [String] = []
+    ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(EVAL(script: script, keys: keys, args: args))
     }
 
@@ -505,7 +509,11 @@ extension ValkeyClientProtocol {
     /// - Response: Return value depends on the script that is executed
     @inlinable
     @discardableResult
-    public func evalsha<Sha1: RESPStringRenderable>(sha1: Sha1, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
+    public func evalsha<Sha1: RESPStringRenderable>(
+        sha1: Sha1,
+        keys: [ValkeyKey] = [],
+        args: [String] = []
+    ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(EVALSHA(sha1: sha1, keys: keys, args: args))
     }
 
@@ -516,7 +524,11 @@ extension ValkeyClientProtocol {
     /// - Complexity: Depends on the script that is executed.
     /// - Response: Return value depends on the script that is executed
     @inlinable
-    public func evalshaRo<Sha1: RESPStringRenderable>(sha1: Sha1, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
+    public func evalshaRo<Sha1: RESPStringRenderable>(
+        sha1: Sha1,
+        keys: [ValkeyKey] = [],
+        args: [String] = []
+    ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(EVALSHARO(sha1: sha1, keys: keys, args: args))
     }
 
@@ -527,7 +539,11 @@ extension ValkeyClientProtocol {
     /// - Complexity: Depends on the script that is executed.
     /// - Response: Return value depends on the script that is executed
     @inlinable
-    public func evalRo<Script: RESPStringRenderable>(script: Script, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
+    public func evalRo<Script: RESPStringRenderable>(
+        script: Script,
+        keys: [ValkeyKey] = [],
+        args: [String] = []
+    ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(EVALRO(script: script, keys: keys, args: args))
     }
 
@@ -539,7 +555,11 @@ extension ValkeyClientProtocol {
     /// - Response: Return value depends on the function that is executed
     @inlinable
     @discardableResult
-    public func fcall<Function: RESPStringRenderable>(function: Function, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
+    public func fcall<Function: RESPStringRenderable>(
+        function: Function,
+        keys: [ValkeyKey] = [],
+        args: [String] = []
+    ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(FCALL(function: function, keys: keys, args: args))
     }
 
@@ -550,7 +570,11 @@ extension ValkeyClientProtocol {
     /// - Complexity: Depends on the function that is executed.
     /// - Response: Return value depends on the function that is executed
     @inlinable
-    public func fcallRo<Function: RESPStringRenderable>(function: Function, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
+    public func fcallRo<Function: RESPStringRenderable>(
+        function: Function,
+        keys: [ValkeyKey] = [],
+        args: [String] = []
+    ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(FCALLRO(function: function, keys: keys, args: args))
     }
 
@@ -560,7 +584,7 @@ extension ValkeyClientProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
-    public func functionDelete<LibraryName: RESPStringRenderable>(libraryName: LibraryName) async throws {
+    public func functionDelete<LibraryName: RESPStringRenderable>(libraryName: LibraryName) async throws(ValkeyClientError) {
         _ = try await execute(FUNCTION.DELETE(libraryName: libraryName))
     }
 
@@ -572,7 +596,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The serialized payload.
     @inlinable
     @discardableResult
-    public func functionDump() async throws -> RESPBulkString {
+    public func functionDump() async throws(ValkeyClientError) -> RESPBulkString {
         try await execute(FUNCTION.DUMP())
     }
 
@@ -582,7 +606,7 @@ extension ValkeyClientProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions deleted
     @inlinable
-    public func functionFlush(flushType: FUNCTION.FLUSH.FlushType? = nil) async throws {
+    public func functionFlush(flushType: FUNCTION.FLUSH.FlushType? = nil) async throws(ValkeyClientError) {
         _ = try await execute(FUNCTION.FLUSH(flushType: flushType))
     }
 
@@ -594,7 +618,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     @discardableResult
-    public func functionHelp() async throws -> RESPToken.Array {
+    public func functionHelp() async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(FUNCTION.HELP())
     }
 
@@ -604,7 +628,7 @@ extension ValkeyClientProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
-    public func functionKill() async throws {
+    public func functionKill() async throws(ValkeyClientError) {
         _ = try await execute(FUNCTION.KILL())
     }
 
@@ -615,7 +639,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of functions
     @inlinable
     @discardableResult
-    public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> FUNCTION.LIST.Response {
+    public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws(ValkeyClientError) -> FUNCTION.LIST.Response {
         try await execute(FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
     }
 
@@ -630,7 +654,7 @@ extension ValkeyClientProtocol {
     public func functionLoad<FunctionCode: RESPStringRenderable>(
         replace: Bool = false,
         functionCode: FunctionCode
-    ) async throws -> FUNCTION.LOADResponse {
+    ) async throws(ValkeyClientError) -> FUNCTION.LOADResponse {
         try await execute(FUNCTION.LOAD(replace: replace, functionCode: functionCode))
     }
 
@@ -643,7 +667,7 @@ extension ValkeyClientProtocol {
     public func functionRestore<SerializedValue: RESPStringRenderable>(
         serializedValue: SerializedValue,
         policy: FUNCTION.RESTORE<SerializedValue>.Policy? = nil
-    ) async throws {
+    ) async throws(ValkeyClientError) {
         _ = try await execute(FUNCTION.RESTORE(serializedValue: serializedValue, policy: policy))
     }
 
@@ -654,7 +678,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
-    public func functionStats() async throws -> FUNCTION.STATS.Response {
+    public func functionStats() async throws(ValkeyClientError) -> FUNCTION.STATS.Response {
         try await execute(FUNCTION.STATS())
     }
 
@@ -664,7 +688,7 @@ extension ValkeyClientProtocol {
     /// - Available: 3.2.0
     /// - Complexity: O(1)
     @inlinable
-    public func scriptDebug(mode: SCRIPT.DEBUG.Mode) async throws {
+    public func scriptDebug(mode: SCRIPT.DEBUG.Mode) async throws(ValkeyClientError) {
         _ = try await execute(SCRIPT.DEBUG(mode: mode))
     }
 
@@ -676,7 +700,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: An array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
     @discardableResult
-    public func scriptExists<Sha1: RESPStringRenderable>(sha1s: [Sha1]) async throws -> [Int] {
+    public func scriptExists<Sha1: RESPStringRenderable>(sha1s: [Sha1]) async throws(ValkeyClientError) -> [Int] {
         try await execute(SCRIPT.EXISTS(sha1s: sha1s))
     }
 
@@ -688,7 +712,7 @@ extension ValkeyClientProtocol {
     ///     * 6.2.0: Added the `ASYNC` and `SYNC` flushing mode modifiers.
     /// - Complexity: O(N) with N being the number of scripts in cache
     @inlinable
-    public func scriptFlush(flushType: SCRIPT.FLUSH.FlushType? = nil) async throws {
+    public func scriptFlush(flushType: SCRIPT.FLUSH.FlushType? = nil) async throws(ValkeyClientError) {
         _ = try await execute(SCRIPT.FLUSH(flushType: flushType))
     }
 
@@ -700,7 +724,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     @discardableResult
-    public func scriptHelp() async throws -> RESPToken.Array {
+    public func scriptHelp() async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(SCRIPT.HELP())
     }
 
@@ -710,7 +734,7 @@ extension ValkeyClientProtocol {
     /// - Available: 2.6.0
     /// - Complexity: O(1)
     @inlinable
-    public func scriptKill() async throws {
+    public func scriptKill() async throws(ValkeyClientError) {
         _ = try await execute(SCRIPT.KILL())
     }
 
@@ -722,7 +746,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The SHA1 digest of the script added into the script cache
     @inlinable
     @discardableResult
-    public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> String {
+    public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws(ValkeyClientError) -> String {
         try await execute(SCRIPT.LOAD(script: script))
     }
 
@@ -734,7 +758,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: Lua script if sha1 hash exists in script cache.
     @inlinable
     @discardableResult
-    public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> String {
+    public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws(ValkeyClientError) -> String {
         try await execute(SCRIPT.SHOW(sha1: sha1))
     }
 

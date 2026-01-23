@@ -1146,7 +1146,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of fields that were removed from the hash.
     @inlinable
     @discardableResult
-    public func hdel<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws -> Int {
+    public func hdel<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws(ValkeyClientError) -> Int {
         try await execute(HDEL(key, fields: fields))
     }
 
@@ -1159,7 +1159,7 @@ extension ValkeyClientProtocol {
     ///     * 0: The hash does not contain the field, or key does not exist.
     ///     * 1: The hash contains the field.
     @inlinable
-    public func hexists<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws -> Int {
+    public func hexists<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws(ValkeyClientError) -> Int {
         try await execute(HEXISTS(key, field: field))
     }
 
@@ -1176,7 +1176,7 @@ extension ValkeyClientProtocol {
         seconds: Int,
         condition: HEXPIRE<Field>.Condition? = nil,
         fields: HEXPIRE<Field>.Fields
-    ) async throws -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HEXPIRE(key, seconds: seconds, condition: condition, fields: fields))
     }
 
@@ -1193,7 +1193,7 @@ extension ValkeyClientProtocol {
         unixTimeSeconds: Int,
         condition: HEXPIREAT<Field>.Condition? = nil,
         fields: HEXPIREAT<Field>.Fields
-    ) async throws -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HEXPIREAT(key, unixTimeSeconds: unixTimeSeconds, condition: condition, fields: fields))
     }
 
@@ -1204,7 +1204,10 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for each field, so O(N) for N items when the command is called with multiple fields.
     /// - Response: [Array]: List of values associated with the result of getting the absolute expiry timestamp of the specific fields, in the same order as they are requested.
     @inlinable
-    public func hexpiretime<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HEXPIRETIME<Field>.Fields) async throws -> RESPToken.Array {
+    public func hexpiretime<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        fields: HEXPIRETIME<Field>.Fields
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HEXPIRETIME(key, fields: fields))
     }
 
@@ -1217,7 +1220,7 @@ extension ValkeyClientProtocol {
     ///     * [String]: The value associated with the field.
     ///     * [Null]: If the field is not present in the hash or key does not exist.
     @inlinable
-    public func hget<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws -> RESPBulkString? {
+    public func hget<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(HGET(key, field: field))
     }
 
@@ -1228,7 +1231,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the size of the hash.
     /// - Response: [Map]: Map of fields and their values stored in the hash, or an empty list when key does not exist. In RESP2 this is returned as a flat array.
     @inlinable
-    public func hgetall(_ key: ValkeyKey) async throws -> RESPToken.Map {
+    public func hgetall(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPToken.Map {
         try await execute(HGETALL(key))
     }
 
@@ -1244,7 +1247,7 @@ extension ValkeyClientProtocol {
         _ key: ValkeyKey,
         expiration: HGETEX<Field>.Expiration? = nil,
         fields: HGETEX<Field>.Fields
-    ) async throws -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HGETEX(key, expiration: expiration, fields: fields))
     }
 
@@ -1256,7 +1259,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The value of the field after the increment operation.
     @inlinable
     @discardableResult
-    public func hincrby<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field, increment: Int) async throws -> Int {
+    public func hincrby<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field, increment: Int) async throws(ValkeyClientError) -> Int {
         try await execute(HINCRBY(key, field: field, increment: increment))
     }
 
@@ -1268,7 +1271,11 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The value of the field after the increment operation.
     @inlinable
     @discardableResult
-    public func hincrbyfloat<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field, increment: Double) async throws -> RESPBulkString {
+    public func hincrbyfloat<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        field: Field,
+        increment: Double
+    ) async throws(ValkeyClientError) -> RESPBulkString {
         try await execute(HINCRBYFLOAT(key, field: field, increment: increment))
     }
 
@@ -1279,7 +1286,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the size of the hash.
     /// - Response: [Array]: List of fields in the hash, or an empty list when the key does not exist.
     @inlinable
-    public func hkeys(_ key: ValkeyKey) async throws -> RESPToken.Array {
+    public func hkeys(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HKEYS(key))
     }
 
@@ -1290,7 +1297,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: Number of the fields in the hash, or 0 when the key does not exist.
     @inlinable
-    public func hlen(_ key: ValkeyKey) async throws -> Int {
+    public func hlen(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(HLEN(key))
     }
 
@@ -1301,7 +1308,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of fields being requested.
     /// - Response: [Array]: List of values associated with the given fields, in the same order as they are requested.
     @inlinable
-    public func hmget<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws -> RESPToken.Array {
+    public func hmget<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HMGET(key, fields: fields))
     }
 
@@ -1312,7 +1319,10 @@ extension ValkeyClientProtocol {
     /// - Deprecated since: 4.0.0. Replaced by `HSET` with multiple field-value pairs.
     /// - Complexity: O(N) where N is the number of fields being set.
     @inlinable
-    public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, data: [HMSET<Field, Value>.Data]) async throws {
+    public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        data: [HMSET<Field, Value>.Data]
+    ) async throws(ValkeyClientError) {
         _ = try await execute(HMSET(key, data: data))
     }
 
@@ -1324,7 +1334,10 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.
     @inlinable
     @discardableResult
-    public func hpersist<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HPERSIST<Field>.Fields) async throws -> RESPToken.Array {
+    public func hpersist<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        fields: HPERSIST<Field>.Fields
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HPERSIST(key, fields: fields))
     }
 
@@ -1341,7 +1354,7 @@ extension ValkeyClientProtocol {
         milliseconds: Int,
         condition: HPEXPIRE<Field>.Condition? = nil,
         fields: HPEXPIRE<Field>.Fields
-    ) async throws -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HPEXPIRE(key, milliseconds: milliseconds, condition: condition, fields: fields))
     }
 
@@ -1358,7 +1371,7 @@ extension ValkeyClientProtocol {
         unixTimeMilliseconds: Int,
         condition: HPEXPIREAT<Field>.Condition? = nil,
         fields: HPEXPIREAT<Field>.Fields
-    ) async throws -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HPEXPIREAT(key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition, fields: fields))
     }
 
@@ -1369,7 +1382,10 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for each field, so O(N) for N items when the command is called with multiple fields.
     /// - Response: [Array]: List of values associated with the result of getting the absolute expiry timestamp of the specific fields, in the same order as they are requested.
     @inlinable
-    public func hpexpiretime<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HPEXPIRETIME<Field>.Fields) async throws -> RESPToken.Array {
+    public func hpexpiretime<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        fields: HPEXPIRETIME<Field>.Fields
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HPEXPIRETIME(key, fields: fields))
     }
 
@@ -1380,7 +1396,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for each field assigned with TTL, so O(N) for N items when the command is called with multiple fields.
     /// - Response: [Array]: List of values associated with the result of getting the remaining time-to-live of the specific fields, in the same order as they are requested.
     @inlinable
-    public func hpttl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HPTTL<Field>.Fields) async throws -> RESPToken.Array {
+    public func hpttl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HPTTL<Field>.Fields) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HPTTL(key, fields: fields))
     }
 
@@ -1395,7 +1411,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: A list of fields. Returned in case `COUNT` was used.
     ///     * [Array]: Fields and their values. Returned in case `COUNT` and `WITHVALUES` were used. In RESP2 this is returned as a flat array.
     @inlinable
-    public func hrandfield(_ key: ValkeyKey, options: HRANDFIELD.Options? = nil) async throws -> HRANDFIELD.Response {
+    public func hrandfield(_ key: ValkeyKey, options: HRANDFIELD.Options? = nil) async throws(ValkeyClientError) -> HRANDFIELD.Response {
         try await execute(HRANDFIELD(key, options: options))
     }
 
@@ -1406,8 +1422,13 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func hscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, novalues: Bool = false) async throws -> HSCAN.Response
-    {
+    public func hscan(
+        _ key: ValkeyKey,
+        cursor: Int,
+        pattern: String? = nil,
+        count: Int? = nil,
+        novalues: Bool = false
+    ) async throws(ValkeyClientError) -> HSCAN.Response {
         try await execute(HSCAN(key, cursor: cursor, pattern: pattern, count: count, novalues: novalues))
     }
 
@@ -1421,8 +1442,10 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of fields that were added
     @inlinable
     @discardableResult
-    public func hset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, data: [HSET<Field, Value>.Data]) async throws -> Int
-    {
+    public func hset<Field: RESPStringRenderable, Value: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        data: [HSET<Field, Value>.Data]
+    ) async throws(ValkeyClientError) -> Int {
         try await execute(HSET(key, data: data))
     }
 
@@ -1441,7 +1464,7 @@ extension ValkeyClientProtocol {
         fieldsCondition: HSETEX<Field, Value>.FieldsCondition? = nil,
         expiration: HSETEX<Field, Value>.Expiration? = nil,
         fields: HSETEX<Field, Value>.Fields
-    ) async throws -> Int {
+    ) async throws(ValkeyClientError) -> Int {
         try await execute(HSETEX(key, fieldsCondition: fieldsCondition, expiration: expiration, fields: fields))
     }
 
@@ -1455,7 +1478,11 @@ extension ValkeyClientProtocol {
     ///     * 1: The field already exists in the hash and no operation was performed.
     @inlinable
     @discardableResult
-    public func hsetnx<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, field: Field, value: Value) async throws -> Int {
+    public func hsetnx<Field: RESPStringRenderable, Value: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        field: Field,
+        value: Value
+    ) async throws(ValkeyClientError) -> Int {
         try await execute(HSETNX(key, field: field, value: value))
     }
 
@@ -1466,7 +1493,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: String length of the value associated with the field, or zero when the field is not present in the hash or key does not exist at all.
     @inlinable
-    public func hstrlen<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws -> Int {
+    public func hstrlen<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws(ValkeyClientError) -> Int {
         try await execute(HSTRLEN(key, field: field))
     }
 
@@ -1477,7 +1504,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for each field, so O(N) for N items when the command is called with multiple fields.
     /// - Response: [Array]: List of values associated with the result of getting the remaining time-to-live of the specific fields, in the same order as they are requested.
     @inlinable
-    public func httl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HTTL<Field>.Fields) async throws -> RESPToken.Array {
+    public func httl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HTTL<Field>.Fields) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HTTL(key, fields: fields))
     }
 
@@ -1488,7 +1515,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the size of the hash.
     /// - Response: [Array]: List of values in the hash, or an empty list when the key does not exist.
     @inlinable
-    public func hvals(_ key: ValkeyKey) async throws -> RESPToken.Array {
+    public func hvals(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HVALS(key))
     }
 

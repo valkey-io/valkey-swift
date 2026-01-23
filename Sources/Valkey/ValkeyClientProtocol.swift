@@ -8,7 +8,7 @@
 /// A type that provides the ability to send a Valkey command and get a response.
 @available(valkeySwift 1.0, *)
 public protocol ValkeyClientProtocol: Sendable {
-    associatedtype Subscription: AsyncSequence<ValkeySubscriptionMessage, any Error>
+    associatedtype Subscription: AsyncSequence<ValkeySubscriptionMessage, ValkeyClientError>
     /// Send RESP command to Valkey connection
     /// - Parameter command: ValkeyCommand structure
     /// - Returns: The command response as defined in the ValkeyCommand
@@ -26,7 +26,7 @@ public protocol ValkeyClientProtocol: Sendable {
     ///
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
-    func execute(_ commands: [any ValkeyCommand]) async -> [Result<RESPToken, any Error>]
+    func execute(_ commands: [any ValkeyCommand]) async -> [Result<RESPToken, ValkeyClientError>]
 
     /// Pipeline a series of commands as a transaction to Valkey connection
     ///
@@ -44,7 +44,7 @@ public protocol ValkeyClientProtocol: Sendable {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     /// - Throws: ValkeyTransactionError when EXEC aborts
-    func transaction(_ commands: [any ValkeyCommand]) async throws -> [Result<RESPToken, any Error>]
+    func transaction(_ commands: [any ValkeyCommand]) async throws -> [Result<RESPToken, ValkeyClientError>]
 
     /// Execute subscribe command and run closure using related ``ValkeySubscription``
     /// AsyncSequence

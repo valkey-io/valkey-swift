@@ -577,17 +577,18 @@ struct ClusterIntegrationTests {
                     try await ClusterIntegrationTests.withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
                         try await client.clusterFailover()
                     }
-                    // will receive a MOVED errors for SET, INCR and GET as the primary has moved to a replica
+                    // will receive a MOVED errors for SET, INCR as the primary has moved to a replica
                     var commands: [any ValkeyCommand] = .init()
                     commands.append(SET(key, value: "100"))
                     commands.append(INCR(key))
                     commands.append(ECHO(message: "Test non moved command"))
-                    commands.append(GET(key))
                     let results = try await clusterClient.execute(node: node, commands: commands)
+                    #expect(try results[0].get().decode(as: String.self) == "OK")
+                    #expect(try results[1].get().decode(as: String.self) == "101")
                     let response2 = try results[2].get().decode(as: String.self)
                     #expect(response2 == "Test non moved command")
-                    let response3 = try results[3].get().decode(as: String.self)
-                    #expect(response3 == "101")
+                    let getResponse = try await clusterClient.get(key).map { String($0) }
+                    #expect(getResponse == "101")
                 }
             }
         }
