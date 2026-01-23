@@ -17,6 +17,7 @@ import ValkeySearch
 /// Generally the commands being tested here are ones we have written custom responses for
 struct CommandTests {
     struct ConnectionCommands {
+
         @Test
         @available(valkeySwift 1.0, *)
         func clientTracking() async throws {
@@ -65,6 +66,104 @@ struct CommandTests {
                 #expect(info.prefixes == ["test/"])
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func clientList() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["CLIENT", "LIST"]),
+                    response: .verbatimString(
+                        ByteBuffer(
+                            string:
+                                "txt:id=3 addr=127.0.0.1:52698 laddr=127.0.0.1:6379 fd=8 name= age=5 idle=0 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 qbuf=26 qbuf-free=20448 argv-mem=10 multi-mem=0 obl=0 oll=0 omem=0 tot-mem=61466 events=r cmd=client|list user=default redir=-1 resp=3 lib-name=valkey-swift lib-ver=1.0.0\nid=5 addr=127.0.0.1:52699 laddr=127.0.0.1:6379 fd=9 name=myconnection age=3 idle=1 flags=N db=1 sub=0 psub=0 ssub=0 multi=-1 qbuf=0 qbuf-free=0 argv-mem=0 multi-mem=0 obl=0 oll=0 omem=0 tot-mem=20504 events=r cmd=get user=default redir=-1 resp=3"
+                        )
+                    )
+                ),
+                (
+                    request: .command(["CLIENT", "LIST"]),
+                    response: .bulkString(
+                        "id=3 addr=127.0.0.1:52698 laddr=127.0.0.1:6379 fd=8 name= age=5 idle=0 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 qbuf=26 qbuf-free=20448 argv-mem=10 multi-mem=0 obl=0 oll=0 omem=0 tot-mem=61466 events=r cmd=client|list user=default redir=-1 resp=3 lib-name=valkey-swift lib-ver=1.0.0\nid=5 addr=127.0.0.1:52699 laddr=127.0.0.1:6379 fd=9 name=myconnection age=3 idle=1 flags=N db=1 sub=0 psub=0 ssub=0 multi=-1 qbuf=0 qbuf-free=0 argv-mem=0 multi-mem=0 obl=0 oll=0 omem=0 tot-mem=20504 events=r cmd=get user=default redir=-1 resp=3"
+                    )
+                )
+            ) { connection in
+                // Test verbatimString response (with txt: prefix)
+                let result1 = try await connection.clientList()
+                try Self.validateClientListResponse(result1, expectedCount: 2)
+
+                // Test bulkString response (no txt: prefix)
+                let result2 = try await connection.clientList()
+                try Self.validateClientListResponse(result2, expectedCount: 2)
+            }
+        }
+
+        /// Validates a CLIENT LIST response with expected values
+        private static func validateClientListResponse(_ response: CLIENT.LIST.Response, expectedCount: Int) throws {
+            #expect(response.clients.count == expectedCount)
+
+            // Verify first client (client with id=3)
+            let client1 = response.clients[0]
+            #expect(Int(client1[.id]!) == 3)
+            #expect(String(client1[.addr]!) == "127.0.0.1:52698")
+            #expect(String(client1[.laddr]!) == "127.0.0.1:6379")
+            #expect(Int(client1[.fd]!) == 8)
+            #expect(String(client1[.name]!) == "")
+            #expect(Int(client1[.age]!) == 5)
+            #expect(Int(client1[.idle]!) == 0)
+            #expect(String(client1[.flags]!) == "N")
+            #expect(Int(client1[.db]!) == 0)
+            #expect(Int(client1[.sub]!) == 0)
+            #expect(Int(client1[.psub]!) == 0)
+            #expect(Int(client1[.ssub]!) == 0)
+            #expect(Int(client1[.multi]!) == -1)
+            #expect(Int(client1[.qbuf]!) == 26)
+            #expect(Int(client1[.qbufFree]!) == 20448)
+            #expect(Int(client1[.argvMem]!) == 10)
+            #expect(Int(client1[.multiMem]!) == 0)
+            #expect(Int(client1[.obl]!) == 0)
+            #expect(Int(client1[.oll]!) == 0)
+            #expect(Int(client1[.omem]!) == 0)
+            #expect(Int(client1[.totMem]!) == 61466)
+            #expect(String(client1[.events]!) == "r")
+            #expect(String(client1[.cmd]!) == "client|list")
+            #expect(String(client1[.user]!) == "default")
+            #expect(Int(client1[.redir]!) == -1)
+            #expect(Int(client1[.resp]!) == 3)
+            #expect(String(client1[.libName]!) == "valkey-swift")
+            #expect(String(client1[.libVer]!) == "1.0.0")
+
+            // Verify second client (client with id=5)
+            let client2 = response.clients[1]
+            #expect(Int(client2[.id]!) == 5)
+            #expect(String(client2[.addr]!) == "127.0.0.1:52699")
+            #expect(String(client2[.laddr]!) == "127.0.0.1:6379")
+            #expect(Int(client2[.fd]!) == 9)
+            #expect(String(client2[.name]!) == "myconnection")
+            #expect(Int(client2[.age]!) == 3)
+            #expect(Int(client2[.idle]!) == 1)
+            #expect(String(client2[.flags]!) == "N")
+            #expect(Int(client2[.db]!) == 1)
+            #expect(Int(client2[.sub]!) == 0)
+            #expect(Int(client2[.psub]!) == 0)
+            #expect(Int(client2[.ssub]!) == 0)
+            #expect(Int(client2[.multi]!) == -1)
+            #expect(Int(client2[.qbuf]!) == 0)
+            #expect(Int(client2[.qbufFree]!) == 0)
+            #expect(Int(client2[.argvMem]!) == 0)
+            #expect(Int(client2[.multiMem]!) == 0)
+            #expect(Int(client2[.obl]!) == 0)
+            #expect(Int(client2[.oll]!) == 0)
+            #expect(Int(client2[.omem]!) == 0)
+            #expect(Int(client2[.totMem]!) == 20504)
+            #expect(String(client2[.events]!) == "r")
+            #expect(String(client2[.cmd]!) == "get")
+            #expect(String(client2[.user]!) == "default")
+            #expect(Int(client2[.redir]!) == -1)
+            #expect(Int(client2[.resp]!) == 3)
+            #expect(client2[.libName] == nil)
+            #expect(client2[.libVer] == nil)
+        }
+
     }
 
     struct ClusterCommands {

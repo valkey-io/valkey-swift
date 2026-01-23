@@ -16,6 +16,7 @@ public struct RESPDecodeError: Error, Equatable {
             case missingToken
             case cannotParseInteger
             case cannotParseDouble
+            case cannotParseVerbatimString
             case unexpectedToken
         }
 
@@ -36,6 +37,8 @@ public struct RESPDecodeError: Error, Equatable {
         public static var cannotParseInteger: Self { .init(.cannotParseInteger) }
         /// Failed to parse a double
         public static var cannotParseDouble: Self { .init(.cannotParseDouble) }
+        /// Failed to parse a verbatimString
+        public static var cannotParseVerbatimString: Self { .init(.cannotParseVerbatimString) }
         /// Token is not as expected
         public static var unexpectedToken: Self { .init(.unexpectedToken) }
     }
