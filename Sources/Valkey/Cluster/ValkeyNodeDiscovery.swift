@@ -45,7 +45,6 @@ public struct ValkeyStaticNodeDiscovery: ValkeyNodeDiscovery {
     public struct NodeDescription: ValkeyNodeDescriptionProtocol {
         public var endpoint: String
         public var port: Int
-        public var readOnly: Bool { false }
 
         /// Initializes a `NodeDescription` with a host and optional IP.
         ///
