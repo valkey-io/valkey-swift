@@ -86,7 +86,7 @@ public final class ValkeyClient: Sendable {
         self.runningAtomic = .init(false)
         self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
-        self.setPrimary(address, readOnly: configuration.connectToReplica)
+        self.setPrimary(address)
     }
 }
 
@@ -166,7 +166,7 @@ extension ValkeyClient {
                 case .replica(let replica):
                     if !self.configuration.connectToReplica {
                         // if client is pointing to a replica then redirect to the primary
-                        self.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort), readOnly: false)
+                        self.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort))
                     }
                     break
                 case .sentinel:
@@ -207,7 +207,7 @@ extension ValkeyClient: ValkeyClientProtocol {
                     let wait = self.configuration.retryParameters.calculateWaitTime(retry: attempt)
                     try? await Task.sleep(for: wait)
                     attempt += 1
-                    self.setPrimary(redirectError.address, readOnly: false)
+                    self.setPrimary(redirectError.address)
                 case .dontRetry:
                     throw error
                 }
@@ -322,14 +322,8 @@ extension ValkeyClient {
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
     @usableFromInline
-    enum RetryAction {
-        case redirect(ValkeyRedirectError)
-        case dontRetry
-    }
-
-    @usableFromInline
-    /* private */ func setPrimary(_ address: ValkeyServerAddress, readOnly: Bool) {
-        let action = self.stateMachine.withLock { $0.setPrimary(address, readOnly: configuration.connectToReplica) }
+    /* private */ func setPrimary(_ address: ValkeyServerAddress) {
+        let action = self.stateMachine.withLock { $0.setPrimary(address) }
         switch action {
         case .runNode(let client):
             self.queueAction(.runNodeClient(client))
@@ -341,6 +335,12 @@ extension ValkeyClient {
         case .doNothing:
             break
         }
+    }
+
+    @usableFromInline
+    enum RetryAction {
+        case redirect(ValkeyRedirectError)
+        case dontRetry
     }
 
     @usableFromInline

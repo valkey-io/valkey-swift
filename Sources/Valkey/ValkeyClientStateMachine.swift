@@ -51,20 +51,30 @@ struct ValkeyClientStateMachine<
         case doNothing
     }
     @usableFromInline
-    mutating func setPrimary(_ address: ValkeyServerAddress, readOnly: Bool) -> SetPrimaryAction {
+    mutating func setPrimary(_ address: ValkeyServerAddress) -> SetPrimaryAction {
         let nodes = ValkeyNodeIDs(primary: address)
         let action = self.runningClients.addNode(.init(address: address))
-        self.state = .running(nodes)
-        if self.findReplicas {
-            return switch action {
-            case .useExistingPool: .findReplicas
-            case .runAndUsePool(let pool): .runNodeAndFindReplicas(pool)
+        switch action {
+        case .useExistingPool:
+            if case .running(let currentNodes) = self.state {
+                if currentNodes.primary == address {
+                    return .doNothing
+                }
             }
-        } else {
-            return switch action {
-            case .useExistingPool: .doNothing
-            case .runAndUsePool(let pool): .runNode(pool)
+            self.state = .running(nodes)
+            if self.findReplicas {
+                return .findReplicas
+            } else {
+                return .doNothing
             }
+        case .runAndUsePool(let pool):
+            self.state = .running(nodes)
+            if self.findReplicas {
+                return .runNodeAndFindReplicas(pool)
+            } else {
+                return .runNode(pool)
+            }
+
         }
     }
 

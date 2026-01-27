@@ -86,7 +86,7 @@ package final class ValkeyConnectionFactory: Sendable {
                     connectionID: connectionID,
                     channelHandler: channelHandler,
                     configuration: connectionConfig,
-                    address: nil,
+                    address: address,
                     logger: logger
                 )
             }.get()

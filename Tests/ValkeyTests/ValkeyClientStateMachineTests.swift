@@ -21,7 +21,7 @@ struct ValkeyClientStateMachineTests {
     func testSetGetPrimary() {
         let factory = MockClientFactory<ValkeyClientNodeDescription>()
         var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init())
-        switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000), readOnly: false) {
+        switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000)) {
         case .runNode(let client):
             #expect(client.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
         default:
@@ -38,7 +38,7 @@ struct ValkeyClientStateMachineTests {
     func testSetPrimaryAndReplicas() {
         let factory = MockClientFactory<ValkeyClientNodeDescription>()
         var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas))
-        switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000), readOnly: false) {
+        switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000)) {
         case .runNodeAndFindReplicas(let client):
             #expect(client.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
         default:
@@ -63,10 +63,29 @@ struct ValkeyClientStateMachineTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testSetPrimaryCalledTwice() {
+        let factory = MockClientFactory<ValkeyClientNodeDescription>()
+        var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas))
+        switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000)) {
+        case .runNodeAndFindReplicas(let client):
+            #expect(client.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
+        default:
+            Issue.record()
+        }
+        switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000)) {
+        case .doNothing:
+            break
+        default:
+            Issue.record()
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testReplaceReplicas() {
         let factory = MockClientFactory<ValkeyClientNodeDescription>()
         var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas))
-        _ = stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000), readOnly: false)
+        _ = stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000))
         _ = stateMachine.addReplicas(nodeIDs: [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9002)])
         let addReplicasAction = stateMachine.addReplicas(nodeIDs: [.hostname("127.0.0.1", port: 9002), .hostname("127.0.0.1", port: 9003)])
         #expect(addReplicasAction.clientsToRun.count == 1)
