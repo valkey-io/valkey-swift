@@ -9,15 +9,17 @@
 // https://github.com/hummingbird-project/hummingbird/blob/main/Sources/Hummingbird/Utils/SplitStringSequences.swift
 //
 
-/// A sequence that iterates over string components separated by a given character,
+/// A sequence that iterates over string components separated by a given string separator,
 /// omitting empty components.
+import Foundation
+
 @usableFromInline
 struct SplitStringSequence<S: StringProtocol>: Sequence {
     @usableFromInline let base: S
-    @usableFromInline let separator: Character
+    @usableFromInline let separator: String
 
     @inlinable
-    init(_ base: S, separator: Character = "/") {
+    init(_ base: S, separator: String = "/") {
         self.base = base
         self.separator = separator
     }
@@ -32,17 +34,21 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
         @usableFromInline let base: S
         @usableFromInline let endIndex: S.Index
         @usableFromInline var currentIndex: S.Index
-        @usableFromInline let separator: Character
+        @usableFromInline let separator: String
 
         @inlinable
-        init(base: S, separator: Character) {
+        init(base: S, separator: String) {
             self.base = base
             self.separator = separator
             self.endIndex = base.endIndex
             // Skip leading separators
             var index = base.startIndex
-            while index < base.endIndex && base[index] == separator {
-                base.formIndex(after: &index)
+            while index < base.endIndex {
+                if let range = base[index...].range(of: separator, options: .anchored) {
+                    index = range.upperBound
+                } else {
+                    break
+                }
             }
             self.currentIndex = index
         }
@@ -52,33 +58,43 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
             guard currentIndex < endIndex else { return nil }
 
             let start = currentIndex
+
             // Find next separator or end
-            while currentIndex < endIndex && base[currentIndex] != separator {
-                base.formIndex(after: &currentIndex)
+            let searchRange = base[currentIndex...]
+            if let range = searchRange.range(of: separator) {
+                let component = base[start..<range.lowerBound]
+                currentIndex = range.upperBound
+
+                // Skip any additional separators
+                while currentIndex < endIndex {
+                    if let nextRange = base[currentIndex...].range(of: separator, options: .anchored) {
+                        currentIndex = nextRange.upperBound
+                    } else {
+                        break
+                    }
+                }
+
+                return component
+            } else {
+                // No more separators, return rest of string
+                let component = base[start..<endIndex]
+                currentIndex = endIndex
+                return component
             }
-
-            let component = base[start..<currentIndex]
-
-            // Skip trailing separators
-            while currentIndex < endIndex && base[currentIndex] == separator {
-                base.formIndex(after: &currentIndex)
-            }
-
-            return component
         }
     }
 }
 
-/// A sequence that iterates over string components separated by a given character,
+/// A sequence that iterates over string components separated by a given string separator,
 /// omitting empty components.
 @usableFromInline
 struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
     @usableFromInline let base: S
-    @usableFromInline let separator: Character
+    @usableFromInline let separator: String
     @usableFromInline let maxSplits: Int
 
     @inlinable
-    init(_ base: S, separator: Character, maxSplits: Int) {
+    init(_ base: S, separator: String, maxSplits: Int) {
         self.base = base
         self.separator = separator
         self.maxSplits = maxSplits
@@ -95,17 +111,21 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
         @usableFromInline let endIndex: S.Index
         @usableFromInline var currentIndex: S.Index
         @usableFromInline var availableSplits: Int
-        @usableFromInline let separator: Character
+        @usableFromInline let separator: String
 
         @inlinable
-        init(base: S, separator: Character, maxSplits: Int) {
+        init(base: S, separator: String, maxSplits: Int) {
             self.base = base
             self.separator = separator
             self.endIndex = base.endIndex
-            // Skip leading separator
+            // Skip leading separators
             var index = base.startIndex
-            while index < base.endIndex && base[index] == separator {
-                base.formIndex(after: &index)
+            while index < base.endIndex {
+                if let range = base[index...].range(of: separator, options: .anchored) {
+                    index = range.upperBound
+                } else {
+                    break
+                }
             }
             self.currentIndex = index
             self.availableSplits = maxSplits + 1
@@ -123,31 +143,41 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
             }
 
             let start = currentIndex
+
             // Find next separator or end
-            while currentIndex < endIndex && base[currentIndex] != separator {
-                base.formIndex(after: &currentIndex)
+            let searchRange = base[currentIndex...]
+            if let range = searchRange.range(of: separator) {
+                let component = base[start..<range.lowerBound]
+                currentIndex = range.upperBound
+
+                // Skip any additional separators
+                while currentIndex < endIndex {
+                    if let nextRange = base[currentIndex...].range(of: separator, options: .anchored) {
+                        currentIndex = nextRange.upperBound
+                    } else {
+                        break
+                    }
+                }
+
+                return component
+            } else {
+                // No more separators, return rest of string
+                let component = base[start..<endIndex]
+                currentIndex = endIndex
+                return component
             }
-
-            let component = base[start..<currentIndex]
-
-            // Skip trailing separators
-            while currentIndex < endIndex && base[currentIndex] == separator {
-                base.formIndex(after: &currentIndex)
-            }
-
-            return component
         }
     }
 }
 
 extension StringProtocol {
     @inlinable
-    func splitSequence(separator: Character) -> SplitStringSequence<Self> {
+    func splitSequence(separator: String) -> SplitStringSequence<Self> {
         SplitStringSequence(self, separator: separator)
     }
 
     @inlinable
-    func splitMaxSplitsSequence(separator: Character, maxSplits: Int) -> SplitStringMaxSplitsSequence<Self> {
+    func splitMaxSplitsSequence(separator: String, maxSplits: Int) -> SplitStringMaxSplitsSequence<Self> {
         SplitStringMaxSplitsSequence(self, separator: separator, maxSplits: maxSplits)
     }
 }

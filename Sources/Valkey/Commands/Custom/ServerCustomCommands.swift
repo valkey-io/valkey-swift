@@ -338,3 +338,134 @@ extension TIME {
         }
     }
 }
+
+extension INFO {
+    /// Represents an INFO section name.
+    ///
+    /// Uses raw representable pattern to handle both known and unknown sections gracefully,
+    /// allowing version-safe parsing.
+    public struct Section: RawRepresentable, Hashable, Sendable, CustomStringConvertible {
+        public let rawValue: String
+
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        public var description: String { self.rawValue }
+
+        // Well-known sections from Valkey INFO command
+
+        /// General information about the server
+        public static var server: Section { .init(rawValue: "Server") }
+        /// Client connections section
+        public static var clients: Section { .init(rawValue: "Clients") }
+        /// Memory consumption information
+        public static var memory: Section { .init(rawValue: "Memory") }
+        /// RDB and AOF persistence information
+        public static var persistence: Section { .init(rawValue: "Persistence") }
+        /// General statistics
+        public static var stats: Section { .init(rawValue: "Stats") }
+        /// Primary/replica replication information
+        public static var replication: Section { .init(rawValue: "Replication") }
+        /// CPU consumption statistics
+        public static var cpu: Section { .init(rawValue: "CPU") }
+        /// Command statistics
+        public static var commandstats: Section { .init(rawValue: "Commandstats") }
+        /// Error statistics
+        public static var errorstats: Section { .init(rawValue: "Errorstats") }
+        /// Cluster section (available only in cluster mode)
+        public static var cluster: Section { .init(rawValue: "Cluster") }
+        /// Modules section
+        public static var modules: Section { .init(rawValue: "Modules") }
+        /// Database related statistics
+        public static var keyspace: Section { .init(rawValue: "Keyspace") }
+    }
+
+    /// Response type for INFO command.
+    ///
+    /// Returns a dictionary mapping section names to field dictionaries, where each field
+    /// dictionary maps field names to their string values. This approach gracefully handles
+    /// new fields that may be added in future Valkey versions while preserving the
+    /// hierarchical section-based organization.
+    public struct Response: RESPTokenDecodable, Sendable {
+        /// Dictionary mapping section names to their field dictionaries
+        public let sections: [Section: [String: Substring]]
+
+        /// Creates an INFO response from the response token you provide.
+        ///
+        /// Parses the bulk string or verbatim string response from INFO, which contains
+        /// section headers (lines starting with #) and key:value pairs within each section.
+        ///
+        /// - Parameter token: The response token containing INFO data.
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
+            switch token.value {
+            case .verbatimString:
+                let fullString = try String(token)
+
+                // Verbatim strings must have a 3-letter encoding prefix followed by colon (e.g., "txt:")
+                guard fullString.count >= 4,
+                    fullString.prefix(3).allSatisfy({ $0.isLetter }),
+                    fullString.dropFirst(3).first == ":"
+                else {
+                    throw RESPDecodeError(.cannotParseVerbatimString, token: token)
+                }
+
+                // Strip the "xxx:" prefix to get the actual content
+                let string = String(fullString.dropFirst(4))
+                self.sections = Self.parseInfoData(string)
+
+            case .bulkString:
+                let string = try String(token)
+                self.sections = Self.parseInfoData(string)
+
+            default:
+                throw RESPDecodeError.tokenMismatch(expected: [.bulkString, .verbatimString], token: token)
+            }
+        }
+
+        /// Parse INFO data from a string into section dictionaries
+        private static func parseInfoData(_ string: String) -> [Section: [String: Substring]] {
+            var sections: [Section: [String: Substring]] = [:]
+            var currentSection: Section?
+
+            // Split by CRLF line endings
+            for line in string.splitSequence(separator: "\r\n") {
+                // Skip empty lines
+                guard !line.isEmpty else { continue }
+
+                // Parse section headers (lines starting with #)
+                if line.first == "#" {
+                    // Extract section name after "#" and any whitespace
+                    var sectionNameRaw = line.dropFirst()
+                    // Manually trim leading whitespace
+                    while sectionNameRaw.first?.isWhitespace == true {
+                        sectionNameRaw = sectionNameRaw.dropFirst()
+                    }
+                    // Manually trim trailing whitespace
+                    while sectionNameRaw.last?.isWhitespace == true {
+                        sectionNameRaw = sectionNameRaw.dropLast()
+                    }
+                    guard !sectionNameRaw.isEmpty else { continue }
+
+                    currentSection = Section(rawValue: String(sectionNameRaw))
+                    sections[currentSection!] = [:]
+                    continue
+                }
+
+                // Parse key:value pairs - only if we have a current section
+                guard let currentSection = currentSection else { continue }
+
+                // Split on first ':' only (values may contain ':')
+                let parts = line.splitMaxSplitsSequence(separator: ":", maxSplits: 1)
+                var partsIterator = parts.makeIterator()
+
+                guard let key = partsIterator.next(),
+                    let value = partsIterator.next() else { continue }
+
+                sections[currentSection]![String(key)] = value
+            }
+
+            return sections
+        }
+    }
+}

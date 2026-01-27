@@ -1219,8 +1219,6 @@ public struct FLUSHDB: ValkeyCommand {
 /// Returns information and statistics about the server.
 @_documentation(visibility: internal)
 public struct INFO: ValkeyCommand {
-    public typealias Response = RESPBulkString
-
     @inlinable public static var name: String { "INFO" }
 
     public var sections: [String]
@@ -1996,10 +1994,10 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 7.0.0: Added support for taking multiple section arguments.
     /// - Complexity: O(1)
-    /// - Response: [String]: A map of info fields, one field per line in the form of <field>:<value> where the value can be a comma separated map like <key>=<val>. Also contains section header lines starting with `#` and blank lines.
+    /// - Response: A structured response containing server statistics organized by sections.
     @inlinable
     @discardableResult
-    public func info(sections: [String] = []) async throws(ValkeyClientError) -> RESPBulkString {
+    public func info(sections: [String] = []) async throws(ValkeyClientError) -> INFO.Response {
         try await execute(INFO(sections: sections))
     }
 

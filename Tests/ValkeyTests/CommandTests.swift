@@ -546,6 +546,60 @@ struct CommandTests {
                 #expect(time.microSeconds == 723379)
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func info() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["INFO"]),
+                    response: .bulkString(
+                        "# Server\r\n" +
+                        "valkey_version:8.0.0\r\n" +
+                        "valkey_git_sha1:00000000\r\n" +
+                        "\r\n" +
+                        "# Memory\r\n" +
+                        "used_memory:1234567\r\n" +
+                        "used_memory_human:1.18M\r\n"
+                    )
+                ),
+                (
+                    request: .command(["INFO"]),
+                    response: .verbatimString(
+                        ByteBuffer(
+                            string:
+                                "txt:# Server\r\n" +
+                                "valkey_version:8.0.0\r\n" +
+                                "valkey_git_sha1:00000000\r\n" +
+                                "\r\n" +
+                                "# Memory\r\n" +
+                                "used_memory:1234567\r\n" +
+                                "used_memory_human:1.18M\r\n"
+                        )
+                    )
+                )
+            ) { connection in
+                func validateInfoResponse(_ response: INFO.Response) throws {
+                    // Verify Server section
+                    let serverSection = try #require(response.sections[.server])
+                    #expect(String(serverSection["valkey_version"]!) == "8.0.0")
+                    #expect(String(serverSection["valkey_git_sha1"]!) == "00000000")
+
+                    // Verify Memory section
+                    let memorySection = try #require(response.sections[.memory])
+                    #expect(String(memorySection["used_memory"]!) == "1234567")
+                    #expect(String(memorySection["used_memory_human"]!) == "1.18M")
+                }
+
+                // Test bulk string response
+                var result = try await connection.info()
+                try validateInfoResponse(result)
+
+                // Test verbatim string response
+                result = try await connection.info()
+                try validateInfoResponse(result)
+            }
+        }
     }
 
     struct SetCommands {
