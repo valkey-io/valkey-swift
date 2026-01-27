@@ -205,15 +205,8 @@ struct CommandIntegratedTests {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
-            let helloResponse = try await client.hello()
-            let serverNameValue = try #require(helloResponse.first { $0.key.value == .bulkString(ByteBuffer(string: "server")) }?.value.value)
-            let serverName: String? =
-                if case .bulkString(let nameBuffer) = serverNameValue {
-                    String(buffer: nameBuffer)
-                } else {
-                    nil
-                }
-            guard serverName == "valkey" else { return }
+            // only run this test on valkey
+            guard try await client.hello(arguments: .init(protover: 3)).decodeValues("server") == "valkey" else { return }
 
             let sha1 = try await client.scriptLoad(
                 script: "return redis.call(\"GET\", KEYS[1])"

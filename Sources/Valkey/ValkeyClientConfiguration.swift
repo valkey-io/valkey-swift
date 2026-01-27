@@ -234,7 +234,8 @@ public struct ValkeyClientConfiguration: Sendable {
     ///
     /// Valkey 8.0 introduced a new command CLIENT CAPA to indicate client capabilities. It
     /// currently only supports one capability `redirect`. This indicates the client is
-    /// capable of handling redirect messages from replica nodes back to the primary
+    /// capable of handling redirect messages from replica nodes back to the primary. See
+    /// https://valkey.io/commands/client-capa/
     ///
     /// This is a `ValkeyClient` feature only. Redirection is handling differently with
     /// `ValkeyClusterClient`.

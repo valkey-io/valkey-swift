@@ -80,6 +80,8 @@ struct StandaloneReplicaIntegrationTests {
             return logger
         }()
         try await withValkeyClient(.hostname(primaryHostname!, port: primaryPort!), logger: logger) { client in
+            // only run this test on valkey
+            guard try await client.hello(arguments: .init(protover: 3)).decodeValues("server") == "valkey" else { return }
             try await withKey(client) { key in
                 // get replica address
                 let replicaAddress = try #require(try await getReplicaAddresses(client).first)
@@ -101,29 +103,6 @@ struct StandaloneReplicaIntegrationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func testFailoverFixup() async throws {
-        let logger = {
-            var logger = Logger(label: "testFailover")
-            logger.logLevel = .trace
-            return logger
-        }()
-        try await withValkeyClient(.hostname(primaryHostname!, port: primaryPort!), logger: logger) { client in
-            // wait until client has run ROLE
-            try await Task.sleep(for: .milliseconds(200))
-            // get primary address port
-            let port = client.stateMachine.withLock {
-                guard case .running(let nodes) = $0.state else { fatalError("Expected a running primary node") }
-                guard case .hostname(_, let port) = nodes.primary.value else { fatalError("Expected a hostname") }
-                return port
-            }
-            if port != primaryPort {
-                try await client.failover(target: .init(host: primaryHostname!, port: primaryPort!))
-            }
-        }
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
     func testFailover() async throws {
         let logger = {
             var logger = Logger(label: "testFailover")
@@ -131,6 +110,8 @@ struct StandaloneReplicaIntegrationTests {
             return logger
         }()
         try await withValkeyClient(.hostname(primaryHostname!, port: primaryPort!), logger: logger) { client in
+            // only run this test on valkey
+            guard try await client.hello(arguments: .init(protover: 3)).decodeValues("server") == "valkey" else { return }
             try await withKey(client) { key in
                 _ = try await withFailover(client) {
                     // we called a non-readonly command. This should work because we will receive a REDIRECT error
