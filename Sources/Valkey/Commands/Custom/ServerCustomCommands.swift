@@ -460,7 +460,8 @@ extension INFO {
                 var partsIterator = parts.makeIterator()
 
                 guard let key = partsIterator.next(),
-                    let value = partsIterator.next() else { continue }
+                    let value = partsIterator.next()
+                else { continue }
 
                 sections[currentSection]![String(key)] = value
             }

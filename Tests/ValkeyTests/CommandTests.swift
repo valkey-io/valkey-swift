@@ -554,13 +554,8 @@ struct CommandTests {
                 (
                     request: .command(["INFO"]),
                     response: .bulkString(
-                        "# Server\r\n" +
-                        "valkey_version:8.0.0\r\n" +
-                        "valkey_git_sha1:00000000\r\n" +
-                        "\r\n" +
-                        "# Memory\r\n" +
-                        "used_memory:1234567\r\n" +
-                        "used_memory_human:1.18M\r\n"
+                        "# Server\r\n" + "valkey_version:8.0.0\r\n" + "valkey_git_sha1:00000000\r\n" + "\r\n" + "# Memory\r\n"
+                            + "used_memory:1234567\r\n" + "used_memory_human:1.18M\r\n"
                     )
                 ),
                 (
@@ -568,13 +563,8 @@ struct CommandTests {
                     response: .verbatimString(
                         ByteBuffer(
                             string:
-                                "txt:# Server\r\n" +
-                                "valkey_version:8.0.0\r\n" +
-                                "valkey_git_sha1:00000000\r\n" +
-                                "\r\n" +
-                                "# Memory\r\n" +
-                                "used_memory:1234567\r\n" +
-                                "used_memory_human:1.18M\r\n"
+                                "txt:# Server\r\n" + "valkey_version:8.0.0\r\n" + "valkey_git_sha1:00000000\r\n" + "\r\n" + "# Memory\r\n"
+                                + "used_memory:1234567\r\n" + "used_memory_human:1.18M\r\n"
                         )
                     )
                 )

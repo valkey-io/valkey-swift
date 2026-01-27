@@ -239,7 +239,8 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
 
                 // Skip any additional separators
                 while currentIndex < endIndex {
-                    if let nextRange = SplitStringMaxSplitsSequence.findSeparator(in: base, separator: separator, from: currentIndex, anchored: true) {
+                    if let nextRange = SplitStringMaxSplitsSequence.findSeparator(in: base, separator: separator, from: currentIndex, anchored: true)
+                    {
                         currentIndex = nextRange.upperBound
                     } else {
                         break
