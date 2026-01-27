@@ -24,7 +24,6 @@ struct ValkeyClientStateMachineTests {
         switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000), readOnly: false) {
         case .runNode(let client):
             #expect(client.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
-            #expect(client.nodeDescription.readOnly == false)
         default:
             Issue.record()
         }
@@ -42,7 +41,6 @@ struct ValkeyClientStateMachineTests {
         switch stateMachine.setPrimary(.hostname("127.0.0.1", port: 9000), readOnly: false) {
         case .runNodeAndFindReplicas(let client):
             #expect(client.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
-            #expect(client.nodeDescription.readOnly == false)
         default:
             Issue.record()
         }
@@ -50,9 +48,7 @@ struct ValkeyClientStateMachineTests {
         let addReplicasAction = stateMachine.addReplicas(nodeIDs: [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9002)])
         #expect(addReplicasAction.clientsToRun.count == 2)
         #expect(addReplicasAction.clientsToRun[0].nodeDescription.address == .hostname("127.0.0.1", port: 9001))
-        #expect(addReplicasAction.clientsToRun[0].nodeDescription.readOnly == true)
         #expect(addReplicasAction.clientsToRun[1].nodeDescription.address == .hostname("127.0.0.1", port: 9002))
-        #expect(addReplicasAction.clientsToRun[1].nodeDescription.readOnly == true)
         #expect(addReplicasAction.clientsToShutdown.count == 0)
 
         #expect(stateMachine.getNode(.primary).nodeDescription.address == .hostname("127.0.0.1", port: 9000))
@@ -75,10 +71,8 @@ struct ValkeyClientStateMachineTests {
         let addReplicasAction = stateMachine.addReplicas(nodeIDs: [.hostname("127.0.0.1", port: 9002), .hostname("127.0.0.1", port: 9003)])
         #expect(addReplicasAction.clientsToRun.count == 1)
         #expect(addReplicasAction.clientsToRun[0].nodeDescription.address == .hostname("127.0.0.1", port: 9003))
-        #expect(addReplicasAction.clientsToRun[0].nodeDescription.readOnly == true)
         #expect(addReplicasAction.clientsToShutdown.count == 1)
         #expect(addReplicasAction.clientsToShutdown[0].nodeDescription.address == .hostname("127.0.0.1", port: 9001))
-        #expect(addReplicasAction.clientsToShutdown[0].nodeDescription.readOnly == true)
 
         #expect(stateMachine.getNode(.primary).nodeDescription.address == .hostname("127.0.0.1", port: 9000))
         #expect(stateMachine.getNode(.cycleReplicas(0)).nodeDescription.address == .hostname("127.0.0.1", port: 9002))

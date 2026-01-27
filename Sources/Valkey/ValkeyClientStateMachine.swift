@@ -53,7 +53,7 @@ struct ValkeyClientStateMachine<
     @usableFromInline
     mutating func setPrimary(_ address: ValkeyServerAddress, readOnly: Bool) -> SetPrimaryAction {
         let nodes = ValkeyNodeIDs(primary: address)
-        let action = self.runningClients.addNode(.init(address: address, readOnly: readOnly))
+        let action = self.runningClients.addNode(.init(address: address))
         self.state = .running(nodes)
         if self.findReplicas {
             return switch action {
@@ -79,10 +79,10 @@ struct ValkeyClientStateMachine<
             preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
         case .running(let nodes):
             var nodeDescriptions = [
-                ValkeyClientNodeDescription(address: nodes.primary, readOnly: false)
+                ValkeyClientNodeDescription(address: nodes.primary)
             ]
             nodeDescriptions.append(
-                contentsOf: nodeIDs.lazy.map { ValkeyClientNodeDescription(address: $0, readOnly: true) }
+                contentsOf: nodeIDs.lazy.map { ValkeyClientNodeDescription(address: $0) }
             )
             let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: true)
             let newNodes = ValkeyNodeIDs(primary: nodes.primary, replicas: nodeIDs)

@@ -319,6 +319,7 @@ extension ValkeyClient {
 }
 
 // MARK: Private methods
+@available(valkeySwift 1.0, *)
 extension ValkeyClient {
     @usableFromInline
     enum RetryAction {
