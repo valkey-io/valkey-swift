@@ -9,6 +9,72 @@
 // https://github.com/hummingbird-project/hummingbird/blob/main/Sources/Hummingbird/Utils/SplitStringSequences.swift
 //
 
+/// Checks if a separator string matches at an exact position in the base string.
+///
+/// Performs character-by-character comparison.
+/// The match must start exactly at the specified position (anchored match).
+///
+/// - Parameters:
+///   - base: The string to search within
+///   - separator: The substring to match (can be multi-character like "\r\n")
+///   - position: The exact index where the match must start
+/// - Returns: Range of the matched separator, or `nil` if no match or insufficient characters
+/// - Complexity: O(m) where m is the length of the separator
+@inlinable
+func matchSeparatorAt<T: StringProtocol>(
+    _ base: T,
+    _ separator: String,
+    position: T.Index
+) -> Range<T.Index>? {
+    var baseIndex = position
+    var sepIndex = separator.startIndex
+
+    while sepIndex < separator.endIndex {
+        guard baseIndex < base.endIndex else { return nil }
+        if base[baseIndex] != separator[sepIndex] { return nil }
+
+        baseIndex = base.index(after: baseIndex)
+        sepIndex = separator.index(after: sepIndex)
+    }
+
+    return position..<baseIndex
+}
+
+/// Searches for the next occurrence of a separator string within the base string.
+///
+/// Performs either anchored (separator must be at exact position) or unanchored
+/// (finds next occurrence anywhere after start) search.
+///
+/// - Parameters:
+///   - base: The string to search within
+///   - separator: The substring to find (can be multi-character like "\r\n")
+///   - startIndex: The index to begin searching from
+///   - anchored: If `true`, matches only at `startIndex`; if `false`, searches forward
+/// - Returns: Range of the matched separator, or `nil` if no match found
+/// - Complexity: Anchored O(m), Unanchored O(n*m) where n = string length, m = separator length
+@inlinable
+func findSeparator<T: StringProtocol>(
+    in base: T,
+    separator: String,
+    from startIndex: T.Index,
+    anchored: Bool
+) -> Range<T.Index>? {
+    guard startIndex < base.endIndex else { return nil }
+
+    if anchored {
+        return matchSeparatorAt(base, separator, position: startIndex)
+    } else {
+        var currentIndex = startIndex
+        while currentIndex < base.endIndex {
+            if let matchRange = matchSeparatorAt(base, separator, position: currentIndex) {
+                return matchRange
+            }
+            currentIndex = base.index(after: currentIndex)
+        }
+        return nil
+    }
+}
+
 /// A sequence that iterates over string components separated by a given string separator,
 /// omitting empty components.
 @usableFromInline
@@ -25,72 +91,6 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
     @inlinable
     func makeIterator() -> Iterator {
         Iterator(base: base, separator: separator)
-    }
-
-    /// Checks if a separator string matches at an exact position in the base string.
-    ///
-    /// Performs character-by-character comparison
-    /// The match must start exactly at the specified position (anchored match).
-    ///
-    /// - Parameters:
-    ///   - base: The string to search within
-    ///   - separator: The substring to match (can be multi-character like "\r\n")
-    ///   - position: The exact index where the match must start
-    /// - Returns: Range of the matched separator, or `nil` if no match or insufficient characters
-    /// - Complexity: O(m) where m is the length of the separator
-    @inlinable
-    static func matchSeparatorAt<T: StringProtocol>(
-        _ base: T,
-        _ separator: String,
-        position: T.Index
-    ) -> Range<T.Index>? {
-        var baseIndex = position
-        var sepIndex = separator.startIndex
-
-        while sepIndex < separator.endIndex {
-            guard baseIndex < base.endIndex else { return nil }
-            if base[baseIndex] != separator[sepIndex] { return nil }
-
-            baseIndex = base.index(after: baseIndex)
-            sepIndex = separator.index(after: sepIndex)
-        }
-
-        return position..<baseIndex
-    }
-
-    /// Searches for the next occurrence of a separator string within the base string.
-    ///
-    /// Performs either anchored (separator must be at exact position) or unanchored
-    /// (finds next occurrence anywhere after start) search.
-    ///
-    /// - Parameters:
-    ///   - base: The string to search within
-    ///   - separator: The substring to find (can be multi-character like "\r\n")
-    ///   - startIndex: The index to begin searching from
-    ///   - anchored: If `true`, matches only at `startIndex`; if `false`, searches forward
-    /// - Returns: Range of the matched separator, or `nil` if no match found
-    /// - Complexity: Anchored O(m), Unanchored O(n*m) where n = string length, m = separator length
-    @inlinable
-    static func findSeparator<T: StringProtocol>(
-        in base: T,
-        separator: String,
-        from startIndex: T.Index,
-        anchored: Bool
-    ) -> Range<T.Index>? {
-        guard startIndex < base.endIndex else { return nil }
-
-        if anchored {
-            return matchSeparatorAt(base, separator, position: startIndex)
-        } else {
-            var currentIndex = startIndex
-            while currentIndex < base.endIndex {
-                if let matchRange = matchSeparatorAt(base, separator, position: currentIndex) {
-                    return matchRange
-                }
-                currentIndex = base.index(after: currentIndex)
-            }
-            return nil
-        }
     }
 
     @usableFromInline
@@ -116,7 +116,7 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
             // Skip leading separators
             var index = base.startIndex
             while index < base.endIndex {
-                if let range = SplitStringSequence.findSeparator(in: base, separator: separator, from: index, anchored: true) {
+                if let range = findSeparator(in: base, separator: separator, from: index, anchored: true) {
                     index = range.upperBound
                 } else {
                     break
@@ -138,13 +138,13 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
             let start = currentIndex
 
             // Find next separator or end
-            if let range = SplitStringSequence.findSeparator(in: base, separator: separator, from: currentIndex, anchored: false) {
+            if let range = findSeparator(in: base, separator: separator, from: currentIndex, anchored: false) {
                 let component = base[start..<range.lowerBound]
                 currentIndex = range.upperBound
 
                 // Skip any additional separators
                 while currentIndex < endIndex {
-                    if let nextRange = SplitStringSequence.findSeparator(in: base, separator: separator, from: currentIndex, anchored: true) {
+                    if let nextRange = findSeparator(in: base, separator: separator, from: currentIndex, anchored: true) {
                         currentIndex = nextRange.upperBound
                     } else {
                         break
@@ -182,72 +182,6 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
         Iterator(base: self.base, separator: self.separator, maxSplits: self.maxSplits)
     }
 
-    /// Checks if a separator string matches at an exact position in the base string.
-    ///
-    /// Performs character-by-character comparison
-    /// The match must start exactly at the specified position (anchored match).
-    ///
-    /// - Parameters:
-    ///   - base: The string to search within
-    ///   - separator: The substring to match (can be multi-character like "\r\n")
-    ///   - position: The exact index where the match must start
-    /// - Returns: Range of the matched separator, or `nil` if no match or insufficient characters
-    /// - Complexity: O(m) where m is the length of the separator
-    @inlinable
-    static func matchSeparatorAt<T: StringProtocol>(
-        _ base: T,
-        _ separator: String,
-        position: T.Index
-    ) -> Range<T.Index>? {
-        var baseIndex = position
-        var sepIndex = separator.startIndex
-
-        while sepIndex < separator.endIndex {
-            guard baseIndex < base.endIndex else { return nil }
-            if base[baseIndex] != separator[sepIndex] { return nil }
-
-            baseIndex = base.index(after: baseIndex)
-            sepIndex = separator.index(after: sepIndex)
-        }
-
-        return position..<baseIndex
-    }
-
-    /// Searches for the next occurrence of a separator string within the base string.
-    ///
-    /// Performs either anchored (separator must be at exact position) or unanchored
-    /// (finds next occurrence anywhere after start) search.
-    ///
-    /// - Parameters:
-    ///   - base: The string to search within
-    ///   - separator: The substring to find (can be multi-character like "\r\n")
-    ///   - startIndex: The index to begin searching from
-    ///   - anchored: If `true`, matches only at `startIndex`; if `false`, searches forward
-    /// - Returns: Range of the matched separator, or `nil` if no match found
-    /// - Complexity: Anchored O(m), Unanchored O(n*m) where n = string length, m = separator length
-    @inlinable
-    static func findSeparator<T: StringProtocol>(
-        in base: T,
-        separator: String,
-        from startIndex: T.Index,
-        anchored: Bool
-    ) -> Range<T.Index>? {
-        guard startIndex < base.endIndex else { return nil }
-
-        if anchored {
-            return matchSeparatorAt(base, separator, position: startIndex)
-        } else {
-            var currentIndex = startIndex
-            while currentIndex < base.endIndex {
-                if let matchRange = matchSeparatorAt(base, separator, position: currentIndex) {
-                    return matchRange
-                }
-                currentIndex = base.index(after: currentIndex)
-            }
-            return nil
-        }
-    }
-
     @usableFromInline
     struct Iterator: IteratorProtocol {
         @usableFromInline let base: S
@@ -274,7 +208,7 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
             // Skip leading separators
             var index = base.startIndex
             while index < base.endIndex {
-                if let range = SplitStringMaxSplitsSequence.findSeparator(in: base, separator: separator, from: index, anchored: true) {
+                if let range = findSeparator(in: base, separator: separator, from: index, anchored: true) {
                     index = range.upperBound
                 } else {
                     break
@@ -304,13 +238,13 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
             let start = currentIndex
 
             // Find next separator or end
-            if let range = SplitStringMaxSplitsSequence.findSeparator(in: base, separator: separator, from: currentIndex, anchored: false) {
+            if let range = findSeparator(in: base, separator: separator, from: currentIndex, anchored: false) {
                 let component = base[start..<range.lowerBound]
                 currentIndex = range.upperBound
 
                 // Skip any additional separators
                 while currentIndex < endIndex {
-                    if let nextRange = SplitStringMaxSplitsSequence.findSeparator(in: base, separator: separator, from: currentIndex, anchored: true)
+                    if let nextRange = findSeparator(in: base, separator: separator, from: currentIndex, anchored: true)
                     {
                         currentIndex = nextRange.upperBound
                     } else {

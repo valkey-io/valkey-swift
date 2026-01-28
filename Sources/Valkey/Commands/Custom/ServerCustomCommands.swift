@@ -345,51 +345,150 @@ extension INFO {
     /// Uses raw representable pattern to handle both known and unknown sections gracefully,
     /// allowing version-safe parsing.
     public struct Section: RawRepresentable, Hashable, Sendable, CustomStringConvertible {
-        public let rawValue: String
+        public let rawValue: Substring
 
-        public init(rawValue: String) {
+        public init(rawValue: Substring) {
             self.rawValue = rawValue
         }
 
-        public var description: String { self.rawValue }
+        public var description: String { String(self.rawValue) }
 
         // Well-known sections from Valkey INFO command
 
         /// General information about the server
-        public static var server: Section { .init(rawValue: "Server") }
+        public static let server: Section = .init(rawValue: "Server"[...])
         /// Client connections section
-        public static var clients: Section { .init(rawValue: "Clients") }
+        public static let clients: Section = .init(rawValue: "Clients"[...])
         /// Memory consumption information
-        public static var memory: Section { .init(rawValue: "Memory") }
+        public static let memory: Section = .init(rawValue: "Memory"[...])
         /// RDB and AOF persistence information
-        public static var persistence: Section { .init(rawValue: "Persistence") }
+        public static let persistence: Section = .init(rawValue: "Persistence"[...])
         /// General statistics
-        public static var stats: Section { .init(rawValue: "Stats") }
+        public static let stats: Section = .init(rawValue: "Stats"[...])
         /// Primary/replica replication information
-        public static var replication: Section { .init(rawValue: "Replication") }
+        public static let replication: Section = .init(rawValue: "Replication"[...])
         /// CPU consumption statistics
-        public static var cpu: Section { .init(rawValue: "CPU") }
+        public static let cpu: Section = .init(rawValue: "CPU"[...])
         /// Command statistics
-        public static var commandstats: Section { .init(rawValue: "Commandstats") }
+        public static let commandstats: Section = .init(rawValue: "Commandstats"[...])
         /// Error statistics
-        public static var errorstats: Section { .init(rawValue: "Errorstats") }
+        public static let errorstats: Section = .init(rawValue: "Errorstats"[...])
         /// Cluster section (available only in cluster mode)
-        public static var cluster: Section { .init(rawValue: "Cluster") }
+        public static let cluster: Section = .init(rawValue: "Cluster"[...])
         /// Modules section
-        public static var modules: Section { .init(rawValue: "Modules") }
+        public static let modules: Section = .init(rawValue: "Modules"[...])
         /// Database related statistics
-        public static var keyspace: Section { .init(rawValue: "Keyspace") }
+        public static let keyspace: Section = .init(rawValue: "Keyspace"[...])
+    }
+
+    /// Represents an INFO field name within a section.
+    ///
+    /// Supports both typed access via static properties and dynamic access via string literals.
+    /// This allows type-safe access to common fields while gracefully handling version differences.
+    public struct Field: RawRepresentable, Hashable, Sendable, CustomStringConvertible, ExpressibleByStringLiteral {
+        public let rawValue: Substring
+
+        public init(rawValue: Substring) {
+            self.rawValue = rawValue
+        }
+
+        public init(stringLiteral value: String) {
+            self.rawValue = value[...]
+        }
+
+        public var description: String { String(self.rawValue) }
+
+        // Server section fields
+        public static let valkeyVersion: Field = .init(rawValue: "valkey_version"[...])
+        public static let valkeyGitSha1: Field = .init(rawValue: "valkey_git_sha1"[...])
+        public static let valkeyGitDirty: Field = .init(rawValue: "valkey_git_dirty"[...])
+        public static let valkeyBuildId: Field = .init(rawValue: "valkey_build_id"[...])
+        public static let valkeyMode: Field = .init(rawValue: "valkey_mode"[...])
+        public static let os: Field = .init(rawValue: "os"[...])
+        public static let archBits: Field = .init(rawValue: "arch_bits"[...])
+        public static let tcpPort: Field = .init(rawValue: "tcp_port"[...])
+        public static let uptimeInSeconds: Field = .init(rawValue: "uptime_in_seconds"[...])
+        public static let uptimeInDays: Field = .init(rawValue: "uptime_in_days"[...])
+
+        // Memory section fields
+        public static let usedMemory: Field = .init(rawValue: "used_memory"[...])
+        public static let usedMemoryHuman: Field = .init(rawValue: "used_memory_human"[...])
+        public static let usedMemoryRss: Field = .init(rawValue: "used_memory_rss"[...])
+        public static let usedMemoryRssHuman: Field = .init(rawValue: "used_memory_rss_human"[...])
+        public static let usedMemoryPeak: Field = .init(rawValue: "used_memory_peak"[...])
+        public static let usedMemoryPeakHuman: Field = .init(rawValue: "used_memory_peak_human"[...])
+        public static let memFragmentationRatio: Field = .init(rawValue: "mem_fragmentation_ratio"[...])
+
+        // Stats section fields
+        public static let totalConnectionsReceived: Field = .init(rawValue: "total_connections_received"[...])
+        public static let totalCommandsProcessed: Field = .init(rawValue: "total_commands_processed"[...])
+        public static let instantaneousOpsPerSec: Field = .init(rawValue: "instantaneous_ops_per_sec"[...])
+        public static let rejectedConnections: Field = .init(rawValue: "rejected_connections"[...])
+        public static let expiredKeys: Field = .init(rawValue: "expired_keys"[...])
+        public static let evictedKeys: Field = .init(rawValue: "evicted_keys"[...])
+        public static let keyspaceHits: Field = .init(rawValue: "keyspace_hits"[...])
+        public static let keyspaceMisses: Field = .init(rawValue: "keyspace_misses"[...])
+
+        // Replication section fields
+        public static let role: Field = .init(rawValue: "role"[...])
+        public static let connectedSlaves: Field = .init(rawValue: "connected_slaves"[...])
+        public static let masterReplOffset: Field = .init(rawValue: "master_repl_offset"[...])
+        public static let replBacklogActive: Field = .init(rawValue: "repl_backlog_active"[...])
+
+        // CPU section fields
+        public static let usedCpuSys: Field = .init(rawValue: "used_cpu_sys"[...])
+        public static let usedCpuUser: Field = .init(rawValue: "used_cpu_user"[...])
+
+        // Clients section fields
+        public static let connectedClients: Field = .init(rawValue: "connected_clients"[...])
+        public static let blockedClients: Field = .init(rawValue: "blocked_clients"[...])
+
+        // Persistence section fields
+        public static let loading: Field = .init(rawValue: "loading"[...])
+        public static let rdbChangesSinceLastSave: Field = .init(rawValue: "rdb_changes_since_last_save"[...])
+        public static let rdbLastSaveTime: Field = .init(rawValue: "rdb_last_save_time"[...])
+
+        // Cluster section fields
+        public static let clusterEnabled: Field = .init(rawValue: "cluster_enabled"[...])
     }
 
     /// Response type for INFO command.
     ///
-    /// Returns a dictionary mapping section names to field dictionaries, where each field
-    /// dictionary maps field names to their string values. This approach gracefully handles
-    /// new fields that may be added in future Valkey versions while preserving the
-    /// hierarchical section-based organization.
+    /// Provides typed access to known Valkey sections while gracefully handling
+    /// new fields and sections that may be added in future versions.
     public struct Response: RESPTokenDecodable, Sendable {
-        /// Dictionary mapping section names to their field dictionaries
-        public let sections: [Section: [String: Substring]]
+        /// Set of known section names for filtering
+        private static let knownSections: Set<Section> = [
+            .server, .clients, .memory, .persistence, .stats, .replication,
+            .cpu, .commandstats, .errorstats, .cluster, .modules, .keyspace
+        ]
+
+        /// General server information
+        public let server: [Field: Substring]?
+        /// Client connections information
+        public let clients: [Field: Substring]?
+        /// Memory consumption information
+        public let memory: [Field: Substring]?
+        /// RDB and AOF persistence information
+        public let persistence: [Field: Substring]?
+        /// General statistics
+        public let stats: [Field: Substring]?
+        /// Primary/replica replication information
+        public let replication: [Field: Substring]?
+        /// CPU consumption statistics
+        public let cpu: [Field: Substring]?
+        /// Command statistics
+        public let commandstats: [Field: Substring]?
+        /// Error statistics
+        public let errorstats: [Field: Substring]?
+        /// Cluster information (only in cluster mode)
+        public let cluster: [Field: Substring]?
+        /// Modules information
+        public let modules: [Field: Substring]?
+        /// Database related statistics
+        public let keyspace: [Field: Substring]?
+        /// Unknown or future sections
+        public let other: [Section: [Field: Substring]]
 
         /// Creates an INFO response from the response token you provide.
         ///
@@ -398,6 +497,8 @@ extension INFO {
         ///
         /// - Parameter token: The response token containing INFO data.
         public init(_ token: RESPToken) throws(RESPDecodeError) {
+            let allSections: [Section: [Field: Substring]]
+
             switch token.value {
             case .verbatimString:
                 let fullString = try String(token)
@@ -411,21 +512,39 @@ extension INFO {
                 }
 
                 // Strip the "xxx:" prefix to get the actual content
-                let string = String(fullString.dropFirst(4))
-                self.sections = Self.parseInfoData(string)
+                allSections = Self.parseInfoData(fullString.dropFirst(4))
 
             case .bulkString:
                 let string = try String(token)
-                self.sections = Self.parseInfoData(string)
+                allSections = Self.parseInfoData(string)
 
             default:
                 throw RESPDecodeError.tokenMismatch(expected: [.bulkString, .verbatimString], token: token)
             }
+
+            // Extract known sections
+            self.server = allSections[.server]
+            self.clients = allSections[.clients]
+            self.memory = allSections[.memory]
+            self.persistence = allSections[.persistence]
+            self.stats = allSections[.stats]
+            self.replication = allSections[.replication]
+            self.cpu = allSections[.cpu]
+            self.commandstats = allSections[.commandstats]
+            self.errorstats = allSections[.errorstats]
+            self.cluster = allSections[.cluster]
+            self.modules = allSections[.modules]
+            self.keyspace = allSections[.keyspace]
+
+            // Store unknown sections
+            self.other = allSections.filter { !Self.knownSections.contains($0.key) }
         }
 
         /// Parse INFO data from a string into section dictionaries
-        private static func parseInfoData(_ string: String) -> [Section: [String: Substring]] {
-            var sections: [Section: [String: Substring]] = [:]
+        private static func parseInfoData<S: StringProtocol>(_ string: S) -> [Section: [Field: Substring]]
+            where S.SubSequence == Substring
+        {
+            var sections: [Section: [Field: Substring]] = [:]
             var currentSection: Section?
 
             // Split by CRLF line endings
@@ -447,7 +566,7 @@ extension INFO {
                     }
                     guard !sectionNameRaw.isEmpty else { continue }
 
-                    let section = Section(rawValue: String(sectionNameRaw))
+                    let section = Section(rawValue: sectionNameRaw)
                     sections[section] = [:]
                     currentSection = section
                     continue
@@ -464,7 +583,8 @@ extension INFO {
                     let value = partsIterator.next()
                 else { continue }
 
-                sections[currentSection, default: [:]][String(key)] = value
+                let field = Field(rawValue: key)
+                sections[currentSection, default: [:]][field] = value
             }
 
             return sections
