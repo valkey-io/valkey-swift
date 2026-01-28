@@ -437,18 +437,19 @@ extension INFO {
                 if line.first == "#" {
                     // Extract section name after "#" and any whitespace
                     var sectionNameRaw = line.dropFirst()
-                    // Manually trim leading whitespace
+                    // Trim leading whitespace
                     while sectionNameRaw.first?.isWhitespace == true {
                         sectionNameRaw = sectionNameRaw.dropFirst()
                     }
-                    // Manually trim trailing whitespace
+                    // Trim trailing whitespace
                     while sectionNameRaw.last?.isWhitespace == true {
                         sectionNameRaw = sectionNameRaw.dropLast()
                     }
                     guard !sectionNameRaw.isEmpty else { continue }
 
-                    currentSection = Section(rawValue: String(sectionNameRaw))
-                    sections[currentSection!] = [:]
+                    let section = Section(rawValue: String(sectionNameRaw))
+                    sections[section] = [:]
+                    currentSection = section
                     continue
                 }
 
@@ -463,7 +464,7 @@ extension INFO {
                     let value = partsIterator.next()
                 else { continue }
 
-                sections[currentSection]![String(key)] = value
+                sections[currentSection, default: [:]][String(key)] = value
             }
 
             return sections

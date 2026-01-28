@@ -11,7 +11,6 @@
 
 /// A sequence that iterates over string components separated by a given string separator,
 /// omitting empty components.
-
 @usableFromInline
 struct SplitStringSequence<S: StringProtocol>: Sequence {
     @usableFromInline let base: S
@@ -28,7 +27,17 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
         Iterator(base: base, separator: separator)
     }
 
-    /// Check if separator matches at exact position
+    /// Checks if a separator string matches at an exact position in the base string.
+    ///
+    /// Performs character-by-character comparison
+    /// The match must start exactly at the specified position (anchored match).
+    ///
+    /// - Parameters:
+    ///   - base: The string to search within
+    ///   - separator: The substring to match (can be multi-character like "\r\n")
+    ///   - position: The exact index where the match must start
+    /// - Returns: Range of the matched separator, or `nil` if no match or insufficient characters
+    /// - Complexity: O(m) where m is the length of the separator
     @inlinable
     static func matchSeparatorAt<T: StringProtocol>(
         _ base: T,
@@ -49,7 +58,18 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
         return position..<baseIndex
     }
 
-    /// Search for separator substring within a string range
+    /// Searches for the next occurrence of a separator string within the base string.
+    ///
+    /// Performs either anchored (separator must be at exact position) or unanchored
+    /// (finds next occurrence anywhere after start) search.
+    ///
+    /// - Parameters:
+    ///   - base: The string to search within
+    ///   - separator: The substring to find (can be multi-character like "\r\n")
+    ///   - startIndex: The index to begin searching from
+    ///   - anchored: If `true`, matches only at `startIndex`; if `false`, searches forward
+    /// - Returns: Range of the matched separator, or `nil` if no match found
+    /// - Complexity: Anchored O(m), Unanchored O(n*m) where n = string length, m = separator length
     @inlinable
     static func findSeparator<T: StringProtocol>(
         in base: T,
@@ -80,6 +100,14 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
         @usableFromInline var currentIndex: S.Index
         @usableFromInline let separator: String
 
+        /// Creates a new iterator that will split the base string by the given separator.
+        ///
+        /// Skips any leading separator occurrences during initialization to ensure
+        /// the first component returned is non-empty.
+        ///
+        /// - Parameters:
+        ///   - base: The string to split
+        ///   - separator: The separator string to split by
         @inlinable
         init(base: S, separator: String) {
             self.base = base
@@ -97,6 +125,12 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
             self.currentIndex = index
         }
 
+        /// Returns the next component in the split sequence.
+        ///
+        /// Finds the next separator and returns the substring before it. After finding
+        /// a separator, skips any consecutive separators to avoid returning empty components.
+        ///
+        /// - Returns: The next non-empty substring component, or `nil` when iteration is complete
         @inlinable
         mutating func next() -> S.SubSequence? {
             guard currentIndex < endIndex else { return nil }
@@ -148,7 +182,17 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
         Iterator(base: self.base, separator: self.separator, maxSplits: self.maxSplits)
     }
 
-    /// Check if separator matches at exact position
+    /// Checks if a separator string matches at an exact position in the base string.
+    ///
+    /// Performs character-by-character comparison
+    /// The match must start exactly at the specified position (anchored match).
+    ///
+    /// - Parameters:
+    ///   - base: The string to search within
+    ///   - separator: The substring to match (can be multi-character like "\r\n")
+    ///   - position: The exact index where the match must start
+    /// - Returns: Range of the matched separator, or `nil` if no match or insufficient characters
+    /// - Complexity: O(m) where m is the length of the separator
     @inlinable
     static func matchSeparatorAt<T: StringProtocol>(
         _ base: T,
@@ -169,7 +213,18 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
         return position..<baseIndex
     }
 
-    /// Search for separator substring within a string range
+    /// Searches for the next occurrence of a separator string within the base string.
+    ///
+    /// Performs either anchored (separator must be at exact position) or unanchored
+    /// (finds next occurrence anywhere after start) search.
+    ///
+    /// - Parameters:
+    ///   - base: The string to search within
+    ///   - separator: The substring to find (can be multi-character like "\r\n")
+    ///   - startIndex: The index to begin searching from
+    ///   - anchored: If `true`, matches only at `startIndex`; if `false`, searches forward
+    /// - Returns: Range of the matched separator, or `nil` if no match found
+    /// - Complexity: Anchored O(m), Unanchored O(n*m) where n = string length, m = separator length
     @inlinable
     static func findSeparator<T: StringProtocol>(
         in base: T,
@@ -201,6 +256,16 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
         @usableFromInline var availableSplits: Int
         @usableFromInline let separator: String
 
+        /// Creates a new iterator that will split the base string with a maximum number of splits.
+        ///
+        /// Skips leading separators during initialization. The `maxSplits` parameter controls
+        /// how many times the string will be split - after reaching the limit, the remainder
+        /// is returned as one component.
+        ///
+        /// - Parameters:
+        ///   - base: The string to split
+        ///   - separator: The separator string to split by
+        ///   - maxSplits: Maximum number of splits (final component count = maxSplits + 1)
         @inlinable
         init(base: S, separator: String, maxSplits: Int) {
             self.base = base
@@ -219,8 +284,14 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
             self.availableSplits = maxSplits + 1
         }
 
+        /// Returns the next component in the split sequence, respecting the maximum split limit.
+        ///
+        /// Behaves like the unlimited version but stops splitting after reaching `maxSplits`.
+        /// Once the limit is reached, returns the entire remainder of the string as the final component.
+        ///
+        /// - Returns: The next substring component, or `nil` when iteration is complete
         @inlinable
-        mutating func next() -> S.SubSequence? {
+        public mutating func next() -> S.SubSequence? {
             guard self.currentIndex < self.endIndex, self.availableSplits > 0 else { return nil }
 
             self.availableSplits -= 1
@@ -259,11 +330,28 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
 }
 
 extension StringProtocol {
+    /// Returns a sequence that splits this string by the given separator, omitting empty components.
+    ///
+    /// Creates a lazy sequence that splits the string each time a separator is found.
+    /// Consecutive separators are treated as a single separator. Leading separators are skipped.
+    ///
+    /// - Parameter separator: The separator string to split by (can be multi-character)
+    /// - Returns: A sequence of non-empty substring components
     @inlinable
     func splitSequence(separator: String) -> SplitStringSequence<Self> {
         SplitStringSequence(self, separator: separator)
     }
 
+    /// Returns a sequence that splits this string by the given separator up to a maximum number of times.
+    ///
+    /// Creates a lazy sequence that splits the string up to `maxSplits` times.
+    /// After reaching the limit, the remainder of the string is returned as a single component.
+    /// Consecutive and leading separators are skipped.
+    ///
+    /// - Parameters:
+    ///   - separator: The separator string to split by (can be multi-character)
+    ///   - maxSplits: Maximum number of splits to perform
+    /// - Returns: A sequence with at most `maxSplits + 1` components
     @inlinable
     func splitMaxSplitsSequence(separator: String, maxSplits: Int) -> SplitStringMaxSplitsSequence<Self> {
         SplitStringMaxSplitsSequence(self, separator: separator, maxSplits: maxSplits)
