@@ -6,4 +6,4 @@ builder:
         - ValkeyBloom
         - ValkeyJSON
         - ValkeySearch
-      swift_version: 6.1
+      swift_version: 6.2
