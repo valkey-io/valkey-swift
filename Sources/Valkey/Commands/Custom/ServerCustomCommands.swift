@@ -460,7 +460,7 @@ extension INFO {
         /// Set of known section names for filtering
         private static let knownSections: Set<Section> = [
             .server, .clients, .memory, .persistence, .stats, .replication,
-            .cpu, .commandstats, .errorstats, .cluster, .modules, .keyspace
+            .cpu, .commandstats, .errorstats, .cluster, .modules, .keyspace,
         ]
 
         /// General server information
@@ -542,8 +542,7 @@ extension INFO {
 
         /// Parse INFO data from a string into section dictionaries
         private static func parseInfoData<S: StringProtocol>(_ string: S) -> [Section: [Field: Substring]]
-            where S.SubSequence == Substring
-        {
+        where S.SubSequence == Substring {
             var sections: [Section: [Field: Substring]] = [:]
             var currentSection: Section?
 
