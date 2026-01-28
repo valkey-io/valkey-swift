@@ -70,6 +70,7 @@ final class ValkeyServerChannelHandler<Handler: BenchmarkCommandHandler>: Channe
     private let pongResponse = ByteBuffer(string: "$4\r\nPONG\r\n")
     private let clientCommand = RESPToken.Value.bulkString(ByteBuffer(string: "CLIENT"))
     private let setInfoSubCommand = RESPToken.Value.bulkString(ByteBuffer(string: "SETINFO"))
+    private let clientCapaSubCommand = RESPToken.Value.bulkString(ByteBuffer(string: "CAPA"))
     private let okResponse = ByteBuffer(string: "+2OK\r\n")
     private let commandHandler: Handler
 
@@ -102,6 +103,8 @@ final class ValkeyServerChannelHandler<Handler: BenchmarkCommandHandler>: Channe
             var subCommandIterator = iterator
             switch subCommandIterator.next()?.value {
             case setInfoSubCommand:
+                context.writeAndFlush(self.wrapOutboundOut(okResponse), promise: nil)
+            case clientCapaSubCommand:
                 context.writeAndFlush(self.wrapOutboundOut(okResponse), promise: nil)
             default:
                 commandHandler.handle(command: command, parameters: iterator) {

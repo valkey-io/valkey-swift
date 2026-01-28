@@ -86,7 +86,7 @@ package final class ValkeyConnectionFactory: Sendable {
                     connectionID: connectionID,
                     channelHandler: channelHandler,
                     configuration: connectionConfig,
-                    address: nil,
+                    address: address,
                     logger: logger
                 )
             }.get()
@@ -113,7 +113,8 @@ package final class ValkeyConnectionFactory: Sendable {
             tls: tls,
             clientName: nil,
             readOnly: readOnly,
-            databaseNumber: self.configuration.databaseNumber
+            databaseNumber: self.configuration.databaseNumber,
+            enableClientRedirect: self.configuration.enableClientRedirect
         )
 
         #if DistributedTracingSupport

@@ -22,6 +22,9 @@ extension NIOAsyncTestingChannel {
         expectedBuffer.writeImmutableBuffer(
             RESPToken(.array([.bulkString("CLIENT"), .bulkString("SETINFO"), .bulkString("lib-ver"), .bulkString(valkeySwiftLibraryVersion)])).base
         )
+        expectedBuffer.writeImmutableBuffer(
+            RESPToken(.array([.bulkString("CLIENT"), .bulkString("CAPA"), .bulkString("redirect")])).base
+        )
         #expect(hello == expectedBuffer)
         try await self.writeInbound(
             RESPToken(
@@ -36,6 +39,7 @@ extension NIOAsyncTestingChannel {
                 ])
             ).base
         )
+        try await self.writeInbound(RESPToken.ok.base)
         try await self.writeInbound(RESPToken.ok.base)
         try await self.writeInbound(RESPToken.ok.base)
     }

@@ -43,26 +43,38 @@ struct ValkeyClientStateMachine<
         }
     }
 
+    @usableFromInline
     enum SetPrimaryAction {
         case runNodeAndFindReplicas(ConnectionPool)
         case runNode(ConnectionPool)
         case findReplicas
         case doNothing
     }
+    @usableFromInline
     mutating func setPrimary(_ address: ValkeyServerAddress) -> SetPrimaryAction {
         let nodes = ValkeyNodeIDs(primary: address)
-        let action = self.runningClients.addNode(.init(address: address, readOnly: false))
-        self.state = .running(nodes)
-        if self.findReplicas {
-            return switch action {
-            case .useExistingPool: .findReplicas
-            case .runAndUsePool(let pool): .runNodeAndFindReplicas(pool)
+        let action = self.runningClients.addNode(.init(address: address))
+        switch action {
+        case .useExistingPool:
+            if case .running(let currentNodes) = self.state {
+                if currentNodes.primary == address {
+                    return .doNothing
+                }
             }
-        } else {
-            return switch action {
-            case .useExistingPool: .doNothing
-            case .runAndUsePool(let pool): .runNode(pool)
+            self.state = .running(nodes)
+            if self.findReplicas {
+                return .findReplicas
+            } else {
+                return .doNothing
             }
+        case .runAndUsePool(let pool):
+            self.state = .running(nodes)
+            if self.findReplicas {
+                return .runNodeAndFindReplicas(pool)
+            } else {
+                return .runNode(pool)
+            }
+
         }
     }
 
@@ -77,10 +89,10 @@ struct ValkeyClientStateMachine<
             preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
         case .running(let nodes):
             var nodeDescriptions = [
-                ValkeyClientNodeDescription(address: nodes.primary, readOnly: false)
+                ValkeyClientNodeDescription(address: nodes.primary)
             ]
             nodeDescriptions.append(
-                contentsOf: nodeIDs.lazy.map { ValkeyClientNodeDescription(address: $0, readOnly: true) }
+                contentsOf: nodeIDs.lazy.map { ValkeyClientNodeDescription(address: $0) }
             )
             let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: true)
             let newNodes = ValkeyNodeIDs(primary: nodes.primary, replicas: nodeIDs)

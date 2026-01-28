@@ -47,6 +47,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @usableFromInline
     let configuration: ValkeyConnectionConfiguration
     let isClosed: Atomic<Bool>
+    /// Address we are connected to
+    nonisolated let address: ValkeyServerAddress
 
     /// Initialize connection
     init(
@@ -54,10 +56,11 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         connectionID: ID,
         channelHandler: ValkeyChannelHandler,
         configuration: ValkeyConnectionConfiguration,
-        address: ValkeyServerAddress?,
+        address: ValkeyServerAddress,
         logger: Logger
     ) {
         self.unownedExecutor = channel.eventLoop.executor.asUnownedSerialExecutor()
+        self.address = address
         self.channel = channel
         self.channelHandler = channelHandler
         self.configuration = configuration
