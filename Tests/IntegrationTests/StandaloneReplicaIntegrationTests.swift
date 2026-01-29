@@ -89,7 +89,7 @@ struct StandaloneReplicaIntegrationTests {
                 // redirected to the primary by the role command
                 _ = try await withValkeyClient(
                     replicaAddress,
-                    configuration: .init(connectToReplica: true),
+                    configuration: .init(connectingToReplica: true),
                     logger: logger
                 ) { client in
                     // we called a non-readonly command. This should work because we will receive a REDIRECT error

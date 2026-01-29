@@ -114,7 +114,7 @@ package final class ValkeyConnectionFactory: Sendable {
             clientName: nil,
             readOnly: readOnly,
             databaseNumber: self.configuration.databaseNumber,
-            enableClientRedirect: self.configuration.enableClientRedirect
+            enableClientRedirect: self.configuration.enableClientCapaRedirect
         )
 
         #if DistributedTracingSupport

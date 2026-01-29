@@ -239,13 +239,13 @@ public struct ValkeyClientConfiguration: Sendable {
     ///
     /// This is a `ValkeyClient` feature only. Redirection is handling differently with
     /// `ValkeyClusterClient`.
-    var enableClientRedirect: Bool
+    public var enableClientCapaRedirect: Bool
 
     /// Flag that we are connecting to a Replica and shouldn't redirect to the primary unless
-    /// we call a non readonly command
+    /// `enableClientRedirect` is set to true and we call a non readonly command
     ///
     /// This is a `ValkeyClient` feature only.
-    public var connectToReplica: Bool
+    public var connectingToReplica: Bool
 
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for the Valkey connection.
@@ -266,7 +266,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - databaseNumber: The Valkey Database number.
     ///   - readOnlyCommandNodeSelection: How we choose a node when processing readonly commands
     ///   - enableClientRedirect: Support client redirection errors from replicas
-    ///   - redirectToPrimary: Redirect to primary node immediately if we are connected to a replica
+    ///   - connectingToReplica: Flag we are connecting to a replica and don't want to redirect to the primary
     public init(
         authentication: Authentication? = nil,
         connectionPool: ConnectionPool = .init(),
@@ -278,7 +278,7 @@ public struct ValkeyClientConfiguration: Sendable {
         databaseNumber: Int = 0,
         readOnlyCommandNodeSelection: ReadOnlyCommandNodeSelection = .primary,
         enableClientRedirect: Bool = true,
-        connectToReplica: Bool = false
+        connectingToReplica: Bool = false
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
@@ -289,7 +289,7 @@ public struct ValkeyClientConfiguration: Sendable {
         self.tls = tls
         self.databaseNumber = databaseNumber
         self.readOnlyCommandNodeSelection = readOnlyCommandNodeSelection
-        self.enableClientRedirect = enableClientRedirect
-        self.connectToReplica = connectToReplica
+        self.enableClientCapaRedirect = enableClientRedirect
+        self.connectingToReplica = connectingToReplica
     }
 }

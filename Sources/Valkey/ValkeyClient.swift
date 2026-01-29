@@ -164,7 +164,7 @@ extension ValkeyClient {
                     self.logger.debug("Found replicas \(replicas)")
 
                 case .replica(let replica):
-                    if !self.configuration.connectToReplica {
+                    if !self.configuration.connectingToReplica {
                         // if client is pointing to a replica then redirect to the primary
                         self.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort))
                     }

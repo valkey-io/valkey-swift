@@ -106,7 +106,7 @@ public final class ValkeyClusterClient: Sendable {
         channelFactory: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
     ) {
         var clientConfiguration = clientConfiguration
-        clientConfiguration.enableClientRedirect = false
+        clientConfiguration.enableClientCapaRedirect = false
 
         self.logger = logger
         self.clientConfiguration = clientConfiguration
