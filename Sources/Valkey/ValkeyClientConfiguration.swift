@@ -237,14 +237,14 @@ public struct ValkeyClientConfiguration: Sendable {
     /// capable of handling redirect messages from replica nodes back to the primary. See
     /// https://valkey.io/commands/client-capa/
     ///
-    /// This is a `ValkeyClient` feature only. Redirection is handling differently with
+    /// This is only valid when used with `ValkeyClient`. Redirection is handled differently with
     /// `ValkeyClusterClient`.
     public var enableClientCapaRedirect: Bool
 
-    /// Flag that we are connecting to a Replica and shouldn't redirect to the primary unless
-    /// `enableClientRedirect` is set to true and we call a non readonly command
+    /// Flag that we are connecting to a Replica in standalone mode and shouldn't redirect to
+    /// the primary unless `enableClientRedirect` is set to true and we call a non readonly command
     ///
-    /// This is a `ValkeyClient` feature only.
+    /// This is only valid when used with `ValkeyClient`as it is a standalone client feature.
     public var connectingToReplica: Bool
 
     #if DistributedTracingSupport
