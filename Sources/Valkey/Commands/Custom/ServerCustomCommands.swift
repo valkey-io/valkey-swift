@@ -344,14 +344,12 @@ extension INFO {
     ///
     /// Uses raw representable pattern to handle both known and unknown sections gracefully,
     /// allowing version-safe parsing.
-    public struct Section: RawRepresentable, Hashable, Sendable, CustomStringConvertible {
+    public struct Section: RawRepresentable, Hashable, Sendable {
         public let rawValue: Substring
 
         public init(rawValue: Substring) {
             self.rawValue = rawValue
         }
-
-        public var description: String { String(self.rawValue) }
 
         // Well-known sections from Valkey INFO command
 
@@ -385,7 +383,7 @@ extension INFO {
     ///
     /// Supports both typed access via static properties and dynamic access via string literals.
     /// This allows type-safe access to common fields while gracefully handling version differences.
-    public struct Field: RawRepresentable, Hashable, Sendable, CustomStringConvertible, ExpressibleByStringLiteral {
+    public struct Field: RawRepresentable, Hashable, Sendable, ExpressibleByStringLiteral {
         public let rawValue: Substring
 
         public init(rawValue: Substring) {
@@ -395,8 +393,6 @@ extension INFO {
         public init(stringLiteral value: String) {
             self.rawValue = value[...]
         }
-
-        public var description: String { String(self.rawValue) }
 
         // Server section fields
         public static let valkeyVersion: Field = .init(rawValue: "valkey_version"[...])
