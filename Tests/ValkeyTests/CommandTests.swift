@@ -546,6 +546,64 @@ struct CommandTests {
                 #expect(time.microSeconds == 723379)
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func info() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["INFO"]),
+                    response: .bulkString(
+                        "# Server\r\n" + "valkey_version:8.0.0\r\n" + "valkey_git_sha1:00000000\r\n" + "\r\n" + "# Memory\r\n"
+                            + "used_memory:1234567\r\n" + "used_memory_human:1.18M\r\n" + "\r\n"
+                            + "# CustomSection1\r\n" + "custom_field1:value1\r\n" + "custom_field2:value2\r\n" + "\r\n"
+                            + "# CustomSection2\r\n" + "another_field:another_value\r\n"
+                    )
+                ),
+                (
+                    request: .command(["INFO"]),
+                    response: .verbatimString(
+                        ByteBuffer(
+                            string:
+                                "txt:# Server\r\n" + "valkey_version:8.0.0\r\n" + "valkey_git_sha1:00000000\r\n" + "\r\n" + "# Memory\r\n"
+                                + "used_memory:1234567\r\n" + "used_memory_human:1.18M\r\n" + "\r\n"
+                                + "# CustomSection1\r\n" + "custom_field1:value1\r\n" + "custom_field2:value2\r\n" + "\r\n"
+                                + "# CustomSection2\r\n" + "another_field:another_value\r\n"
+                        )
+                    )
+                )
+            ) { connection in
+                func validateInfoResponse(_ response: INFO.Response) throws {
+                    // Verify Server section
+                    let serverSection = try #require(response.server)
+                    #expect(String(serverSection[.valkeyVersion]!) == "8.0.0")
+                    #expect(String(serverSection[.valkeyGitSha1]!) == "00000000")
+
+                    // Verify Memory section
+                    let memorySection = try #require(response.memory)
+                    #expect(String(memorySection[.usedMemory]!) == "1234567")
+                    #expect(String(memorySection[.usedMemoryHuman]!) == "1.18M")
+
+                    // Verify unknown sections are captured in 'other'
+                    #expect(response.other.count == 2)
+
+                    let customSection1 = try #require(response.other[INFO.Section(rawValue: "CustomSection1"[...])])
+                    #expect(String(customSection1["custom_field1"]!) == "value1")
+                    #expect(String(customSection1["custom_field2"]!) == "value2")
+
+                    let customSection2 = try #require(response.other[INFO.Section(rawValue: "CustomSection2"[...])])
+                    #expect(String(customSection2["another_field"]!) == "another_value")
+                }
+
+                // Test bulk string response
+                var result = try await connection.info()
+                try validateInfoResponse(result)
+
+                // Test verbatim string response
+                result = try await connection.info()
+                try validateInfoResponse(result)
+            }
+        }
     }
 
     struct SetCommands {
