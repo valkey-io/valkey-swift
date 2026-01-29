@@ -486,6 +486,37 @@ extension INFO {
         /// Unknown or future sections
         public let other: [Section: [Field: Substring]]
 
+        /// Private memberwise initializer
+        private init(
+            server: [Field: Substring]?,
+            clients: [Field: Substring]?,
+            memory: [Field: Substring]?,
+            persistence: [Field: Substring]?,
+            stats: [Field: Substring]?,
+            replication: [Field: Substring]?,
+            cpu: [Field: Substring]?,
+            commandstats: [Field: Substring]?,
+            errorstats: [Field: Substring]?,
+            cluster: [Field: Substring]?,
+            modules: [Field: Substring]?,
+            keyspace: [Field: Substring]?,
+            other: [Section: [Field: Substring]]
+        ) {
+            self.server = server
+            self.clients = clients
+            self.memory = memory
+            self.persistence = persistence
+            self.stats = stats
+            self.replication = replication
+            self.cpu = cpu
+            self.commandstats = commandstats
+            self.errorstats = errorstats
+            self.cluster = cluster
+            self.modules = modules
+            self.keyspace = keyspace
+            self.other = other
+        }
+
         /// Creates an INFO response from the response token you provide.
         ///
         /// Parses the bulk string or verbatim string response from INFO, which contains
@@ -493,8 +524,6 @@ extension INFO {
         ///
         /// - Parameter token: The response token containing INFO data.
         public init(_ token: RESPToken) throws(RESPDecodeError) {
-            let allSections: [Section: [Field: Substring]]
-
             switch token.value {
             case .verbatimString:
                 let fullString = try String(token)
@@ -508,36 +537,19 @@ extension INFO {
                 }
 
                 // Strip the "xxx:" prefix to get the actual content
-                allSections = Self.parseInfoData(fullString.dropFirst(4))
+                self = Self.parseInfoData(fullString.dropFirst(4))
 
             case .bulkString:
                 let string = try String(token)
-                allSections = Self.parseInfoData(string)
+                self = Self.parseInfoData(string)
 
             default:
                 throw RESPDecodeError.tokenMismatch(expected: [.bulkString, .verbatimString], token: token)
             }
-
-            // Extract known sections
-            self.server = allSections[.server]
-            self.clients = allSections[.clients]
-            self.memory = allSections[.memory]
-            self.persistence = allSections[.persistence]
-            self.stats = allSections[.stats]
-            self.replication = allSections[.replication]
-            self.cpu = allSections[.cpu]
-            self.commandstats = allSections[.commandstats]
-            self.errorstats = allSections[.errorstats]
-            self.cluster = allSections[.cluster]
-            self.modules = allSections[.modules]
-            self.keyspace = allSections[.keyspace]
-
-            // Store unknown sections
-            self.other = allSections.filter { !Self.knownSections.contains($0.key) }
         }
 
-        /// Parse INFO data from a string into section dictionaries
-        private static func parseInfoData<S: StringProtocol>(_ string: S) -> [Section: [Field: Substring]]
+        /// Parse INFO data from a string into Response
+        private static func parseInfoData<S: StringProtocol>(_ string: S) -> Response
         where S.SubSequence == Substring {
             var sections: [Section: [Field: Substring]] = [:]
             var currentSection: Section?
@@ -582,7 +594,22 @@ extension INFO {
                 sections[currentSection, default: [:]][field] = value
             }
 
-            return sections
+            // Extract known sections and build Response
+            return Response(
+                server: sections[.server],
+                clients: sections[.clients],
+                memory: sections[.memory],
+                persistence: sections[.persistence],
+                stats: sections[.stats],
+                replication: sections[.replication],
+                cpu: sections[.cpu],
+                commandstats: sections[.commandstats],
+                errorstats: sections[.errorstats],
+                cluster: sections[.cluster],
+                modules: sections[.modules],
+                keyspace: sections[.keyspace],
+                other: sections.filter { !knownSections.contains($0.key) }
+            )
         }
     }
 }
