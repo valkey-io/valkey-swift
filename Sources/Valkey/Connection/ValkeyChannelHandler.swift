@@ -554,7 +554,7 @@ extension ValkeyChannelHandler.Configuration {
             blockingCommandTimeout: .init(other.blockingCommandTimeout),
             clientName: other.clientName,
             readOnly: other.readOnly,
-            clientRedirect: other.enableClientRedirect,
+            clientRedirect: other.enableClientCapaRedirect,
             databaseNumber: other.databaseNumber
         )
     }

@@ -277,7 +277,7 @@ public struct ValkeyClientConfiguration: Sendable {
         tls: TLS = .disable,
         databaseNumber: Int = 0,
         readOnlyCommandNodeSelection: ReadOnlyCommandNodeSelection = .primary,
-        enableClientRedirect: Bool = true,
+        enableClientCapaRedirect: Bool = true,
         connectingToReplica: Bool = false
     ) {
         self.authentication = authentication
@@ -289,7 +289,7 @@ public struct ValkeyClientConfiguration: Sendable {
         self.tls = tls
         self.databaseNumber = databaseNumber
         self.readOnlyCommandNodeSelection = readOnlyCommandNodeSelection
-        self.enableClientCapaRedirect = enableClientRedirect
+        self.enableClientCapaRedirect = enableClientCapaRedirect
         self.connectingToReplica = connectingToReplica
     }
 }
