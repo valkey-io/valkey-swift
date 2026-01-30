@@ -108,6 +108,9 @@ public struct ValkeyClientConfiguration: Sendable {
 
         /// Calculate wait time for retry number
         ///
+        /// A nil value implies we have reached the maximum number of attempts and should not
+        /// retry again
+        ///
         /// This code is a copy from the `RetryParam` type in cluster_clients.rs of valkey-glide,
         @usableFromInline
         func calculateWaitTime(attempt: Int) -> Duration? {
