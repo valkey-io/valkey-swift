@@ -92,6 +92,7 @@ public struct ValkeyClientConfiguration: Sendable {
         ///   - factor: Duration to multiple exponent by get base wait value
         ///   - minWaitTime: Minimum wait time
         ///   - maxWaitTime: Maximum wait time
+        ///   - maxAttempts: The maximum number of times an operation should be attempted
         public init(
             exponentBase: Double = 2,
             factor: Duration = .milliseconds(10.0),
@@ -114,7 +115,7 @@ public struct ValkeyClientConfiguration: Sendable {
         /// This code is a copy from the `RetryParam` type in cluster_clients.rs of valkey-glide,
         @usableFromInline
         func calculateWaitTime(attempt: Int) -> Duration? {
-            if attempt > self.maxAttemtps {
+            if attempt >= self.maxAttemtps {
                 return nil
             }
             let baseWait = pow(self.exponentBase, Double(attempt)) * self.factor
