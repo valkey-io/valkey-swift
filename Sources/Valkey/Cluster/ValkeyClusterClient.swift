@@ -183,7 +183,9 @@ public final class ValkeyClusterClient: Sendable {
                         clientSelector = { try await self.nodeClient(for: redirectError) }
                         asking = (redirectError.redirection == .ask)
                     case .tryAgain:
-                        let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
+                        guard let wait = self.clientConfiguration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            throw error
+                        }
                         try await Task.sleep(for: wait)
                         attempt += 1
                     case .dontRetry:
@@ -393,7 +395,9 @@ public final class ValkeyClusterClient: Sendable {
                     clientSelector = { try await self.nodeClient(for: redirectError) }
                     asking = (redirectError.redirection == .ask)
                 case .tryAgain:
-                    let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
+                    guard let wait = self.clientConfiguration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                        throw error
+                    }
                     try await Task.sleep(for: wait)
                     attempt += 1
                 case .dontRetry:
@@ -431,6 +435,7 @@ public final class ValkeyClusterClient: Sendable {
         while !Task.isCancelled {
             var node = node
             var redirection: Redirection? = nil
+            var tryAgainError: Error? = nil
             // check if any results require the command to be retried
             for result in results.enumerated() {
                 switch result.element {
@@ -442,8 +447,7 @@ public final class ValkeyClusterClient: Sendable {
                         break
                     case .tryAgain:
                         retryCommands.append((commands[commands.startIndex + result.offset], result.offset))
-                        let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
-                        try await Task.sleep(for: wait)
+                        tryAgainError = error
                     case .redirect(let redirectError):
                         if redirection == nil {
                             let node = try await self.nodeClient(for: redirectError)
@@ -464,8 +468,13 @@ public final class ValkeyClusterClient: Sendable {
             if let redirection {
                 node = redirection.node
                 ask = redirection.ask
-            } else {
-                // only increment attempt if we aren't redirecting to another node
+            } else if let tryAgainError {
+                // if we aren't redirecting and we received a TRYAGAIN error we should calculate the time to wait before
+                // trying again, wait and increment the attempt counter
+                guard let wait = self.clientConfiguration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                    throw tryAgainError
+                }
+                try await Task.sleep(for: wait)
                 attempt += 1
             }
             // send commands that need retrying

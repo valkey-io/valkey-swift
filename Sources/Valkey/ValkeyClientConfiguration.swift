@@ -84,6 +84,7 @@ public struct ValkeyClientConfiguration: Sendable {
         let factor: Double
         let minWaitTime: Double
         let maxWaitTime: Double
+        let maxAttemtps: Int
 
         /// Initialize RetryParameters
         /// - Parameters:
@@ -95,20 +96,25 @@ public struct ValkeyClientConfiguration: Sendable {
             exponentBase: Double = 2,
             factor: Duration = .milliseconds(10.0),
             minWaitTime: Duration = .seconds(1.28),
-            maxWaitTime: Duration = .seconds(655.36)
+            maxWaitTime: Duration = .seconds(655.36),
+            maxAttemtps: Int = 16
         ) {
             self.exponentBase = exponentBase
             self.factor = factor / .milliseconds(1)
             self.minWaitTime = minWaitTime / .milliseconds(1)
             self.maxWaitTime = maxWaitTime / .milliseconds(1)
+            self.maxAttemtps = 16
         }
 
         /// Calculate wait time for retry number
         ///
         /// This code is a copy from the `RetryParam` type in cluster_clients.rs of valkey-glide,
         @usableFromInline
-        func calculateWaitTime(retry: Int) -> Duration {
-            let baseWait = pow(self.exponentBase, Double(retry)) * self.factor
+        func calculateWaitTime(attempt: Int) -> Duration? {
+            if attempt > self.maxAttemtps {
+                return nil
+            }
+            let baseWait = pow(self.exponentBase, Double(attempt)) * self.factor
             let clampedWait = max(min(baseWait, self.maxWaitTime), self.minWaitTime)
             let jitteredWait = Double.random(in: minWaitTime...clampedWait)
             return .milliseconds(jitteredWait)

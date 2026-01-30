@@ -204,7 +204,9 @@ extension ValkeyClient: ValkeyClientProtocol {
             } catch let error as ValkeyClientError {
                 switch self.getRetryAction(from: error) {
                 case .redirect(let redirectError):
-                    let wait = self.configuration.retryParameters.calculateWaitTime(retry: attempt)
+                    guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                        throw error
+                    }
                     try? await Task.sleep(for: wait)
                     attempt += 1
                     self.setPrimary(redirectError.address)
