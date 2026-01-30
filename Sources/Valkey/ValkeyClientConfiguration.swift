@@ -265,7 +265,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - tls: The TLS configuration.
     ///   - databaseNumber: The Valkey Database number.
     ///   - readOnlyCommandNodeSelection: How we choose a node when processing readonly commands
-    ///   - enableClientRedirect: Support client redirection errors from replicas
+    ///   - enableClientCapaRedirect: Support client redirection errors from replicas
     ///   - connectingToReplica: Flag we are connecting to a replica and don't want to redirect to the primary
     public init(
         authentication: Authentication? = nil,
