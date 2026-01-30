@@ -230,6 +230,23 @@ public struct ValkeyClientConfiguration: Sendable {
     /// nodes but there is a chance you will receive stale data as the replica is not up to date.
     public var readOnlyCommandNodeSelection: ReadOnlyCommandNodeSelection
 
+    /// Enable client redirect capability
+    ///
+    /// Valkey 8.0 introduced a new command CLIENT CAPA to indicate client capabilities. It
+    /// currently only supports one capability `redirect`. This indicates the client is
+    /// capable of handling redirect messages from replica nodes back to the primary. See
+    /// https://valkey.io/commands/client-capa/
+    ///
+    /// This is only valid when used with `ValkeyClient`. Redirection is handled differently with
+    /// `ValkeyClusterClient`.
+    public var enableClientCapaRedirect: Bool
+
+    /// Flag that we are connecting to a Replica in standalone mode and shouldn't redirect to
+    /// the primary unless `enableClientRedirect` is set to true and we call a non readonly command
+    ///
+    /// This is only valid when used with `ValkeyClient`as it is a standalone client feature.
+    public var connectingToReplica: Bool
+
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for the Valkey connection.
     /// Defaults to using the globally bootstrapped tracer with OpenTelemetry semantic conventions.
@@ -248,6 +265,8 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - tls: The TLS configuration.
     ///   - databaseNumber: The Valkey Database number.
     ///   - readOnlyCommandNodeSelection: How we choose a node when processing readonly commands
+    ///   - enableClientCapaRedirect: Support client redirection errors from replicas
+    ///   - connectingToReplica: Flag we are connecting to a replica and don't want to redirect to the primary
     public init(
         authentication: Authentication? = nil,
         connectionPool: ConnectionPool = .init(),
@@ -257,7 +276,9 @@ public struct ValkeyClientConfiguration: Sendable {
         blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable,
         databaseNumber: Int = 0,
-        readOnlyCommandNodeSelection: ReadOnlyCommandNodeSelection = .primary
+        readOnlyCommandNodeSelection: ReadOnlyCommandNodeSelection = .primary,
+        enableClientCapaRedirect: Bool = true,
+        connectingToReplica: Bool = false
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
@@ -268,5 +289,7 @@ public struct ValkeyClientConfiguration: Sendable {
         self.tls = tls
         self.databaseNumber = databaseNumber
         self.readOnlyCommandNodeSelection = readOnlyCommandNodeSelection
+        self.enableClientCapaRedirect = enableClientCapaRedirect
+        self.connectingToReplica = connectingToReplica
     }
 }

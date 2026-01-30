@@ -124,6 +124,13 @@ public struct ValkeyConnectionConfiguration: Sendable {
     /// The number of Valkey Database
     public var databaseNumber: Int = 0
 
+    /// Enable client redirect capability
+    ///
+    /// Valkey 8.0 introduced a new command CLIENT CAPA to indicate client capabilities. It
+    /// currently only supports one capability `redirect`. This indicates the client is
+    /// capable of handling redirect messages from replica nodes back to the primary
+    public var enableClientCapaRedirect: Bool
+
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for this connection.
     /// Defaults to using the globally bootstrapped tracer with OpenTelemetry semantic conventions.
@@ -143,6 +150,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
     ///   - clientName: Optional name to identify this client connection on the server. Defaults to `nil`.
     ///   - readOnly: Is the connection a readonly connection
     ///   - databaseNumber: Database Number to use for the connection
+    ///   - enableClientCapaRedirect: Support client redirection errors from replicas
     public init(
         authentication: Authentication? = nil,
         commandTimeout: Duration = .seconds(30),
@@ -150,7 +158,8 @@ public struct ValkeyConnectionConfiguration: Sendable {
         tls: TLS = .disable,
         clientName: String? = nil,
         readOnly: Bool = false,
-        databaseNumber: Int = 0
+        databaseNumber: Int = 0,
+        enableClientCapaRedirect: Bool = true,
     ) {
         self.authentication = authentication
         self.commandTimeout = commandTimeout
@@ -159,6 +168,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
         self.clientName = clientName
         self.readOnly = readOnly
         self.databaseNumber = databaseNumber
+        self.enableClientCapaRedirect = enableClientCapaRedirect
     }
 }
 

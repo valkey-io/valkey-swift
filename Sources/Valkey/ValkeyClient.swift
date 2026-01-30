@@ -86,17 +86,7 @@ public final class ValkeyClient: Sendable {
         self.runningAtomic = .init(false)
         self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
-
-        let action = self.stateMachine.withLock { $0.setPrimary(address) }
-        switch action {
-        case .runNode(let client):
-            self.queueAction(.runNodeClient(client))
-        case .runNodeAndFindReplicas(let client):
-            self.queueAction(.runNodeClient(client))
-            self.queueAction(.runRole)
-        case .findReplicas, .doNothing:
-            preconditionFailure("First time you call setPrimary it should return runNodeAndFindReplicas or runNode")
-        }
+        self.setPrimary(address)
     }
 }
 
@@ -174,21 +164,10 @@ extension ValkeyClient {
                     self.logger.debug("Found replicas \(replicas)")
 
                 case .replica(let replica):
-                    // if client is pointing to a replica then redirect to the primary
-                    let action = self.stateMachine.withLock { $0.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort)) }
-                    self.logger.debug("Client is a connected to a replica redirecting to primary \(replica.primaryIP):\(replica.primaryPort)")
-                    switch action {
-                    case .runNode(let client):
-                        self.queueAction(.runNodeClient(client))
-                    case .runNodeAndFindReplicas(let client):
-                        self.queueAction(.runNodeClient(client))
-                        self.queueAction(.runRole)
-                    case .findReplicas:
-                        self.queueAction(.runRole)
-                    case .doNothing:
-                        break
+                    if !self.configuration.connectingToReplica {
+                        // if client is pointing to a replica then redirect to the primary
+                        self.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort))
                     }
-
                     break
                 case .sentinel:
                     preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
@@ -206,6 +185,8 @@ extension ValkeyClient {
     }
 }
 
+// MARK: ValkeyClientProtocol methods
+
 /// Extend ValkeyClient so we can call commands directly from it
 @available(valkeySwift 1.0, *)
 extension ValkeyClient: ValkeyClientProtocol {
@@ -214,15 +195,27 @@ extension ValkeyClient: ValkeyClientProtocol {
     /// - Returns: Response from Valkey command
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
-        do {
-            return try await self.withConnection(readOnly: command.isReadOnly) { connection in
-                try await connection.execute(command)
+        var attempt = 0
+        repeat {
+            do {
+                return try await self.withConnection(readOnly: command.isReadOnly) { connection in
+                    try await connection.execute(command)
+                }
+            } catch let error as ValkeyClientError {
+                switch self.getRetryAction(from: error) {
+                case .redirect(let redirectError):
+                    let wait = self.configuration.retryParameters.calculateWaitTime(retry: attempt)
+                    try? await Task.sleep(for: wait)
+                    attempt += 1
+                    self.setPrimary(redirectError.address)
+                case .dontRetry:
+                    throw error
+                }
+            } catch {
+                throw ValkeyClientError(.unrecognisedError, error: error)
             }
-        } catch let error as ValkeyClientError {
-            throw error
-        } catch {
-            throw ValkeyClientError(.unrecognisedError, error: error)
-        }
+        } while !Task.isCancelled
+        throw ValkeyClientError(.cancelled)
     }
 }
 
@@ -322,6 +315,50 @@ extension ValkeyClient {
             }
         let node = self.getNode(readOnly: readOnly)
         return try await node.transaction(commands)
+    }
+}
+
+// MARK: Private methods
+@available(valkeySwift 1.0, *)
+extension ValkeyClient {
+    @usableFromInline
+    /* private */ func setPrimary(_ address: ValkeyServerAddress) {
+        let action = self.stateMachine.withLock { $0.setPrimary(address) }
+        switch action {
+        case .runNode(let client):
+            self.queueAction(.runNodeClient(client))
+        case .runNodeAndFindReplicas(let client):
+            self.queueAction(.runNodeClient(client))
+            self.queueAction(.runRole)
+        case .findReplicas:
+            self.queueAction(.runRole)
+        case .doNothing:
+            break
+        }
+    }
+
+    @usableFromInline
+    enum RetryAction {
+        case redirect(ValkeyRedirectError)
+        case dontRetry
+    }
+
+    @usableFromInline
+    /* private */ func getRetryAction(from error: ValkeyClientError) -> RetryAction {
+        switch error.errorCode {
+        case .commandError:
+            guard let errorMessage = error.message else {
+                return .dontRetry
+            }
+            if let redirectError = ValkeyRedirectError(errorMessage) {
+                self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
+                return .redirect(redirectError)
+            } else {
+                return .dontRetry
+            }
+        default:
+            return .dontRetry
+        }
     }
 }
 
