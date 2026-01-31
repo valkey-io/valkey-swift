@@ -76,7 +76,7 @@ let (member, score) = respToken.decodeMapValues("member", "score", as: (String, 
 
 As a `RESPToken.Map` is just a sequence of key value pairs access by key name is a O(n) process where n is the number of entries in the map.
 
-## RESPBulkString
+### RESPBulkString
 
 Where a command response is a RESP bulk string eg `GET`, it returns a ``RESPBulkString`` type. RESP bulk strings can be either UTF-8 Strings or binary blobs. Valkey swift provides initializers for both `String` and `ByteBuffer` to access the bulk string as either UTF-8 or binary blob.
 

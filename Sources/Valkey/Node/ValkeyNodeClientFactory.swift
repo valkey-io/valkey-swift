@@ -49,7 +49,7 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
             nodeDescription.address,
             connectionIDGenerator: self.connectionIDGenerator,
             connectionFactory: self.connectionFactory,
-            readOnly: nodeDescription.readOnly,
+            readOnly: configuration.readOnlyCommandNodeSelection != .primary,
             eventLoopGroup: self.eventLoopGroup,
             logger: self.logger
         )
@@ -59,7 +59,6 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
 @usableFromInline
 package struct ValkeyClientNodeDescription: Equatable, Identifiable, Sendable {
     let address: ValkeyServerAddress
-    let readOnly: Bool
 
     @usableFromInline
     package var id: ValkeyServerAddress { self.address }
