@@ -9,6 +9,141 @@
 // https://github.com/hummingbird-project/hummingbird/blob/main/Sources/Hummingbird/Utils/SplitStringSequences.swift
 //
 
+// MARK: - Character-based splitting (fast path for single-character separators)
+
+/// A sequence that iterates over string components separated by a given character,
+/// omitting empty components.
+@usableFromInline
+struct SplitCharacterSequence<S: StringProtocol>: Sequence {
+    @usableFromInline let base: S
+    @usableFromInline let separator: Character
+
+    @inlinable
+    init(_ base: S, separator: Character) {
+        self.base = base
+        self.separator = separator
+    }
+
+    @inlinable
+    func makeIterator() -> Iterator {
+        Iterator(base: base, separator: separator)
+    }
+
+    @usableFromInline
+    struct Iterator: IteratorProtocol {
+        @usableFromInline let base: S
+        @usableFromInline let endIndex: S.Index
+        @usableFromInline var currentIndex: S.Index
+        @usableFromInline let separator: Character
+
+        @inlinable
+        init(base: S, separator: Character) {
+            self.base = base
+            self.separator = separator
+            self.endIndex = base.endIndex
+            // Skip leading separators
+            var index = base.startIndex
+            while index < base.endIndex && base[index] == separator {
+                base.formIndex(after: &index)
+            }
+            self.currentIndex = index
+        }
+
+        @inlinable
+        mutating func next() -> S.SubSequence? {
+            guard currentIndex < endIndex else { return nil }
+
+            let start = currentIndex
+            // Find next separator or end
+            while currentIndex < endIndex && base[currentIndex] != separator {
+                base.formIndex(after: &currentIndex)
+            }
+
+            let component = base[start..<currentIndex]
+
+            // Skip trailing separators
+            while currentIndex < endIndex && base[currentIndex] == separator {
+                base.formIndex(after: &currentIndex)
+            }
+
+            return component
+        }
+    }
+}
+
+/// A sequence that iterates over string components separated by a given character,
+/// omitting empty components, with a maximum number of splits.
+@usableFromInline
+struct SplitCharacterMaxSplitsSequence<S: StringProtocol>: Sequence {
+    @usableFromInline let base: S
+    @usableFromInline let separator: Character
+    @usableFromInline let maxSplits: Int
+
+    @inlinable
+    init(_ base: S, separator: Character, maxSplits: Int) {
+        self.base = base
+        self.separator = separator
+        self.maxSplits = maxSplits
+    }
+
+    @inlinable
+    func makeIterator() -> Iterator {
+        Iterator(base: self.base, separator: self.separator, maxSplits: self.maxSplits)
+    }
+
+    @usableFromInline
+    struct Iterator: IteratorProtocol {
+        @usableFromInline let base: S
+        @usableFromInline let endIndex: S.Index
+        @usableFromInline var currentIndex: S.Index
+        @usableFromInline var availableSplits: Int
+        @usableFromInline let separator: Character
+
+        @inlinable
+        init(base: S, separator: Character, maxSplits: Int) {
+            self.base = base
+            self.separator = separator
+            self.endIndex = base.endIndex
+            // Skip leading separator
+            var index = base.startIndex
+            while index < base.endIndex && base[index] == separator {
+                base.formIndex(after: &index)
+            }
+            self.currentIndex = index
+            self.availableSplits = maxSplits + 1
+        }
+
+        @inlinable
+        mutating func next() -> S.SubSequence? {
+            guard self.currentIndex < self.endIndex, self.availableSplits > 0 else { return nil }
+
+            self.availableSplits -= 1
+            if self.availableSplits == 0 {
+                let component = base[self.currentIndex...]
+                self.currentIndex = self.endIndex
+                return component
+            }
+
+            let start = currentIndex
+            // Find next separator or end
+            while currentIndex < endIndex && base[currentIndex] != separator {
+                base.formIndex(after: &currentIndex)
+            }
+
+            let component = base[start..<currentIndex]
+
+            // Skip trailing separators
+            while currentIndex < endIndex && base[currentIndex] == separator {
+                base.formIndex(after: &currentIndex)
+            }
+
+            return component
+        }
+    }
+}
+
+// MARK: - String-based splitting (for multi-character separators)
+
 /// Checks if a separator string matches at an exact position in the base string.
 ///
 /// Performs character-by-character comparison.
@@ -20,8 +155,7 @@
 ///   - position: The exact index where the match must start
 /// - Returns: Range of the matched separator, or `nil` if no match or insufficient characters
 /// - Complexity: O(m) where m is the length of the separator
-@inlinable
-func matchSeparatorAt<T: StringProtocol>(
+fileprivate func matchSeparatorAt<T: StringProtocol>(
     _ base: T,
     _ separator: String,
     position: T.Index
@@ -52,8 +186,7 @@ func matchSeparatorAt<T: StringProtocol>(
 ///   - anchored: If `true`, matches only at `startIndex`; if `false`, searches forward
 /// - Returns: Range of the matched separator, or `nil` if no match found
 /// - Complexity: Anchored O(m), Unanchored O(n*m) where n = string length, m = separator length
-@inlinable
-func findSeparator<T: StringProtocol>(
+fileprivate func findSeparator<T: StringProtocol>(
     in base: T,
     separator: String,
     from startIndex: T.Index,
@@ -108,7 +241,7 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
         /// - Parameters:
         ///   - base: The string to split
         ///   - separator: The separator string to split by
-        @inlinable
+        @usableFromInline
         init(base: S, separator: String) {
             self.base = base
             self.separator = separator
@@ -131,7 +264,7 @@ struct SplitStringSequence<S: StringProtocol>: Sequence {
         /// a separator, skips any consecutive separators to avoid returning empty components.
         ///
         /// - Returns: The next non-empty substring component, or `nil` when iteration is complete
-        @inlinable
+        @usableFromInline
         mutating func next() -> S.SubSequence? {
             guard currentIndex < endIndex else { return nil }
 
@@ -200,7 +333,7 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
         ///   - base: The string to split
         ///   - separator: The separator string to split by
         ///   - maxSplits: Maximum number of splits (final component count = maxSplits + 1)
-        @inlinable
+        @usableFromInline
         init(base: S, separator: String, maxSplits: Int) {
             self.base = base
             self.separator = separator
@@ -224,8 +357,8 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
         /// Once the limit is reached, returns the entire remainder of the string as the final component.
         ///
         /// - Returns: The next substring component, or `nil` when iteration is complete
-        @inlinable
-        public mutating func next() -> S.SubSequence? {
+        @usableFromInline
+        mutating func next() -> S.SubSequence? {
             guard self.currentIndex < self.endIndex, self.availableSplits > 0 else { return nil }
 
             self.availableSplits -= 1
@@ -263,28 +396,37 @@ struct SplitStringMaxSplitsSequence<S: StringProtocol>: Sequence {
 }
 
 extension StringProtocol {
-    /// Returns a sequence that splits this string by the given separator, omitting empty components.
+    /// Splits by a character separator, omitting empty components.
     ///
-    /// Creates a lazy sequence that splits the string each time a separator is found.
-    /// Consecutive separators are treated as a single separator. Leading separators are skipped.
+    /// Consecutive and leading separators are skipped. Optimized fast path for single characters.
+    @inlinable
+    func splitSequence(separator: Character) -> SplitCharacterSequence<Self> {
+        SplitCharacterSequence(self, separator: separator)
+    }
+
+    /// Splits by a string separator, omitting empty components.
     ///
-    /// - Parameter separator: The separator string to split by (can be multi-character)
-    /// - Returns: A sequence of non-empty substring components
+    /// Consecutive and leading separators are skipped. Use for multi-character separators like `"\r\n"`.
     @inlinable
     func splitSequence(separator: String) -> SplitStringSequence<Self> {
         SplitStringSequence(self, separator: separator)
     }
 
-    /// Returns a sequence that splits this string by the given separator up to a maximum number of times.
+    /// Splits by a character separator up to a maximum number of times.
     ///
-    /// Creates a lazy sequence that splits the string up to `maxSplits` times.
-    /// After reaching the limit, the remainder of the string is returned as a single component.
-    /// Consecutive and leading separators are skipped.
+    /// After `maxSplits`, the remainder is returned as a single component. Optimized fast path for single characters.
     ///
-    /// - Parameters:
-    ///   - separator: The separator string to split by (can be multi-character)
-    ///   - maxSplits: Maximum number of splits to perform
-    /// - Returns: A sequence with at most `maxSplits + 1` components
+    /// - Parameter maxSplits: Maximum splits (result contains at most `maxSplits + 1` components)
+    @inlinable
+    func splitMaxSplitsSequence(separator: Character, maxSplits: Int) -> SplitCharacterMaxSplitsSequence<Self> {
+        SplitCharacterMaxSplitsSequence(self, separator: separator, maxSplits: maxSplits)
+    }
+
+    /// Splits by a string separator up to a maximum number of times.
+    ///
+    /// After `maxSplits`, the remainder is returned as a single component. Use for multi-character separators like `"\r\n"`.
+    ///
+    /// - Parameter maxSplits: Maximum splits (result contains at most `maxSplits + 1` components)
     @inlinable
     func splitMaxSplitsSequence(separator: String, maxSplits: Int) -> SplitStringMaxSplitsSequence<Self> {
         SplitStringMaxSplitsSequence(self, separator: separator, maxSplits: maxSplits)

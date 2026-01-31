@@ -354,29 +354,29 @@ extension INFO {
         // Well-known sections from Valkey INFO command
 
         /// General information about the server
-        public static let server: Section = .init(rawValue: "Server"[...])
+        public static let server: Section = .init(rawValue: "Server")
         /// Client connections section
-        public static let clients: Section = .init(rawValue: "Clients"[...])
+        public static let clients: Section = .init(rawValue: "Clients")
         /// Memory consumption information
-        public static let memory: Section = .init(rawValue: "Memory"[...])
+        public static let memory: Section = .init(rawValue: "Memory")
         /// RDB and AOF persistence information
-        public static let persistence: Section = .init(rawValue: "Persistence"[...])
+        public static let persistence: Section = .init(rawValue: "Persistence")
         /// General statistics
-        public static let stats: Section = .init(rawValue: "Stats"[...])
+        public static let stats: Section = .init(rawValue: "Stats")
         /// Primary/replica replication information
-        public static let replication: Section = .init(rawValue: "Replication"[...])
+        public static let replication: Section = .init(rawValue: "Replication")
         /// CPU consumption statistics
-        public static let cpu: Section = .init(rawValue: "CPU"[...])
+        public static let cpu: Section = .init(rawValue: "CPU")
         /// Command statistics
-        public static let commandstats: Section = .init(rawValue: "Commandstats"[...])
+        public static let commandstats: Section = .init(rawValue: "Commandstats")
         /// Error statistics
-        public static let errorstats: Section = .init(rawValue: "Errorstats"[...])
+        public static let errorstats: Section = .init(rawValue: "Errorstats")
         /// Cluster section (available only in cluster mode)
-        public static let cluster: Section = .init(rawValue: "Cluster"[...])
+        public static let cluster: Section = .init(rawValue: "Cluster")
         /// Modules section
-        public static let modules: Section = .init(rawValue: "Modules"[...])
+        public static let modules: Section = .init(rawValue: "Modules")
         /// Database related statistics
-        public static let keyspace: Section = .init(rawValue: "Keyspace"[...])
+        public static let keyspace: Section = .init(rawValue: "Keyspace")
     }
 
     /// Represents an INFO field name within a section.
@@ -395,57 +395,57 @@ extension INFO {
         }
 
         // Server section fields
-        public static let valkeyVersion: Field = .init(rawValue: "valkey_version"[...])
-        public static let valkeyGitSha1: Field = .init(rawValue: "valkey_git_sha1"[...])
-        public static let valkeyGitDirty: Field = .init(rawValue: "valkey_git_dirty"[...])
-        public static let valkeyBuildId: Field = .init(rawValue: "valkey_build_id"[...])
-        public static let valkeyMode: Field = .init(rawValue: "valkey_mode"[...])
-        public static let os: Field = .init(rawValue: "os"[...])
-        public static let archBits: Field = .init(rawValue: "arch_bits"[...])
-        public static let tcpPort: Field = .init(rawValue: "tcp_port"[...])
-        public static let uptimeInSeconds: Field = .init(rawValue: "uptime_in_seconds"[...])
-        public static let uptimeInDays: Field = .init(rawValue: "uptime_in_days"[...])
+        public static let valkeyVersion: Field = .init(rawValue: "valkey_version")
+        public static let valkeyGitSha1: Field = .init(rawValue: "valkey_git_sha1")
+        public static let valkeyGitDirty: Field = .init(rawValue: "valkey_git_dirty")
+        public static let valkeyBuildId: Field = .init(rawValue: "valkey_build_id")
+        public static let valkeyMode: Field = .init(rawValue: "valkey_mode")
+        public static let os: Field = .init(rawValue: "os")
+        public static let archBits: Field = .init(rawValue: "arch_bits")
+        public static let tcpPort: Field = .init(rawValue: "tcp_port")
+        public static let uptimeInSeconds: Field = .init(rawValue: "uptime_in_seconds")
+        public static let uptimeInDays: Field = .init(rawValue: "uptime_in_days")
 
         // Memory section fields
-        public static let usedMemory: Field = .init(rawValue: "used_memory"[...])
-        public static let usedMemoryHuman: Field = .init(rawValue: "used_memory_human"[...])
-        public static let usedMemoryRss: Field = .init(rawValue: "used_memory_rss"[...])
-        public static let usedMemoryRssHuman: Field = .init(rawValue: "used_memory_rss_human"[...])
-        public static let usedMemoryPeak: Field = .init(rawValue: "used_memory_peak"[...])
-        public static let usedMemoryPeakHuman: Field = .init(rawValue: "used_memory_peak_human"[...])
-        public static let memFragmentationRatio: Field = .init(rawValue: "mem_fragmentation_ratio"[...])
+        public static let usedMemory: Field = .init(rawValue: "used_memory")
+        public static let usedMemoryHuman: Field = .init(rawValue: "used_memory_human")
+        public static let usedMemoryRss: Field = .init(rawValue: "used_memory_rss")
+        public static let usedMemoryRssHuman: Field = .init(rawValue: "used_memory_rss_human")
+        public static let usedMemoryPeak: Field = .init(rawValue: "used_memory_peak")
+        public static let usedMemoryPeakHuman: Field = .init(rawValue: "used_memory_peak_human")
+        public static let memFragmentationRatio: Field = .init(rawValue: "mem_fragmentation_ratio")
 
         // Stats section fields
-        public static let totalConnectionsReceived: Field = .init(rawValue: "total_connections_received"[...])
-        public static let totalCommandsProcessed: Field = .init(rawValue: "total_commands_processed"[...])
-        public static let instantaneousOpsPerSec: Field = .init(rawValue: "instantaneous_ops_per_sec"[...])
-        public static let rejectedConnections: Field = .init(rawValue: "rejected_connections"[...])
-        public static let expiredKeys: Field = .init(rawValue: "expired_keys"[...])
-        public static let evictedKeys: Field = .init(rawValue: "evicted_keys"[...])
-        public static let keyspaceHits: Field = .init(rawValue: "keyspace_hits"[...])
-        public static let keyspaceMisses: Field = .init(rawValue: "keyspace_misses"[...])
+        public static let totalConnectionsReceived: Field = .init(rawValue: "total_connections_received")
+        public static let totalCommandsProcessed: Field = .init(rawValue: "total_commands_processed")
+        public static let instantaneousOpsPerSec: Field = .init(rawValue: "instantaneous_ops_per_sec")
+        public static let rejectedConnections: Field = .init(rawValue: "rejected_connections")
+        public static let expiredKeys: Field = .init(rawValue: "expired_keys")
+        public static let evictedKeys: Field = .init(rawValue: "evicted_keys")
+        public static let keyspaceHits: Field = .init(rawValue: "keyspace_hits")
+        public static let keyspaceMisses: Field = .init(rawValue: "keyspace_misses")
 
         // Replication section fields
-        public static let role: Field = .init(rawValue: "role"[...])
-        public static let connectedSlaves: Field = .init(rawValue: "connected_slaves"[...])
-        public static let masterReplOffset: Field = .init(rawValue: "master_repl_offset"[...])
-        public static let replBacklogActive: Field = .init(rawValue: "repl_backlog_active"[...])
+        public static let role: Field = .init(rawValue: "role")
+        public static let connectedSlaves: Field = .init(rawValue: "connected_slaves")
+        public static let masterReplOffset: Field = .init(rawValue: "master_repl_offset")
+        public static let replBacklogActive: Field = .init(rawValue: "repl_backlog_active")
 
         // CPU section fields
-        public static let usedCpuSys: Field = .init(rawValue: "used_cpu_sys"[...])
-        public static let usedCpuUser: Field = .init(rawValue: "used_cpu_user"[...])
+        public static let usedCpuSys: Field = .init(rawValue: "used_cpu_sys")
+        public static let usedCpuUser: Field = .init(rawValue: "used_cpu_user")
 
         // Clients section fields
-        public static let connectedClients: Field = .init(rawValue: "connected_clients"[...])
-        public static let blockedClients: Field = .init(rawValue: "blocked_clients"[...])
+        public static let connectedClients: Field = .init(rawValue: "connected_clients")
+        public static let blockedClients: Field = .init(rawValue: "blocked_clients")
 
         // Persistence section fields
-        public static let loading: Field = .init(rawValue: "loading"[...])
-        public static let rdbChangesSinceLastSave: Field = .init(rawValue: "rdb_changes_since_last_save"[...])
-        public static let rdbLastSaveTime: Field = .init(rawValue: "rdb_last_save_time"[...])
+        public static let loading: Field = .init(rawValue: "loading")
+        public static let rdbChangesSinceLastSave: Field = .init(rawValue: "rdb_changes_since_last_save")
+        public static let rdbLastSaveTime: Field = .init(rawValue: "rdb_last_save_time")
 
         // Cluster section fields
-        public static let clusterEnabled: Field = .init(rawValue: "cluster_enabled"[...])
+        public static let clusterEnabled: Field = .init(rawValue: "cluster_enabled")
     }
 
     /// Response type for INFO command.
@@ -563,10 +563,7 @@ extension INFO {
                 if line.first == "#" {
                     // Extract section name after "#" and any whitespace
                     var sectionNameRaw = line.dropFirst()
-                    // Trim leading whitespace
-                    while sectionNameRaw.first?.isWhitespace == true {
-                        sectionNameRaw = sectionNameRaw.dropFirst()
-                    }
+                    sectionNameRaw = sectionNameRaw.drop { $0.isWhitespace }
                     // Trim trailing whitespace
                     while sectionNameRaw.last?.isWhitespace == true {
                         sectionNameRaw = sectionNameRaw.dropLast()
@@ -583,7 +580,7 @@ extension INFO {
                 guard let currentSection = currentSection else { continue }
 
                 // Split on first ':' only (values may contain ':')
-                let parts = line.splitMaxSplitsSequence(separator: ":", maxSplits: 1)
+                let parts = line.splitMaxSplitsSequence(separator: ":" as Character, maxSplits: 1)
                 var partsIterator = parts.makeIterator()
 
                 guard let key = partsIterator.next(),
