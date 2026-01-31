@@ -155,7 +155,7 @@ struct SplitCharacterMaxSplitsSequence<S: StringProtocol>: Sequence {
 ///   - position: The exact index where the match must start
 /// - Returns: Range of the matched separator, or `nil` if no match or insufficient characters
 /// - Complexity: O(m) where m is the length of the separator
-fileprivate func matchSeparatorAt<T: StringProtocol>(
+private func matchSeparatorAt<T: StringProtocol>(
     _ base: T,
     _ separator: String,
     position: T.Index
@@ -186,7 +186,7 @@ fileprivate func matchSeparatorAt<T: StringProtocol>(
 ///   - anchored: If `true`, matches only at `startIndex`; if `false`, searches forward
 /// - Returns: Range of the matched separator, or `nil` if no match found
 /// - Complexity: Anchored O(m), Unanchored O(n*m) where n = string length, m = separator length
-fileprivate func findSeparator<T: StringProtocol>(
+private func findSeparator<T: StringProtocol>(
     in base: T,
     separator: String,
     from startIndex: T.Index,
