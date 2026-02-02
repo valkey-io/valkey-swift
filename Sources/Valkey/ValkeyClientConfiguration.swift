@@ -84,6 +84,7 @@ public struct ValkeyClientConfiguration: Sendable {
         let factor: Double
         let minWaitTime: Double
         let maxWaitTime: Double
+        @usableFromInline
         let maxAttempts: Int
 
         /// Initialize RetryParameters

@@ -160,6 +160,7 @@ public final class ValkeyClusterClient: Sendable {
             }
 
             var asking = false
+            var redirectAttempt = 0
             var attempt = 0
             while !Task.isCancelled {
                 do {
@@ -180,6 +181,10 @@ public final class ValkeyClusterClient: Sendable {
                     let retryAction = self.getRetryAction(from: error)
                     switch retryAction {
                     case .redirect(let redirectError):
+                        if redirectAttempt >= self.clientConfiguration.retryParameters.maxAttempts {
+                            throw error
+                        }
+                        redirectAttempt += 1
                         clientSelector = { try await self.nodeClient(for: redirectError) }
                         asking = (redirectError.redirection == .ask)
                     case .tryAgain:
@@ -378,6 +383,7 @@ public final class ValkeyClusterClient: Sendable {
 
         var asking = false
         var attempt = 0
+        var redirectAttempt = 0
         while !Task.isCancelled {
             do {
                 let client = try await clientSelector()
@@ -392,6 +398,10 @@ public final class ValkeyClusterClient: Sendable {
                 let retryAction = self.getTransactionRetryAction(from: error)
                 switch retryAction {
                 case .redirect(let redirectError):
+                    if redirectAttempt >= self.clientConfiguration.retryParameters.maxAttempts {
+                        throw error
+                    }
+                    redirectAttempt += 1
                     clientSelector = { try await self.nodeClient(for: redirectError) }
                     asking = (redirectError.redirection == .ask)
                 case .tryAgain:
@@ -411,6 +421,7 @@ public final class ValkeyClusterClient: Sendable {
     struct Redirection {
         let node: ValkeyNodeClient
         let ask: Bool
+        let error: ValkeyClientError
     }
     /// Pipeline a series of commands to a single node in the Valkey cluster
     ///
@@ -431,7 +442,8 @@ public final class ValkeyClusterClient: Sendable {
         // execute pipeline
         var results = await node.execute(commands)
         var retryCommands: [(any ValkeyCommand, Int)] = []
-        var attempt = 1
+        var attempt = 0
+        var redirectAttempt = 1
         while !Task.isCancelled {
             var node = node
             var redirection: Redirection? = nil
@@ -452,7 +464,7 @@ public final class ValkeyClusterClient: Sendable {
                         if redirection == nil {
                             let node = try await self.nodeClient(for: redirectError)
                             let asking = redirectError.redirection == .ask
-                            redirection = .init(node: node, ask: asking)
+                            redirection = .init(node: node, ask: asking, error: error)
                         }
                         retryCommands.append((commands[commands.startIndex + result.offset], result.offset))
                     }
@@ -468,6 +480,10 @@ public final class ValkeyClusterClient: Sendable {
             if let redirection {
                 node = redirection.node
                 ask = redirection.ask
+                if redirectAttempt >= self.clientConfiguration.retryParameters.maxAttempts {
+                    throw redirection.error
+                }
+                redirectAttempt += 1
             } else if let tryAgainError {
                 // if we aren't redirecting and we received a TRYAGAIN error we should calculate the time to wait before
                 // trying again, wait and increment the attempt counter
