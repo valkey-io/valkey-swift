@@ -220,6 +220,11 @@ public struct ValkeyClientConfiguration: Sendable {
     public var keepAliveBehavior: KeepAliveBehavior
     /// Retry parameters for when a client needs to retry a command
     public var retryParameters: RetryParameters
+
+    /// Maximum number of times we follow a MOVE/ASK error in the cluster client before
+    /// failing a request
+    public var clusterMaximumNumberOfRedirects: Int
+
     /// The timeout the client uses to determine if a connection is considered dead.
     ///
     /// The connection is considered dead if a response isn't received within this time.
@@ -271,6 +276,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - connectionPool: The connection pool configuration.
     ///   - keepAliveBehavior: The connection keep alive behavior.
     ///   - retryParameters: Retry parameters for when client returns an error that requires a retry
+    ///   - clusterMaximumNumberOfRedirects: Maximum number of times we follow a MOVE/ASK error before failing
     ///   - commandTimeout: The timeout for a connection response.
     ///   - blockingCommandTimeout: The timeout for a blocking command response.
     ///   - tls: The TLS configuration.
@@ -283,6 +289,7 @@ public struct ValkeyClientConfiguration: Sendable {
         connectionPool: ConnectionPool = .init(),
         keepAliveBehavior: KeepAliveBehavior = .init(),
         retryParameters: RetryParameters = .init(),
+        clusterMaximumNumberOfRedirects: Int = 4,
         commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable,
@@ -295,6 +302,7 @@ public struct ValkeyClientConfiguration: Sendable {
         self.connectionPool = connectionPool
         self.keepAliveBehavior = keepAliveBehavior
         self.retryParameters = retryParameters
+        self.clusterMaximumNumberOfRedirects = clusterMaximumNumberOfRedirects
         self.commandTimeout = commandTimeout
         self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls

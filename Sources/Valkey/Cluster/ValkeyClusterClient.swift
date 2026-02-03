@@ -484,6 +484,7 @@ public final class ValkeyClusterClient: Sendable {
                     throw redirection.error
                 }
                 redirectAttempt += 1
+                attempt = 0
             } else if let tryAgainError {
                 // if we aren't redirecting and we received a TRYAGAIN error we should calculate the time to wait before
                 // trying again, wait and increment the attempt counter
