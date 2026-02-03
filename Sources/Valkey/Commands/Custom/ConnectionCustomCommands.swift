@@ -176,15 +176,15 @@ extension CLIENT.LIST {
             var clients: [[Field: Substring]] = []
 
             // Use SplitStringSequence for efficient parsing
-            for line in string.splitSequence(separator: "\n") {
+            for line in string.splitSequence(separator: "\n" as Character) {
                 var client: [Field: Substring] = [:]
 
                 // Split by spaces and parse key=value pairs
-                for component in line.splitSequence(separator: " ") {
+                for component in line.splitSequence(separator: " " as Character) {
                     if !component.contains("=") {
                         continue
                     }
-                    let parts = component.splitMaxSplitsSequence(separator: "=", maxSplits: 1)
+                    let parts = component.splitMaxSplitsSequence(separator: "=" as Character, maxSplits: 1)
                     var partsIterator = parts.makeIterator()
                     guard let key = partsIterator.next() else { continue }
                     let field = Field(rawValue: String(key))
