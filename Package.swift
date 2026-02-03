@@ -13,10 +13,14 @@ var defaultSwiftSettings: [SwiftSetting] =
 
         // https://forums.swift.org/t/experimental-support-for-lifetime-dependencies-in-swift-6-2-and-beyond/78638
         .enableExperimentalFeature("Lifetimes"),
+
+        // https://forums.swift.org/t/accepted-se-0458-opt-in-strict-memory-safety-checking/78116
+        .enableExperimentalFeature("StrictMemorySafety"),
     ]
 
 #if compiler(>=6.2)
 defaultSwiftSettings.append(
+    // https://github.com/swiftlang/swift-evolution/blob/main/proposals/0461-async-function-isolation.md
     .enableUpcomingFeature("NonisolatedNonsendingByDefault")
 )
 #endif
