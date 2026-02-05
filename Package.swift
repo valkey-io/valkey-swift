@@ -18,10 +18,7 @@ var defaultSwiftSettings: [SwiftSetting] =
 #if compiler(>=6.2)
 defaultSwiftSettings.append(contentsOf: [
     // https://github.com/swiftlang/swift-evolution/blob/main/proposals/0461-async-function-isolation.md
-    .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-
-    // https://forums.swift.org/t/accepted-se-0458-opt-in-strict-memory-safety-checking/78116
-    .enableExperimentalFeature("StrictMemorySafety"),
+    .enableUpcomingFeature("NonisolatedNonsendingByDefault")
 ])
 #endif
 
