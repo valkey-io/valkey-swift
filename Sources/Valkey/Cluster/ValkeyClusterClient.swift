@@ -482,7 +482,7 @@ public final class ValkeyClusterClient: Sendable {
             if let redirection {
                 node = redirection.node
                 ask = redirection.ask
-                if redirectAttempt >= self.clientConfiguration.retryParameters.maxAttempts {
+                if redirectAttempt >= self.clientConfiguration.clusterMaximumNumberOfRedirects {
                     throw redirection.error
                 }
                 redirectAttempt += 1
