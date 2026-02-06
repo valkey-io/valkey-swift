@@ -703,6 +703,8 @@ public final class ValkeyClusterClient: Sendable {
                     return .dontRetry
                 }
             }
+        case let error as ValkeyClientError where error.errorCode == .connectionCreationCircuitBreakerTripped:
+            return .tryAgain
         default:
             return .dontRetry
         }
@@ -732,6 +734,8 @@ public final class ValkeyClusterClient: Sendable {
             case .transactionAborted:
                 return .dontRetry
             }
+        case let error as ValkeyClientError where error.errorCode == .connectionCreationCircuitBreakerTripped:
+            return .tryAgain
         default:
             return .dontRetry
         }
