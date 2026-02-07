@@ -1000,8 +1000,8 @@ struct ClusterIntegrationTests {
     }
 }
 
-private let clusterFirstNodeHostname: String? = ProcessInfo.processInfo.environment["VALKEY_NODE1_HOSTNAME"] ?? "localhost"
-private let clusterFirstNodePort: Int? = ProcessInfo.processInfo.environment["VALKEY_NODE1_PORT"].flatMap { Int($0) } ?? 36001
+private let clusterFirstNodeHostname: String? = ProcessInfo.processInfo.environment["VALKEY_NODE1_HOSTNAME"]
+private let clusterFirstNodePort: Int? = ProcessInfo.processInfo.environment["VALKEY_NODE1_PORT"].flatMap { Int($0) }
 
 extension ValkeyServerAddress {
     func getHostnameAndPort() -> (String, Int)? {
