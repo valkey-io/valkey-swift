@@ -696,7 +696,7 @@ public final class ValkeyClusterClient: Sendable {
             } else {
                 let prefix = errorMessage.prefix { $0 != " " }
                 switch prefix {
-                case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING":
+                case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING", "BUSY":
                     self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
                     return .tryAgain
                 default:
@@ -723,7 +723,7 @@ public final class ValkeyClusterClient: Sendable {
             } else {
                 let prefix = errorMessage.prefix { $0 != " " }
                 switch prefix {
-                case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING":
+                case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING", "BUSY":
                     self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
                     return .tryAgain
                 default:
