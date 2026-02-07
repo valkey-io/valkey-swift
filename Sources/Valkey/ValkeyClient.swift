@@ -210,6 +210,13 @@ extension ValkeyClient: ValkeyClientProtocol {
                     try? await Task.sleep(for: wait)
                     attempt += 1
                     self.setPrimary(redirectError.address)
+                case .tryAgain:
+                    guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                        throw error
+                    }
+                    try? await Task.sleep(for: wait)
+                    attempt += 1
+
                 case .dontRetry:
                     throw error
                 }
@@ -394,6 +401,7 @@ extension ValkeyClient {
     @usableFromInline
     enum RetryAction {
         case redirect(ValkeyRedirectError)
+        case tryAgain
         case dontRetry
     }
 
@@ -408,7 +416,14 @@ extension ValkeyClient {
                 self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
                 return .redirect(redirectError)
             } else {
-                return .dontRetry
+                let prefix = errorMessage.prefix { $0 != " " }
+                switch prefix {
+                case "LOADING", "BUSY":
+                    self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
+                    return .tryAgain
+                default:
+                    return .dontRetry
+                }
             }
         default:
             return .dontRetry
