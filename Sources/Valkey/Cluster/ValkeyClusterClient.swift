@@ -455,7 +455,7 @@ public final class ValkeyClusterClient: Sendable {
                 switch result.element {
                 case .failure(let error):
                     // get retry action for command
-                    let commandRetryAction = self.getRetryAction(from: error)
+                    let commandRetryAction = self.getPipelinedRetryAction(from: error)
                     switch commandRetryAction {
                     case .dontRetry:
                         break
@@ -696,7 +696,34 @@ public final class ValkeyClusterClient: Sendable {
             } else {
                 let prefix = errorMessage.prefix { $0 != " " }
                 switch prefix {
-                case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING":
+                case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING", "BUSY":
+                    self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
+                    return .tryAgain
+                default:
+                    return .dontRetry
+                }
+            }
+        case let error as ValkeyClientError where error.errorCode == .connectionCreationCircuitBreakerTripped:
+            return .tryAgain
+        default:
+            return .dontRetry
+        }
+    }
+
+    @usableFromInline
+    /* private */ func getPipelinedRetryAction(from error: some Error) -> RetryAction {
+        switch error {
+        case let error as ValkeyClientError where error.errorCode == .commandError:
+            guard let errorMessage = error.message else {
+                return .dontRetry
+            }
+            if let redirectError = ValkeyClusterRedirectionError(errorMessage) {
+                self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
+                return .redirect(redirectError)
+            } else {
+                let prefix = errorMessage.prefix { $0 != " " }
+                switch prefix {
+                case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING", "BUSY":
                     self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
                     return .tryAgain
                 default:
@@ -732,6 +759,8 @@ public final class ValkeyClusterClient: Sendable {
             case .transactionAborted:
                 return .dontRetry
             }
+        case let error as ValkeyClientError where error.errorCode == .connectionCreationCircuitBreakerTripped:
+            return .tryAgain
         default:
             return .dontRetry
         }
