@@ -94,19 +94,42 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
     public let message: String?
     /// If there is an underlying error it will be stored here
     public let underlyingError: Error?
+    /// Source file where the error was created
+    public let file: String
+    /// Source line where the error was created
+    public let line: Int
 
     /// Create a new error code.
     /// - Parameters:
     ///   - errorCode: The error code.
     ///   - message: The message to include.
-    public init(_ errorCode: ErrorCode, message: String? = nil, error: Error? = nil) {
+    ///   - error: The underlying error.
+    ///   - file: Source file (automatically captured).
+    ///   - line: Source line (automatically captured).
+    public init(
+        _ errorCode: ErrorCode,
+        message: String? = nil,
+        error: Error? = nil,
+        file: String = #fileID,
+        line: Int = #line
+    ) {
         self.errorCode = errorCode
         self.message = message
         self.underlyingError = error
+        self.file = file
+        self.line = line
     }
 
     /// The string representation of the error.
     public var description: String {
-        "\(self.errorCode)\(self.message.map { " \($0)"} ?? "")\(self.underlyingError.map { "\nUnderlying error: \($0)" } ?? "")"
+        var result = "\(self.errorCode)"
+        if let message = self.message {
+            result += " \(message)"
+        }
+        if let underlyingError = self.underlyingError {
+            result += "\n  Underlying error: \(underlyingError)"
+        }
+        result += "\n  at \(self.file):\(self.line)"
+        return result
     }
 }
