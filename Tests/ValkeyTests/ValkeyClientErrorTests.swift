@@ -7,6 +7,7 @@
 //
 
 import Testing
+
 @testable import Valkey
 
 @Suite("ValkeyClientError Tests")
