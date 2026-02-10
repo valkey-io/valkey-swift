@@ -293,8 +293,42 @@ extension ValkeyClient {
         for command in repeat each commands {
             readOnly = readOnly && command.isReadOnly
         }
-        let node = self.getNode(readOnly: readOnly)
-        return try await node.transaction(repeat each commands)
+        var attempt = 0
+        outsideLoop: repeat {
+            let node = self.getNode(readOnly: readOnly)
+            do {
+                return try await node.transaction(repeat each commands)
+            } catch let error as ValkeyTransactionError {
+                if case .transactionErrors(let results, _) = error {
+                    for result in results {
+                        if case .failure(let error) = result {
+                            switch self.getRetryAction(from: error) {
+                            case .redirect(let redirectError):
+                                guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                    break
+                                }
+                                try? await Task.sleep(for: wait)
+                                attempt += 1
+                                self.setPrimary(redirectError.address)
+                                continue outsideLoop
+                            case .tryAgain:
+                                guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                    break
+                                }
+                                try? await Task.sleep(for: wait)
+                                attempt += 1
+                                continue outsideLoop
+
+                            case .dontRetry:
+                                break
+                            }
+                        }
+                    }
+                }
+                throw error
+            }
+        } while !Task.isCancelled
+        throw ValkeyClientError(.cancelled)
     }
 
     /// Pipeline a series of commands as a transaction to Valkey connection
@@ -322,8 +356,41 @@ extension ValkeyClient {
             } else {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
-        let node = self.getNode(readOnly: readOnly)
-        return try await node.transaction(commands)
+        var attempt = 0
+        outsideLoop: repeat {
+            let node = self.getNode(readOnly: readOnly)
+            do {
+                return try await node.transaction(commands)
+            } catch let error as ValkeyTransactionError {
+                if case .transactionErrors(let results, _) = error {
+                    for result in results {
+                        if case .failure(let error) = result {
+                            switch self.getRetryAction(from: error) {
+                            case .redirect(let redirectError):
+                                guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                    break
+                                }
+                                try? await Task.sleep(for: wait)
+                                attempt += 1
+                                self.setPrimary(redirectError.address)
+                                continue outsideLoop
+                            case .tryAgain:
+                                guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                    break
+                                }
+                                try? await Task.sleep(for: wait)
+                                attempt += 1
+                                continue outsideLoop
+                            case .dontRetry:
+                                break
+                            }
+                        }
+                    }
+                }
+                throw error
+            }
+        } while !Task.isCancelled
+        throw ValkeyClientError(.cancelled)
     }
 }
 
