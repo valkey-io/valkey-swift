@@ -371,6 +371,40 @@ struct ClientIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testInvalidArrayTransactionExecError() async throws {
+        // Invalid command that'll cause the transaction to fail
+        struct INVALID: ValkeyCommand {
+            static var name: String { "INVALID" }
+
+            func encode(into commandEncoder: inout Valkey.ValkeyCommandEncoder) {
+                commandEncoder.encodeArray("INVALID")
+            }
+        }
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            let transactionError = await #expect(throws: ValkeyTransactionError.self) {
+                var commands: [any ValkeyCommand] = [GET("test")]
+                commands.append(INVALID())
+                _ = try await client.transaction(commands)
+            }
+            guard case .transactionErrors(let results, _) = transactionError else {
+                Issue.record("Expected a transaction error")
+                return
+            }
+            guard case .success = results[0] else {
+                Issue.record("Queuing GET should be successful")
+                return
+            }
+            guard case .failure = results[1] else {
+                Issue.record("Queuing INVALID should be unsuccessful")
+                return
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testWatch() async throws {
         let logger = {
             var logger = Logger(label: "Valkey")
