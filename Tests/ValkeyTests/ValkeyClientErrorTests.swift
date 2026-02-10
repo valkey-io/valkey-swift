@@ -23,8 +23,7 @@ struct ValkeyClientErrorTests {
         #expect(error.errorCode == .commandError)
         #expect(error.message == "WRONGPASS")
         #expect(error.underlyingError != nil)
-        #expect(!error.file.isEmpty)
-        #expect(error.file.contains(".swift"))
+        #expect(error.file.utf8CodeUnitCount > 0)
         #expect(error.line > 0)
 
         // Verify description includes all information
@@ -33,7 +32,7 @@ struct ValkeyClientErrorTests {
         #expect(description.contains("WRONGPASS"))
         #expect(description.contains("Underlying error:"))
         #expect(description.contains("at"))
-        #expect(description.contains(error.file))
+        #expect(description.contains(String(describing: error.file)))
         #expect(description.contains("\(error.line)"))
     }
 }

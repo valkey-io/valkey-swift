@@ -95,9 +95,9 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
     /// If there is an underlying error it will be stored here
     public let underlyingError: Error?
     /// Source file where the error was created
-    public let file: String
+    public let file: StaticString
     /// Source line where the error was created
-    public let line: Int
+    public let line: UInt
 
     /// Create a new error code.
     /// - Parameters:
@@ -110,8 +110,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
         _ errorCode: ErrorCode,
         message: String? = nil,
         error: Error? = nil,
-        file: String = #fileID,
-        line: Int = #line
+        file: StaticString = #file,
+        line: UInt = #line
     ) {
         self.errorCode = errorCode
         self.message = message
