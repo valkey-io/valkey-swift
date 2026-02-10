@@ -110,7 +110,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
         _ errorCode: ErrorCode,
         message: String? = nil,
         error: Error? = nil,
-        file: StaticString = #file,
+        file: StaticString = #fileID,
         line: UInt = #line
     ) {
         self.errorCode = errorCode
