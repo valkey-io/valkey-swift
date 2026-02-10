@@ -311,6 +311,14 @@ extension ValkeyClient {
                                 attempt += 1
                                 self.setPrimary(redirectError.address)
                                 continue outsideLoop
+                            case .tryAgain:
+                                guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                    break
+                                }
+                                try? await Task.sleep(for: wait)
+                                attempt += 1
+                                continue outsideLoop
+
                             case .dontRetry:
                                 break
                             }
@@ -365,6 +373,13 @@ extension ValkeyClient {
                                 try? await Task.sleep(for: wait)
                                 attempt += 1
                                 self.setPrimary(redirectError.address)
+                                continue outsideLoop
+                            case .tryAgain:
+                                guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                    break
+                                }
+                                try? await Task.sleep(for: wait)
+                                attempt += 1
                                 continue outsideLoop
                             case .dontRetry:
                                 break
