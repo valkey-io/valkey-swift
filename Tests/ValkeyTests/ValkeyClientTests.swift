@@ -40,6 +40,24 @@ struct ValkeyClientTests {
         }
     }
 
+    /// Wait until client returns a connection with a different address from the primary
+    @available(valkeySwift 1.0, *)
+    func waitForReplicas(_ client: ValkeyClient) async throws {
+        let primaryAddress = try await client.withConnection(readOnly: false) { $0.address }
+        while true {
+            let foundReplica = try await client.withConnection(readOnly: true) { connection in
+                if connection.address != primaryAddress {
+                    return true
+                }
+                return false
+            }
+            if foundReplica {
+                break
+            }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+    }
+
     func getStandaloneMock() async -> MockServerConnections {
         let mockConnections = MockServerConnections()
         await mockConnections.addValkeyServer(.hostname("127.0.0.1", port: 6379)) { command in
@@ -150,7 +168,7 @@ struct ValkeyClientTests {
             configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas),
             logger: logger
         ) { client in
-            try await Task.sleep(for: .milliseconds(250))
+            try await self.waitForReplicas(client)
             let value = try await client.get("foo")
             #expect(value.map { String($0) } == "replica")
         }
@@ -170,7 +188,7 @@ struct ValkeyClientTests {
             configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas),
             logger: logger
         ) { client in
-            try await Task.sleep(for: .milliseconds(250))
+            try await self.waitForReplicas(client)
             try await client.set("foo", value: "bar")
             let value = try await client.get("foo")
             #expect(value.map { String($0) } == "replica")
@@ -192,7 +210,7 @@ struct ValkeyClientTests {
             logger: logger
         ) { client in
             try await client.set("foo", value: "bar")
-            try await Task.sleep(for: .milliseconds(250))
+            try await self.waitForReplicas(client)
             let value = try await client.get("foo")
             #expect(value.map { String($0) } == "replica")
         }
