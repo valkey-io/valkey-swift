@@ -61,19 +61,29 @@ package struct ValkeyTopologyCandidate: Hashable {
 
         self.shards = try description.shards.map({ shard throws(ValkeyClusterError) in
             var primary: Node?
+            var firstPrimary: Node?
             var replicas = [Node]()
             replicas.reserveCapacity(shard.nodes.count)
 
             for node in shard.nodes {
                 switch node.role.base {
                 case .primary:
-                    if primary != nil {
-                        throw ValkeyClusterError.shardHasMultiplePrimaryNodes
+                    // Prefer online primaries during failover
+                    if node.health == .online {
+                        primary = Node(node)
                     }
-                    primary = Node(node)
+                    // Track first primary as fallback
+                    if firstPrimary == nil {
+                        firstPrimary = Node(node)
+                    }
                 case .replica:
                     replicas.append(Node(node))
                 }
+            }
+
+            // Use online primary if found, otherwise use first primary
+            if primary == nil {
+                primary = firstPrimary
             }
 
             let sorted = replicas.sorted(by: { lhs, rhs in
