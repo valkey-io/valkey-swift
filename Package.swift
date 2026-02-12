@@ -40,7 +40,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.4"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.6.3"),
         .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.3.0"),
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.92.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.93.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.26.0"),
         .package(url: "https://github.com/swift-server/swift-service-lifecycle.git", from: "2.8.0"),

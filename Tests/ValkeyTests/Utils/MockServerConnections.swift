@@ -16,13 +16,15 @@ actor MockServerConnections {
     enum Error: Swift.Error {
         case connectionUnavailable
     }
+    let logger: Logger
     let eventLoop: NIOAsyncTestingEventLoop
     var servers: [ValkeyServerAddress: @Sendable (NIOAsyncTestingChannel) async throws -> Void]
     let (connectionStream, connectionCont) = AsyncStream.makeStream(
         of: (channel: NIOAsyncTestingChannel, server: @Sendable (NIOAsyncTestingChannel) async throws -> Void).self
     )
 
-    init() {
+    init(logger: Logger) {
+        self.logger = logger
         self.eventLoop = NIOAsyncTestingEventLoop()
         self.servers = [:]
     }
@@ -31,57 +33,69 @@ actor MockServerConnections {
         self.servers[address] = serve
     }
 
-    func addValkeyServer(_ address: ValkeyServerAddress, processCommand: @escaping @Sendable ([String]) throws -> RESPToken?) {
+    func addValkeyServer(_ address: ValkeyServerAddress, processCommand: @escaping @Sendable ([String]) async throws -> RESPToken?) {
         self.addServer(address) { channel in
-            await withThrowingTaskGroup { group in
+            try await withThrowingTaskGroup { group in
                 let (outputStream, outputCont) = AsyncStream.makeStream(of: RESPToken.self)
+                let (commandStream, commandCont) = AsyncStream.makeStream(of: [String].self)
 
                 group.addTask {
                     for try await output in outputStream {
                         try await channel.writeInbound(output.base)
                     }
                 }
-                let decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
-                do {
-                    while true {
-                        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                        try decoder.process(buffer: outbound) { token in
-                            let command = try token.decode(as: [String].self)
-                            if let response = try processCommand(command) {
-                                outputCont.yield(response)
-                            } else {
-                                var iterator = command.makeIterator()
-                                switch (iterator.next(), iterator.next()) {
-                                case ("HELLO", _):
-                                    outputCont.yield(
-                                        RESPToken(
-                                            .map([
-                                                .bulkString("server"): .bulkString("mock"),
-                                                .bulkString("version"): .bulkString("9.0.2"),
-                                                .bulkString("proto"): .number(3),
-                                                .bulkString("id"): .number(5),
-                                                //.bulkString("mode"): .bulkString("standalone"),
-                                                //.bulkString("role"): .bulkString("master"),
-                                                .bulkString("modules"): .array([]),
-                                                .bulkString("availability_zone"): .bulkString("us-east-1"),
-                                            ])
-                                        )
+                group.addTask {
+                    var logger = self.logger
+                    logger[metadataKey: "server"] = .stringConvertible(address)
+                    for try await command in commandStream {
+                        logger.debug("Command", metadata: ["command": .array(command.map { .string($0) })])
+                        if let response = try await processCommand(command) {
+                            outputCont.yield(response)
+                        } else {
+                            var iterator = command.makeIterator()
+                            switch (iterator.next(), iterator.next()) {
+                            case ("HELLO", _):
+                                outputCont.yield(
+                                    RESPToken(
+                                        .map([
+                                            .bulkString("server"): .bulkString("mock"),
+                                            .bulkString("version"): .bulkString("9.0.2"),
+                                            .bulkString("proto"): .number(3),
+                                            .bulkString("id"): .number(5),
+                                            //.bulkString("mode"): .bulkString("standalone"),
+                                            //.bulkString("role"): .bulkString("master"),
+                                            .bulkString("modules"): .array([]),
+                                            .bulkString("availability_zone"): .bulkString("us-east-1"),
+                                        ])
                                     )
-                                case ("CLIENT", "SETINFO"), ("CLIENT", "CAPA"):
-                                    outputCont.yield(.ok)
-                                case ("READONLY", _):
-                                    outputCont.yield(.ok)
-                                case ("PING", _):
-                                    outputCont.yield(RESPToken(.simpleString("PONG")))
-                                default:
-                                    outputCont.yield(RESPToken(.bulkError("ERR unrecognised command")))
-                                }
+                                )
+                            case ("CLIENT", "SETINFO"), ("CLIENT", "CAPA"):
+                                outputCont.yield(.ok)
+                            case ("READONLY", _):
+                                outputCont.yield(.ok)
+                            case ("PING", _):
+                                outputCont.yield(RESPToken(.simpleString("PONG")))
+                            default:
+                                outputCont.yield(RESPToken(.bulkError("ERR unrecognised command")))
                             }
                         }
                     }
-                } catch {
+                    outputCont.finish()
+                }
+                let decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
+                do {
+                    while channel.isActive {
+                        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                        try decoder.process(buffer: outbound) { token in
+                            let command = try token.decode(as: [String].self)
+                            commandCont.yield(command)
+                        }
+                        try await Task.sleep(for: .milliseconds(100))
+                    }
+                } catch ChannelError.ioOnClosedChannel {
                     // Ignore I/O on closed channel error
                 }
+                commandCont.finish()
             }
         }
     }

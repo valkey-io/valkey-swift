@@ -58,8 +58,8 @@ struct ValkeyClientTests {
         }
     }
 
-    func getStandaloneMock() async -> MockServerConnections {
-        let mockConnections = MockServerConnections()
+    func getStandaloneMock(logger: Logger) async -> MockServerConnections {
+        let mockConnections = MockServerConnections(logger: logger)
         await mockConnections.addValkeyServer(.hostname("127.0.0.1", port: 6379)) { command in
             switch command.first {
             case "GET":
@@ -144,10 +144,10 @@ struct ValkeyClientTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testClient() async throws {
-        let mockConnections = await getStandaloneMock()
-        async let _ = mockConnections.run()
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
+        let mockConnections = await getStandaloneMock(logger: logger)
+        async let _ = mockConnections.run()
         try await withValkeyClient(.hostname("127.0.0.1"), mockConnections: mockConnections, logger: logger) { client in
             let value = try await client.get("foo")
             #expect(value.map { String($0) } == "primary")
@@ -157,11 +157,11 @@ struct ValkeyClientTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testReadFromReplica() async throws {
-        let mockConnections = await getStandaloneMock()
-        async let _ = mockConnections.run()
-
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
+        let mockConnections = await getStandaloneMock(logger: logger)
+        async let _ = mockConnections.run()
+
         try await withValkeyClient(
             .hostname("127.0.0.1", port: 6379),
             mockConnections: mockConnections,
@@ -177,11 +177,11 @@ struct ValkeyClientTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testRedirectFromReplica() async throws {
-        let mockConnections = await getStandaloneMock()
-        async let _ = mockConnections.run()
-
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
+        let mockConnections = await getStandaloneMock(logger: logger)
+        async let _ = mockConnections.run()
+
         try await withValkeyClient(
             .hostname("127.0.0.1", port: 6380),
             mockConnections: mockConnections,
@@ -198,11 +198,11 @@ struct ValkeyClientTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testRedirectError() async throws {
-        let mockConnections = await getStandaloneMock()
-        async let _ = mockConnections.run()
-
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
+        let mockConnections = await getStandaloneMock(logger: logger)
+        async let _ = mockConnections.run()
+
         try await withValkeyClient(
             .hostname("127.0.0.1", port: 6380),
             mockConnections: mockConnections,
