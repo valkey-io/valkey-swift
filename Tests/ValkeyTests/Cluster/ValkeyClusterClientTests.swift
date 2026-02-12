@@ -139,49 +139,62 @@ actor Cluster {
     func mock(logger: Logger) async -> MockServerConnections {
         let mockConnections = MockServerConnections(logger: logger)
         for address in self.addressMap.keys {
-            await mockConnections.addValkeyServer(.hostname(address.host, port: address.port)) { command in
-                var iterator = command.makeIterator()
-                switch iterator.next() {
-                case "GET":
-                    guard let key = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
-                    guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return RESPToken(.null) }
-                    let addressDetails = await self.addressMap[address]
-                    if shard.index != addressDetails?.shardIndex {
-                        return RESPToken(.bulkError("MOVED \(shard.index) \(shard.shard.primary)"))
-                    }
-                    if key.hasPrefix("$address") {
-                        return RESPToken(.bulkString(address.description))
-                    }
-                    return await self.getKey(key).map { RESPToken(.bulkString($0)) } ?? RESPToken(.null)
+            await addNode(to: mockConnections, address: address, logger: logger)
+        }
+        return mockConnections
+    }
 
-                case "SET":
-                    guard let key = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
-                    guard let value = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
-                    guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return RESPToken(.null) }
-                    let addressDetails = await self.addressMap[address]
-                    if shard.index != addressDetails?.shardIndex || addressDetails?.role == .replica {
-                        return RESPToken(.bulkError("MOVED \(shard.index) \(shard.shard.primary)"))
-                    }
-                    if key.hasPrefix("$address") {
-                        return RESPToken(.bulkString(address.description))
-                    }
-                    await self.setKey(key, value: value)
-                    return .ok
-                case "CLUSTER":
-                    switch iterator.next() {
-                    case "SHARDS":
-                        return await RESPToken(
-                            .array(self.shards.map { $0.respValue })
-                        )
-                    default:
-                        return nil
-                    }
+    func addShard(_ shard: Shard, to mockConnections: MockServerConnections, logger: Logger) async {
+        self.shards.append(shard)
+        self.updateAddressMap()
+        await self.addNode(to: mockConnections, address: shard.primary, logger: logger)
+        for replica in shard.replicas {
+            await self.addNode(to: mockConnections, address: replica, logger: logger)
+        }
+    }
+
+    func addNode(to mockConnections: MockServerConnections, address: Cluster.Address, logger: Logger) async {
+        await mockConnections.addValkeyServer(.hostname(address.host, port: address.port)) { command in
+            var iterator = command.makeIterator()
+            switch iterator.next() {
+            case "GET":
+                guard let key = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
+                guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return RESPToken(.null) }
+                let addressDetails = await self.addressMap[address]
+                if shard.index != addressDetails?.shardIndex {
+                    return RESPToken(.bulkError("MOVED \(shard.index) \(shard.shard.primary)"))
+                }
+                if key.hasPrefix("$address") {
+                    return RESPToken(.bulkString(address.description))
+                }
+                return await self.getKey(key).map { RESPToken(.bulkString($0)) } ?? RESPToken(.null)
+
+            case "SET":
+                guard let key = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
+                guard let value = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
+                guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return RESPToken(.null) }
+                let addressDetails = await self.addressMap[address]
+                if shard.index != addressDetails?.shardIndex || addressDetails?.role == .replica {
+                    return RESPToken(.bulkError("MOVED \(shard.index) \(shard.shard.primary)"))
+                }
+                if key.hasPrefix("$address") {
+                    return RESPToken(.bulkString(address.description))
+                }
+                await self.setKey(key, value: value)
+                return .ok
+            case "CLUSTER":
+                switch iterator.next() {
+                case "SHARDS":
+                    return await RESPToken(
+                        .array(self.shards.map { $0.respValue })
+                    )
                 default:
                     return nil
                 }
+            default:
+                return nil
             }
         }
-        return mockConnections
     }
 }
 
@@ -344,6 +357,38 @@ struct ValkeyClusterClientTests {
             )
             try #expect(results.0.get().map { String($0) } == "before")
             try #expect(results.2.get().map { String($0) } == "after")
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testAddShardSlotMigration() async throws {
+        let logger = {
+            var logger = Logger(label: "Valkey")
+            logger.logLevel = .debug
+            return logger
+        }()
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
+            var value = try await client.set("$address{3}", value: "test")
+            #expect(value.map { String($0) } == "127.0.0.1:16000")
+
+            let hashSlot = HashSlot(key: "$address{3}".utf8).rawValue
+            await cluster.addShard(
+                Cluster.Shard(
+                    hashKeyRanges: [],
+                    primary: .init(host: "127.0.0.1", port: 16006),
+                    replicas: [.init(host: "127.0.0.1", port: 16007)]
+                ),
+                to: mockConnections,
+                logger: logger
+            )
+            await cluster.migrateSlots(hashSlot...hashSlot, to: cluster.shards.count - 1)
+
+            value = try await client.set("$address{3}", value: "test")
+            #expect(value.map { String($0) } == "127.0.0.1:16006")
         }
     }
 }
