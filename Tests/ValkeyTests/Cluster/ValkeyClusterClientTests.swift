@@ -147,7 +147,7 @@ actor Cluster {
                     guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return RESPToken(.null) }
                     let addressDetails = await self.addressMap[address]
                     if shard.index != addressDetails?.shardIndex {
-                        return RESPToken(.bulkError("MOVE \(shard.shard.primary)"))
+                        return RESPToken(.bulkError("MOVED \(shard.index) \(shard.shard.primary)"))
                     }
                     if key.hasPrefix("$address") {
                         return RESPToken(.bulkString(address.description))
@@ -320,6 +320,30 @@ struct ValkeyClusterClientTests {
 
             value = try await client.set("$address{3}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16002")
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testPipelineAfterSlotMigration() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
+            try await client.set("randomKey", value: "before")
+
+            let hashSlot = HashSlot(key: "randomKey".utf8).rawValue
+            await cluster.migrateSlots(hashSlot...hashSlot, to: 2)
+
+            let results = await client.execute(
+                GET("randomKey"),
+                SET("randomKey", value: "after"),
+                GET("randomKey")
+            )
+            try #expect(results.0.get().map { String($0) } == "before")
+            try #expect(results.2.get().map { String($0) } == "after")
         }
     }
 }
