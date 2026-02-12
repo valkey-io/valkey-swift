@@ -34,6 +34,21 @@ actor Cluster {
             primary = replica
         }
 
+        mutating func removeRange(_ slots: ClosedRange<UInt16>) {
+            for rangeIndex in self.hashKeyRanges.indices {
+                guard self.hashKeyRanges[rangeIndex].contains(slots) else { continue }
+                let ranges = hashKeyRanges[rangeIndex].removeRange(slots)
+                hashKeyRanges[rangeIndex] = ranges[0]
+                if hashKeyRanges.count > 1 {
+                    hashKeyRanges.append(contentsOf: hashKeyRanges.dropFirst())
+                }
+            }
+        }
+
+        mutating func addRange(_ slots: ClosedRange<UInt16>) {
+            self.hashKeyRanges.append(slots)
+        }
+
         var respValue: RESP3Value {
             let hashKeyArray: RESP3Value = .array(self.hashKeyRanges.flatMap { [.number(Int64($0.first!)), .number(Int64($0.last!))] })
             var nodes: [RESP3Value] = [
@@ -69,10 +84,12 @@ actor Cluster {
     }
     var shards: [Shard]
     private(set) var addressMap: [Address: (role: Role, shardIndex: Int)]
+    var keyValueMap: [String: String]
 
     init(shards: [Shard]) async {
         self.addressMap = [:]
         self.shards = shards
+        self.keyValueMap = [:]
         self.updateAddressMap()
     }
 
@@ -90,6 +107,22 @@ actor Cluster {
     func failover(shardIndex: Int) {
         self.shards[shardIndex].failover()
         self.updateAddressMap()
+    }
+
+    func migrateSlots(_ slots: ClosedRange<UInt16>, to shardIndex: Int) {
+        for index in shards.indices {
+            self.shards[index].removeRange(slots)
+        }
+        self.shards[shardIndex].addRange(slots)
+        self.updateAddressMap()
+    }
+
+    func setKey(_ key: String, value: String) {
+        self.keyValueMap[key] = value
+    }
+
+    func getKey(_ key: String) -> String? {
+        self.keyValueMap[key]
     }
 
     func getShard(_ hashSlot: HashSlot) -> (index: Int, shard: Shard)? {
@@ -116,22 +149,24 @@ actor Cluster {
                     if shard.index != addressDetails?.shardIndex {
                         return RESPToken(.bulkError("MOVE \(shard.shard.primary)"))
                     }
-                    if key.hasPrefix("address") {
+                    if key.hasPrefix("$address") {
                         return RESPToken(.bulkString(address.description))
                     }
-                    return RESPToken(.null)
+                    return await self.getKey(key).map { RESPToken(.bulkString($0)) } ?? RESPToken(.null)
+
                 case "SET":
                     guard let key = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
-                    guard let _ = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
+                    guard let value = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
                     guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return RESPToken(.null) }
                     let addressDetails = await self.addressMap[address]
                     if shard.index != addressDetails?.shardIndex || addressDetails?.role == .replica {
                         return RESPToken(.bulkError("MOVED \(shard.index) \(shard.shard.primary)"))
                     }
-                    if key.hasPrefix("address") {
+                    if key.hasPrefix("$address") {
                         return RESPToken(.bulkString(address.description))
                     }
-                    return RESPToken(.null)
+                    await self.setKey(key, value: value)
+                    return .ok
                 case "CLUSTER":
                     switch iterator.next() {
                     case "SHARDS":
@@ -152,6 +187,28 @@ actor Cluster {
 
 @Suite("Test ValkeyClusterClient using mock cluster")
 struct ValkeyClusterClientTests {
+    var sixNodeHealthyCluster: Cluster {
+        get async {
+            await Cluster(shards: [
+                Cluster.Shard(
+                    hashKeyRanges: [0...5460],
+                    primary: .init(host: "127.0.0.1", port: 16000),
+                    replicas: [.init(host: "127.0.0.1", port: 16001)]
+                ),
+                Cluster.Shard(
+                    hashKeyRanges: [5461...10922],
+                    primary: .init(host: "127.0.0.1", port: 16002),
+                    replicas: [.init(host: "127.0.0.1", port: 16003)]
+                ),
+                Cluster.Shard(
+                    hashKeyRanges: [10923...16383],
+                    primary: .init(host: "127.0.0.1", port: 16004),
+                    replicas: [.init(host: "127.0.0.1", port: 16005)]
+                ),
+            ])
+        }
+    }
+
     @available(valkeySwift 1.0, *)
     func withValkeyClusterClient(
         _ address: (host: String, port: Int),
@@ -185,37 +242,21 @@ struct ValkeyClusterClientTests {
     func testGetSet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        let cluster = await Cluster(shards: [
-            Cluster.Shard(
-                hashKeyRanges: [0...5460],
-                primary: .init(host: "127.0.0.1", port: 16000),
-                replicas: [.init(host: "127.0.0.1", port: 16001)]
-            ),
-            Cluster.Shard(
-                hashKeyRanges: [5461...10922],
-                primary: .init(host: "127.0.0.1", port: 16002),
-                replicas: [.init(host: "127.0.0.1", port: 16003)]
-            ),
-            Cluster.Shard(
-                hashKeyRanges: [10923...16383],
-                primary: .init(host: "127.0.0.1", port: 16004),
-                replicas: [.init(host: "127.0.0.1", port: 16005)]
-            ),
-        ])
+        let cluster = await self.sixNodeHealthyCluster
         let mockConnections = await cluster.mock(logger: logger)
         async let _ = mockConnections.run()
         try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
-            var value = try await client.get("address{1}")
+            var value = try await client.get("$address{1}")
             #expect(value.map { String($0) } == "127.0.0.1:16003")
-            value = try await client.set("address{1}", value: "test")
+            value = try await client.set("$address{1}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16002")
-            value = try await client.get("address{3}")
+            value = try await client.get("$address{3}")
             #expect(value.map { String($0) } == "127.0.0.1:16001")
-            value = try await client.set("address{3}", value: "test")
+            value = try await client.set("$address{3}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16000")
-            value = try await client.get("address{4}")
+            value = try await client.get("$address{4}")
             #expect(value.map { String($0) } == "127.0.0.1:16005")
-            value = try await client.set("address{4}", value: "test")
+            value = try await client.set("$address{4}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16004")
         }
     }
@@ -225,33 +266,58 @@ struct ValkeyClusterClientTests {
     func testFailover() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        let cluster = await Cluster(shards: [
-            Cluster.Shard(
-                hashKeyRanges: [0...5460],
-                primary: .init(host: "127.0.0.1", port: 16000),
-                replicas: [.init(host: "127.0.0.1", port: 16001)]
-            ),
-            Cluster.Shard(
-                hashKeyRanges: [5461...10922],
-                primary: .init(host: "127.0.0.1", port: 16002),
-                replicas: [.init(host: "127.0.0.1", port: 16003)]
-            ),
-            Cluster.Shard(
-                hashKeyRanges: [10923...16383],
-                primary: .init(host: "127.0.0.1", port: 16004),
-                replicas: [.init(host: "127.0.0.1", port: 16005)]
-            ),
-        ])
+        let cluster = await self.sixNodeHealthyCluster
         let mockConnections = await cluster.mock(logger: logger)
         async let _ = mockConnections.run()
         try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
-            var value = try await client.set("address{3}", value: "test")
+            var value = try await client.set("$address{3}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16000")
 
             await cluster.failover(shardIndex: 0)
 
-            value = try await client.set("address{3}", value: "test")
+            value = try await client.set("$address{3}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16001")
         }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testSlotMigration() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
+            var value = try await client.set("$address{3}", value: "test")
+            #expect(value.map { String($0) } == "127.0.0.1:16000")
+
+            let hashSlot = HashSlot(key: "$address{3}".utf8).rawValue
+            await cluster.migrateSlots(hashSlot...hashSlot, to: 1)
+
+            value = try await client.set("$address{3}", value: "test")
+            #expect(value.map { String($0) } == "127.0.0.1:16002")
+        }
+    }
+}
+
+extension ClosedRange<UInt16> {
+    fileprivate func removeRange(_ range: ClosedRange<UInt16>) -> [ClosedRange<UInt16>] {
+        let range = range.clamped(to: self)
+        guard let first, let last, let rangeFirst = range.first, let rangeLast = range.last else { return [self] }
+        var ranges: [ClosedRange<UInt16>] = []
+        if first < rangeFirst {
+            let leftRange = first...(rangeFirst - 1)
+            if !leftRange.isEmpty {
+                ranges.append(leftRange)
+            }
+        }
+        if last > rangeLast {
+            let rightRange = (rangeLast + 1)...last
+            if !rightRange.isEmpty {
+                ranges.append(rightRange)
+            }
+        }
+        return ranges
     }
 }
