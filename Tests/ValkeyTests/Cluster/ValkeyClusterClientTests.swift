@@ -12,6 +12,7 @@ import NIOEmbedded
 import Testing
 import Valkey
 
+/// Valkey Cluster description
 actor Cluster {
     enum Role {
         case primary
@@ -34,7 +35,7 @@ actor Cluster {
             primary = replica
         }
 
-        mutating func removeRange(_ slots: ClosedRange<UInt16>) {
+        mutating func removeHashSlotRange(_ slots: ClosedRange<UInt16>) {
             for rangeIndex in self.hashKeyRanges.indices {
                 guard self.hashKeyRanges[rangeIndex].contains(slots) else { continue }
                 let ranges = hashKeyRanges[rangeIndex].removeRange(slots)
@@ -45,10 +46,11 @@ actor Cluster {
             }
         }
 
-        mutating func addRange(_ slots: ClosedRange<UInt16>) {
+        mutating func addHashSlotRange(_ slots: ClosedRange<UInt16>) {
             self.hashKeyRanges.append(slots)
         }
 
+        /// Shard description for CLUSTER SHARDS
         var respValue: RESP3Value {
             let hashKeyArray: RESP3Value = .array(self.hashKeyRanges.flatMap { [.number(Int64($0.first!)), .number(Int64($0.last!))] })
             var nodes: [RESP3Value] = [
@@ -111,9 +113,9 @@ actor Cluster {
 
     func migrateSlots(_ slots: ClosedRange<UInt16>, to shardIndex: Int) {
         for index in shards.indices {
-            self.shards[index].removeRange(slots)
+            self.shards[index].removeHashSlotRange(slots)
         }
-        self.shards[shardIndex].addRange(slots)
+        self.shards[shardIndex].addHashSlotRange(slots)
         self.updateAddressMap()
     }
 
@@ -136,6 +138,7 @@ actor Cluster {
         return nil
     }
 
+    /// Create Mock servers for cluster
     func mock(logger: Logger) async -> MockServerConnections {
         let mockConnections = MockServerConnections(logger: logger)
         for address in self.addressMap.keys {
@@ -144,6 +147,7 @@ actor Cluster {
         return mockConnections
     }
 
+    /// Add shard to cluster and add mock servers for the new shard
     func addShard(_ shard: Shard, to mockConnections: MockServerConnections, logger: Logger) async {
         self.shards.append(shard)
         self.updateAddressMap()
@@ -153,6 +157,7 @@ actor Cluster {
         }
     }
 
+    /// Add Valkey node to mock connections
     func addNode(to mockConnections: MockServerConnections, address: Cluster.Address, logger: Logger) async {
         await mockConnections.addValkeyServer(.hostname(address.host, port: address.port)) { command in
             var iterator = command.makeIterator()
@@ -164,6 +169,7 @@ actor Cluster {
                 if shard.index != addressDetails?.shardIndex {
                     return RESPToken(.bulkError("MOVED \(shard.index) \(shard.shard.primary)"))
                 }
+                // Keys with $address prefix are special as they return the address of the node
                 if key.hasPrefix("$address") {
                     return RESPToken(.bulkString(address.description))
                 }
@@ -177,6 +183,7 @@ actor Cluster {
                 if shard.index != addressDetails?.shardIndex || addressDetails?.role == .replica {
                     return RESPToken(.bulkError("MOVED \(shard.index) \(shard.shard.primary)"))
                 }
+                // Keys with $address prefix are special as they return the address of the node
                 if key.hasPrefix("$address") {
                     return RESPToken(.bulkString(address.description))
                 }

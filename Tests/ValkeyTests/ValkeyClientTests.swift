@@ -43,7 +43,7 @@ struct ValkeyClientTests {
 
     /// Wait until client returns a connection with a different address from the primary
     @available(valkeySwift 1.0, *)
-    func waitForReplicas(_ client: ValkeyClient) async throws {
+    func waitForReplicas(_ client: ValkeyClient, function: String = #function) async throws {
         let primaryAddress = try await client.withConnection(readOnly: false) { $0.address }
         while true {
             let foundReplica = try await client.withConnection(readOnly: true) { connection in
@@ -169,6 +169,7 @@ struct ValkeyClientTests {
             configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas),
             logger: logger
         ) { client in
+            // wait for primary to get replicas
             try await self.waitForReplicas(client)
             let value = try await client.get("foo")
             #expect(value.map { String($0) } == "replica")
@@ -189,6 +190,9 @@ struct ValkeyClientTests {
             configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas),
             logger: logger
         ) { client in
+            // wait for address to change to primary
+            try await self.waitForReplicas(client)
+            // wait for primary to get replicas
             try await self.waitForReplicas(client)
             try await client.set("foo", value: "bar")
             let value = try await client.get("foo")
@@ -211,6 +215,7 @@ struct ValkeyClientTests {
             logger: logger
         ) { client in
             try await client.set("foo", value: "bar")
+            // wait for primary to get replicas
             try await self.waitForReplicas(client)
             let value = try await client.get("foo")
             #expect(value.map { String($0) } == "replica")
