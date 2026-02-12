@@ -263,6 +263,29 @@ struct ValkeyClusterClientTests {
 
     @available(valkeySwift 1.0, *)
     @Test
+    func testPipeline() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
+            let results = await client.execute(
+                SET("$address{3}", value: "test"),
+                SET("$address{4}", value: "test"),
+                SET("$address{1}", value: "test"),
+                GET("$address{3}")
+            )
+            try #expect(results.0.get().map { String($0) } == "127.0.0.1:16000")
+            try #expect(results.1.get().map { String($0) } == "127.0.0.1:16004")
+            try #expect(results.2.get().map { String($0) } == "127.0.0.1:16002")
+            // Pipelining will use the primary if any commands are writable.
+            try #expect(results.3.get().map { String($0) } == "127.0.0.1:16000")
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
     func testFailover() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
