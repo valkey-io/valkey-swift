@@ -12,6 +12,7 @@ import NIOEmbedded
 import Testing
 import Valkey
 
+@Suite("Test ValkeyClient using mock server array")
 struct ValkeyClientTests {
     @available(valkeySwift 1.0, *)
     func withValkeyClient(

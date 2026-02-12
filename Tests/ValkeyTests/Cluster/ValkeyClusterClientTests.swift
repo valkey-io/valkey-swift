@@ -141,6 +141,7 @@ actor Cluster {
     }
 }
 
+@Suite("Test ValkeyClusterClient using mock cluster")
 struct ValkeyClusterClientTests {
     @available(valkeySwift 1.0, *)
     func withValkeyClusterClient(
