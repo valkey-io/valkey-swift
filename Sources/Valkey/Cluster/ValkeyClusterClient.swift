@@ -705,7 +705,7 @@ public final class ValkeyClusterClient: Sendable {
             }
         case let error as ValkeyClientError:
             switch error.errorCode {
-            case .connectionCreationCircuitBreakerTripped, .clientIsShutDown:
+            case .connectionCreationCircuitBreakerTripped, .clientIsShutDown, .connectionClosed, .connectionClosing:
                 return .tryAgain
             default:
                 return .dontRetry
@@ -766,7 +766,7 @@ public final class ValkeyClusterClient: Sendable {
             }
         case let error as ValkeyClientError:
             switch error.errorCode {
-            case .connectionCreationCircuitBreakerTripped, .clientIsShutDown:
+            case .connectionCreationCircuitBreakerTripped, .clientIsShutDown, .connectionClosed, .connectionClosing:
                 return .tryAgain
             default:
                 return .dontRetry
