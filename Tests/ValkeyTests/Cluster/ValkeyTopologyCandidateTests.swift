@@ -200,4 +200,56 @@ struct ValkeyTopologyCandidateTests {
 
         #expect(throws: ValkeyClusterError.shardIsMissingPrimaryNode) { try ValkeyTopologyCandidate(description) }
     }
+
+    @Test("Failover with one failed and one online primary succeeds")
+    @available(valkeySwift 1.0, *)
+    func failoverWithOneFailedAndOneOnlinePrimarySucceeds() throws {
+        let description = ValkeyClusterDescription([
+            .init(
+                slots: [0...2000, 8000...12000],
+                nodes: [
+                    .init(
+                        id: "node1",
+                        port: nil,
+                        tlsPort: 6379,
+                        ip: "192.168.12.1",
+                        hostname: "node1",
+                        endpoint: "node1",
+                        role: .replica,
+                        replicationOffset: 123,
+                        health: .online
+                    ),
+                    .init(
+                        id: "node2-old-primary",
+                        port: nil,
+                        tlsPort: 6379,
+                        ip: "192.168.12.2",
+                        hostname: "node2",
+                        endpoint: "node2",
+                        role: .primary,
+                        replicationOffset: 123,
+                        health: .fail  // Failed primary
+                    ),
+                    .init(
+                        id: "node3-new-primary",
+                        port: nil,
+                        tlsPort: 6379,
+                        ip: "192.168.12.3",
+                        hostname: "node3",
+                        endpoint: "node3",
+                        role: .primary,
+                        replicationOffset: 123,
+                        health: .online  // New primary after failover
+                    ),
+                ]
+            )
+        ])
+
+        // Should not throw - this is a valid failover scenario
+        let candidate = try ValkeyTopologyCandidate(description)
+
+        // Verify it selected the online primary (node3)
+        #expect(candidate.shards.count == 1)
+        #expect(candidate.shards[0].primary.endpoint == "node3")
+    }
 }
