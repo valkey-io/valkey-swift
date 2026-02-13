@@ -60,20 +60,38 @@ package struct ValkeyTopologyCandidate: Hashable {
     package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
 
         self.shards = try description.shards.map({ shard throws(ValkeyClusterError) in
-            var primary: Node?
+            // Collect all nodes by role
+            var primaryNodes: [ValkeyClusterDescription.Node] = []
             var replicas = [Node]()
             replicas.reserveCapacity(shard.nodes.count)
 
             for node in shard.nodes {
                 switch node.role.base {
                 case .primary:
-                    if primary != nil {
-                        throw ValkeyClusterError.shardHasMultiplePrimaryNodes
-                    }
-                    primary = Node(node)
+                    primaryNodes.append(node)
                 case .replica:
                     replicas.append(Node(node))
                 }
+            }
+
+            // Filter for online primaries
+            let onlinePrimaries = primaryNodes.filter { $0.health == .online }
+
+            // Multiple online primaries is invalid
+            if onlinePrimaries.count > 1 {
+                throw ValkeyClusterError.shardHasMultiplePrimaryNodes
+            }
+
+            // Select the primary: prefer online, fall back to any primary
+            // During failover, we may see both old (failed) and new (online) primary,
+            // so we allow multiple primaries as long as only one is online.
+            let selectedPrimary: Node?
+            if let onlinePrimary = onlinePrimaries.first {
+                selectedPrimary = Node(onlinePrimary)
+            } else if let anyPrimary = primaryNodes.first {
+                selectedPrimary = Node(anyPrimary)
+            } else {
+                selectedPrimary = nil
             }
 
             let sorted = replicas.sorted(by: { lhs, rhs in
@@ -86,7 +104,7 @@ package struct ValkeyTopologyCandidate: Hashable {
                 return true
             })
 
-            guard let primary else {
+            guard let primary = selectedPrimary else {
                 throw ValkeyClusterError.shardIsMissingPrimaryNode
             }
 
