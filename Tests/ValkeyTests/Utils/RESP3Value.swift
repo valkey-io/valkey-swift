@@ -151,6 +151,10 @@ enum RESP3Value: Hashable, Sendable {
     }
 }
 
+extension RESP3Value: CustomStringConvertible {
+    var description: String { RESPToken(self).value.descriptionWith(indent: "", childIndent: "", redact: false) }
+}
+
 extension RESPToken {
     init(_ value: RESP3Value) {
         var buffer = ByteBuffer()

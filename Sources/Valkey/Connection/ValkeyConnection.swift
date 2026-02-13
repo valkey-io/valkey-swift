@@ -48,7 +48,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     let configuration: ValkeyConnectionConfiguration
     let isClosed: Atomic<Bool>
     /// Address we are connected to
-    nonisolated let address: ValkeyServerAddress
+    package nonisolated let address: ValkeyServerAddress
 
     /// Initialize connection
     init(
