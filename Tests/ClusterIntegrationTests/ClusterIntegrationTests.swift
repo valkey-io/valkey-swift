@@ -950,13 +950,13 @@ struct ClusterIntegrationTests {
     @available(valkeySwift 1.0, *)
     static func withValkeyCluster<T>(
         _ nodeAddresses: [(host: String, port: Int)],
-        nodeClientConfiguration: ValkeyClientConfiguration = .init(readOnlyCommandNodeSelection: .cycleReplicas),
+        configuration: ValkeyClusterClientConfiguration = .init(client: .init(readOnlyCommandNodeSelection: .cycleReplicas)),
         logger: Logger,
         _ body: (ValkeyClusterClient) async throws -> sending T
     ) async throws -> T {
         let client = ValkeyClusterClient(
-            clientConfiguration: nodeClientConfiguration,
             nodeDiscovery: ValkeyStaticNodeDiscovery(nodeAddresses.map { .init(endpoint: $0.host, port: $0.port) }),
+            configuration: configuration,
             logger: logger
         )
 
