@@ -22,7 +22,7 @@ defaultSwiftSettings.append(contentsOf: [
 ])
 #endif
 
-let package = Package(
+var package = Package(
     name: "valkey-swift",
     products: [
         .library(name: "Valkey", targets: ["Valkey"]),
@@ -119,6 +119,12 @@ let package = Package(
         ),
     ]
 )
+
+#if compiler(>=6.2)
+package.dependencies.append(.package(url: "https://github.com/apple/swift-configuration.git", from: "1.0.0"))
+let index = package.targets.firstIndex(where: { $0.name == "Valkey" })!
+package.targets[index].dependencies.append(.product(name: "Configuration", package: "swift-configuration"))
+#endif
 
 if Context.environment["ENABLE_VALKEY_BENCHMARKS"] != nil {
     package.platforms = [.macOS(.v13)]
