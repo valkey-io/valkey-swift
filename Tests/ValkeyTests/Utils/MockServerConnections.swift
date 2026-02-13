@@ -16,24 +16,40 @@ actor MockServerConnections {
     enum Error: Swift.Error {
         case connectionUnavailable
     }
+    struct ConnectionRequest {
+        let requestID: Int
+        let channel: NIOAsyncTestingChannel
+        let server: @Sendable (NIOAsyncTestingChannel) async throws -> Void
+        let address: ValkeyServerAddress
+    }
+    var globalID = 0
     let logger: Logger
     let eventLoop: NIOAsyncTestingEventLoop
     var servers: [ValkeyServerAddress: @Sendable (NIOAsyncTestingChannel) async throws -> Void]
-    let (connectionStream, connectionCont) = AsyncStream.makeStream(
-        of: (channel: NIOAsyncTestingChannel, server: @Sendable (NIOAsyncTestingChannel) async throws -> Void).self
-    )
+    var serverInstances: [Int: ConnectionRequest]
+    let (connectionStream, connectionCont) = AsyncStream.makeStream(of: ConnectionRequest.self)
 
     init(logger: Logger) {
         self.logger = logger
         self.eventLoop = NIOAsyncTestingEventLoop()
         self.servers = [:]
+        self.serverInstances = [:]
     }
 
     func addServer(_ address: ValkeyServerAddress, serve: @escaping @Sendable (NIOAsyncTestingChannel) async throws -> Void) {
         self.servers[address] = serve
     }
 
-    func addValkeyServer(_ address: ValkeyServerAddress, processCommand: @escaping @Sendable ([String]) async throws -> RESPToken?) {
+    func shutdownServer(_ address: ValkeyServerAddress) async {
+        self.servers[address] = nil
+        for instance in self.serverInstances.values {
+            if instance.address == address {
+                try? await instance.channel.close()
+            }
+        }
+    }
+
+    func addValkeyServer(_ address: ValkeyServerAddress, processCommand: @escaping @Sendable ([String]) async throws -> RESP3Value?) {
         self.addServer(address) { channel in
             try await withThrowingTaskGroup { group in
                 let (outputStream, outputCont) = AsyncStream.makeStream(of: RESPToken.self)
@@ -50,7 +66,7 @@ actor MockServerConnections {
                     for try await command in commandStream {
                         logger.debug("Command", metadata: ["command": .array(command.map { .string($0) })])
                         if let response = try await processCommand(command) {
-                            outputCont.yield(response)
+                            outputCont.yield(RESPToken(response))
                         } else {
                             var iterator = command.makeIterator()
                             switch (iterator.next(), iterator.next()) {
@@ -103,17 +119,30 @@ actor MockServerConnections {
     func connectionManagerCustomHandler(_ address: ValkeyServerAddress, eventLoop: EventLoop) async throws -> Channel {
         guard let server = servers[address] else { throw Error.connectionUnavailable }
         let channel = NIOAsyncTestingChannel(loop: self.eventLoop)
+        let request = ConnectionRequest(requestID: self.globalID, channel: channel, server: server, address: address)
+        self.globalID += 1
+        self.serverInstances[request.requestID] = request
         return try await channel.connect(to: try SocketAddress(ipAddress: "127.0.0.1", port: 6379)).map {
-            self.connectionCont.yield((channel, server))
+            self.connectionCont.yield(request)
             return channel
         }.get()
     }
 
+    func clearServerInstance(_ id: Int) {
+        self.serverInstances[id] = nil
+    }
+
     func run() async throws {
         try await withThrowingTaskGroup { group in
-            for await connection in connectionStream {
+            for await request in connectionStream {
                 group.addTask {
-                    try await connection.server(connection.channel)
+                    do {
+                        try await request.server(request.channel)
+                        await self.clearServerInstance(request.requestID)
+                    } catch {
+                        await self.clearServerInstance(request.requestID)
+                        throw error
+                    }
                 }
             }
             try await group.waitForAll()

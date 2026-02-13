@@ -65,30 +65,29 @@ struct ValkeyClientTests {
             switch command.first {
             case "GET":
                 #expect(command[1] == "foo")
-                return RESPToken(.bulkString("primary"))
+                return .bulkString("primary")
             case "SET":
                 #expect(command[1] == "foo")
                 #expect(command[2] == "bar")
-                return .ok
+                return .simpleString("OK")
             case "ROLE":
-                return RESPToken(
+                return .array([
+                    .bulkString("master"),
+                    .number(10),
                     .array([
-                        .bulkString("master"),
-                        .number(10),
                         .array([
-                            .array([
-                                .bulkString("127.0.0.1"),
-                                .bulkString("6380"),
-                                .bulkString("1"),
-                            ]),
-                            .array([
-                                .bulkString("127.0.0.1"),
-                                .bulkString("6381"),
-                                .bulkString("1"),
-                            ]),
+                            .bulkString("127.0.0.1"),
+                            .bulkString("6380"),
+                            .bulkString("1"),
                         ]),
-                    ])
-                )
+                        .array([
+                            .bulkString("127.0.0.1"),
+                            .bulkString("6381"),
+                            .bulkString("1"),
+                        ]),
+                    ]),
+                ])
+
             default:
                 return nil
             }
@@ -97,21 +96,20 @@ struct ValkeyClientTests {
             switch command.first {
             case "GET":
                 #expect(command[1] == "foo")
-                return RESPToken(.bulkString("replica"))
+                return .bulkString("replica")
             case "SET":
                 #expect(command[1] == "foo")
                 #expect(command[2] == "bar")
-                return RESPToken(.bulkError("REDIRECT 127.0.0.1:6379"))
+                return .bulkError("REDIRECT 127.0.0.1:6379")
             case "ROLE":
-                return RESPToken(
-                    .array([
-                        .bulkString("slave"),
-                        .bulkString("127.0.0.1"),
-                        .number(6379),
-                        .bulkString("connected"),
-                        .number(1),
-                    ])
-                )
+                return .array([
+                    .bulkString("slave"),
+                    .bulkString("127.0.0.1"),
+                    .number(6379),
+                    .bulkString("connected"),
+                    .number(1),
+                ])
+
             default:
                 return nil
             }
@@ -120,21 +118,20 @@ struct ValkeyClientTests {
             switch command.first {
             case "GET":
                 #expect(command[1] == "foo")
-                return RESPToken(.bulkString("replica"))
+                return .bulkString("replica")
             case "SET":
                 #expect(command[1] == "foo")
                 #expect(command[2] == "bar")
-                return RESPToken(.bulkError("REDIRECT 127.0.0.1:6379"))
+                return .bulkError("REDIRECT 127.0.0.1:6379")
             case "ROLE":
-                return RESPToken(
-                    .array([
-                        .bulkString("slave"),
-                        .bulkString("127.0.0.1"),
-                        .number(6379),
-                        .bulkString("connected"),
-                        .number(1),
-                    ])
-                )
+                return .array([
+                    .bulkString("slave"),
+                    .bulkString("127.0.0.1"),
+                    .number(6379),
+                    .bulkString("connected"),
+                    .number(1),
+                ])
+
             default:
                 return nil
             }

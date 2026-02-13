@@ -35,6 +35,16 @@ actor Cluster {
             primary = replica
         }
 
+        mutating func shutdownNode(address: Address) {
+            if self.primary == address {
+                guard self.replicas.count > 0 else { return }
+                self.primary = self.replicas.removeLast()
+                return
+            } else {
+                self.replicas.removeAll(where: { $0 == address })
+            }
+        }
+
         mutating func removeHashSlotRange(_ slots: ClosedRange<UInt16>) {
             for rangeIndex in self.hashKeyRanges.indices {
                 guard self.hashKeyRanges[rangeIndex].contains(slots) else { continue }
@@ -111,6 +121,13 @@ actor Cluster {
         self.updateAddressMap()
     }
 
+    func shutdownNode(address: Address) {
+        for index in shards.indices {
+            shards[index].shutdownNode(address: address)
+        }
+        self.updateAddressMap()
+    }
+
     func migrateSlots(_ slots: ClosedRange<UInt16>, to shardIndex: Int) {
         for index in shards.indices {
             self.shards[index].removeHashSlotRange(slots)
@@ -163,38 +180,37 @@ actor Cluster {
             var iterator = command.makeIterator()
             switch iterator.next() {
             case "GET":
-                guard let key = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
-                guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return RESPToken(.null) }
+                guard let key = iterator.next() else { return .bulkError("ERR invalid command") }
+                guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return .null }
                 let addressDetails = await self.addressMap[address]
                 if shard.index != addressDetails?.shardIndex {
-                    return RESPToken(.bulkError("MOVED \(shard.index) \(shard.shard.primary)"))
+                    return .bulkError("MOVED \(shard.index) \(shard.shard.primary)")
                 }
                 // Keys with $address prefix are special as they return the address of the node
                 if key.hasPrefix("$address") {
-                    return RESPToken(.bulkString(address.description))
+                    return .bulkString(address.description)
                 }
-                return await self.getKey(key).map { RESPToken(.bulkString($0)) } ?? RESPToken(.null)
+                return await self.getKey(key).map { .bulkString($0) } ?? .null
 
             case "SET":
-                guard let key = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
-                guard let value = iterator.next() else { return RESPToken(.bulkError("ERR invalid command")) }
-                guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return RESPToken(.null) }
+                guard let key = iterator.next() else { return .bulkError("ERR invalid command") }
+                guard let value = iterator.next() else { return .bulkError("ERR invalid command") }
+                guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return .null }
                 let addressDetails = await self.addressMap[address]
                 if shard.index != addressDetails?.shardIndex || addressDetails?.role == .replica {
-                    return RESPToken(.bulkError("MOVED \(shard.index) \(shard.shard.primary)"))
+                    return .bulkError("MOVED \(shard.index) \(shard.shard.primary)")
                 }
                 // Keys with $address prefix are special as they return the address of the node
                 if key.hasPrefix("$address") {
-                    return RESPToken(.bulkString(address.description))
+                    return .bulkString(address.description)
                 }
                 await self.setKey(key, value: value)
-                return .ok
+                return .simpleString("OK")
             case "CLUSTER":
                 switch iterator.next() {
                 case "SHARDS":
-                    return await RESPToken(
-                        .array(self.shards.map { $0.respValue })
-                    )
+                    return await .array(self.shards.map { $0.respValue })
+
                 default:
                     return nil
                 }
@@ -396,6 +412,26 @@ struct ValkeyClusterClientTests {
 
             value = try await client.set("$address{3}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16006")
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testHardFailover() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
+            var value = try await client.set("$address{3}", value: "test")
+            #expect(value.map { String($0) } == "127.0.0.1:16000")
+
+            let primaryAddress = await cluster.shards[0].primary
+            await mockConnections.shutdownServer(.hostname(primaryAddress.host, port: primaryAddress.port))
+            await cluster.shutdownNode(address: primaryAddress)
+            value = try await client.set("$address{3}", value: "test")
+            #expect(value.map { String($0) } == "127.0.0.1:16001")
         }
     }
 }
