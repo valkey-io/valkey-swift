@@ -35,14 +35,17 @@ import ServiceLifecycle
 ///     ValkeyNodeEndpoint(host: "valkey2.example.com", port: 6379)
 /// ])
 ///
-/// let config = ValkeyClientConfiguration(
-///     connectionTimeout: .seconds(5),
-///     readTimeout: .seconds(2)
-/// )
+/// let config = ValkeyClusterClientConfiguration(
+///     client: ValkeyClientConfiguration
+///         commandTimeout: .seconds(5),
+///         tls: .disable
+///     ),
+///     maximumNumberOfRedirects: 3
+///  )
 ///
 /// let client = ValkeyClusterClient(
-///     clientConfiguration: config,
 ///     nodeDiscovery: discovery,
+///     configuration: configuration,
 ///     logger: logger
 /// )
 ///
