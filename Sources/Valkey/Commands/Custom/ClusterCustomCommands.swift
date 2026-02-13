@@ -275,7 +275,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             /// The node is online.
             public static let online = Health(base: .online)
             /// The node is in a failed state.
-            public static let failed = Health(base: .failed)
+            public static let fail = Health(base: .fail)
             /// The node is loading.
             public static let loading = Health(base: .loading)
 
@@ -289,7 +289,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
 
             enum Base: String {
                 case online
-                case failed
+                case fail
                 case loading
             }
 

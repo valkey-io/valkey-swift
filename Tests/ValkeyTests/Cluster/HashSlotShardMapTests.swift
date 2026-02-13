@@ -510,7 +510,7 @@ struct HashSlotShardMapTests {
                     endpoint: "primary1.example.com",
                     role: .primary,
                     replicationOffset: 100,
-                    health: .failed
+                    health: .fail
                 ),
                 // Healthy replica node
                 .init(
