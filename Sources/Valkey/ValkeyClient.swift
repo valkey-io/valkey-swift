@@ -65,8 +65,26 @@ public final class ValkeyClient: Sendable {
         )
     }
 
+    package convenience init(
+        _ address: ValkeyServerAddress,
+        customHandler: @escaping @Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel,
+        configuration: ValkeyClientConfiguration = .init(),
+        eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        logger: Logger
+    ) {
+        self.init(
+            address,
+            customHandler: customHandler,
+            connectionIDGenerator: ConnectionIDGenerator(),
+            connectionFactory: ValkeyConnectionFactory(configuration: configuration),
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
+    }
+
     package init(
         _ address: ValkeyServerAddress,
+        customHandler: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil,
         connectionIDGenerator: ConnectionIDGenerator,
         connectionFactory: ValkeyConnectionFactory,
         eventLoopGroup: any EventLoopGroup,
@@ -77,7 +95,7 @@ public final class ValkeyClient: Sendable {
             configuration: connectionFactory.configuration,
             connectionFactory: ValkeyConnectionFactory(
                 configuration: connectionFactory.configuration,
-                customHandler: nil
+                customHandler: customHandler
             ),
             eventLoopGroup: eventLoopGroup
         )

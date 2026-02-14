@@ -196,7 +196,7 @@ public struct ValkeyClientConfiguration: Sendable {
 
     /// Determine how nodes are chosen for readonly commands
     public struct ReadOnlyCommandNodeSelection: Sendable, Equatable {
-        enum _Internal {
+        enum _Internal: String, RawRepresentable, CaseIterable {
             case primary
             case cycleReplicas
             case cycleAllNodes

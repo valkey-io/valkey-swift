@@ -22,7 +22,7 @@ defaultSwiftSettings.append(contentsOf: [
 ])
 #endif
 
-let package = Package(
+var package = Package(
     name: "valkey-swift",
     products: [
         .library(name: "Valkey", targets: ["Valkey"]),
@@ -40,7 +40,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.4"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.6.3"),
         .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.3.0"),
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.92.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.93.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.26.0"),
         .package(url: "https://github.com/swift-server/swift-service-lifecycle.git", from: "2.8.0"),
@@ -119,6 +119,12 @@ let package = Package(
         ),
     ]
 )
+
+#if compiler(>=6.2)
+package.dependencies.append(.package(url: "https://github.com/apple/swift-configuration.git", from: "1.0.0"))
+let index = package.targets.firstIndex(where: { $0.name == "Valkey" })!
+package.targets[index].dependencies.append(.product(name: "Configuration", package: "swift-configuration"))
+#endif
 
 if Context.environment["ENABLE_VALKEY_BENCHMARKS"] != nil {
     package.platforms = [.macOS(.v13)]
