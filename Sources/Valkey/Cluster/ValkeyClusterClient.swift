@@ -181,7 +181,7 @@ public final class ValkeyClusterClient: Sendable {
                     let retryAction = self.getRetryAction(from: error)
                     switch retryAction {
                     case .redirect(let redirectError):
-                        if redirectAttempt >= self.configuration.maximumNumberOfRedirects {
+                        if redirectAttempt >= self.configuration.maximumRedirects {
                             throw error
                         }
                         redirectAttempt += 1
@@ -399,7 +399,7 @@ public final class ValkeyClusterClient: Sendable {
                 let retryAction = self.getTransactionRetryAction(from: error)
                 switch retryAction {
                 case .redirect(let redirectError):
-                    if redirectAttempt >= self.configuration.maximumNumberOfRedirects {
+                    if redirectAttempt >= self.configuration.maximumRedirects {
                         throw error
                     }
                     redirectAttempt += 1
@@ -482,7 +482,7 @@ public final class ValkeyClusterClient: Sendable {
             if let redirection {
                 node = redirection.node
                 ask = redirection.ask
-                if redirectAttempt >= self.configuration.maximumNumberOfRedirects {
+                if redirectAttempt >= self.configuration.maximumRedirects {
                     throw redirection.error
                 }
                 redirectAttempt += 1

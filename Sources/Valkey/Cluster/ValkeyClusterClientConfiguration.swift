@@ -13,7 +13,7 @@ public struct ValkeyClusterClientConfiguration: Sendable {
     public var client: ValkeyClientConfiguration
 
     /// Maximum number of times we follow a MOVE/ASK error before failing a request
-    public var maximumNumberOfRedirects: Int
+    public var maximumRedirects: Int
 
     /// How frequently cluster topology is refreshed
     public var clusterRefreshInterval: Duration
@@ -24,13 +24,13 @@ public struct ValkeyClusterClientConfiguration: Sendable {
     /// Initialize ValkeyClusterClientConfiguration
     /// - Parameters:
     ///   - client: Configuration for underlying Valkey client connections
-    ///   - maximumNumberOfRedirects: Maximum number of times we follow a MOVE/ASK error before failing a request
+    ///   - maximumRedirects: Maximum number of times we follow a MOVE/ASK error before failing a request
     ///   - clusterRefreshInterval: How frequently cluster topology is refreshed
     ///   - clusterConsensusCircuitBreaker: The duration after which the cluster client rejects all requests, because
     ///         it can't find a cluster consensus
-    init(
+    public init(
         client: ValkeyClientConfiguration = .init(),
-        maximumNumberOfRedirects: Int = 4,
+        maximumRedirects: Int = 4,
         clusterRefreshInterval: Duration = .seconds(30),
         clusterConsensusCircuitBreaker: Duration = .seconds(30)
     ) {
@@ -39,7 +39,7 @@ public struct ValkeyClusterClientConfiguration: Sendable {
         client.enableClientCapaRedirect = false
 
         self.client = client
-        self.maximumNumberOfRedirects = maximumNumberOfRedirects
+        self.maximumRedirects = maximumRedirects
         self.clusterRefreshInterval = clusterRefreshInterval
         self.clusterConsensusCircuitBreaker = clusterConsensusCircuitBreaker
     }
