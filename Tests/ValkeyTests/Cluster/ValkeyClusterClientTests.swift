@@ -249,13 +249,13 @@ struct ValkeyClusterClientTests {
     func withValkeyClusterClient(
         _ address: (host: String, port: Int),
         mockConnections: MockServerConnections,
-        configuration: ValkeyClientConfiguration = .init(readOnlyCommandNodeSelection: .cycleReplicas),
+        configuration: ValkeyClusterClientConfiguration = .init(client: .init(readOnlyCommandNodeSelection: .cycleReplicas)),
         logger: Logger,
         operation: @escaping @Sendable (ValkeyClusterClient) async throws -> Void
     ) async throws {
         let client = ValkeyClusterClient(
-            clientConfiguration: configuration,
             nodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: address.host, port: address.port)]),
+            configuration: configuration,
             eventLoopGroup: mockConnections.eventLoop,
             logger: logger,
             channelFactory: mockConnections.connectionManagerCustomHandler
@@ -423,7 +423,12 @@ struct ValkeyClusterClientTests {
         let cluster = await self.sixNodeHealthyCluster
         let mockConnections = await cluster.mock(logger: logger)
         async let _ = mockConnections.run()
-        try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            configuration: .init(client: .init(readOnlyCommandNodeSelection: .cycleReplicas), clusterRefreshInterval: .seconds(2)),
+            logger: logger
+        ) { client in
             var value = try await client.set("$address{3}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16000")
 
