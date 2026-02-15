@@ -827,14 +827,15 @@ public final class ValkeyClusterClient: Sendable {
     ///
     /// - Parameter action: The action to execute after a timer fires.
     private func runTimerFiredAction(_ action: StateMachine.TimerFiredAction) {
-        if let failWaiters = action.failWaiters {
-            for waiter in failWaiters.waitersToFail {
-                waiter.resume(throwing: failWaiters.error)
+        switch action {
+        case .failWaiters(let waiters):
+            for waiter in waiters.waitersToFail {
+                waiter.resume(throwing: waiters.error)
             }
-        }
-
-        if let runDiscovery = action.runDiscovery {
-            self.queueAction(.runClusterDiscovery(runNodeDiscovery: runDiscovery.runNodeDiscoveryFirst))
+        case .runDiscovery(let clusterDiscovery):
+            self.queueAction(.runClusterDiscovery(runNodeDiscovery: clusterDiscovery.runNodeDiscoveryFirst))
+        case .doNothing:
+            break
         }
     }
 
