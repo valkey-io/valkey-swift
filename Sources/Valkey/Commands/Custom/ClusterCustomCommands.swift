@@ -294,6 +294,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             }
 
             private var base: Base
+            package var rawValue: String { base.rawValue }
 
             init(base: Base) {
                 self.base = base
@@ -394,6 +395,12 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
     /// - Parameter shards: The shards that make up the cluster.
     package init(_ shards: [ValkeyClusterDescription.Shard]) {
         self.shards = shards
+    }
+
+    package mutating func removeFailedNodes() {
+        for index in self.shards.indices {
+            self.shards[index].nodes = self.shards[index].nodes.filter { $0.health != .fail }
+        }
     }
 }
 

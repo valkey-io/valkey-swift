@@ -204,7 +204,7 @@ struct ValkeyTopologyCandidateTests {
     @Test("Failover with one failed and one online primary succeeds")
     @available(valkeySwift 1.0, *)
     func failoverWithOneFailedAndOneOnlinePrimarySucceeds() throws {
-        let description = ValkeyClusterDescription([
+        var description = ValkeyClusterDescription([
             .init(
                 slots: [0...2000, 8000...12000],
                 nodes: [
@@ -244,7 +244,7 @@ struct ValkeyTopologyCandidateTests {
                 ]
             )
         ])
-
+        description.removeFailedNodes()
         // Should not throw - this is a valid failover scenario
         let candidate = try ValkeyTopologyCandidate(description)
 
