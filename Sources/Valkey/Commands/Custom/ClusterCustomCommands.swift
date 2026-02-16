@@ -381,51 +381,34 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             self.slots = hashSlots.slots
         }
 
-        enum PrimaryFound {
-            case failedPrimary(Node)
-            case primary(Node)
-            case none
-
-            var node: Node? {
-                switch self {
-                case .failedPrimary(let primary): primary
-                case .primary(let primary): primary
-                case .none: nil
-                }
-            }
-        }
-
         package func getPrimaryAndReplicas<Err: Error>(
             onDuplicatePrimary: (Node, Node) throws(Err) -> Node
         ) throws(Err) -> (
             primary: ValkeyClusterDescription.Node?, replicas: [ValkeyClusterDescription.Node]
         ) {
-            var primaryFound: PrimaryFound = .none
+            var primary: Node? = nil
+            var isFailedPrimary = false
             var replicas = [Node]()
             replicas.reserveCapacity(self.nodes.count)
 
             for node in self.nodes {
                 switch node.role.base {
                 case .primary:
-                    switch primaryFound {
-                    case .primary(let primary):
+                    switch (primary, isFailedPrimary) {
+                    case (.some(let primaryNode), false):
                         if node.health != .fail {
-                            primaryFound = try .primary(onDuplicatePrimary(primary, node))
+                            // only update primary if it is online/loading
+                            primary = try onDuplicatePrimary(primaryNode, node)
                         }
-                    case .failedPrimary:
-                        primaryFound = .failedPrimary(node)
-                    case .none:
-                        if node.health != .fail {
-                            primaryFound = .primary(node)
-                        } else {
-                            primaryFound = .failedPrimary(node)
-                        }
+                    case (.some, true), (.none, _):
+                        primary = node
+                        isFailedPrimary = (node.health == .fail)
                     }
                 case .replica:
                     replicas.append(node)
                 }
             }
-            return (primary: primaryFound.node, replicas: replicas)
+            return (primary: primary, replicas: replicas)
         }
     }
 
