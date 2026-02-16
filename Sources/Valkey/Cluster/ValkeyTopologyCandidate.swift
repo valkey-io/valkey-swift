@@ -58,25 +58,11 @@ package struct ValkeyTopologyCandidate: Hashable {
     ///
     /// - Parameter description: The cluster description to create a topology candidate from.
     package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
-
         self.shards = try description.shards.map({ shard throws(ValkeyClusterError) in
-            var primary: Node? = nil
-            var replicas = [Node]()
-            replicas.reserveCapacity(shard.nodes.count)
-
-            for node in shard.nodes {
-                switch node.role.base {
-                case .primary:
-                    guard primary == nil else {
-                        throw ValkeyClusterError.shardHasMultiplePrimaryNodes
-                    }
-                    primary = Node(node)
-                case .replica:
-                    replicas.append(Node(node))
-                }
+            let (primary, replicas) = try shard.getPrimaryAndReplicas { (_, _) throws(ValkeyClusterError) in
+                throw ValkeyClusterError.shardHasMultiplePrimaryNodes
             }
-
-            let sorted = replicas.sorted(by: { lhs, rhs in
+            let sorted = replicas.map { Node($0) }.sorted(by: { lhs, rhs in
                 if lhs.endpoint != rhs.endpoint {
                     return lhs.endpoint < rhs.endpoint
                 }
@@ -92,7 +78,7 @@ package struct ValkeyTopologyCandidate: Hashable {
 
             return Shard(
                 slots: shard.slots.sorted(by: { $0.startIndex < $1.startIndex }),
-                primary: primary,
+                primary: Node(primary),
                 replicas: sorted
             )
         })

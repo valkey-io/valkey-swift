@@ -280,7 +280,11 @@ where
 
             let newShards = description.shards
             let poolUpdate = self.runningClients.updateNodes(
-                newShards.lazy.flatMap { $0.nodes.lazy.map { ValkeyNodeDescription(description: $0) } },
+                newShards.lazy.flatMap {
+                    $0.nodes.lazy.compactMap {
+                        if $0.health != .fail { ValkeyNodeDescription(description: $0) } else { nil }
+                    }
+                },
                 removeUnmentionedPools: true
             )
 
@@ -722,7 +726,11 @@ where
             case .refreshing:
                 let newShards = description.shards
                 let poolActions = self.runningClients.updateNodes(
-                    newShards.lazy.flatMap { $0.nodes.lazy.map { ValkeyNodeDescription(description: $0) } },
+                    newShards.lazy.flatMap {
+                        $0.nodes.lazy.compactMap {
+                            if $0.health != .fail { ValkeyNodeDescription(description: $0) } else { nil }
+                        }
+                    },
                     removeUnmentionedPools: false
                 )
                 return .init(

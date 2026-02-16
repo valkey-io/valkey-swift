@@ -380,6 +380,53 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             (hashSlots, self.nodes) = try token.decodeMapValues("slots", "nodes")
             self.slots = hashSlots.slots
         }
+
+        enum PrimaryFound {
+            case failedPrimary(Node)
+            case primary(Node)
+            case none
+
+            var node: Node? {
+                switch self {
+                case .failedPrimary(let primary): primary
+                case .primary(let primary): primary
+                case .none: nil
+                }
+            }
+        }
+
+        package func getPrimaryAndReplicas<Err: Error>(
+            onDuplicatePrimary: (Node, Node) throws(Err) -> Node
+        ) throws(Err) -> (
+            primary: ValkeyClusterDescription.Node?, replicas: [ValkeyClusterDescription.Node]
+        ) {
+            var primaryFound: PrimaryFound = .none
+            var replicas = [Node]()
+            replicas.reserveCapacity(self.nodes.count)
+
+            for node in self.nodes {
+                switch node.role.base {
+                case .primary:
+                    switch primaryFound {
+                    case .primary(let primary):
+                        if node.health != .fail {
+                            primaryFound = try .primary(onDuplicatePrimary(primary, node))
+                        }
+                    case .failedPrimary:
+                        primaryFound = .failedPrimary(node)
+                    case .none:
+                        if node.health != .fail {
+                            primaryFound = .primary(node)
+                        } else {
+                            primaryFound = .failedPrimary(node)
+                        }
+                    }
+                case .replica:
+                    replicas.append(node)
+                }
+            }
+            return (primary: primaryFound.node, replicas: replicas)
+        }
     }
 
     /// The individual portions of a valkey cluster, known as shards.
@@ -395,12 +442,6 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
     /// - Parameter shards: The shards that make up the cluster.
     package init(_ shards: [ValkeyClusterDescription.Shard]) {
         self.shards = shards
-    }
-
-    package mutating func removeFailedNodes() {
-        for index in self.shards.indices {
-            self.shards[index].nodes = self.shards[index].nodes.filter { $0.health != .fail }
-        }
     }
 }
 

@@ -1130,8 +1130,7 @@ public final class ValkeyClusterClient: Sendable {
 
             while let result = await taskGroup.nextResult() {
                 switch result {
-                case .success((var description, let nodeID)):
-                    description.removeFailedNodes()
+                case .success((let description, let nodeID)):
                     do {
                         let metrics = try election.voteReceived(for: description, from: nodeID)
 

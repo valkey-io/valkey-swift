@@ -95,27 +95,15 @@ package struct HashSlotShardMap: Sendable {
 
         var shardID = 0
         for shard in shards {
-            var primary: ValkeyNodeID?
-            var replicas = [ValkeyNodeID]()
-            replicas.reserveCapacity(shard.nodes.count - 1)
-
-            for node in shard.nodes {
-                switch node.role.base {
-                case .primary:
-                    primary = node.nodeID
-
-                case .replica:
-                    replicas.append(node.nodeID)
-                }
-            }
+            let (primary, replicas) = shard.getPrimaryAndReplicas { primary, _ in primary }
 
             guard let primary else {
                 continue
             }
 
             let nodeIDs = ValkeyShardNodeIDs(
-                primary: primary,
-                replicas: replicas
+                primary: primary.nodeID,
+                replicas: replicas.map { $0.nodeID }
             )
 
             defer { shardID += 1 }
