@@ -228,13 +228,13 @@ public struct ValkeyClientConfiguration: Sendable {
     /// The global timeout for blocking commands.
     public var blockingCommandTimeout: Duration
 
-    /// The TLS to use for the Valkey connection.
+    /// The TLS setup to use for the Valkey connection.
     public var tls: TLS
 
     /// Database Number to use for the Valkey Connection
     public var databaseNumber: Int = 0
 
-    /// Determine how we chose nodes for readonly commands
+    /// Determine how we choose nodes for readonly commands
     ///
     /// Cluster by default will redirect commands from replica nodes to the primary node.
     /// Setting this value to something other than ``ReadOnlyCommandNodeSelection/primary``
