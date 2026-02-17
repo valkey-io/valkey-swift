@@ -88,22 +88,22 @@ package struct HashSlotShardMap: Sendable {
     ///    - Assigns all slots belonging to this shard in the mapping
     ///
     /// - Parameter shards: A collection of shard descriptions containing slot assignments and node information
-    package mutating func updateCluster(_ shards: some Collection<ValkeyClusterDescription.Shard>) {
+    package mutating func updateCluster(
+        _ shards: some Collection<ValkeyClusterDescription.AllocatedShard>
+    ) {
         self.slotToShardID = Self.allSlotsMissing
         self.shardIDToShard.removeAll(keepingCapacity: true)
         self.shardIDToShard.reserveCapacity(shards.count)
 
         var shardID = 0
         for shard in shards {
-            let (primary, replicas) = shard.getPrimaryAndReplicas { primary, _ in primary }
-
-            guard let primary else {
+            guard let primary = shard.primary else {
                 continue
             }
 
             let nodeIDs = ValkeyShardNodeIDs(
                 primary: primary.nodeID,
-                replicas: replicas.map { $0.nodeID }
+                replicas: shard.replicas.map { $0.nodeID }
             )
 
             defer { shardID += 1 }

@@ -381,17 +381,36 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             self.slots = hashSlots.slots
         }
 
-        package func getPrimaryAndReplicas<Err: Error>(
+        package func allocateNodes<Err: Error>(
             onDuplicatePrimary: (Node, Node) throws(Err) -> Node
-        ) throws(Err) -> (
-            primary: ValkeyClusterDescription.Node?, replicas: [ValkeyClusterDescription.Node]
-        ) {
+        ) throws(Err) -> AllocatedShard {
+            try AllocatedShard(self, onDuplicatePrimary: onDuplicatePrimary)
+        }
+
+        package func allocateNodes() -> AllocatedShard {
+            AllocatedShard(self) { node, _ in node }
+        }
+    }
+
+    /// Temporary type where nodes are allocated to their roles
+    ///
+    /// Failed replicas and failed primaries (if there is another online primary) are dropped
+    package struct AllocatedShard {
+        let slots: HashSlots
+        let primary: Node?
+        let replicas: ArraySlice<Node>
+        let nodes: [Node]
+
+        init<Err: Error>(
+            _ shard: Shard,
+            onDuplicatePrimary: (Node, Node) throws(Err) -> Node = { node, _ in node }
+        ) throws(Err) {
             var primary: Node? = nil
             var isFailedPrimary = false
-            var replicas = [Node]()
-            replicas.reserveCapacity(self.nodes.count)
+            var nodes = [Node]()
+            nodes.reserveCapacity(shard.nodes.count)
 
-            for node in self.nodes {
+            for node in shard.nodes {
                 switch node.role.base {
                 case .primary:
                     switch (primary, isFailedPrimary) {
@@ -406,11 +425,22 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
                     }
                 case .replica:
                     if node.health != .fail {
-                        replicas.append(node)
+                        nodes.append(node)
                     }
                 }
             }
-            return (primary: primary, replicas: replicas)
+            self.primary = primary
+            let replicaCount = nodes.count
+            if let primary {
+                nodes.append(primary)
+            }
+            self.nodes = nodes
+            if replicaCount > 0 {
+                self.replicas = nodes[..<replicaCount]
+            } else {
+                self.replicas = .init()
+            }
+            self.slots = shard.slots
         }
     }
 
