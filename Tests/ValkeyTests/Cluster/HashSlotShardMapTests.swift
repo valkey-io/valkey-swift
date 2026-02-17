@@ -642,12 +642,24 @@ struct HashSlotShardMapTests {
                     replicationOffset: 90,
                     health: .loading
                 ),
+                // Failing replica
+                .init(
+                    id: "replica3",
+                    port: 9,
+                    tlsPort: 10,
+                    ip: "127.0.0.4",
+                    hostname: "replica3",
+                    endpoint: "replica3.example.com",
+                    role: .replica,
+                    replicationOffset: 90,
+                    health: .fail
+                ),
             ]
         )
 
         map.updateCluster([shard.allocateNodes()])
 
-        // Verify all nodes (including loading replica) are included in the mapping
+        // Verify all nodes (except the failing replica) are included in the mapping
         let expectedPrimary = ValkeyNodeID(endpoint: "primary1.example.com", port: 6)
         let expectedReplica1 = ValkeyNodeID(endpoint: "replica1.example.com", port: 8)
         let expectedReplica2 = ValkeyNodeID(endpoint: "replica2.example.com", port: 10)
