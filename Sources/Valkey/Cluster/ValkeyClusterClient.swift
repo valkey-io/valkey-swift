@@ -192,7 +192,7 @@ public final class ValkeyClusterClient: Sendable {
                         guard let wait = self.configuration.client.retryParameters.calculateWaitTime(attempt: attempt) else {
                             throw error
                         }
-                        try await Task.sleep(for: wait)
+                        try await self.clock.sleep(for: wait)
                         attempt += 1
                     case .dontRetry:
                         throw error
@@ -410,7 +410,7 @@ public final class ValkeyClusterClient: Sendable {
                     guard let wait = self.configuration.client.retryParameters.calculateWaitTime(attempt: attempt) else {
                         throw error
                     }
-                    try await Task.sleep(for: wait)
+                    try await self.clock.sleep(for: wait)
                     attempt += 1
                 case .dontRetry:
                     throw error
@@ -917,7 +917,10 @@ public final class ValkeyClusterClient: Sendable {
                 self.queueAction(.runClient(node))
                 return node
 
-            case .waitForDiscovery:
+            case .waitForDiscovery(let node):
+                if let node {
+                    self.queueAction(.runClient(node))
+                }
                 break
 
             case .moveToDegraded(let action):
@@ -1028,6 +1031,9 @@ public final class ValkeyClusterClient: Sendable {
     ///
     /// - Parameter action: The action containing operations for degraded mode.
     private func runMovedToDegraded(_ action: StateMachine.PoolForRedirectErrorAction.MoveToDegraded) {
+        if let node = action.runConnectionPool {
+            self.queueAction(.runClient(node))
+        }
         if let cancelToken = action.runDiscoveryAndCancelTimer {
             cancelToken.yield()
             self.queueAction(.runClusterDiscovery(runNodeDiscovery: false))
