@@ -244,7 +244,6 @@ struct ValkeyTopologyCandidateTests {
                 ]
             )
         ])
-
         // Should not throw - this is a valid failover scenario
         let candidate = try ValkeyTopologyCandidate(description)
 

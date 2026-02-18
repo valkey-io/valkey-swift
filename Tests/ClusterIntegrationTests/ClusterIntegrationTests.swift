@@ -928,6 +928,51 @@ struct ClusterIntegrationTests {
                 }
             }
         }
+
+        @Test(.disabled("This is disabled by default as it removes a node from the cluster."))
+        @available(valkeySwift 1.0, *)
+        func testShutdown() async throws {
+            var logger2 = Logger(label: "ValkeyCluster")
+            logger2.logLevel = .trace
+            let logger = logger2
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster(
+                [(host: firstNodeHostname, port: firstNodePort)],
+                configuration: .init(clusterRefreshInterval: .seconds(5)),
+                logger: logger
+            ) {
+                client in
+                let keySuffix = "{\(UUID().uuidString)}"
+                try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key in
+                    let hashSlot = HashSlot(key: key)
+                    let nodeClient = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
+                    let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+                    try await withThrowingTaskGroup { group in
+                        for _ in 0..<100 {
+                            group.addTask {
+                                try await Task.sleep(for: .microseconds(Int.random(in: 0..<100)))
+                                do {
+                                    try await client.set(key, value: "vlkdsdf")
+                                } catch {
+                                    logger.info("Client error \(error)")
+                                }
+                                cont.yield()
+                            }
+                        }
+                        await stream.first { _ in true }
+                        do {
+                            try await nodeClient.withConnection { try await $0.shutdown(abortSelector: nil) }
+                        } catch {
+                            logger.info("Shutdown error \(error)")
+                        }
+                        logger.critical("SHUTDOWN")
+
+                        try await group.waitForAll()
+                    }
+                }
+            }
+        }
     }
 
     @available(valkeySwift 1.0, *)

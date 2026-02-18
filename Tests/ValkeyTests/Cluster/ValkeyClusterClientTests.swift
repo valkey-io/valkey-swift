@@ -25,9 +25,23 @@ actor Cluster {
         var description: String { "\(host):\(port)" }
     }
     struct Shard {
+        struct Node {
+            var address: Address
+            var health: ValkeyClusterDescription.Node.Health
+        }
         var hashKeyRanges: [ClosedRange<UInt16>]
-        var primary: Address
-        var replicas: [Address]
+        var primary: Node
+        var replicas: [Node]
+
+        init(
+            hashKeyRanges: [ClosedRange<UInt16>],
+            primary: Cluster.Address,
+            replicas: [Cluster.Address]
+        ) {
+            self.hashKeyRanges = hashKeyRanges
+            self.primary = .init(address: primary, health: .online)
+            self.replicas = replicas.map { .init(address: $0, health: .online) }
+        }
 
         mutating func failover() {
             guard let replica = replicas.first else { return }
@@ -36,12 +50,18 @@ actor Cluster {
         }
 
         mutating func shutdownNode(address: Address) {
-            if self.primary == address {
+            if self.primary.address == address {
+                self.primary.health = .fail
                 guard self.replicas.count > 0 else { return }
                 self.primary = self.replicas.removeLast()
+                self.replicas.append(.init(address: address, health: .fail))
                 return
             } else {
-                self.replicas.removeAll(where: { $0 == address })
+                for index in self.replicas.indices {
+                    if self.replicas[index].address == address {
+                        self.replicas[index].health = .fail
+                    }
+                }
             }
         }
 
@@ -65,25 +85,25 @@ actor Cluster {
             let hashKeyArray: RESP3Value = .array(self.hashKeyRanges.flatMap { [.number(Int64($0.first!)), .number(Int64($0.last!))] })
             var nodes: [RESP3Value] = [
                 .map([
-                    .bulkString("id"): .bulkString(String(primary.hashValue)),
-                    .bulkString("port"): .number(Int64(primary.port)),
-                    .bulkString("ip"): .bulkString(primary.host),
-                    .bulkString("endpoint"): .bulkString(primary.host),
+                    .bulkString("id"): .bulkString(String(primary.address.hashValue)),
+                    .bulkString("port"): .number(Int64(primary.address.port)),
+                    .bulkString("ip"): .bulkString(primary.address.host),
+                    .bulkString("endpoint"): .bulkString(primary.address.host),
                     .bulkString("role"): .bulkString("master"),
                     .bulkString("replication-offset"): .number(70000),
-                    .bulkString("health"): .bulkString("online"),
+                    .bulkString("health"): .bulkString(primary.health.rawValue),
                 ])
             ]
             for replica in replicas {
                 nodes.append(
                     .map([
-                        .bulkString("id"): .bulkString(String(replica.hashValue)),
-                        .bulkString("port"): .number(Int64(replica.port)),
-                        .bulkString("ip"): .bulkString(replica.host),
-                        .bulkString("endpoint"): .bulkString(replica.host),
+                        .bulkString("id"): .bulkString(String(replica.address.hashValue)),
+                        .bulkString("port"): .number(Int64(replica.address.port)),
+                        .bulkString("ip"): .bulkString(replica.address.host),
+                        .bulkString("endpoint"): .bulkString(replica.address.host),
                         .bulkString("role"): .bulkString("replica"),
                         .bulkString("replication-offset"): .number(70000),
-                        .bulkString("health"): .bulkString("online"),
+                        .bulkString("health"): .bulkString(replica.health.rawValue),
                     ])
                 )
             }
@@ -109,9 +129,9 @@ actor Cluster {
         self.addressMap = [:]
         for index in self.shards.indices {
             let shard = self.shards[index]
-            self.addressMap[shard.primary] = (.primary, index)
+            self.addressMap[shard.primary.address] = (.primary, index)
             for replica in shard.replicas {
-                self.addressMap[replica] = (.replica, index)
+                self.addressMap[replica.address] = (.replica, index)
             }
         }
     }
@@ -168,9 +188,9 @@ actor Cluster {
     func addShard(_ shard: Shard, to mockConnections: MockServerConnections, logger: Logger) async {
         self.shards.append(shard)
         self.updateAddressMap()
-        await self.addNode(to: mockConnections, address: shard.primary, logger: logger)
+        await self.addNode(to: mockConnections, address: shard.primary.address, logger: logger)
         for replica in shard.replicas {
-            await self.addNode(to: mockConnections, address: replica, logger: logger)
+            await self.addNode(to: mockConnections, address: replica.address, logger: logger)
         }
     }
 
@@ -181,10 +201,11 @@ actor Cluster {
             switch iterator.next() {
             case "GET":
                 guard let key = iterator.next() else { return .bulkError("ERR invalid command") }
-                guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return .null }
+                let hashSlot = HashSlot(key: key.utf8)
+                guard let shard = await self.getShard(hashSlot) else { return .null }
                 let addressDetails = await self.addressMap[address]
                 if shard.index != addressDetails?.shardIndex {
-                    return .bulkError("MOVED \(shard.index) \(shard.shard.primary)")
+                    return .bulkError("MOVED \(hashSlot.rawValue) \(shard.shard.primary.address)")
                 }
                 // Keys with $address prefix are special as they return the address of the node
                 if key.hasPrefix("$address") {
@@ -195,10 +216,11 @@ actor Cluster {
             case "SET":
                 guard let key = iterator.next() else { return .bulkError("ERR invalid command") }
                 guard let value = iterator.next() else { return .bulkError("ERR invalid command") }
-                guard let shard = await self.getShard(HashSlot(key: key.utf8)) else { return .null }
+                let hashSlot = HashSlot(key: key.utf8)
+                guard let shard = await self.getShard(hashSlot) else { return .null }
                 let addressDetails = await self.addressMap[address]
                 if shard.index != addressDetails?.shardIndex || addressDetails?.role == .replica {
-                    return .bulkError("MOVED \(shard.index) \(shard.shard.primary)")
+                    return .bulkError("MOVED \(hashSlot.rawValue) \(shard.shard.primary.address)")
                 }
                 // Keys with $address prefix are special as they return the address of the node
                 if key.hasPrefix("$address") {
@@ -432,7 +454,7 @@ struct ValkeyClusterClientTests {
             var value = try await client.set("$address{3}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16000")
 
-            let primaryAddress = await cluster.shards[0].primary
+            let primaryAddress = await cluster.shards[0].primary.address
             await mockConnections.shutdownServer(.hostname(primaryAddress.host, port: primaryAddress.port))
             await cluster.shutdownNode(address: primaryAddress)
             value = try await client.set("$address{3}", value: "test")

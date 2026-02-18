@@ -705,7 +705,7 @@ public final class ValkeyClusterClient: Sendable {
             }
         case let error as ValkeyClientError:
             switch error.errorCode {
-            case .connectionCreationCircuitBreakerTripped, .clientIsShutDown, .connectionClosed, .connectionClosing:
+            case .clientIsShutDown, .connectionClosed, .connectionClosing:
                 return .tryAgain
             default:
                 return .dontRetry
@@ -766,7 +766,7 @@ public final class ValkeyClusterClient: Sendable {
             }
         case let error as ValkeyClientError:
             switch error.errorCode {
-            case .connectionCreationCircuitBreakerTripped, .clientIsShutDown, .connectionClosed, .connectionClosing:
+            case .clientIsShutDown, .connectionClosed, .connectionClosing:
                 return .tryAgain
             default:
                 return .dontRetry
@@ -1131,7 +1131,6 @@ public final class ValkeyClusterClient: Sendable {
             while let result = await taskGroup.nextResult() {
                 switch result {
                 case .success((let description, let nodeID)):
-
                     do {
                         let metrics = try election.voteReceived(for: description, from: nodeID)
 
