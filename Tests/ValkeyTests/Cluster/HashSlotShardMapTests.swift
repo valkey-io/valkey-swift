@@ -659,16 +659,14 @@ struct HashSlotShardMapTests {
 
         map.updateCluster([shard.allocateNodes()])
 
-        // Verify all nodes (except the failing replica) are included in the mapping
+        // Verify all nodes (except the failing and loading replicas) are included in the mapping
         let expectedPrimary = ValkeyNodeID(endpoint: "primary1.example.com", port: 6)
         let expectedReplica1 = ValkeyNodeID(endpoint: "replica1.example.com", port: 8)
-        let expectedReplica2 = ValkeyNodeID(endpoint: "replica2.example.com", port: 10)
 
         let shardNodes = map[50]!
         #expect(shardNodes.primary == expectedPrimary)
-        #expect(shardNodes.replicas.count == 2)
+        #expect(shardNodes.replicas.count == 1)
         #expect(shardNodes.replicas.contains(expectedReplica1))
-        #expect(shardNodes.replicas.contains(expectedReplica2))
     }
 
     @Test
