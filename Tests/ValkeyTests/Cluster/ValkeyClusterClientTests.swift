@@ -351,13 +351,23 @@ struct ValkeyClusterClientTests {
         let mockConnections = await cluster.mock(logger: logger)
         async let _ = mockConnections.run()
         try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
-            var value = try await client.set("$address{3}", value: "test")
+            let value = try await client.set("$address{3}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16000")
 
             await cluster.failover(shardIndex: 0)
 
-            value = try await client.set("$address{3}", value: "test")
-            #expect(value.map { String($0) } == "127.0.0.1:16001")
+            // run multiple commands concurrently
+            try await withThrowingTaskGroup { group in
+                for _ in 0..<16 {
+                    group.addTask {
+                        try await Task.sleep(for: .milliseconds(.random(in: 0..<500)))
+                        let value = try await client.set("$address{3}", value: "test")
+                        #expect(value.map { String($0) } == "127.0.0.1:16001")
+                    }
+                }
+                try await group.waitForAll()
+            }
+
         }
     }
 
@@ -370,14 +380,23 @@ struct ValkeyClusterClientTests {
         let mockConnections = await cluster.mock(logger: logger)
         async let _ = mockConnections.run()
         try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
-            var value = try await client.set("$address{3}", value: "test")
+            let value = try await client.set("$address{3}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16000")
 
             let hashSlot = HashSlot(key: "$address{3}".utf8).rawValue
             await cluster.migrateSlots(hashSlot...hashSlot, to: 1)
 
-            value = try await client.set("$address{3}", value: "test")
-            #expect(value.map { String($0) } == "127.0.0.1:16002")
+            // run multiple commands concurrently
+            try await withThrowingTaskGroup { group in
+                for _ in 0..<16 {
+                    group.addTask {
+                        try await Task.sleep(for: .milliseconds(.random(in: 0..<500)))
+                        let value = try await client.set("$address{3}", value: "test")
+                        #expect(value.map { String($0) } == "127.0.0.1:16002")
+                    }
+                }
+                try await group.waitForAll()
+            }
         }
     }
 
@@ -410,14 +429,14 @@ struct ValkeyClusterClientTests {
     func testAddShardSlotMigration() async throws {
         let logger = {
             var logger = Logger(label: "Valkey")
-            logger.logLevel = .debug
+            logger.logLevel = .trace
             return logger
         }()
         let cluster = await self.sixNodeHealthyCluster
         let mockConnections = await cluster.mock(logger: logger)
         async let _ = mockConnections.run()
         try await withValkeyClusterClient((host: "127.0.0.1", port: 16000), mockConnections: mockConnections, logger: logger) { client in
-            var value = try await client.set("$address{3}", value: "test")
+            let value = try await client.set("$address{3}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16000")
 
             let hashSlot = HashSlot(key: "$address{3}".utf8).rawValue
@@ -432,8 +451,17 @@ struct ValkeyClusterClientTests {
             )
             await cluster.migrateSlots(hashSlot...hashSlot, to: cluster.shards.count - 1)
 
-            value = try await client.set("$address{3}", value: "test")
-            #expect(value.map { String($0) } == "127.0.0.1:16006")
+            // run multiple commands concurrently
+            try await withThrowingTaskGroup { group in
+                for _ in 0..<16 {
+                    group.addTask {
+                        try await Task.sleep(for: .milliseconds(.random(in: 0..<250)))
+                        let value = try await client.set("$address{3}", value: "test")
+                        #expect(value.map { String($0) } == "127.0.0.1:16006")
+                    }
+                }
+                try await group.waitForAll()
+            }
         }
     }
 
