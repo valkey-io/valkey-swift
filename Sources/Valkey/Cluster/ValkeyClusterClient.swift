@@ -285,7 +285,7 @@ public final class ValkeyClusterClient: Sendable {
             if nodes.count == 1 {
                 return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands, nodeSelection: nodeSelection)
             }
-            let results = await withTaskGroup(of: NodePipelineResult.self) { group in
+            return await withTaskGroup(of: NodePipelineResult.self) { group in
                 // run generated pipelines concurrently
                 for node in nodes {
                     let indices = node.commandIndices
@@ -325,7 +325,6 @@ public final class ValkeyClusterClient: Sendable {
                 }
                 return results
             }
-            return results
         } catch let error as ValkeyClientError {
             return .init(repeating: .failure(error), count: commands.count)
         } catch let error as ValkeyClusterError {
