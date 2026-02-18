@@ -572,14 +572,20 @@ where
         case connectionPool(ConnectionPool)
         case runAndUseConnectionPool(ConnectionPool)
         case moveToDegraded(MoveToDegraded)
-        case waitForDiscovery
+        case waitForDiscovery(ConnectionPool?)
 
         @usableFromInline
         package struct MoveToDegraded {
+            package var runConnectionPool: ConnectionPool?
             package var runDiscoveryAndCancelTimer: TimerCancellationToken?
             package var circuitBreakerTimer: ValkeyClusterTimer
 
-            package init(runDiscoveryAndCancelTimer: TimerCancellationToken? = nil, circuitBreakerTimer: ValkeyClusterTimer) {
+            package init(
+                runConnectionPool: ConnectionPool?,
+                runDiscoveryAndCancelTimer: TimerCancellationToken? = nil,
+                circuitBreakerTimer: ValkeyClusterTimer
+            ) {
+                self.runConnectionPool = runConnectionPool
                 self.runDiscoveryAndCancelTimer = runDiscoveryAndCancelTimer
                 self.circuitBreakerTimer = circuitBreakerTimer
             }
@@ -613,7 +619,7 @@ where
         switch self.clusterState {
         case .unavailable(let unavailableContext):
             if unavailableContext.start.advanced(by: self.configuration.circuitBreakerDuration) > self.clock.now {
-                return .waitForDiscovery
+                return .waitForDiscovery(nil)
             }
             throw ValkeyClusterError.noConsensusReachedCircuitBreakerOpen
 
@@ -621,10 +627,12 @@ where
             switch degradedContext.hashSlotShardMap.updateSlots(with: movedError) {
             case .updatedSlotToExistingNode, .updatedSlotToUnknownNode:
                 self.clusterState = .degraded(degradedContext)
-                if let pool = self.runningClients[movedError.nodeID]?.pool {
-                    return .connectionPool(pool)
+                switch self.runningClients.addNode(ValkeyNodeDescription(redirectionError: movedError)) {
+                case .useExistingPool(let connectionPool):
+                    return .connectionPool(connectionPool)
+                case .runAndUsePool(let connectionPool):
+                    return .waitForDiscovery(connectionPool)
                 }
-                return .waitForDiscovery
             }
 
         case .healthy(var healthyContext):
@@ -660,9 +668,16 @@ where
                 self.refreshState = .refreshing(previousRefresh)
                 cancelTimer = context.cancellationToken
             }
-
+            let pool: ConnectionPool? =
+                switch self.runningClients.addNode(ValkeyNodeDescription(redirectionError: movedError)) {
+                case .useExistingPool:
+                    nil
+                case .runAndUsePool(let connectionPool):
+                    connectionPool
+                }
             return .moveToDegraded(
                 .init(
+                    runConnectionPool: pool,
                     runDiscoveryAndCancelTimer: cancelTimer,
                     circuitBreakerTimer: .init(
                         timerID: circuitBreakerTimerID,
