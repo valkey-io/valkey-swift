@@ -920,11 +920,13 @@ public final class ValkeyClusterClient: Sendable {
             case .waitForDiscovery(let node):
                 if let node {
                     self.queueAction(.runClient(node))
+                    return node
                 }
-                break
 
             case .moveToDegraded(let action):
-                self.runMovedToDegraded(action)
+                if let node = self.runMovedToDegraded(action) {
+                    return node
+                }
             }
 
             let waiterID = self.nextRequestID()
@@ -1030,7 +1032,7 @@ public final class ValkeyClusterClient: Sendable {
     /// Handles the transition to a degraded state when a moved error is received.
     ///
     /// - Parameter action: The action containing operations for degraded mode.
-    private func runMovedToDegraded(_ action: StateMachine.PoolForRedirectErrorAction.MoveToDegraded) {
+    private func runMovedToDegraded(_ action: StateMachine.PoolForRedirectErrorAction.MoveToDegraded) -> ValkeyNodeClient? {
         if let node = action.runConnectionPool {
             self.queueAction(.runClient(node))
         }
@@ -1040,6 +1042,8 @@ public final class ValkeyClusterClient: Sendable {
         }
 
         self.queueAction(.runTimer(action.circuitBreakerTimer))
+
+        return action.runConnectionPool
     }
 
     /// Runs the cluster discovery process to determine the current cluster topology.
