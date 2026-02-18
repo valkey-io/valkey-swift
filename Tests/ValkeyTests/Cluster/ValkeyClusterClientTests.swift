@@ -492,6 +492,41 @@ struct ValkeyClusterClientTests {
 
     @available(valkeySwift 1.0, *)
     @Test
+    func testHardFailoverWithPipeline() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            configuration: .init(client: .init(readOnlyCommandNodeSelection: .cycleReplicas), clusterRefreshInterval: .seconds(2)),
+            logger: logger
+        ) { client in
+            let value = try await client.set("$address{3}", value: "test")
+            #expect(value.map { String($0) } == "127.0.0.1:16000")
+
+            let primaryAddress = await cluster.shards[0].primary.address
+            await mockConnections.shutdownServer(.hostname(primaryAddress.host, port: primaryAddress.port))
+            await cluster.shutdownNode(address: primaryAddress)
+
+            let results = await client.execute(
+                SET("$address{3}", value: "test"),
+                SET("$address{4}", value: "test"),
+                SET("$address{1}", value: "test"),
+                GET("$address{3}")
+            )
+            try #expect(results.0.get().map { String($0) } == "127.0.0.1:16001")
+            try #expect(results.1.get().map { String($0) } == "127.0.0.1:16004")
+            try #expect(results.2.get().map { String($0) } == "127.0.0.1:16002")
+            // Pipelining will use the primary if any commands are writable.
+            try #expect(results.3.get().map { String($0) } == "127.0.0.1:16001")
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
     func testFailedPrimary() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug

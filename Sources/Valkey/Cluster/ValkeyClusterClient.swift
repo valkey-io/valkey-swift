@@ -283,7 +283,7 @@ public final class ValkeyClusterClient: Sendable {
             let nodes = try await self.splitCommandsAcrossNodes(commands: commands, nodeSelection: nodeSelection)
             // if this list has one element, then just run the pipeline on that single node
             if nodes.count == 1 {
-                return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands)
+                return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands, nodeSelection: nodeSelection)
             }
             return await withTaskGroup(of: NodePipelineResult.self) { group in
                 // run generated pipelines concurrently
@@ -291,7 +291,11 @@ public final class ValkeyClusterClient: Sendable {
                     let indices = node.commandIndices
                     group.addTask {
                         do {
-                            let results = try await self.execute(node: node.node, commands: IndexedSubCollection(commands, indices: indices))
+                            let results = try await self.execute(
+                                node: node.node,
+                                commands: IndexedSubCollection(commands, indices: indices),
+                                nodeSelection: nodeSelection
+                            )
                             return .init(indices: indices, results: results)
                         } catch let error as ValkeyClientError {
                             return NodePipelineResult(indices: indices, results: .init(repeating: .failure(error), count: indices.count))
@@ -439,7 +443,8 @@ public final class ValkeyClusterClient: Sendable {
     @usableFromInline
     func execute<Commands: Collection & Sendable>(
         node: ValkeyNodeClient,
-        commands: Commands
+        commands: Commands,
+        nodeSelection: ValkeyNodeSelection
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
         // execute pipeline
         var results = await node.execute(commands)
@@ -449,19 +454,25 @@ public final class ValkeyClusterClient: Sendable {
         while !Task.isCancelled {
             var node = node
             var redirection: Redirection? = nil
-            var tryAgainError: Error? = nil
+            var tryAgain: Redirection? = nil
             // check if any results require the command to be retried
             for result in results.enumerated() {
                 switch result.element {
                 case .failure(let error):
                     // get retry action for command
-                    let commandRetryAction = self.getPipelinedRetryAction(from: error)
+                    let commandRetryAction = self.getRetryAction(from: error)
                     switch commandRetryAction {
                     case .dontRetry:
                         break
                     case .tryAgain:
+                        if tryAgain == nil {
+                            let node: ValkeyNodeClient = try await self.nodeClient(
+                                for: commands[commands.startIndex + result.offset].keysAffected.map { HashSlot(key: $0) },
+                                nodeSelection: nodeSelection
+                            )
+                            tryAgain = .init(node: node, ask: false, error: error)
+                        }
                         retryCommands.append((commands[commands.startIndex + result.offset], result.offset))
-                        tryAgainError = error
                     case .redirect(let redirectError):
                         if redirection == nil {
                             let node = try await self.nodeClient(for: redirectError)
@@ -487,13 +498,14 @@ public final class ValkeyClusterClient: Sendable {
                 }
                 redirectAttempt += 1
                 attempt = 0
-            } else if let tryAgainError {
+            } else if let tryAgain {
                 // if we aren't redirecting and we received a TRYAGAIN error we should calculate the time to wait before
                 // trying again, wait and increment the attempt counter
                 guard let wait = self.configuration.client.retryParameters.calculateWaitTime(attempt: attempt) else {
-                    throw tryAgainError
+                    throw tryAgain.error
                 }
                 try await Task.sleep(for: wait)
+                node = tryAgain.node
                 attempt += 1
             }
             // send commands that need retrying
@@ -709,31 +721,6 @@ public final class ValkeyClusterClient: Sendable {
                 return .tryAgain
             default:
                 return .dontRetry
-            }
-        default:
-            return .dontRetry
-        }
-    }
-
-    @usableFromInline
-    /* private */ func getPipelinedRetryAction(from error: some Error) -> RetryAction {
-        switch error {
-        case let error as ValkeyClientError where error.errorCode == .commandError:
-            guard let errorMessage = error.message else {
-                return .dontRetry
-            }
-            if let redirectError = ValkeyClusterRedirectionError(errorMessage) {
-                self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
-                return .redirect(redirectError)
-            } else {
-                let prefix = errorMessage.prefix { $0 != " " }
-                switch prefix {
-                case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING", "BUSY":
-                    self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
-                    return .tryAgain
-                default:
-                    return .dontRetry
-                }
             }
         default:
             return .dontRetry

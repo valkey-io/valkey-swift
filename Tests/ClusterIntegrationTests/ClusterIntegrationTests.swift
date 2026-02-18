@@ -437,7 +437,7 @@ struct ClusterIntegrationTests {
                     var commands: [any ValkeyCommand] = .init()
                     commands.append(SET(key, value: "cluster pipeline test"))
                     commands.append(GET(key))
-                    let results = try await client.execute(node: node, commands: commands)
+                    let results = try await client.execute(node: node, commands: commands, nodeSelection: .primary)
                     let response = try results[1].get().decode(as: String.self)
                     #expect(response == "cluster pipeline test")
                 }
@@ -473,7 +473,7 @@ struct ClusterIntegrationTests {
                     commands.append(SET(key2, value: "cluster pipeline test"))
                     commands.append(GET(key2))
                     commands.append(DEL(keys: [key]))
-                    let results = try await client.execute(node: node, commands: commands)
+                    let results = try await client.execute(node: node, commands: commands, nodeSelection: .primary)
                     let response = try results[1].get().decode(as: String.self)
                     #expect(response == "cluster pipeline test")
                 }
@@ -507,7 +507,7 @@ struct ClusterIntegrationTests {
                     commands.append(SET(key, value: "cluster pipeline test"))
                     commands.append(GET(key))
                     commands.append(GET(key2))
-                    let results = try await client.execute(node: node, commands: commands)
+                    let results = try await client.execute(node: node, commands: commands, nodeSelection: .primary)
                     let response = try results[1].get().decode(as: String.self)
                     #expect(response == "cluster pipeline test")
                 }
@@ -545,7 +545,7 @@ struct ClusterIntegrationTests {
                     commands.append(SET(key2, value: "cluster pipeline test"))
                     commands.append(GET(key2))
                     commands.append(DEL(keys: [key2]))
-                    let results = try await client.execute(node: node, commands: commands.dropFirst())
+                    let results = try await client.execute(node: node, commands: commands.dropFirst(), nodeSelection: .primary)
                     let response = try results[3].get().decode(as: String.self)
                     #expect(response == "cluster pipeline test")
                 }
@@ -582,7 +582,7 @@ struct ClusterIntegrationTests {
                     commands.append(SET(key, value: "100"))
                     commands.append(INCR(key))
                     commands.append(ECHO(message: "Test non moved command"))
-                    let results = try await clusterClient.execute(node: node, commands: commands)
+                    let results = try await clusterClient.execute(node: node, commands: commands, nodeSelection: .primary)
                     #expect(try results[0].get().decode(as: String.self) == "OK")
                     #expect(try results[1].get().decode(as: String.self) == "101")
                     let response2 = try results[2].get().decode(as: String.self)
@@ -617,7 +617,7 @@ struct ClusterIntegrationTests {
                         var commands: [any ValkeyCommand] = .init()
                         commands.append(SET(key, value: "After migrate", get: true))
                         commands.append(GET(key))
-                        let results = try await client.execute(node: node, commands: commands)
+                        let results = try await client.execute(node: node, commands: commands, nodeSelection: .primary)
                         #expect(try results[0].get().decode(as: String.self) == "Testing during import")
                         #expect(try results[1].get().decode(as: String.self) == "After migrate")
                     } finished: {
@@ -650,7 +650,7 @@ struct ClusterIntegrationTests {
                             var commands: [any ValkeyCommand] = .init()
                             commands.append(LPUSH(key, elements: ["testing2"]))
                             commands.append(RPOPLPUSH(source: key, destination: key2))
-                            let results = try await client.execute(node: node, commands: commands)
+                            let results = try await client.execute(node: node, commands: commands, nodeSelection: .primary)
                             let count = try results[0].get().decode(as: Int.self)
                             #expect(count == 2)
                             let value = try results[1].get().decode(as: String.self)
