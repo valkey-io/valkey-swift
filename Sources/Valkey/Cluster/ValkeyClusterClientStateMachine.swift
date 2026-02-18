@@ -281,7 +281,7 @@ where
 
             let poolUpdate = self.runningClients.updateNodes(
                 newShards.lazy.flatMap {
-                    $0.nodes.lazy.map { ValkeyNodeDescription(description: $0) }
+                    $0.nodes.lazy.compactMap { $0.health == .online ? ValkeyNodeDescription(description: $0) : nil }
                 },
                 removeUnmentionedPools: true
             )
@@ -548,10 +548,9 @@ where
             if let pool = self.runningClients[nodeID]?.pool {
                 return pool
             }
-            // If we don't have a node for a shard, that means that this shard got created from
-            // a MOVED error. It might be that we are missing info about this node, which is why
-            // we need to wait for the next discovery cycle.
-            throw ValkeyClusterError.clusterIsMissingMovedErrorNode
+            // We don't have a client for a particular node. This is most likely due to a primary
+            // node of a shard being in the fail state
+            throw ValkeyClusterError.clusterIsMissingNode
 
         case .healthy(let context):
             let shardID = try context.hashSlotShardMap.nodeID(for: slots)
@@ -559,10 +558,9 @@ where
             if let pool = self.runningClients[nodeID]?.pool {
                 return pool
             }
-            // If we don't have a node for a shard, that means that this shard got created from
-            // a MOVED error. It might be that we are missing info about this node, which is why
-            // we need to wait for the next discovery cycle.
-            throw ValkeyClusterError.clusterIsMissingMovedErrorNode
+            // We don't have a client for a particular node. This is most likely due to a primary
+            // node of a shard being in the fail state
+            throw ValkeyClusterError.clusterIsMissingNode
 
         case .shutdown:
             throw ValkeyClusterError.clusterClientIsShutDown

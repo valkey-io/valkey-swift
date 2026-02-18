@@ -489,6 +489,39 @@ struct ValkeyClusterClientTests {
             #expect(value.map { String($0) } == "127.0.0.1:16001")
         }
     }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testFailedPrimary() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            configuration: .init(client: .init(readOnlyCommandNodeSelection: .cycleReplicas), clusterRefreshInterval: .seconds(2)),
+            logger: logger
+        ) { client in
+            let value = try await client.set("$address{3}", value: "test")
+            #expect(value.map { String($0) } == "127.0.0.1:16000")
+
+            // delete the primary twice from one shard to put it into a state where the shard has no online primary
+            let primaryAddress = await cluster.shards[0].primary.address
+            await mockConnections.shutdownServer(.hostname(primaryAddress.host, port: primaryAddress.port))
+            await cluster.shutdownNode(address: primaryAddress)
+            let primaryAddress2 = await cluster.shards[0].primary.address
+            await mockConnections.shutdownServer(.hostname(primaryAddress2.host, port: primaryAddress2.port))
+            await cluster.shutdownNode(address: primaryAddress2)
+
+            let error = await #expect(throws: ValkeyClientError.self) {
+                try await client.set("$address{3}", value: "test")
+            }
+            let clusterError = try #require(error?.underlyingError as? ValkeyClusterError)
+            #expect(clusterError == .clusterIsMissingNode)
+        }
+    }
 }
 
 extension ClosedRange<UInt16> {
