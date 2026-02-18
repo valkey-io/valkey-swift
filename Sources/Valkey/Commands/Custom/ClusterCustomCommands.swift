@@ -426,7 +426,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
                         isFailedPrimary = (node.health == .fail)
                     }
                 case .replica:
-                    if node.health != .fail {
+                    if node.health == .online {
                         nodes.append(node)
                     }
                 }
