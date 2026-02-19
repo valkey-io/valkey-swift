@@ -116,7 +116,7 @@ actor MockServerConnections {
         }
     }
 
-    func connectionManagerCustomHandler(_ address: ValkeyServerAddress, eventLoop: EventLoop) async throws -> Channel {
+    func connectionManagerCustomHandler(_ address: ValkeyServerAddress, eventLoop: any EventLoop) async throws -> any Channel {
         guard let server = servers[address] else { throw Error.connectionUnavailable }
         let channel = NIOAsyncTestingChannel(loop: self.eventLoop)
         let request = ConnectionRequest(requestID: self.globalID, channel: channel, server: server, address: address)

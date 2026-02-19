@@ -8,6 +8,9 @@ var defaultSwiftSettings: [SwiftSetting] =
         .swiftLanguageMode(.v6),
         .enableExperimentalFeature("AvailabilityMacro=valkeySwift 1.0:macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0"),
 
+        // https://github.com/apple/swift-evolution/blob/main/proposals/0335-existential-any.md
+        .enableUpcomingFeature("ExistentialAny"),
+
         // https://github.com/swiftlang/swift-evolution/blob/main/proposals/0444-member-import-visibility.md
         .enableUpcomingFeature("MemberImportVisibility"),
 

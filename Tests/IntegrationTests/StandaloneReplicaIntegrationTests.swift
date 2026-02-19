@@ -242,7 +242,7 @@ struct StandaloneReplicaIntegrationTests {
         guard case .hostname(let replicaHost, let replicaPort) = replicaAddress.value else { fatalError("Expected a hostname") }
 
         try await client.failover(target: .init(host: replicaHost, port: replicaPort))
-        let result: Result<Value, Error>
+        let result: Result<Value, any Error>
         do {
             let value = try await operation()
             result = .success(value)

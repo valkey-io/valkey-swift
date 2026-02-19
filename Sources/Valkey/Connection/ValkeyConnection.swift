@@ -665,7 +665,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     static func createCommonSpanAttributes(
         address: ValkeyServerAddress?,
         configuration: ValkeyConnectionConfiguration,
-        channel: Channel
+        channel: any Channel
     ) -> SpanAttributes {
         var commonAttributes: SpanAttributes = [
             configuration.tracing.attributeNames.databaseSystemName: .string(configuration.tracing.attributeValues.databaseSystem)
@@ -955,7 +955,7 @@ extension ValkeyClientError {
 
 extension Result where Success == RESPToken, Failure == any Error {
     @usableFromInline
-    func convertFromRESP<Response: RESPTokenDecodable>(to: Response.Type) -> Result<Response, Error> {
+    func convertFromRESP<Response: RESPTokenDecodable>(to: Response.Type) -> Result<Response, any Error> {
         self.flatMap {
             do {
                 return try .success(Response($0))
