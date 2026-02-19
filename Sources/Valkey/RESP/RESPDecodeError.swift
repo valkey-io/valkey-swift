@@ -5,7 +5,7 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
-/// Error returned when decoding a RESPToken.
+
 /// Error thrown when decoding RESPTokens
 public struct RESPDecodeError: Error, Equatable {
     /// Error code for decode error

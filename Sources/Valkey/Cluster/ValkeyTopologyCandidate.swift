@@ -58,25 +58,11 @@ package struct ValkeyTopologyCandidate: Hashable {
     ///
     /// - Parameter description: The cluster description to create a topology candidate from.
     package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
-
         self.shards = try description.shards.map({ shard throws(ValkeyClusterError) in
-            var primary: Node?
-            var replicas = [Node]()
-            replicas.reserveCapacity(shard.nodes.count)
-
-            for node in shard.nodes {
-                switch node.role.base {
-                case .primary:
-                    if primary != nil {
-                        throw ValkeyClusterError.shardHasMultiplePrimaryNodes
-                    }
-                    primary = Node(node)
-                case .replica:
-                    replicas.append(Node(node))
-                }
+            let allocatedShard = try shard.allocateNodes { (_, _) throws(ValkeyClusterError) in
+                throw ValkeyClusterError.shardHasMultiplePrimaryNodes
             }
-
-            let sorted = replicas.sorted(by: { lhs, rhs in
+            let sorted = allocatedShard.replicas.map { Node($0) }.sorted(by: { lhs, rhs in
                 if lhs.endpoint != rhs.endpoint {
                     return lhs.endpoint < rhs.endpoint
                 }
@@ -86,13 +72,13 @@ package struct ValkeyTopologyCandidate: Hashable {
                 return true
             })
 
-            guard let primary else {
+            guard let primary = allocatedShard.primary else {
                 throw ValkeyClusterError.shardIsMissingPrimaryNode
             }
 
             return Shard(
                 slots: shard.slots.sorted(by: { $0.startIndex < $1.startIndex }),
-                primary: primary,
+                primary: Node(primary),
                 replicas: sorted
             )
         })
@@ -109,5 +95,16 @@ package struct ValkeyClusterVoter<ConnectionPool: ValkeyNodeConnectionPool> {
     package init(client: ConnectionPool, nodeID: ValkeyNodeID) {
         self.client = client
         self.nodeID = nodeID
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyTopologyCandidate.Shard: CustomStringConvertible {
+    package var description: String {
+        var string = "Shard("
+        string += "slots: [\(self.slots.lazy.map { "\($0.lowerBound)...\($0.upperBound)" }.joined(separator: ", "))], "
+        string += "primary: Node(\(self.primary.endpoint), \(self.primary.port)), "
+        string += "replicas: [\(self.replicas.lazy.map { "Node(\($0.endpoint), port: \($0.port))" }.joined(separator: ", "))]) "
+        return string
     }
 }
