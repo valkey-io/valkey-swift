@@ -648,7 +648,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [FUNCTION LOAD](https://valkey.io/commands/function-load)
     /// - Available: 7.0.0
     /// - Complexity: O(1) (considering compilation time is redundant)
-    /// - Response: [String]: The library name that was loaded
+    /// - Response: The library name that was loaded
     @inlinable
     @discardableResult
     public func functionLoad<FunctionCode: RESPStringRenderable>(
@@ -697,7 +697,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SCRIPT EXISTS](https://valkey.io/commands/script-exists)
     /// - Available: 2.6.0
     /// - Complexity: O(N) with N being the number of scripts to check (so checking a single script is an O(1) operation).
-    /// - Response: [Array]: An array of integers that correspond to the specified SHA1 digest arguments.
+    /// - Response: An array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
     @discardableResult
     public func scriptExists<Sha1: RESPStringRenderable>(sha1s: [Sha1]) async throws(ValkeyClientError) -> [Int] {
@@ -743,7 +743,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SCRIPT LOAD](https://valkey.io/commands/script-load)
     /// - Available: 2.6.0
     /// - Complexity: O(N) with N being the length in bytes of the script body.
-    /// - Response: [String]: The SHA1 digest of the script added into the script cache
+    /// - Response: The SHA1 digest of the script added into the script cache
     @inlinable
     @discardableResult
     public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws(ValkeyClientError) -> String {
@@ -755,7 +755,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SCRIPT SHOW](https://valkey.io/commands/script-show)
     /// - Available: 8.0.0
     /// - Complexity: O(1).
-    /// - Response: [String]: Lua script if sha1 hash exists in script cache.
+    /// - Response: Lua script if sha1 hash exists in script cache.
     @inlinable
     @discardableResult
     public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws(ValkeyClientError) -> String {

@@ -1247,8 +1247,8 @@ extension ValkeyClientProtocol {
     /// - Available: 3.2.0
     /// - Complexity: O(1)
     /// - Response: One of the following
-    ///     * [Null]: One or both of elements are missing.
-    ///     * [String]: Distance as a double (represented as a string) in the specified units.
+    ///     * (nil) One or both of elements are missing.
+    ///     * Distance as a double (represented as a string) in the specified units.
     @inlinable
     public func geodist<Member1: RESPStringRenderable, Member2: RESPStringRenderable>(
         _ key: ValkeyKey,
@@ -1275,7 +1275,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [GEOPOS](https://valkey.io/commands/geopos)
     /// - Available: 3.2.0
     /// - Complexity: O(1) for each member requested.
-    /// - Response: [Array]: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
+    /// - Response: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
     @inlinable
     public func geopos(_ key: ValkeyKey, members: [String] = []) async throws(ValkeyClientError) -> GEOPOS.Response {
         try await execute(GEOPOS(key, members: members))
@@ -1288,7 +1288,6 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Response: Array of matched members information.
     @inlinable
@@ -1330,7 +1329,6 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Response: Array of matched members information.
     @inlinable
@@ -1370,7 +1368,6 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Response: Array of matched members information.
     @inlinable
@@ -1407,7 +1404,6 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Response: Array of matched members information.
     @inlinable

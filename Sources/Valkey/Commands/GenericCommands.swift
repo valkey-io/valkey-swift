@@ -1433,7 +1433,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.0.0: Added the `TYPE` subcommand.
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
-    /// - Response: [Array]: Cursor and scan response in array form.
+    /// - Response: Cursor and scan response in array form.
     @inlinable
     public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws(ValkeyClientError) -> SCAN.Response {
         try await execute(SCAN(cursor: cursor, pattern: pattern, count: count, type: type))
@@ -1550,7 +1550,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [WAITAOF](https://valkey.io/commands/waitaof)
     /// - Available: 7.2.0
     /// - Complexity: O(1)
-    /// - Response: [Array]: Number of local and remote AOF files in sync.
+    /// - Response: Number of local and remote AOF files in sync.
     @inlinable
     @discardableResult
     public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws(ValkeyClientError) -> WAITAOF.Response {

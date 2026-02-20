@@ -1599,8 +1599,8 @@ extension ValkeyClientProtocol {
     ///     * 7.0.0: Added selectors and changed the format of key and channel patterns from a list to their rule representation.
     /// - Complexity: O(N). Where N is the number of password, command and pattern rules that the user has.
     /// - Response: One of the following
-    ///     * [Map]: A set of ACL rule definitions for the user.
-    ///     * [Null]: If user does not exist
+    ///     * A set of ACL rule definitions for the user.
+    ///     * (nil) If user does not exist
     @inlinable
     @discardableResult
     public func aclGetuser<Username: RESPStringRenderable>(username: Username) async throws(ValkeyClientError) -> ACL.GETUSERResponse? {
@@ -1785,7 +1785,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [COMMAND GETKEYSANDFLAGS](https://valkey.io/commands/command-getkeysandflags)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of arguments to the command
-    /// - Response: [Array]: List of keys from the given command and their usage flags.
+    /// - Response: List of keys from the given command and their usage flags.
     @inlinable
     @discardableResult
     public func commandGetkeysandflags<Command: RESPStringRenderable>(
@@ -1994,7 +1994,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 7.0.0: Added support for taking multiple section arguments.
     /// - Complexity: O(1)
-    /// - Response: A structured response containing server statistics organized by sections.
+    /// - Response: A map of info fields, one field per line in the form of <field>:<value> where the value can be a comma separated map like <key>=<val>. Also contains section header lines starting with `#` and blank lines.
     @inlinable
     @discardableResult
     public func info(sections: [String] = []) async throws(ValkeyClientError) -> INFO.Response {
@@ -2158,7 +2158,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [MEMORY STATS](https://valkey.io/commands/memory-stats)
     /// - Available: 4.0.0
     /// - Complexity: O(1)
-    /// - Response: [Map]: Memory usage details.
+    /// - Response: Memory usage details.
     @inlinable
     @discardableResult
     public func memoryStats() async throws(ValkeyClientError) -> MEMORY.STATS.Response {
@@ -2195,7 +2195,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [MODULE LIST](https://valkey.io/commands/module-list)
     /// - Available: 4.0.0
     /// - Complexity: O(N) where N is the number of loaded modules.
-    /// - Response: [Array]: Returns information about the modules loaded to the server.
+    /// - Response: Returns information about the modules loaded to the server.
     @inlinable
     @discardableResult
     public func moduleList() async throws(ValkeyClientError) -> MODULE.LIST.Response {
@@ -2309,7 +2309,6 @@ extension ValkeyClientProtocol {
     /// - Available: 2.2.12
     /// - History:
     ///     * 4.0.0: Added client IP address, port and name to the reply.
-    /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG GET <count> SLOW`.
     /// - Complexity: O(N) where N is the number of entries returned
     /// - Response: [Array]: Entries from the slow log in chronological order.
     @inlinable
@@ -2322,7 +2321,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SLOWLOG HELP](https://valkey.io/commands/slowlog-help)
     /// - Available: 6.2.0
-    /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG HELP`.
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
@@ -2335,7 +2333,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SLOWLOG LEN](https://valkey.io/commands/slowlog-len)
     /// - Available: 2.2.12
-    /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG LEN SLOW`.
     /// - Complexity: O(1)
     /// - Response: [Integer]: Number of entries in the slow log.
     @inlinable
@@ -2348,7 +2345,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SLOWLOG RESET](https://valkey.io/commands/slowlog-reset)
     /// - Available: 2.2.12
-    /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG RESET SLOW`.
     /// - Complexity: O(N) where N is the number of entries in the slowlog
     @inlinable
     public func slowlogReset() async throws(ValkeyClientError) {
@@ -2380,7 +2376,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [TIME](https://valkey.io/commands/time)
     /// - Available: 2.6.0
     /// - Complexity: O(1)
-    /// - Response: [Array]: Array containing two elements: Unix time in seconds and microseconds.
+    /// - Response: Array containing two elements: Unix time in seconds and microseconds.
     @inlinable
     @discardableResult
     public func time() async throws(ValkeyClientError) -> TIME.Response {
