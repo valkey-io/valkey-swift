@@ -68,8 +68,10 @@ extension HSCAN {
 }
 
 extension HRANDFIELD {
+    public typealias Response = OptionalResponse?
+
     /// Custom response type for HRANDFIELD command that handles all possible return scenarios
-    public struct Response: RESPTokenDecodable, Sendable {
+    public struct OptionalResponse: RESPTokenDecodable, Sendable {
         /// The raw RESP token containing the response
         public let token: RESPToken
 
