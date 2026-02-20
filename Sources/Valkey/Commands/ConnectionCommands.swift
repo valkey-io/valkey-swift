@@ -1185,6 +1185,7 @@ extension ValkeyClientProtocol {
     ///     * 8.1.0: Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE.
     ///     * 9.0.0: Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP.
     /// - Complexity: O(N) where N is the number of client connections
+    /// - Response: Information and statistics about client connections
     @inlinable
     @discardableResult
     public func clientList(
@@ -1360,7 +1361,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [QUIT](https://valkey.io/commands/quit)
     /// - Available: 1.0.0
-    /// - Deprecated since: 7.2.0. Replaced by just closing the connection.
     /// - Complexity: O(1)
     @inlinable
     public func quit() async throws(ValkeyClientError) {

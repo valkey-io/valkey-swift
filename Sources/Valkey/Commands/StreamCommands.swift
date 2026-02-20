@@ -1016,6 +1016,9 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 7.0.0: Added an element to the reply array, containing deleted entries the command cleared from the PEL
     /// - Complexity: O(1) if COUNT is small.
+    /// - Response: One of the following
+    ///     * Claimed stream entries (with data, if `JUSTID` was not given).
+    ///     * Claimed stream entries (without data, if `JUSTID` was given).
     @inlinable
     @discardableResult
     public func xautoclaim<
@@ -1040,6 +1043,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [XCLAIM](https://valkey.io/commands/xclaim)
     /// - Available: 5.0.0
     /// - Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
+    /// - Response: Stream entries with IDs matching the specified range.
     @inlinable
     @discardableResult
     public func xclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>(
@@ -1182,6 +1186,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 7.2.0: Added the `inactive` field, and changed the meaning of `idle`.
     /// - Complexity: O(1)
+    /// - Response: Array list of consumers
     @inlinable
     public func xinfoConsumers<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws(ValkeyClientError) -> [XINFO.Consumer] {
         try await execute(XINFO.CONSUMERS(key, group: group))
@@ -1220,6 +1225,9 @@ extension ValkeyClientProtocol {
     ///     * 7.0.0: Added the `max-deleted-entry-id`, `entries-added`, `recorded-first-entry-id`, `entries-read` and `lag` fields
     ///     * 7.2.0: Added the `active-time` field, and changed the meaning of `seen-time`.
     /// - Complexity: O(1)
+    /// - Response: One of the following
+    ///     * Summary form, in case `FULL` was not given.
+    ///     * Extended form, in case `FULL` was given.
     @inlinable
     public func xinfoStream(_ key: ValkeyKey, fullBlock: XINFO.STREAM.FullBlock? = nil) async throws(ValkeyClientError) -> XINFO.STREAM.Response {
         try await execute(XINFO.STREAM(key, fullBlock: fullBlock))
@@ -1243,6 +1251,9 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `IDLE` option and exclusive range intervals.
     /// - Complexity: O(N) with N being the number of elements returned, so asking for a small fixed number of entries per call is O(1). O(M), where M is the total number of entries scanned when used with the IDLE filter. When the command returns just the summary and the list of consumers is small, it runs in O(1) time; otherwise, an additional O(N) time for iterating every consumer.
+    /// - Response: One of the following
+    ///     * Extended form, in case `start` was given.
+    ///     * Summary form, in case `start` was not given.
     @inlinable
     public func xpending<Group: RESPStringRenderable>(
         _ key: ValkeyKey,
@@ -1259,6 +1270,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added exclusive ranges.
     /// - Complexity: O(N) with N being the number of elements being returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
+    /// - Response: Stream entries with IDs matching the specified range.
     @inlinable
     public func xrange<Start: RESPStringRenderable, End: RESPStringRenderable>(
         _ key: ValkeyKey,
@@ -1273,6 +1285,9 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [XREAD](https://valkey.io/commands/xread)
     /// - Available: 5.0.0
+    /// - Response: One of the following
+    ///     * A map of key-value elements when each element composed of key name and the entries reported for that key.
+    ///     * (nil) If BLOCK option is given, and a timeout occurs, or there is no stream we can serve.
     @inlinable
     public func xread<Id: RESPStringRenderable>(
         count: Int? = nil,
@@ -1287,6 +1302,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [XREADGROUP](https://valkey.io/commands/xreadgroup)
     /// - Available: 5.0.0
     /// - Complexity: For each stream mentioned: O(M) with M being the number of elements returned. If M is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1). On the other side when XREADGROUP blocks, XADD will pay the O(N) time in order to serve the N clients blocked on the stream getting new data.
+    /// - Response: One of the following
+    ///     * (nil) If BLOCK option is specified and the timeout expired
+    ///     * A map of key-value elements when each element composed of key name and the entries reported for that key
     @inlinable
     @discardableResult
     public func xreadgroup<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>(
@@ -1306,6 +1324,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added exclusive ranges.
     /// - Complexity: O(N) with N being the number of elements returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
+    /// - Response: An array of the entries with IDs matching the specified range
     @inlinable
     public func xrevrange<End: RESPStringRenderable, Start: RESPStringRenderable>(
         _ key: ValkeyKey,

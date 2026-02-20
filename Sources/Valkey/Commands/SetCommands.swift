@@ -590,6 +590,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SSCAN](https://valkey.io/commands/sscan)
     /// - Available: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
+    /// - Response: Cursor and scan response in array form.
     @inlinable
     public func sscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws(ValkeyClientError) -> SSCAN.Response {
         try await execute(SSCAN(key, cursor: cursor, pattern: pattern, count: count))

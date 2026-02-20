@@ -1201,7 +1201,7 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [HEXPIRETIME](https://valkey.io/commands/hexpiretime)
     /// - Available: 9.0.0
-    /// - Complexity: O(1) for each field, so O(N) for N items when the command is called with multiple fields.
+    /// - Complexity: O(N) where N is the number of specified fields.
     /// - Response: [Array]: List of values associated with the result of getting the absolute expiry timestamp of the specific fields, in the same order as they are requested.
     @inlinable
     public func hexpiretime<Field: RESPStringRenderable>(
@@ -1239,7 +1239,7 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [HGETEX](https://valkey.io/commands/hgetex)
     /// - Available: 9.0.0
-    /// - Complexity: O(1)
+    /// - Complexity: O(N) where N is the number of specified fields.
     /// - Response: [Array]: List of values associated with the given fields, in the same order as they are requested.
     @inlinable
     @discardableResult
@@ -1316,7 +1316,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [HMSET](https://valkey.io/commands/hmset)
     /// - Available: 2.0.0
-    /// - Deprecated since: 4.0.0. Replaced by `HSET` with multiple field-value pairs.
     /// - Complexity: O(N) where N is the number of fields being set.
     @inlinable
     public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(
@@ -1330,7 +1329,7 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [HPERSIST](https://valkey.io/commands/hpersist)
     /// - Available: 9.0.0
-    /// - Complexity: O(1) for each field assigned with TTL, so O(N) to persist N items when the command is called with multiple fields.
+    /// - Complexity: O(N) where N is the number of specified fields.
     /// - Response: [Array]: List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.
     @inlinable
     @discardableResult
@@ -1379,7 +1378,7 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [HPEXPIRETIME](https://valkey.io/commands/hpexpiretime)
     /// - Available: 9.0.0
-    /// - Complexity: O(1) for each field, so O(N) for N items when the command is called with multiple fields.
+    /// - Complexity: O(N) where N is the number of specified fields.
     /// - Response: [Array]: List of values associated with the result of getting the absolute expiry timestamp of the specific fields, in the same order as they are requested.
     @inlinable
     public func hpexpiretime<Field: RESPStringRenderable>(
@@ -1393,7 +1392,7 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [HPTTL](https://valkey.io/commands/hpttl)
     /// - Available: 9.0.0
-    /// - Complexity: O(1) for each field assigned with TTL, so O(N) for N items when the command is called with multiple fields.
+    /// - Complexity: O(N) where N is the number of specified fields.
     /// - Response: [Array]: List of values associated with the result of getting the remaining time-to-live of the specific fields, in the same order as they are requested.
     @inlinable
     public func hpttl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HPTTL<Field>.Fields) async throws(ValkeyClientError) -> RESPToken.Array {
@@ -1405,6 +1404,11 @@ extension ValkeyClientProtocol {
     /// - Documentation: [HRANDFIELD](https://valkey.io/commands/hrandfield)
     /// - Available: 6.2.0
     /// - Complexity: O(N) where N is the number of fields returned
+    /// - Response: One of the following
+    ///     * (nil) Key doesn't exist
+    ///     * A single random field. Returned in case `COUNT` was not used.
+    ///     * A list of fields. Returned in case `COUNT` was used.
+    ///     * Fields and their values. Returned in case `COUNT` and `WITHVALUES` were used. In RESP2 this is returned as a flat array.
     @inlinable
     public func hrandfield(_ key: ValkeyKey, options: HRANDFIELD.Options? = nil) async throws(ValkeyClientError) -> HRANDFIELD.Response {
         try await execute(HRANDFIELD(key, options: options))
@@ -1415,6 +1419,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [HSCAN](https://valkey.io/commands/hscan)
     /// - Available: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
+    /// - Response: Cursor and scan response in array form.
     @inlinable
     public func hscan(
         _ key: ValkeyKey,
@@ -1447,7 +1452,7 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [HSETEX](https://valkey.io/commands/hsetex)
     /// - Available: 9.0.0
-    /// - Complexity: O(1)
+    /// - Complexity: O(N) where N is the number of specified fields.
     /// - Response: One of the following
     ///     * 0: None of the provided fields value and or expiration time was set.
     ///     * 1: All the fields value and or expiration time was set.
@@ -1495,7 +1500,7 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [HTTL](https://valkey.io/commands/httl)
     /// - Available: 9.0.0
-    /// - Complexity: O(1) for each field, so O(N) for N items when the command is called with multiple fields.
+    /// - Complexity: O(N) where N is the number of specified fields.
     /// - Response: [Array]: List of values associated with the result of getting the remaining time-to-live of the specific fields, in the same order as they are requested.
     @inlinable
     public func httl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HTTL<Field>.Fields) async throws(ValkeyClientError) -> RESPToken.Array {

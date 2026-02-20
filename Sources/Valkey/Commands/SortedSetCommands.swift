@@ -1304,6 +1304,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [BZMPOP](https://valkey.io/commands/bzmpop)
     /// - Available: 7.0.0
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
+    /// - Response: One of the following
+    ///     * (nil) Timeout reached and no elements were popped.
+    ///     * The keyname and the popped members.
     @inlinable
     @discardableResult
     public func bzmpop(timeout: Double, keys: [ValkeyKey], where: BZMPOP.Where, count: Int? = nil) async throws(ValkeyClientError) -> BZMPOP.Response
@@ -1318,6 +1321,9 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
+    /// - Response: One of the following
+    ///     * (nil) Timeout reached and no elements were popped.
+    ///     * The keyname, popped member, and its score.
     @inlinable
     @discardableResult
     public func bzpopmax(keys: [ValkeyKey], timeout: Double) async throws(ValkeyClientError) -> BZPOPMAX.Response {
@@ -1331,6 +1337,9 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
+    /// - Response: One of the following
+    ///     * (nil) Timeout reached and no elements were popped.
+    ///     * The keyname, popped member, and its score.
     @inlinable
     @discardableResult
     public func bzpopmin(keys: [ValkeyKey], timeout: Double) async throws(ValkeyClientError) -> BZPOPMIN.Response {
@@ -1489,6 +1498,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [ZMPOP](https://valkey.io/commands/zmpop)
     /// - Available: 7.0.0
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
+    /// - Response: One of the following
+    ///     * (nil) No element could be popped.
+    ///     * Name of the key that elements were popped.
     @inlinable
     @discardableResult
     public func zmpop(keys: [ValkeyKey], where: ZMPOP.Where, count: Int? = nil) async throws(ValkeyClientError) -> ZMPOP.Response {
@@ -1513,6 +1525,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [ZPOPMAX](https://valkey.io/commands/zpopmax)
     /// - Available: 5.0.0
     /// - Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
+    /// - Response: One of the following
+    ///     * List of popped elements and scores when 'COUNT' isn't specified.
+    ///     * List of popped elements and scores when 'COUNT' is specified.
     @inlinable
     @discardableResult
     public func zpopmax(_ key: ValkeyKey, count: Int? = nil) async throws(ValkeyClientError) -> ZPOPMAX.Response {
@@ -1524,6 +1539,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [ZPOPMIN](https://valkey.io/commands/zpopmin)
     /// - Available: 5.0.0
     /// - Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
+    /// - Response: One of the following
+    ///     * List of popped elements and scores when 'COUNT' isn't specified.
+    ///     * List of popped elements and scores when 'COUNT' is specified.
     @inlinable
     @discardableResult
     public func zpopmin(_ key: ValkeyKey, count: Int? = nil) async throws(ValkeyClientError) -> ZPOPMIN.Response {
@@ -1535,6 +1553,11 @@ extension ValkeyClientProtocol {
     /// - Documentation: [ZRANDMEMBER](https://valkey.io/commands/zrandmember)
     /// - Available: 6.2.0
     /// - Complexity: O(N) where N is the number of members returned
+    /// - Response: One of the following
+    ///     * (nil) Key does not exist.
+    ///     * Randomly selected element when 'COUNT' is not used.
+    ///     * Randomly selected elements when 'COUNT' is used.
+    ///     * Randomly selected elements when 'COUNT' and 'WITHSCORES' modifiers are used.
     @inlinable
     public func zrandmember(_ key: ValkeyKey, options: ZRANDMEMBER.Options? = nil) async throws(ValkeyClientError) -> ZRANDMEMBER.Response {
         try await execute(ZRANDMEMBER(key, options: options))
@@ -1567,7 +1590,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [ZRANGEBYLEX](https://valkey.io/commands/zrangebylex)
     /// - Available: 2.8.9
-    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `BYLEX` argument.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Response: [Array]: List of elements in the specified score range.
     @inlinable
@@ -1586,7 +1608,6 @@ extension ValkeyClientProtocol {
     /// - Available: 1.0.5
     /// - History:
     ///     * 2.0.0: Added the `WITHSCORES` modifier.
-    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Response: One of the following
     ///     * [Array]: List of the elements in the specified score range, as not WITHSCORES.
@@ -1700,7 +1721,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [ZREVRANGE](https://valkey.io/commands/zrevrange)
     /// - Available: 1.2.0
-    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `REV` argument.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
     /// - Response: One of the following
     ///     * [Array]: List of member elements.
@@ -1714,7 +1734,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [ZREVRANGEBYLEX](https://valkey.io/commands/zrevrangebylex)
     /// - Available: 2.8.9
-    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYLEX` arguments.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Response: [Array]: List of the elements in the specified score range.
     @inlinable
@@ -1733,7 +1752,6 @@ extension ValkeyClientProtocol {
     /// - Available: 2.2.0
     /// - History:
     ///     * 2.1.6: `min` and `max` can be exclusive.
-    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Response: One of the following
     ///     * [Array]: List of the elements in the specified score range, as not WITHSCORES.
@@ -1776,6 +1794,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 8.0.0: Added noscores option.
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
+    /// - Response: Cursor and scan response in array form.
     @inlinable
     public func zscan(
         _ key: ValkeyKey,

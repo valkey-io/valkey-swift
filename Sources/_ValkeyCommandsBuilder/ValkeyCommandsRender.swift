@@ -289,8 +289,8 @@ extension String {
         if let complexity = command.complexity {
             self.append("    /// - Complexity: \(complexity)\n")
         }
-        if !disableResponseCalculation, let replySchema = command.replySchema {
-            let responses = responseTypeComment(replySchema)
+        if let replySchema = command.replySchema {
+            let responses = responseTypeComment(replySchema, includeType: !disableResponseCalculation)
             if responses.count == 1 {
                 self.append("    /// - Response: \(responses[0])\n")
             } else if responses.count > 1 {
@@ -593,15 +593,15 @@ extension String {
     }
 }
 
-private func responseTypeComment(_ replySchema: ValkeyCommand.ReplySchema) -> [String] {
+private func responseTypeComment(_ replySchema: ValkeyCommand.ReplySchema, includeType: Bool) -> [String] {
     switch replySchema {
     case .response(let response):
-        return responseTypeComment(response)
+        return responseTypeComment(response, includeType: includeType)
     case .oneOf(let description, let responses):
         if let description {
             return [description]
         }
-        return responses.flatMap { responseTypeComment($0) }
+        return responses.flatMap { responseTypeComment($0, includeType: includeType) }
     }
 }
 
@@ -617,24 +617,31 @@ private func responseTypeDescription(_ replySchema: ValkeyCommand.ReplySchema) -
     }
 }
 
-private func responseTypeComment(_ response: ValkeyCommand.ReplySchema.Response) -> [String] {
+private func responseTypeComment(_ response: ValkeyCommand.ReplySchema.Response, includeType: Bool) -> [String] {
     let type =
-        switch response.const {
-        case .string(let string):
-            "\"\(string)\": "
-        case .integer(let integer):
-            "\(integer): "
-        case .none:
-            switch response.type {
-            case .string: "[String]: "
-            case .integer: "[Integer]: "
-            case .number: "[Double]: "
-            case .array: "[Array]: "
-            case .object: "[Map]: "
-            case .null: "[Null]: "
-            case .unknown: ""
+        if includeType {
+            switch response.const {
+            case .string(let string):
+                "\"\(string)\": "
+            case .integer(let integer):
+                "\(integer): "
+            case .none:
+                switch response.type {
+                case .string: "[String]: "
+                case .integer: "[Integer]: "
+                case .number: "[Double]: "
+                case .array: "[Array]: "
+                case .object: "[Map]: "
+                case .null: "[Null]: "
+                case .unknown: ""
+                }
             }
+        } else if case .none = response.const, response.type == .null {
+            "(nil) "
+        } else {
+            ""
         }
+
     if let description = response.description {
         return ["\(type)\(description)"]
     } else if let item = response.items?.first {

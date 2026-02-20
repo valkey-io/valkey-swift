@@ -785,7 +785,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [GETSET](https://valkey.io/commands/getset)
     /// - Available: 1.0.0
-    /// - Deprecated since: 6.2.0. Replaced by `SET` with the `!GET` argument.
     /// - Complexity: O(1)
     /// - Response: One of the following
     ///     * [String]: The old value stored at the key.
@@ -892,7 +891,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [PSETEX](https://valkey.io/commands/psetex)
     /// - Available: 2.6.0
-    /// - Deprecated since: 2.6.12. Replaced by `SET` with the `PX` argument.
     /// - Complexity: O(1)
     @inlinable
     public func psetex<Value: RESPStringRenderable>(_ key: ValkeyKey, milliseconds: Int, value: Value) async throws(ValkeyClientError) {
@@ -931,7 +929,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SETEX](https://valkey.io/commands/setex)
     /// - Available: 2.0.0
-    /// - Deprecated since: 2.6.12. Replaced by `SET` with the `EX` argument.
     /// - Complexity: O(1)
     @inlinable
     public func setex<Value: RESPStringRenderable>(_ key: ValkeyKey, seconds: Int, value: Value) async throws(ValkeyClientError) {
@@ -942,7 +939,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SETNX](https://valkey.io/commands/setnx)
     /// - Available: 1.0.0
-    /// - Deprecated since: 2.6.12. Replaced by `SET` with the `NX` argument.
     /// - Complexity: O(1)
     /// - Response: One of the following
     ///     * 0: The key was set.
@@ -980,7 +976,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SUBSTR](https://valkey.io/commands/substr)
     /// - Available: 1.0.0
-    /// - Deprecated since: 2.0.0. Replaced by `GETRANGE`.
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable

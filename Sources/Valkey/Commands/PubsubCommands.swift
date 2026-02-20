@@ -340,6 +340,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB NUMSUB](https://valkey.io/commands/pubsub-numsub)
     /// - Available: 2.8.0
     /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
+    /// - Response: The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     @discardableResult
     public func pubsubNumsub(channels: [String] = []) async throws(ValkeyClientError) -> PUBSUB.NUMSUB.Response {
@@ -363,6 +364,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB SHARDNUMSUB](https://valkey.io/commands/pubsub-shardnumsub)
     /// - Available: 7.0.0
     /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
+    /// - Response: The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     @discardableResult
     public func pubsubShardnumsub(shardchannels: [String] = []) async throws(ValkeyClientError) -> PUBSUB.SHARDNUMSUB.Response {
