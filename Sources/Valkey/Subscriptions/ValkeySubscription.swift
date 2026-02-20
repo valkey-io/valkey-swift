@@ -33,9 +33,11 @@ public struct ValkeySubscription: AsyncSequence, Sendable {
     public typealias Element = ValkeySubscriptionMessage
     public typealias Failure = ValkeyClientError
 
+    @usableFromInline
     typealias BaseAsyncSequence = AsyncStream<Result<ValkeySubscriptionMessage, ValkeyClientError>>
     typealias Continuation = BaseAsyncSequence.Continuation
 
+    @usableFromInline
     let base: BaseAsyncSequence
 
     static func makeStream() -> (Self, Self.Continuation) {
@@ -50,21 +52,70 @@ public struct ValkeySubscription: AsyncSequence, Sendable {
 
     /// An iterator that provides subscription messages.
     public struct AsyncIterator: AsyncIteratorProtocol {
+        @usableFromInline
         var base: BaseAsyncSequence.AsyncIterator
 
         #if compiler(>=6.2)
         @concurrent
+        @inlinable
         public mutating func next() async throws(ValkeyClientError) -> Element? {
             try await self.base.next()?.get()
         }
         #else
+        @inlinable
         public mutating func next() async throws(ValkeyClientError) -> Element? {
             try await self.base.next()?.get()
         }
         #endif
 
+        @inlinable
         public mutating func next(isolation actor: isolated (any Actor)?) async throws(ValkeyClientError) -> ValkeySubscriptionMessage? {
             try await self.base.next(isolation: actor)?.get()
+        }
+    }
+}
+
+/// A sequence of messages from Valkey subscription.
+@available(valkeySwift 1.0, *)
+public struct ValkeyClientSubscription: AsyncSequence, Sendable {
+    /// The type that the sequence produces.
+    public typealias Element = ValkeySubscriptionMessage
+    public typealias Failure = ValkeyClientError
+
+    @usableFromInline
+    let base: ValkeySubscription
+
+    @inlinable
+    init(base: ValkeySubscription) {
+        self.base = base
+    }
+
+    /// Creates a sequence of subscription messages.
+    public func makeAsyncIterator() -> AsyncIterator {
+        AsyncIterator(base: self.base.makeAsyncIterator())
+    }
+
+    /// An iterator that provides subscription messages.
+    public struct AsyncIterator: AsyncIteratorProtocol {
+        @usableFromInline
+        var base: ValkeySubscription.AsyncIterator
+
+        #if compiler(>=6.2)
+        @concurrent
+        @inlinable
+        public mutating func next() async throws(ValkeyClientError) -> Element? {
+            try await self.base.next()
+        }
+        #else
+        @inlinable
+        public mutating func next() async throws(ValkeyClientError) -> Element? {
+            try await self.base.next()
+        }
+        #endif
+
+        @inlinable
+        public mutating func next(isolation actor: isolated (any Actor)?) async throws(ValkeyClientError) -> ValkeySubscriptionMessage? {
+            try await self.base.next(isolation: actor)
         }
     }
 }
