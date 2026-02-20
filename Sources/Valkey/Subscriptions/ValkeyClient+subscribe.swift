@@ -63,7 +63,7 @@ extension ValkeyClient {
         }
     }
 
-    /// Execute subscribe command and run closure using related ``ValkeySubscription``
+    /// Execute subscribe command and run closure using related ``ValkeyClientSubscription``
     /// AsyncSequence
     ///
     /// This should not be called directly, used the related commands
