@@ -941,9 +941,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER BUMPEPOCH](https://valkey.io/commands/cluster-bumpepoch)
     /// - Available: 3.0.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
-    ///     * [String]: If the epoch was incremented.
-    ///     * [String]: If the node already has the greatest config epoch in the cluster.
+    /// - Returns: One of the following
+    ///     * If the epoch was incremented.
+    ///     * If the node already has the greatest config epoch in the cluster.
     @inlinable
     @discardableResult
     public func clusterBumpepoch() async throws(ValkeyClientError) -> RESPBulkString {
@@ -967,7 +967,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 9.0.0: Ignore additional failure reports for a node which has been marked as failed.
     /// - Complexity: O(N) where N is the number of failure reports
-    /// - Response: [Integer]: The number of active failure reports for the node.
+    /// - Returns: The number of active failure reports for the node.
     @inlinable
     @discardableResult
     public func clusterCountFailureReports<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws(ValkeyClientError) -> Int {
@@ -979,7 +979,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER COUNTKEYSINSLOT](https://valkey.io/commands/cluster-countkeysinslot)
     /// - Available: 3.0.0
     /// - Complexity: O(1)
-    /// - Response: [Integer]: The number of keys in the specified hash slot.
+    /// - Returns: The number of keys in the specified hash slot.
     @inlinable
     @discardableResult
     public func clusterCountkeysinslot(slot: Int) async throws(ValkeyClientError) -> Int {
@@ -1051,7 +1051,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER GETKEYSINSLOT](https://valkey.io/commands/cluster-getkeysinslot)
     /// - Available: 3.0.0
     /// - Complexity: O(N) where N is the number of requested keys
-    /// - Response: An array with up to count elements.
+    /// - Returns: An array with up to count elements.
     @inlinable
     @discardableResult
     public func clusterGetkeysinslot(slot: Int, count: Int) async throws(ValkeyClientError) -> CLUSTER.GETKEYSINSLOT.Response {
@@ -1063,7 +1063,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER GETSLOTMIGRATIONS](https://valkey.io/commands/cluster-getslotmigrations)
     /// - Available: 9.0.0
     /// - Complexity: O(N), where N is the number of active slot import and export jobs.
-    /// - Response: [Array]: A nested list of maps, one for each migration, with keys and values representing migration fields.
+    /// - Returns: A nested list of maps, one for each migration, with keys and values representing migration fields.
     @inlinable
     @discardableResult
     public func clusterGetslotmigrations() async throws(ValkeyClientError) -> RESPToken.Array {
@@ -1075,7 +1075,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER HELP](https://valkey.io/commands/cluster-help)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Response: [Array]: Helpful text about subcommands.
+    /// - Returns: Helpful text about subcommands.
     @inlinable
     @discardableResult
     public func clusterHelp() async throws(ValkeyClientError) -> RESPToken.Array {
@@ -1087,7 +1087,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER INFO](https://valkey.io/commands/cluster-info)
     /// - Available: 3.0.0
     /// - Complexity: O(1)
-    /// - Response: [String]: A map between named fields and values in the form of <field>:<value> lines separated by newlines composed by the two bytes CRLF
+    /// - Returns: A map between named fields and values in the form of <field>:<value> lines separated by newlines composed by the two bytes CRLF
     @inlinable
     @discardableResult
     public func clusterInfo() async throws(ValkeyClientError) -> RESPBulkString {
@@ -1099,7 +1099,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER KEYSLOT](https://valkey.io/commands/cluster-keyslot)
     /// - Available: 3.0.0
     /// - Complexity: O(N) where N is the number of bytes in the key
-    /// - Response: [Integer]: The hash slot number for the specified key
+    /// - Returns: The hash slot number for the specified key
     @inlinable
     @discardableResult
     public func clusterKeyslot<Key: RESPStringRenderable>(_ key: Key) async throws(ValkeyClientError) -> Int {
@@ -1111,7 +1111,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER LINKS](https://valkey.io/commands/cluster-links)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the total number of Cluster nodes
-    /// - Response: An array of cluster links and their attributes.
+    /// - Returns: An array of cluster links and their attributes.
     @inlinable
     @discardableResult
     public func clusterLinks() async throws(ValkeyClientError) -> CLUSTER.LINKS.Response {
@@ -1147,7 +1147,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER MYID](https://valkey.io/commands/cluster-myid)
     /// - Available: 3.0.0
     /// - Complexity: O(1)
-    /// - Response: The node id.
+    /// - Returns: The node id.
     @inlinable
     @discardableResult
     public func clusterMyid() async throws(ValkeyClientError) -> CLUSTER.MYID.Response {
@@ -1159,7 +1159,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER MYSHARDID](https://valkey.io/commands/cluster-myshardid)
     /// - Available: 7.2.0
     /// - Complexity: O(1)
-    /// - Response: The node's shard id.
+    /// - Returns: The node's shard id.
     @inlinable
     @discardableResult
     public func clusterMyshardid() async throws(ValkeyClientError) -> CLUSTER.MYSHARDID.Response {
@@ -1171,7 +1171,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER NODES](https://valkey.io/commands/cluster-nodes)
     /// - Available: 3.0.0
     /// - Complexity: O(N) where N is the total number of Cluster nodes
-    /// - Response: The serialized cluster configuration.
+    /// - Returns: The serialized cluster configuration.
     @inlinable
     @discardableResult
     public func clusterNodes() async throws(ValkeyClientError) -> CLUSTER.NODES.Response {
@@ -1183,7 +1183,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER REPLICAS](https://valkey.io/commands/cluster-replicas)
     /// - Available: 5.0.0
     /// - Complexity: O(N) where N is the number of replicas.
-    /// - Response: A list of replica nodes replicating from the specified primary node provided in the same format used by CLUSTER NODES.
+    /// - Returns: A list of replica nodes replicating from the specified primary node provided in the same format used by CLUSTER NODES.
     @inlinable
     @discardableResult
     public func clusterReplicas<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws(ValkeyClientError) -> ValkeyClusterNodes {
@@ -1249,7 +1249,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER SHARDS](https://valkey.io/commands/cluster-shards)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the total number of cluster nodes
-    /// - Response: A nested list of a map of hash ranges and shard nodes describing individual shards.
+    /// - Returns: A nested list of a map of hash ranges and shard nodes describing individual shards.
     @inlinable
     @discardableResult
     public func clusterShards() async throws(ValkeyClientError) -> CLUSTER.SHARDS.Response {
@@ -1261,7 +1261,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLUSTER SLOT-STATS](https://valkey.io/commands/cluster-slot-stats)
     /// - Available: 8.0.0
     /// - Complexity: O(N) where N is the total number of slots based on arguments. O(N*log(N)) with ORDERBY subcommand.
-    /// - Response: Array of nested arrays, where the inner array element represents a slot and its respective usage statistics.
+    /// - Returns: Array of nested arrays, where the inner array element represents a slot and its respective usage statistics.
     @inlinable
     @discardableResult
     public func clusterSlotStats(filter: CLUSTER.SLOTSTATS.Filter) async throws(ValkeyClientError) -> CLUSTER.SLOTSTATS.Response {
@@ -1276,7 +1276,7 @@ extension ValkeyClientProtocol {
     ///     * 4.0.0: Added node IDs.
     ///     * 7.0.0: Added additional networking metadata field.
     /// - Complexity: O(N) where N is the total number of Cluster nodes
-    /// - Response: Nested list of slot ranges with networking information.
+    /// - Returns: Nested list of slot ranges with networking information.
     @inlinable
     @discardableResult
     public func clusterSlots() async throws(ValkeyClientError) -> CLUSTER.SLOTS.Response {
