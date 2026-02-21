@@ -494,7 +494,7 @@ extension ValkeyClientProtocol {
     ///     * 7.0.0: Added the `BYTE|BIT` option.
     ///     * 8.0.0: `end` made optional; when called without argument the command reports the last BYTE.
     /// - Complexity: O(N)
-    /// - Response: [Integer]: The number of bits set to 1.
+    /// - Returns: The number of bits set to 1.
     @inlinable
     public func bitcount(_ key: ValkeyKey, range: BITCOUNT.Range? = nil) async throws(ValkeyClientError) -> Int {
         try await execute(BITCOUNT(key, range: range))
@@ -505,9 +505,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [BITFIELD](https://valkey.io/commands/bitfield)
     /// - Available: 3.2.0
     /// - Complexity: O(1) for each subcommand specified
-    /// - Response: One of the following
-    ///     * [Array]: The result of the subcommand at the same position
-    ///     * [Array]: In case OVERFLOW FAIL was given and overflows or underflows detected
+    /// - Returns: One of the following
+    ///     * The result of the subcommand at the same position
+    ///     * In case OVERFLOW FAIL was given and overflows or underflows detected
     @inlinable
     @discardableResult
     public func bitfield(_ key: ValkeyKey, operations: [BITFIELD.Operation] = []) async throws(ValkeyClientError) -> RESPToken.Array {
@@ -519,7 +519,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [BITFIELD_RO](https://valkey.io/commands/bitfield_ro)
     /// - Available: 6.0.0
     /// - Complexity: O(1) for each subcommand specified
-    /// - Response: [Array]: The result of the subcommand at the same position
+    /// - Returns: The result of the subcommand at the same position
     @inlinable
     public func bitfieldRo(_ key: ValkeyKey, getBlocks: [BITFIELDRO.GetBlock] = []) async throws(ValkeyClientError) -> [Int] {
         try await execute(BITFIELDRO(key, getBlocks: getBlocks))
@@ -530,7 +530,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [BITOP](https://valkey.io/commands/bitop)
     /// - Available: 2.6.0
     /// - Complexity: O(N)
-    /// - Response: [Integer]: The size of the string stored in the destination key, that is equal to the size of the longest input string.
+    /// - Returns: The size of the string stored in the destination key, that is equal to the size of the longest input string.
     @inlinable
     @discardableResult
     public func bitop(operation: BITOP.Operation, destkey: ValkeyKey, keys: [ValkeyKey]) async throws(ValkeyClientError) -> Int {
@@ -544,8 +544,8 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 7.0.0: Added the `BYTE|BIT` option.
     /// - Complexity: O(N)
-    /// - Response: One of the following
-    ///     * [Integer]: The position of the first bit set to 1 or 0 according to the request.
+    /// - Returns: One of the following
+    ///     * The position of the first bit set to 1 or 0 according to the request.
     ///     * -1: In case the `bit` argument is 1 and the string is empty or composed of just zero bytes.
     @inlinable
     public func bitpos(_ key: ValkeyKey, bit: Int, range: BITPOS.Range? = nil) async throws(ValkeyClientError) -> Int {
@@ -557,7 +557,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [GETBIT](https://valkey.io/commands/getbit)
     /// - Available: 2.2.0
     /// - Complexity: O(1)
-    /// - Response: The bit value stored at offset.
+    /// - Returns: The bit value stored at offset.
     @inlinable
     public func getbit(_ key: ValkeyKey, offset: Int) async throws(ValkeyClientError) -> Int {
         try await execute(GETBIT(key, offset: offset))
@@ -568,7 +568,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SETBIT](https://valkey.io/commands/setbit)
     /// - Available: 2.2.0
     /// - Complexity: O(1)
-    /// - Response: The original bit value stored at offset.
+    /// - Returns: The original bit value stored at offset.
     @inlinable
     @discardableResult
     public func setbit(_ key: ValkeyKey, offset: Int, value: Int) async throws(ValkeyClientError) -> Int {

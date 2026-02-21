@@ -1268,7 +1268,7 @@
           "type": "string"
         },
         {
-          "description": "Operation timed-out",
+          "description": "Operation timed-out or the command is issued from a transaction or a script and the source does not exist.",
           "type": "null"
         }
       ]
@@ -1592,11 +1592,6 @@
         "6.0.0",
         "`timeout` is interpreted as a double instead of an integer."
       ]
-    ],
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`BLMOVE` with the `RIGHT` and `LEFT` arguments",
-    "doc_flags": [
-      "DEPRECATED"
     ],
     "command_flags": [
       "WRITE",
@@ -3474,13 +3469,19 @@
     }
   },
   "CLUSTER COUNT-FAILURE-REPORTS": {
-    "summary": "Returns the number of active failure reports active for a node.",
+    "summary": "Returns the number of active failure reports for a node. No new reports are created once the node is marked as failed.",
     "complexity": "O(N) where N is the number of failure reports",
     "group": "cluster",
     "since": "3.0.0",
     "arity": 3,
     "container": "CLUSTER",
     "function": "clusterCommand",
+    "history": [
+      [
+        "9.0.0",
+        "Ignore additional failure reports for a node which has been marked as failed."
+      ]
+    ],
     "command_flags": [
       "ADMIN",
       "STALE"
@@ -3773,8 +3774,15 @@
             "type": "string",
             "pattern": "^([0-9]+-[0-9]+)( [0-9]+-[0-9]+)*$"
           },
-          "node": {
-            "type": "string"
+          "target_node": {
+            "description": "The target node name in the migration job.",
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{40}$"
+          },
+          "source_node": {
+            "description": "The source node name in the migration job.",
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{40}$"
           },
           "create_time": {
             "description": "Creation time, in seconds since the unix epoch.",
@@ -3789,10 +3797,16 @@
             "type": "integer"
           },
           "state": {
+            "description": "Human readable string representing the migration job state.",
             "type": "string"
           },
           "message": {
+            "description": "Human readable status message with more details.",
             "type": "string"
+          },
+          "cow_size": {
+            "description": "Copy on write bytes during slot migration fork.",
+            "type": "integer"
           }
         }
       }
@@ -4673,7 +4687,8 @@
     "command_flags": [
       "NO_ASYNC_LOADING",
       "ADMIN",
-      "STALE"
+      "STALE",
+      "MAY_REPLICATE"
     ]
   },
   "CLUSTER": {
@@ -7715,11 +7730,6 @@
         "Added support for uppercase unit names."
       ]
     ],
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`GEOSEARCH` with the `BYRADIUS` argument",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "READONLY"
     ],
@@ -7918,11 +7928,6 @@
         "7.0.0",
         "Added support for uppercase unit names."
       ]
-    ],
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument",
-    "doc_flags": [
-      "DEPRECATED"
     ],
     "command_flags": [
       "WRITE",
@@ -8186,11 +8191,6 @@
         "Added support for uppercase unit names."
       ]
     ],
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "READONLY"
     ],
@@ -8384,11 +8384,6 @@
         "7.0.0",
         "Added support for uppercase unit names."
       ]
-    ],
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments",
-    "doc_flags": [
-      "DEPRECATED"
     ],
     "command_flags": [
       "WRITE",
@@ -9499,11 +9494,6 @@
     "since": "1.0.0",
     "arity": 3,
     "function": "getsetCommand",
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`SET` with the `!GET` argument",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "WRITE",
       "DENYOOM",
@@ -10020,7 +10010,7 @@
   },
   "HEXPIRETIME": {
     "summary": "Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire",
-    "complexity": "O(1) for each field, so O(N) for N items when the command is called with multiple fields.",
+    "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
     "arity": -5,
@@ -10212,7 +10202,7 @@
   },
   "HGETEX": {
     "summary": "Get the value of one or more fields of a given hash key, and optionally set their expiration time or time-to-live (TTL).",
-    "complexity": "O(1)",
+    "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
     "arity": -5,
@@ -10596,11 +10586,6 @@
     "since": "2.0.0",
     "arity": -4,
     "function": "hsetCommand",
-    "deprecated_since": "4.0.0",
-    "replaced_by": "`HSET` with multiple field-value pairs",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "WRITE",
       "DENYOOM",
@@ -10657,7 +10642,7 @@
   },
   "HPERSIST": {
     "summary": "Remove the existing expiration on a hash key's field(s).",
-    "complexity": "O(1) for each field assigned with TTL, so O(N) to persist N items when the command is called with multiple fields.",
+    "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
     "arity": -5,
@@ -10975,7 +10960,7 @@
   },
   "HPEXPIRETIME": {
     "summary": "Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire",
-    "complexity": "O(1) for each field, so O(N) for N items when the command is called with multiple fields.",
+    "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
     "arity": -5,
@@ -11058,7 +11043,7 @@
   },
   "HPTTL": {
     "summary": "Returns the remaining time to live in milliseconds of a hash key's field(s) that have an associated expiration.",
-    "complexity": "O(1) for each field assigned with TTL, so O(N) for N items when the command is called with multiple fields.",
+    "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
     "arity": -5,
@@ -11393,7 +11378,7 @@
   },
   "HSETEX": {
     "summary": "Set the value of one or more fields of a given hash key, and optionally set their expiration time.",
-    "complexity": "O(1)",
+    "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
     "arity": -6,
@@ -11639,7 +11624,7 @@
   },
   "HTTL": {
     "summary": "Returns the remaining time to live (in seconds) of a hash key's field(s) that have an associated expiration.",
-    "complexity": "O(1) for each field, so O(N) for N items when the command is called with multiple fields.",
+    "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
     "arity": -5,
@@ -12649,8 +12634,16 @@
       }
     ],
     "reply_schema": {
-      "description": "The element being popped and pushed.",
-      "type": "string"
+      "oneOf": [
+        {
+          "description": "The element being popped and pushed.",
+          "type": "string"
+        },
+        {
+          "description": "Source does not exist.",
+          "type": "null"
+        }
+      ]
     },
     "arguments": [
       {
@@ -15038,11 +15031,6 @@
     "since": "2.6.0",
     "arity": 4,
     "function": "psetexCommand",
-    "deprecated_since": "2.6.12",
-    "replaced_by": "`SET` with the `PX` argument",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "WRITE",
       "DENYOOM"
@@ -15419,11 +15407,6 @@
     "since": "1.0.0",
     "arity": -1,
     "function": "quitCommand",
-    "deprecated_since": "7.2.0",
-    "replaced_by": "just closing the connection",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "ALLOW_BUSY",
       "NOSCRIPT",
@@ -16170,11 +16153,6 @@
     "since": "1.2.0",
     "arity": 3,
     "function": "rpoplpushCommand",
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`LMOVE` with the `RIGHT` and `LEFT` arguments",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "WRITE",
       "DENYOOM"
@@ -18162,11 +18140,6 @@
     "since": "2.0.0",
     "arity": 4,
     "function": "setexCommand",
-    "deprecated_since": "2.6.12",
-    "replaced_by": "`SET` with the `EX` argument",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "WRITE",
       "DENYOOM"
@@ -18220,11 +18193,6 @@
     "since": "1.0.0",
     "arity": 3,
     "function": "setnxCommand",
-    "deprecated_since": "2.6.12",
-    "replaced_by": "`SET` with the `NX` argument",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "WRITE",
       "DENYOOM",
@@ -18738,11 +18706,6 @@
     "arity": -2,
     "container": "SLOWLOG",
     "function": "slowlogCommand",
-    "deprecated_since": "8.1.0",
-    "replaced_by": "`COMMANDLOG GET <count> SLOW`",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "history": [
       [
         "4.0.0",
@@ -18815,11 +18778,6 @@
     "arity": 2,
     "container": "SLOWLOG",
     "function": "slowlogCommand",
-    "deprecated_since": "8.1.0",
-    "replaced_by": "`COMMANDLOG HELP`",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "LOADING",
       "STALE"
@@ -18840,11 +18798,6 @@
     "arity": 2,
     "container": "SLOWLOG",
     "function": "slowlogCommand",
-    "deprecated_since": "8.1.0",
-    "replaced_by": "`COMMANDLOG LEN SLOW`",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "ADMIN",
       "LOADING",
@@ -18869,11 +18822,6 @@
     "arity": 2,
     "container": "SLOWLOG",
     "function": "slowlogCommand",
-    "deprecated_since": "8.1.0",
-    "replaced_by": "`COMMANDLOG RESET SLOW`",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "ADMIN",
       "LOADING",
@@ -18892,12 +18840,7 @@
     "complexity": "Depends on subcommand.",
     "group": "server",
     "since": "2.2.12",
-    "arity": -2,
-    "deprecated_since": "8.1.0",
-    "replaced_by": "`COMMANDLOG`",
-    "doc_flags": [
-      "DEPRECATED"
-    ]
+    "arity": -2
   },
   "SMEMBERS": {
     "summary": "Returns all members of a set.",
@@ -19847,11 +19790,6 @@
     "since": "1.0.0",
     "arity": 4,
     "function": "getrangeCommand",
-    "deprecated_since": "2.0.0",
-    "replaced_by": "`GETRANGE`",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "READONLY"
     ],
@@ -24173,11 +24111,6 @@
     "since": "2.8.9",
     "arity": -4,
     "function": "zrangebylexCommand",
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`ZRANGE` with the `BYLEX` argument",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "READONLY"
     ],
@@ -24256,11 +24189,6 @@
         "2.0.0",
         "Added the `WITHSCORES` modifier."
       ]
-    ],
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`ZRANGE` with the `BYSCORE` argument",
-    "doc_flags": [
-      "DEPRECATED"
     ],
     "command_flags": [
       "READONLY"
@@ -24785,11 +24713,6 @@
     "since": "1.2.0",
     "arity": -4,
     "function": "zrevrangeCommand",
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`ZRANGE` with the `REV` argument",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "READONLY"
     ],
@@ -24877,11 +24800,6 @@
     "since": "2.8.9",
     "arity": -4,
     "function": "zrevrangebylexCommand",
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`ZRANGE` with the `REV` and `BYLEX` arguments",
-    "doc_flags": [
-      "DEPRECATED"
-    ],
     "command_flags": [
       "READONLY"
     ],
@@ -24960,11 +24878,6 @@
         "2.1.6",
         "`min` and `max` can be exclusive."
       ]
-    ],
-    "deprecated_since": "6.2.0",
-    "replaced_by": "`ZRANGE` with the `REV` and `BYSCORE` arguments",
-    "doc_flags": [
-      "DEPRECATED"
     ],
     "command_flags": [
       "READONLY"
