@@ -379,7 +379,7 @@ public final class ValkeyClusterClient: Sendable {
     public func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
-        let hashSlot = try self.hashSlot(for: commands.flatMap { $0.keysAffected })
+        let hashSlot = try self.hashSlot(for: commands)
         let readOnlyCommand = commands.reduce(true) { $0 && $1.isReadOnly }
         let nodeSelection = getNodeSelection(readOnly: readOnlyCommand)
         var clientSelector: () async throws -> ValkeyNodeClient = {
@@ -467,7 +467,7 @@ public final class ValkeyClusterClient: Sendable {
                     case .tryAgain:
                         if tryAgain == nil {
                             let node: ValkeyNodeClient = try await self.nodeClient(
-                                for: commands[commands.startIndex + result.offset].keysAffected.map { HashSlot(key: $0) },
+                                for: commands[commands.startIndex + result.offset].keysAffectedArray.map { HashSlot(key: $0) },
                                 nodeSelection: nodeSelection
                             )
                             tryAgain = .init(node: node, ask: false, error: error)
@@ -617,6 +617,37 @@ public final class ValkeyClusterClient: Sendable {
         return hashSlot
     }
 
+    /// Return HashSlot for collection of commands without materializing keys array.
+    ///
+    /// This avoids creating an intermediate array by extracting and checking keys on-demand.
+    /// If collection is empty return `nil`
+    /// If collection of keys use a variety of hash slot then throw an error
+    @usableFromInline
+    /* private */ func hashSlot<Commands: Collection>(
+        for commands: Commands
+    ) throws -> HashSlot? where Commands.Element == any ValkeyCommand {
+        var expectedHashSlot: HashSlot? = nil
+
+        // Extract keys from each command and check hash slots on-the-fly
+        for command in commands {
+            for key in command.keysAffectedArray {
+                let keyHashSlot = HashSlot(key: key)
+
+                if let expected = expectedHashSlot {
+                    // Verify this key matches the expected slot
+                    guard keyHashSlot == expected else {
+                        throw ValkeyClusterError.keysInCommandRequireMultipleHashSlots
+                    }
+                } else {
+                    // First key we've seen - this becomes the expected slot
+                    expectedHashSlot = keyHashSlot
+                }
+            }
+        }
+
+        return expectedHashSlot
+    }
+
     /// Node and list of indices into command array
     @usableFromInline
     struct NodeAndCommands: Sendable {
@@ -648,7 +679,7 @@ public final class ValkeyClusterClient: Sendable {
         while index < commands.endIndex {
             let command = commands[index]
             index += 1
-            let keysAffected = command.keysAffected
+            let keysAffected = command.keysAffectedArray
             if keysAffected.count > 0 {
                 // Get hash slot for key and add all the commands you have iterated through so far to the
                 // node associated with that key and break out of loop
@@ -665,7 +696,7 @@ public final class ValkeyClusterClient: Sendable {
         if var prevAddress {
             while index < commands.endIndex {
                 let command = commands[index]
-                let keysAffected = command.keysAffected
+                let keysAffected = command.keysAffectedArray
                 if keysAffected.count > 0 {
                     // If command affects a key get hash slot for key and add command to the node associated with that key
                     let hashSlot = try self.hashSlot(for: keysAffected)

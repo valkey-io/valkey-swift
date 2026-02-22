@@ -19,6 +19,10 @@ public protocol ValkeyCommand: Sendable, Hashable {
     /// shard to connect to.
     var keysAffected: Keys { get }
 
+    /// Type-erased keys affected. This property works correctly when accessed through
+    /// existential types (any ValkeyCommand) unlike keysAffected which uses associated types.
+    var keysAffectedArray: [ValkeyKey] { get }
+
     /// Does this command block the connection
     var isBlocking: Bool { get }
 
@@ -33,6 +37,8 @@ public protocol ValkeyCommand: Sendable, Hashable {
 extension ValkeyCommand {
     /// Default to no keys affected
     public var keysAffected: [ValkeyKey] { [] }
+    /// Type-erased keys accessor - converts associated type to array
+    public var keysAffectedArray: [ValkeyKey] { Array(keysAffected) }
     /// Default is not blocking
     public var isBlocking: Bool { false }
     /// Default is not read only
@@ -54,7 +60,10 @@ struct ValkeyRawResponseCommand<Command: ValkeyCommand>: ValkeyCommand {
     }
 
     @usableFromInline
-    var keysAffected: [ValkeyKey] { command.keysAffected }
+    var keysAffected: [ValkeyKey] { command.keysAffectedArray }
+
+    @usableFromInline
+    var keysAffectedArray: [ValkeyKey] { command.keysAffectedArray }
 
     @inlinable
     func encode(into commandEncoder: inout ValkeyCommandEncoder) {
