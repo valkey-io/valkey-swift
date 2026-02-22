@@ -656,7 +656,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [BLMOVE](https://valkey.io/commands/blmove)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * The popped element.
     ///     * (nil): Operation timed-out or the command is issued from a transaction or a script and the source does not exist.
     @inlinable
@@ -676,7 +676,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [BLMPOP](https://valkey.io/commands/blmpop)
     /// - Available: 7.0.0
     /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * (nil): Operation timed-out
     ///     * The key from which elements were popped and the popped elements
     @inlinable
@@ -693,7 +693,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * (nil): No element could be popped and timeout expired
     ///     * The key from which the element was popped and the value of the popped element
     @inlinable
@@ -709,7 +709,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * (nil): No element could be popped and the timeout expired.
     ///     * The name of the key where an element was popped
     @inlinable
@@ -725,7 +725,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(1)
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * The element being popped from source and pushed to destination.
     ///     * (nil): Timeout is reached.
     @inlinable
@@ -739,7 +739,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LINDEX](https://valkey.io/commands/lindex)
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the number of elements to traverse to get to the element at index. This makes asking for the first or the last element of the list O(1).
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * (nil): Index is out of range
     ///     * The requested element
     @inlinable
@@ -752,7 +752,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LINSERT](https://valkey.io/commands/linsert)
     /// - Available: 2.2.0
     /// - Complexity: O(N) where N is the number of elements to traverse before seeing the value pivot. This means that inserting somewhere on the left end on the list (head) can be considered O(1) and inserting somewhere on the right end (tail) is O(N).
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * List length after a successful insert operation.
     ///     * 0: In case key doesn't exist.
     ///     * -1: When the pivot wasn't found.
@@ -772,7 +772,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LLEN](https://valkey.io/commands/llen)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Returns: List length.
+    /// - Response: List length.
     @inlinable
     public func llen(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(LLEN(key))
@@ -783,7 +783,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LMOVE](https://valkey.io/commands/lmove)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * The element being popped and pushed.
     ///     * (nil): Source does not exist.
     @inlinable
@@ -802,7 +802,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LMPOP](https://valkey.io/commands/lmpop)
     /// - Available: 7.0.0
     /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * (nil): If no element could be popped.
     ///     * List key from which elements were popped.
     @inlinable
@@ -818,7 +818,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `count` argument.
     /// - Complexity: O(N) where N is the number of elements returned
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * (nil): Key does not exist.
     ///     * In case `count` argument was not given, the value of the first element.
     ///     * In case `count` argument was given, a list of popped elements
@@ -833,7 +833,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LPOS](https://valkey.io/commands/lpos)
     /// - Available: 6.0.6
     /// - Complexity: O(N) where N is the number of elements in the list, for the average case. When searching for elements near the head or the tail of the list, or when the MAXLEN option is provided, the command may run in constant time.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * (nil): In case there is no matching element
     ///     * An integer representing the matching element
     ///     * If the COUNT option is given, an array of integers representing the matching elements (empty if there are no matches)
@@ -855,7 +855,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 2.4.0: Accepts multiple `element` arguments.
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Returns: Length of the list after the push operations.
+    /// - Response: Length of the list after the push operations.
     @inlinable
     @discardableResult
     public func lpush<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws(ValkeyClientError) -> Int {
@@ -869,7 +869,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 4.0.0: Accepts multiple `element` arguments.
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Returns: The length of the list after the push operation.
+    /// - Response: The length of the list after the push operation.
     @inlinable
     @discardableResult
     public func lpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws(ValkeyClientError) -> Int {
@@ -881,7 +881,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LRANGE](https://valkey.io/commands/lrange)
     /// - Available: 1.0.0
     /// - Complexity: O(S+N) where S is the distance of start offset from HEAD for small lists, from nearest end (HEAD or TAIL) for large lists; and N is the number of elements in the specified range.
-    /// - Returns: List of elements in the specified range
+    /// - Response: List of elements in the specified range
     @inlinable
     public func lrange(_ key: ValkeyKey, start: Int, stop: Int) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(LRANGE(key, start: start, stop: stop))
@@ -892,7 +892,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LREM](https://valkey.io/commands/lrem)
     /// - Available: 1.0.0
     /// - Complexity: O(N+M) where N is the length of the list and M is the number of elements removed.
-    /// - Returns: The number of removed elements.
+    /// - Response: The number of removed elements.
     @inlinable
     @discardableResult
     public func lrem<Element: RESPStringRenderable>(_ key: ValkeyKey, count: Int, element: Element) async throws(ValkeyClientError) -> Int {
@@ -926,7 +926,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `count` argument.
     /// - Complexity: O(N) where N is the number of elements returned
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * (nil): Key does not exist.
     ///     * When 'COUNT' was not given, the value of the last element.
     ///     * When 'COUNT' was given, list of popped elements.
@@ -941,7 +941,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [RPOPLPUSH](https://valkey.io/commands/rpoplpush)
     /// - Available: 1.2.0
     /// - Complexity: O(1)
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * The element being popped and pushed.
     ///     * (nil): Source list is empty.
     @inlinable
@@ -957,7 +957,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 2.4.0: Accepts multiple `element` arguments.
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Returns: Length of the list after the push operations.
+    /// - Response: Length of the list after the push operations.
     @inlinable
     @discardableResult
     public func rpush<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws(ValkeyClientError) -> Int {
@@ -971,7 +971,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 4.0.0: Accepts multiple `element` arguments.
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Returns: Length of the list after the push operation.
+    /// - Response: Length of the list after the push operation.
     @inlinable
     @discardableResult
     public func rpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws(ValkeyClientError) -> Int {

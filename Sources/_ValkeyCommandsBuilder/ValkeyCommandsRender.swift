@@ -292,9 +292,9 @@ extension String {
         if let replySchema = command.replySchema {
             let responses = responseTypeComment(replySchema)
             if responses.count == 1 {
-                self.append("    /// - Returns: \(responses[0])\n")
+                self.append("    /// - Response: \(responses[0])\n")
             } else if responses.count > 1 {
-                self.append("    /// - Returns: One of the following\n")
+                self.append("    /// - Response: One of the following\n")
                 for response in responses {
                     self.append("    ///     * \(response)\n")
                 }
