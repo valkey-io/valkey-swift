@@ -684,7 +684,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [APPEND](https://valkey.io/commands/append)
     /// - Available: 2.0.0
     /// - Complexity: O(1). The amortized time complexity is O(1) assuming the appended value is small and the already present value is of any size, since the dynamic string library used by the server will double the free space available on every reallocation.
-    /// - Response: The length of the string after the append operation.
+    /// - Returns: The length of the string after the append operation.
     @inlinable
     @discardableResult
     public func append<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws(ValkeyClientError) -> Int {
@@ -696,7 +696,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [DECR](https://valkey.io/commands/decr)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: The value of the key after decrementing it.
+    /// - Returns: The value of the key after decrementing it.
     @inlinable
     @discardableResult
     public func decr(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
@@ -708,7 +708,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [DECRBY](https://valkey.io/commands/decrby)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: The value of the key after decrementing it.
+    /// - Returns: The value of the key after decrementing it.
     @inlinable
     @discardableResult
     public func decrby(_ key: ValkeyKey, decrement: Int) async throws(ValkeyClientError) -> Int {
@@ -720,7 +720,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [DELIFEQ](https://valkey.io/commands/delifeq)
     /// - Available: 9.0.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * 0: The key was not deleted.
     ///     * 1: The key was deleted.
     @inlinable
@@ -734,7 +734,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [GET](https://valkey.io/commands/get)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * The value of the key.
     ///     * (nil): Key does not exist.
     @inlinable
@@ -747,7 +747,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [GETDEL](https://valkey.io/commands/getdel)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * The value of the key.
     ///     * (nil): The key does not exist.
     @inlinable
@@ -761,7 +761,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [GETEX](https://valkey.io/commands/getex)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * The value of the key.
     ///     * (nil): Key does not exist.
     @inlinable
@@ -775,7 +775,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [GETRANGE](https://valkey.io/commands/getrange)
     /// - Available: 2.4.0
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
-    /// - Response: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
+    /// - Returns: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
     public func getrange(_ key: ValkeyKey, start: Int, end: Int) async throws(ValkeyClientError) -> RESPBulkString {
         try await execute(GETRANGE(key, start: start, end: end))
@@ -786,7 +786,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [GETSET](https://valkey.io/commands/getset)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * The old value stored at the key.
     ///     * (nil): The key does not exist.
     @inlinable
@@ -800,7 +800,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [INCR](https://valkey.io/commands/incr)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: The value of key after the increment
+    /// - Returns: The value of key after the increment
     @inlinable
     @discardableResult
     public func incr(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
@@ -812,7 +812,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [INCRBY](https://valkey.io/commands/incrby)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: The value of the key after incrementing it.
+    /// - Returns: The value of the key after incrementing it.
     @inlinable
     @discardableResult
     public func incrby(_ key: ValkeyKey, increment: Int) async throws(ValkeyClientError) -> Int {
@@ -824,7 +824,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [INCRBYFLOAT](https://valkey.io/commands/incrbyfloat)
     /// - Available: 2.6.0
     /// - Complexity: O(1)
-    /// - Response: The value of the key after incrementing it.
+    /// - Returns: The value of the key after incrementing it.
     @inlinable
     @discardableResult
     public func incrbyfloat(_ key: ValkeyKey, increment: Double) async throws(ValkeyClientError) -> RESPBulkString {
@@ -836,7 +836,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LCS](https://valkey.io/commands/lcs)
     /// - Available: 7.0.0
     /// - Complexity: O(N*M) where N and M are the lengths of s1 and s2, respectively
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * The longest common subsequence.
     ///     * The length of the longest common subsequence when 'LEN' is given.
     ///     * Array with the LCS length and all the ranges in both the strings when 'IDX' is given. In RESP2 this is returned as a flat array
@@ -857,7 +857,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [MGET](https://valkey.io/commands/mget)
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the number of keys to retrieve.
-    /// - Response: List of values at the specified keys.
+    /// - Returns: List of values at the specified keys.
     @inlinable
     public func mget(keys: [ValkeyKey]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(MGET(keys: keys))
@@ -878,7 +878,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [MSETNX](https://valkey.io/commands/msetnx)
     /// - Available: 1.0.1
     /// - Complexity: O(N) where N is the number of keys to set.
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * 0: No key was set (at least one key already existed).
     ///     * 1: All the keys were set.
     @inlinable
@@ -908,7 +908,7 @@ extension ValkeyClientProtocol {
     ///     * 7.0.0: Allowed the `NX` and `GET` options to be used together.
     ///     * 8.1.0: Added the `IFEQ` option.
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * (nil): `GET` not given: Operation was aborted (conflict with one of the `XX`/`NX` options).
     ///     * "OK": `GET` not given: The key was set.
     ///     * (nil): `GET` given: The key didn't exist before the `SET`
@@ -940,7 +940,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SETNX](https://valkey.io/commands/setnx)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * 0: The key was set.
     ///     * 1: The key was not set.
     @inlinable
@@ -954,7 +954,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SETRANGE](https://valkey.io/commands/setrange)
     /// - Available: 2.2.0
     /// - Complexity: O(1), not counting the time taken to copy the new string in place. Usually, this string is very small so the amortized complexity is O(1). Otherwise, complexity is O(M) with M being the length of the value argument.
-    /// - Response: Length of the string after it was modified by the command.
+    /// - Returns: Length of the string after it was modified by the command.
     @inlinable
     @discardableResult
     public func setrange<Value: RESPStringRenderable>(_ key: ValkeyKey, offset: Int, value: Value) async throws(ValkeyClientError) -> Int {
@@ -966,7 +966,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [STRLEN](https://valkey.io/commands/strlen)
     /// - Available: 2.2.0
     /// - Complexity: O(1)
-    /// - Response: The length of the string value stored at key, or 0 when key does not exist.
+    /// - Returns: The length of the string value stored at key, or 0 when key does not exist.
     @inlinable
     public func strlen(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
         try await execute(STRLEN(key))
@@ -977,7 +977,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SUBSTR](https://valkey.io/commands/substr)
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
-    /// - Response: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
+    /// - Returns: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
     public func substr(_ key: ValkeyKey, start: Int, end: Int) async throws(ValkeyClientError) -> RESPBulkString {
         try await execute(SUBSTR(key, start: start, end: end))

@@ -289,7 +289,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBLISH](https://valkey.io/commands/publish)
     /// - Available: 2.0.0
     /// - Complexity: O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client).
-    /// - Response: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
+    /// - Returns: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
     @discardableResult
     public func publish<Channel: RESPStringRenderable, Message: RESPStringRenderable>(
@@ -304,7 +304,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB CHANNELS](https://valkey.io/commands/pubsub-channels)
     /// - Available: 2.8.0
     /// - Complexity: O(N) where N is the number of active channels, and assuming constant time pattern matching (relatively short channels and patterns)
-    /// - Response: A list of active channels, optionally matching the specified pattern.
+    /// - Returns: A list of active channels, optionally matching the specified pattern.
     @inlinable
     @discardableResult
     public func pubsubChannels(pattern: String? = nil) async throws(ValkeyClientError) -> RESPToken.Array {
@@ -316,7 +316,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB HELP](https://valkey.io/commands/pubsub-help)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Response: Helpful text about subcommands.
+    /// - Returns: Helpful text about subcommands.
     @inlinable
     @discardableResult
     public func pubsubHelp() async throws(ValkeyClientError) -> RESPToken.Array {
@@ -328,7 +328,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB NUMPAT](https://valkey.io/commands/pubsub-numpat)
     /// - Available: 2.8.0
     /// - Complexity: O(1)
-    /// - Response: The number of patterns all the clients are subscribed to.
+    /// - Returns: The number of patterns all the clients are subscribed to.
     @inlinable
     @discardableResult
     public func pubsubNumpat() async throws(ValkeyClientError) -> Int {
@@ -340,7 +340,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB NUMSUB](https://valkey.io/commands/pubsub-numsub)
     /// - Available: 2.8.0
     /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
-    /// - Response: The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
+    /// - Returns: The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     @discardableResult
     public func pubsubNumsub(channels: [String] = []) async throws(ValkeyClientError) -> PUBSUB.NUMSUB.Response {
@@ -352,7 +352,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB SHARDCHANNELS](https://valkey.io/commands/pubsub-shardchannels)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of active shard channels, and assuming constant time pattern matching (relatively short shard channels).
-    /// - Response: A list of active channels, optionally matching the specified pattern.
+    /// - Returns: A list of active channels, optionally matching the specified pattern.
     @inlinable
     @discardableResult
     public func pubsubShardchannels(pattern: String? = nil) async throws(ValkeyClientError) -> RESPToken.Array {
@@ -364,7 +364,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB SHARDNUMSUB](https://valkey.io/commands/pubsub-shardnumsub)
     /// - Available: 7.0.0
     /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
-    /// - Response: The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
+    /// - Returns: The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     @discardableResult
     public func pubsubShardnumsub(shardchannels: [String] = []) async throws(ValkeyClientError) -> PUBSUB.SHARDNUMSUB.Response {
@@ -376,7 +376,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SPUBLISH](https://valkey.io/commands/spublish)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
-    /// - Response: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
+    /// - Returns: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
     @discardableResult
     public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(

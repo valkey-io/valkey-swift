@@ -112,7 +112,7 @@ extension ValkeyConnection {
     /// - Documentation: [EXEC](https://valkey.io/commands/exec)
     /// - Available: 1.2.0
     /// - Complexity: Depends on commands in the transaction
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * Each element being the reply to each of the commands in the atomic transaction.
     ///     * (nil): The transaction was aborted because a `WATCH`ed key was touched
     @inlinable

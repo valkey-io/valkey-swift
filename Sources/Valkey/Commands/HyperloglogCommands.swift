@@ -86,7 +86,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PFADD](https://valkey.io/commands/pfadd)
     /// - Available: 2.8.9
     /// - Complexity: O(1) to add every element.
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * 1: If at least 1 HyperLogLog internal register was altered.
     ///     * 0: If no HyperLogLog internal register were altered.
     @inlinable
@@ -100,7 +100,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PFCOUNT](https://valkey.io/commands/pfcount)
     /// - Available: 2.8.9
     /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
-    /// - Response: The approximated number of unique elements observed via PFADD
+    /// - Returns: The approximated number of unique elements observed via PFADD
     @inlinable
     public func pfcount(keys: [ValkeyKey]) async throws(ValkeyClientError) -> Int {
         try await execute(PFCOUNT(keys: keys))

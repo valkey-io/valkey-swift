@@ -1114,7 +1114,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLIENT GETREDIR](https://valkey.io/commands/client-getredir)
     /// - Available: 6.0.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * 0: Not redirecting notifications to any client.
     ///     * -1: Client tracking is not enabled.
     ///     * ID of the client we are redirecting the notifications to.
@@ -1129,7 +1129,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLIENT HELP](https://valkey.io/commands/client-help)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Response: Helpful text about subcommands.
+    /// - Returns: Helpful text about subcommands.
     @inlinable
     @discardableResult
     public func clientHelp() async throws(ValkeyClientError) -> RESPToken.Array {
@@ -1161,7 +1161,7 @@ extension ValkeyClientProtocol {
     ///     * 8.1.0: `ID` option accepts multiple IDs.
     ///     * 9.0.0: Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP.
     /// - Complexity: O(N) where N is the number of client connections
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * "OK": When called in 3 argument format.
     ///     * When called in filter/value format, the number of clients killed.
     @inlinable
@@ -1185,7 +1185,7 @@ extension ValkeyClientProtocol {
     ///     * 8.1.0: Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE.
     ///     * 9.0.0: Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP.
     /// - Complexity: O(N) where N is the number of client connections
-    /// - Response: Information and statistics about client connections
+    /// - Returns: Information and statistics about client connections
     @inlinable
     @discardableResult
     public func clientList(
@@ -1287,7 +1287,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLIENT REPLY](https://valkey.io/commands/client-reply)
     /// - Available: 3.2.0
     /// - Complexity: O(1)
-    /// - Response: "OK": When called with either OFF or SKIP subcommands, no reply is made. When called with ON, reply is OK.
     @inlinable
     public func clientReply(action: CLIENT.REPLY.Action) async throws(ValkeyClientError) {
         _ = try await execute(CLIENT.REPLY(action: action))
@@ -1298,7 +1297,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLIENT UNBLOCK](https://valkey.io/commands/client-unblock)
     /// - Available: 5.0.0
     /// - Complexity: O(log N) where N is the number of client connections
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * 0: If the client was unblocked successfully.
     ///     * 1: If the client wasn't unblocked.
     @inlinable
@@ -1322,7 +1321,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [ECHO](https://valkey.io/commands/echo)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: The given string
+    /// - Returns: The given string
     @inlinable
     @discardableResult
     public func echo<Message: RESPStringRenderable>(message: Message) async throws(ValkeyClientError) -> RESPBulkString {
@@ -1348,7 +1347,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PING](https://valkey.io/commands/ping)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * "PONG": Default reply.
     ///     * Relay of given `message`.
     @inlinable
@@ -1407,7 +1406,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT GETNAME](https://valkey.io/commands/client-getname)
     /// - Available: 2.6.9
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * The connection name of the current connection
     ///     * (nil): Connection name was not set
     @inlinable
@@ -1421,7 +1420,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT ID](https://valkey.io/commands/client-id)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Response: The id of the client
+    /// - Returns: The id of the client
     @inlinable
     @discardableResult
     public func clientId() async throws(ValkeyClientError) -> Int {
@@ -1433,7 +1432,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT INFO](https://valkey.io/commands/client-info)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Response: A unique string, as described at the CLIENT LIST page, for the current client.
+    /// - Returns: A unique string, as described at the CLIENT LIST page, for the current client.
     @inlinable
     @discardableResult
     public func clientInfo() async throws(ValkeyClientError) -> RESPBulkString {
@@ -1465,7 +1464,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT TRACKING](https://valkey.io/commands/client-tracking)
     /// - Available: 6.0.0
     /// - Complexity: O(1). Some options may introduce additional complexity.
-    /// - Response: "OK": If the client was successfully put into or taken out of tracking mode.
     @inlinable
     public func clientTracking(
         status: CLIENT.TRACKING.Status,
