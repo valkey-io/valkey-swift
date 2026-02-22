@@ -1405,11 +1405,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [HRANDFIELD](https://valkey.io/commands/hrandfield)
     /// - Available: 6.2.0
     /// - Complexity: O(N) where N is the number of fields returned
-    /// - Response: One of the following
-    ///     * [Null]: Key doesn't exist
-    ///     * [String]: A single random field. Returned in case `COUNT` was not used.
-    ///     * [Array]: A list of fields. Returned in case `COUNT` was used.
-    ///     * [Array]: Fields and their values. Returned in case `COUNT` and `WITHVALUES` were used. In RESP2 this is returned as a flat array.
     @inlinable
     public func hrandfield(_ key: ValkeyKey, options: HRANDFIELD.Options? = nil) async throws(ValkeyClientError) -> HRANDFIELD.Response {
         try await execute(HRANDFIELD(key, options: options))
@@ -1420,7 +1415,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [HSCAN](https://valkey.io/commands/hscan)
     /// - Available: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
-    /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
     public func hscan(
         _ key: ValkeyKey,

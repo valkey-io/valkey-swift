@@ -31,6 +31,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "CKQUORUM", RESPRenderableBulkString(primaryName))
         }
@@ -90,6 +92,8 @@ public enum SENTINEL {
             self.action = action
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "CONFIG", action)
         }
@@ -129,6 +133,8 @@ public enum SENTINEL {
             self.data = data
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "DEBUG", data)
         }
@@ -147,6 +153,8 @@ public enum SENTINEL {
             self.coordinated = coordinated
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "FAILOVER", RESPRenderableBulkString(primaryName), RESPPureToken("COORDINATED", coordinated))
         }
@@ -159,6 +167,8 @@ public enum SENTINEL {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "FLUSHCONFIG")
@@ -178,6 +188,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "GET-MASTER-ADDR-BY-NAME", RESPRenderableBulkString(primaryName))
         }
@@ -196,6 +208,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "GET-PRIMARY-ADDR-BY-NAME", RESPRenderableBulkString(primaryName))
         }
@@ -210,6 +224,8 @@ public enum SENTINEL {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "HELP")
@@ -228,6 +244,8 @@ public enum SENTINEL {
         @inlinable public init(nodenames: [Nodename]) {
             self.nodenames = nodenames
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "INFO-CACHE", nodenames.map { RESPRenderableBulkString($0) })
@@ -252,6 +270,8 @@ public enum SENTINEL {
             self.currentEpoch = currentEpoch
             self.runid = runid
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray(
@@ -284,6 +304,8 @@ public enum SENTINEL {
             self.runid = runid
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray(
                 "SENTINEL",
@@ -309,6 +331,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "MASTER", RESPRenderableBulkString(primaryName))
         }
@@ -323,6 +347,8 @@ public enum SENTINEL {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "MASTERS")
@@ -346,6 +372,8 @@ public enum SENTINEL {
             self.quorum = quorum
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "MONITOR", RESPRenderableBulkString(name), RESPRenderableBulkString(ip), port, quorum)
         }
@@ -360,6 +388,8 @@ public enum SENTINEL {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "MYID")
@@ -376,6 +406,8 @@ public enum SENTINEL {
         @inlinable public init() {
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "PENDING-SCRIPTS")
         }
@@ -390,6 +422,8 @@ public enum SENTINEL {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "PRIMARIES")
@@ -409,6 +443,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "PRIMARY", RESPRenderableBulkString(primaryName))
         }
@@ -424,6 +460,8 @@ public enum SENTINEL {
         @inlinable public init(primaryName: PrimaryName) {
             self.primaryName = primaryName
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "REMOVE", RESPRenderableBulkString(primaryName))
@@ -443,6 +481,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "REPLICAS", RESPRenderableBulkString(primaryName))
         }
@@ -461,6 +501,8 @@ public enum SENTINEL {
             self.pattern = pattern
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "RESET", pattern)
         }
@@ -478,6 +520,8 @@ public enum SENTINEL {
         @inlinable public init(primaryName: PrimaryName) {
             self.primaryName = primaryName
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "SENTINELS", RESPRenderableBulkString(primaryName))
@@ -518,6 +562,8 @@ public enum SENTINEL {
             self.data = data
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "SET", RESPRenderableBulkString(primaryName), data)
         }
@@ -553,6 +599,8 @@ public enum SENTINEL {
             self.modes = modes
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "SIMULATE-FAILURE", modes)
         }
@@ -570,6 +618,8 @@ public enum SENTINEL {
         @inlinable public init(primaryName: PrimaryName) {
             self.primaryName = primaryName
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "SLAVES", RESPRenderableBulkString(primaryName))

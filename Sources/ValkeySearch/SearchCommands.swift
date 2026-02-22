@@ -950,6 +950,8 @@ public enum FT {
             self.schema = schema
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FT.CREATE", RESPRenderableBulkString(indexName), on, prefix, schema)
         }
@@ -1175,6 +1177,8 @@ public enum FT {
         @inlinable public init() {
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FT._DEBUG")
         }
@@ -1187,6 +1191,8 @@ public enum FT {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FT._LIST")
