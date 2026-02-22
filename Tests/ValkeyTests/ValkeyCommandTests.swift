@@ -7,6 +7,7 @@
 //
 
 import Testing
+
 @testable import Valkey
 
 /// Tests for ValkeyCommand key extraction with existential types.
@@ -49,8 +50,10 @@ struct ValkeyCommandTests {
 
         // keysAffected experiences type erasure and returns empty
         let keysFromCollection = commands.flatMap { $0.keysAffected }
-        #expect(keysFromCollection.count == 0,
-               "keysAffected returns empty due to associated type erasure")
+        #expect(
+            keysFromCollection.count == 0,
+            "keysAffected returns empty due to associated type erasure"
+        )
     }
 
 }
