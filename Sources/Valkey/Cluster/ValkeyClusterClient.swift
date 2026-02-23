@@ -379,7 +379,14 @@ public final class ValkeyClusterClient: Sendable {
     public func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
-        let hashSlot = try self.hashSlot(for: commands.flatMap { $0.keysAffected })
+        // Get list of keys affected
+        let keyCount = commands.reduce(0) { $0 + $1.keysAffected.count }
+        var keysAffected: [ValkeyKey] = []
+        keysAffected.reserveCapacity(keyCount)
+        for command in commands {
+            keysAffected.append(contentsOf: command.keysAffected)
+        }
+        let hashSlot = try self.hashSlot(for: keysAffected)
         let readOnlyCommand = commands.reduce(true) { $0 && $1.isReadOnly }
         let nodeSelection = getNodeSelection(readOnly: readOnlyCommand)
         var clientSelector: () async throws -> ValkeyNodeClient = {
@@ -804,6 +811,9 @@ public final class ValkeyClusterClient: Sendable {
                 }
 
                 token?.finish()
+
+                await taskGroup.next()
+                taskGroup.cancelAll()
             }
         }
     }

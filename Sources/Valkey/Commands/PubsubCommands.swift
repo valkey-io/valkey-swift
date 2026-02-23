@@ -31,6 +31,8 @@ public enum PUBSUB {
             self.pattern = pattern
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "CHANNELS", pattern)
         }
@@ -45,6 +47,8 @@ public enum PUBSUB {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "HELP")
@@ -61,6 +65,8 @@ public enum PUBSUB {
         @inlinable public init() {
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "NUMPAT")
         }
@@ -76,6 +82,8 @@ public enum PUBSUB {
         @inlinable public init(channels: [String] = []) {
             self.channels = channels
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "NUMSUB", channels)
@@ -95,6 +103,8 @@ public enum PUBSUB {
             self.pattern = pattern
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "SHARDCHANNELS", pattern)
         }
@@ -110,6 +120,8 @@ public enum PUBSUB {
         @inlinable public init(shardchannels: [String] = []) {
             self.shardchannels = shardchannels
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "SHARDNUMSUB", shardchannels)
@@ -128,6 +140,8 @@ public struct PSUBSCRIBE: ValkeyCommand {
     @inlinable public init(patterns: [String]) {
         self.patterns = patterns
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PSUBSCRIBE", patterns)
@@ -149,6 +163,8 @@ public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderab
         self.message = message
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PUBLISH", RESPRenderableBulkString(channel), RESPRenderableBulkString(message))
     }
@@ -164,6 +180,8 @@ public struct PUNSUBSCRIBE: ValkeyCommand {
     @inlinable public init(patterns: [String] = []) {
         self.patterns = patterns
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PUNSUBSCRIBE", patterns)
@@ -185,6 +203,8 @@ public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRe
         self.message = message
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SPUBLISH", RESPRenderableBulkString(shardchannel), RESPRenderableBulkString(message))
     }
@@ -200,6 +220,8 @@ public struct SSUBSCRIBE: ValkeyCommand {
     @inlinable public init(shardchannels: [String]) {
         self.shardchannels = shardchannels
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SSUBSCRIBE", shardchannels.map { RESPRenderableBulkString($0) })
@@ -217,6 +239,8 @@ public struct SUBSCRIBE: ValkeyCommand {
         self.channels = channels
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SUBSCRIBE", channels.map { RESPRenderableBulkString($0) })
     }
@@ -232,6 +256,8 @@ public struct SUNSUBSCRIBE: ValkeyCommand {
     @inlinable public init(shardchannels: [String] = []) {
         self.shardchannels = shardchannels
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SUNSUBSCRIBE", shardchannels)
@@ -249,6 +275,8 @@ public struct UNSUBSCRIBE: ValkeyCommand {
         self.channels = channels
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("UNSUBSCRIBE", channels)
     }
@@ -261,7 +289,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBLISH](https://valkey.io/commands/publish)
     /// - Available: 2.0.0
     /// - Complexity: O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client).
-    /// - Response: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
+    /// - Returns: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
     @discardableResult
     public func publish<Channel: RESPStringRenderable, Message: RESPStringRenderable>(
@@ -276,7 +304,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB CHANNELS](https://valkey.io/commands/pubsub-channels)
     /// - Available: 2.8.0
     /// - Complexity: O(N) where N is the number of active channels, and assuming constant time pattern matching (relatively short channels and patterns)
-    /// - Response: [Array]: A list of active channels, optionally matching the specified pattern.
+    /// - Returns: A list of active channels, optionally matching the specified pattern.
     @inlinable
     @discardableResult
     public func pubsubChannels(pattern: String? = nil) async throws(ValkeyClientError) -> RESPToken.Array {
@@ -288,7 +316,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB HELP](https://valkey.io/commands/pubsub-help)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Response: [Array]: Helpful text about subcommands.
+    /// - Returns: Helpful text about subcommands.
     @inlinable
     @discardableResult
     public func pubsubHelp() async throws(ValkeyClientError) -> RESPToken.Array {
@@ -300,7 +328,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB NUMPAT](https://valkey.io/commands/pubsub-numpat)
     /// - Available: 2.8.0
     /// - Complexity: O(1)
-    /// - Response: [Integer]: The number of patterns all the clients are subscribed to.
+    /// - Returns: The number of patterns all the clients are subscribed to.
     @inlinable
     @discardableResult
     public func pubsubNumpat() async throws(ValkeyClientError) -> Int {
@@ -312,7 +340,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB NUMSUB](https://valkey.io/commands/pubsub-numsub)
     /// - Available: 2.8.0
     /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
-    /// - Response: [Array]: The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
+    /// - Returns: The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     @discardableResult
     public func pubsubNumsub(channels: [String] = []) async throws(ValkeyClientError) -> PUBSUB.NUMSUB.Response {
@@ -324,7 +352,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB SHARDCHANNELS](https://valkey.io/commands/pubsub-shardchannels)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of active shard channels, and assuming constant time pattern matching (relatively short shard channels).
-    /// - Response: [Array]: A list of active channels, optionally matching the specified pattern.
+    /// - Returns: A list of active channels, optionally matching the specified pattern.
     @inlinable
     @discardableResult
     public func pubsubShardchannels(pattern: String? = nil) async throws(ValkeyClientError) -> RESPToken.Array {
@@ -336,7 +364,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PUBSUB SHARDNUMSUB](https://valkey.io/commands/pubsub-shardnumsub)
     /// - Available: 7.0.0
     /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
-    /// - Response: [Array]: The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
+    /// - Returns: The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     @discardableResult
     public func pubsubShardnumsub(shardchannels: [String] = []) async throws(ValkeyClientError) -> PUBSUB.SHARDNUMSUB.Response {
@@ -348,7 +376,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SPUBLISH](https://valkey.io/commands/spublish)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
-    /// - Response: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
+    /// - Returns: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
     @discardableResult
     public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(

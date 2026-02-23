@@ -31,6 +31,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "CKQUORUM", RESPRenderableBulkString(primaryName))
         }
@@ -90,6 +92,8 @@ public enum SENTINEL {
             self.action = action
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "CONFIG", action)
         }
@@ -129,6 +133,8 @@ public enum SENTINEL {
             self.data = data
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "DEBUG", data)
         }
@@ -147,6 +153,8 @@ public enum SENTINEL {
             self.coordinated = coordinated
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "FAILOVER", RESPRenderableBulkString(primaryName), RESPPureToken("COORDINATED", coordinated))
         }
@@ -159,6 +167,8 @@ public enum SENTINEL {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "FLUSHCONFIG")
@@ -178,6 +188,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "GET-MASTER-ADDR-BY-NAME", RESPRenderableBulkString(primaryName))
         }
@@ -196,6 +208,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "GET-PRIMARY-ADDR-BY-NAME", RESPRenderableBulkString(primaryName))
         }
@@ -210,6 +224,8 @@ public enum SENTINEL {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "HELP")
@@ -228,6 +244,8 @@ public enum SENTINEL {
         @inlinable public init(nodenames: [Nodename]) {
             self.nodenames = nodenames
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "INFO-CACHE", nodenames.map { RESPRenderableBulkString($0) })
@@ -252,6 +270,8 @@ public enum SENTINEL {
             self.currentEpoch = currentEpoch
             self.runid = runid
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray(
@@ -284,6 +304,8 @@ public enum SENTINEL {
             self.runid = runid
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray(
                 "SENTINEL",
@@ -309,6 +331,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "MASTER", RESPRenderableBulkString(primaryName))
         }
@@ -323,6 +347,8 @@ public enum SENTINEL {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "MASTERS")
@@ -346,6 +372,8 @@ public enum SENTINEL {
             self.quorum = quorum
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "MONITOR", RESPRenderableBulkString(name), RESPRenderableBulkString(ip), port, quorum)
         }
@@ -360,6 +388,8 @@ public enum SENTINEL {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "MYID")
@@ -376,6 +406,8 @@ public enum SENTINEL {
         @inlinable public init() {
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "PENDING-SCRIPTS")
         }
@@ -390,6 +422,8 @@ public enum SENTINEL {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "PRIMARIES")
@@ -409,6 +443,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "PRIMARY", RESPRenderableBulkString(primaryName))
         }
@@ -424,6 +460,8 @@ public enum SENTINEL {
         @inlinable public init(primaryName: PrimaryName) {
             self.primaryName = primaryName
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "REMOVE", RESPRenderableBulkString(primaryName))
@@ -443,6 +481,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "REPLICAS", RESPRenderableBulkString(primaryName))
         }
@@ -461,6 +501,8 @@ public enum SENTINEL {
             self.pattern = pattern
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "RESET", pattern)
         }
@@ -478,6 +520,8 @@ public enum SENTINEL {
         @inlinable public init(primaryName: PrimaryName) {
             self.primaryName = primaryName
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "SENTINELS", RESPRenderableBulkString(primaryName))
@@ -518,6 +562,8 @@ public enum SENTINEL {
             self.data = data
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "SET", RESPRenderableBulkString(primaryName), data)
         }
@@ -553,6 +599,8 @@ public enum SENTINEL {
             self.modes = modes
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "SIMULATE-FAILURE", modes)
         }
@@ -571,6 +619,8 @@ public enum SENTINEL {
             self.primaryName = primaryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "SLAVES", RESPRenderableBulkString(primaryName))
         }
@@ -584,7 +634,7 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SENTINEL CKQUORUM](https://valkey.io/commands/sentinel-ckquorum)
     /// - Available: 2.8.4
-    /// - Response: [String]: Returns OK if the current Sentinel configuration is able to reach the quorum needed to failover a primary, and the majority needed to authorize the failover.
+    /// - Returns: Returns OK if the current Sentinel configuration is able to reach the quorum needed to failover a primary, and the majority needed to authorize the failover.
     @inlinable
     @discardableResult
     public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPBulkString {
@@ -598,8 +648,8 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 7.2.0: Added the ability to set and get multiple parameters in one call.
     /// - Complexity: O(N) when N is the number of configuration parameters provided
-    /// - Response: One of the following
-    ///     * [Map]: When 'SENTINEL-CONFIG GET' is called, returns a map.
+    /// - Returns: One of the following
+    ///     * When 'SENTINEL-CONFIG GET' is called, returns a map.
     ///     * "OK": When 'SENTINEL-CONFIG SET' is called, returns OK on success.
     @inlinable
     @discardableResult
@@ -612,9 +662,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL DEBUG](https://valkey.io/commands/sentinel-debug)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of configurable parameters
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * "OK": The configuration update was successful.
-    ///     * [Map]: List of configurable time parameters and their values (milliseconds).
+    ///     * List of configurable time parameters and their values (milliseconds).
     @inlinable
     @discardableResult
     public func sentinelDebug(data: [SENTINEL.DEBUG.Data] = []) async throws(ValkeyClientError) -> RESPToken.Map? {
@@ -627,7 +677,6 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.4
     /// - History:
     ///     * 9.0.0: `COORDINATED` option.
-    /// - Response: "OK": Force a fail over of the primary. Without options, the fail over is executed immediately as if the primary was not reachable. Using `COORDINATED`, fail over seeking agreement from other Sentinels and using coordinated fail over.
     @inlinable
     public func sentinelFailover<PrimaryName: RESPStringRenderable>(
         primaryName: PrimaryName,
@@ -641,7 +690,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL FLUSHCONFIG](https://valkey.io/commands/sentinel-flushconfig)
     /// - Available: 2.8.4
     /// - Complexity: O(1)
-    /// - Response: "OK": Force Sentinel to rewrite its configuration on disk, including the current Sentinel state.
     @inlinable
     public func sentinelFlushconfig() async throws(ValkeyClientError) {
         _ = try await execute(SENTINEL.FLUSHCONFIG())
@@ -653,7 +701,7 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.4
     /// - Deprecated since: 8.0.0. Replaced by `SENTINEL GET-PRIMARY-ADDR-BY-NAME`.
     /// - Complexity: O(1)
-    /// - Response: [Array]: IP addr or hostname.
+    /// - Returns: IP addr or hostname.
     @inlinable
     @discardableResult
     public func sentinelGetMasterAddrByName<PrimaryName: RESPStringRenderable>(
@@ -667,7 +715,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL GET-PRIMARY-ADDR-BY-NAME](https://valkey.io/commands/sentinel-get-primary-addr-by-name)
     /// - Available: 8.0.0
     /// - Complexity: O(1)
-    /// - Response: [Array]: IP addr or hostname.
+    /// - Returns: IP addr or hostname.
     @inlinable
     @discardableResult
     public func sentinelGetPrimaryAddrByName<PrimaryName: RESPStringRenderable>(
@@ -681,7 +729,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL HELP](https://valkey.io/commands/sentinel-help)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Response: [Array]: Helpful text about subcommands.
+    /// - Returns: Helpful text about subcommands.
     @inlinable
     @discardableResult
     public func sentinelHelp() async throws(ValkeyClientError) -> RESPToken.Array {
@@ -693,7 +741,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL INFO-CACHE](https://valkey.io/commands/sentinel-info-cache)
     /// - Available: 3.2.0
     /// - Complexity: O(N) where N is the number of instances
-    /// - Response: [Array]: This is actually a map, the odd entries are a primary name, and the even entries are the last cached INFO output from that primary and all its replicas.
+    /// - Returns: This is actually a map, the odd entries are a primary name, and the even entries are the last cached INFO output from that primary and all its replicas.
     @inlinable
     @discardableResult
     public func sentinelInfoCache<Nodename: RESPStringRenderable>(nodenames: [Nodename]) async throws(ValkeyClientError) -> RESPToken.Array {
@@ -706,9 +754,9 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.4
     /// - Deprecated since: 8.0.0. Replaced by `SENTINEL IS-PRIMARY-DOWN-BY-ADDR`.
     /// - Complexity: O(1)
-    /// - Response: One of the following
-    ///     * [Array]: Primary is up.
-    ///     * [Array]: Primary is down.
+    /// - Returns: One of the following
+    ///     * Primary is up.
+    ///     * Primary is down.
     @inlinable
     @discardableResult
     public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(
@@ -725,9 +773,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL IS-PRIMARY-DOWN-BY-ADDR](https://valkey.io/commands/sentinel-is-primary-down-by-addr)
     /// - Available: 8.0.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
-    ///     * [Array]: Primary is up.
-    ///     * [Array]: Primary is down.
+    /// - Returns: One of the following
+    ///     * Primary is up.
+    ///     * Primary is down.
     @inlinable
     @discardableResult
     public func sentinelIsPrimaryDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(
@@ -745,7 +793,7 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.4
     /// - Deprecated since: 8.0.0. Replaced by `SENTINEL PRIMARY`.
     /// - Complexity: O(1)
-    /// - Response: [Map]: The state and info of the specified primary.
+    /// - Returns: The state and info of the specified primary.
     @inlinable
     @discardableResult
     public func sentinelMaster<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPToken.Map {
@@ -758,7 +806,7 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.4
     /// - Deprecated since: 8.0.0. Replaced by `SENTINEL PRIMARIES`.
     /// - Complexity: O(N) where N is the number of primaries
-    /// - Response: [Array]: List of monitored primaries, and their states.
+    /// - Returns: List of monitored primaries, and their states.
     @inlinable
     @discardableResult
     public func sentinelMasters() async throws(ValkeyClientError) -> RESPToken.Array {
@@ -785,7 +833,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL MYID](https://valkey.io/commands/sentinel-myid)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Response: [String]: Node ID of the sentinel instance.
+    /// - Returns: Node ID of the sentinel instance.
     @inlinable
     @discardableResult
     public func sentinelMyid() async throws(ValkeyClientError) -> RESPBulkString {
@@ -796,7 +844,7 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SENTINEL PENDING-SCRIPTS](https://valkey.io/commands/sentinel-pending-scripts)
     /// - Available: 2.8.4
-    /// - Response: [Array]: List of pending scripts.
+    /// - Returns: List of pending scripts.
     @inlinable
     @discardableResult
     public func sentinelPendingScripts() async throws(ValkeyClientError) -> RESPToken.Array {
@@ -808,7 +856,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL PRIMARIES](https://valkey.io/commands/sentinel-primaries)
     /// - Available: 8.0.0
     /// - Complexity: O(N) where N is the number of primaries
-    /// - Response: [Array]: List of monitored primaries, and their states.
+    /// - Returns: List of monitored primaries, and their states.
     @inlinable
     @discardableResult
     public func sentinelPrimaries() async throws(ValkeyClientError) -> RESPToken.Array {
@@ -820,7 +868,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL PRIMARY](https://valkey.io/commands/sentinel-primary)
     /// - Available: 8.0.0
     /// - Complexity: O(1)
-    /// - Response: [Map]: The state and info of the specified primary.
+    /// - Returns: The state and info of the specified primary.
     @inlinable
     @discardableResult
     public func sentinelPrimary<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPToken.Map {
@@ -842,7 +890,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL REPLICAS](https://valkey.io/commands/sentinel-replicas)
     /// - Available: 5.0.0
     /// - Complexity: O(N) where N is the number of replicas
-    /// - Response: [Array]: List of replicas for this primary, and their state.
+    /// - Returns: List of replicas for this primary, and their state.
     @inlinable
     @discardableResult
     public func sentinelReplicas<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPToken.Array {
@@ -854,7 +902,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL RESET](https://valkey.io/commands/sentinel-reset)
     /// - Available: 2.8.4
     /// - Complexity: O(N) where N is the number of monitored primaries
-    /// - Response: [Integer]: The number of primaries that were reset.
+    /// - Returns: The number of primaries that were reset.
     @inlinable
     @discardableResult
     public func sentinelReset(pattern: String) async throws(ValkeyClientError) -> Int {
@@ -866,7 +914,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL SENTINELS](https://valkey.io/commands/sentinel-sentinels)
     /// - Available: 2.8.4
     /// - Complexity: O(N) where N is the number of Sentinels
-    /// - Response: [Array]: List of sentinel instances, and their state.
+    /// - Returns: List of sentinel instances, and their state.
     @inlinable
     @discardableResult
     public func sentinelSentinels<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPToken.Array {
@@ -890,9 +938,9 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SENTINEL SIMULATE-FAILURE](https://valkey.io/commands/sentinel-simulate-failure)
     /// - Available: 3.2.0
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * "OK": The simulated flag was set.
-    ///     * [Array]: Supported simulates flags. Returned in case `HELP` was used.
+    ///     * Supported simulates flags. Returned in case `HELP` was used.
     @inlinable
     @discardableResult
     public func sentinelSimulateFailure(modes: [SENTINEL.SIMULATEFAILURE.Mode] = []) async throws(ValkeyClientError) -> RESPToken.Array? {
@@ -905,7 +953,7 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.0
     /// - Deprecated since: 5.0.0. Replaced by `SENTINEL REPLICAS`.
     /// - Complexity: O(N) where N is the number of replicas.
-    /// - Response: [Array]: List of monitored replicas, and their state.
+    /// - Returns: List of monitored replicas, and their state.
     @inlinable
     @discardableResult
     public func sentinelSlaves<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws(ValkeyClientError) -> RESPToken.Array {

@@ -23,6 +23,8 @@ public struct DISCARD: ValkeyCommand {
     @inlinable public init() {
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("DISCARD")
     }
@@ -38,6 +40,8 @@ public struct EXEC: ValkeyCommand {
     @inlinable public init() {
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("EXEC")
     }
@@ -51,6 +55,8 @@ public struct MULTI: ValkeyCommand {
     @inlinable public init() {
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("MULTI")
     }
@@ -63,6 +69,8 @@ public struct UNWATCH: ValkeyCommand {
 
     @inlinable public init() {
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("UNWATCH")
@@ -104,9 +112,9 @@ extension ValkeyConnection {
     /// - Documentation: [EXEC](https://valkey.io/commands/exec)
     /// - Available: 1.2.0
     /// - Complexity: Depends on commands in the transaction
-    /// - Response: One of the following
-    ///     * [Array]: Each element being the reply to each of the commands in the atomic transaction.
-    ///     * [Null]: The transaction was aborted because a `WATCH`ed key was touched
+    /// - Returns: One of the following
+    ///     * Each element being the reply to each of the commands in the atomic transaction.
+    ///     * nil: The transaction was aborted because a `WATCH`ed key was touched
     @inlinable
     @discardableResult
     public func exec() async throws(ValkeyClientError) -> RESPToken.Array? {

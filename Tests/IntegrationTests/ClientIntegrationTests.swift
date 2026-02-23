@@ -78,6 +78,8 @@ struct ClientIntegratedTests {
                 self.key = key
             }
 
+            var keysAffected: CollectionOfOne<ValkeyKey> { .init(self.key) }
+
             func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 commandEncoder.encodeArray("GET", key)
             }
@@ -341,6 +343,8 @@ struct ClientIntegratedTests {
         struct INVALID: ValkeyCommand {
             static var name: String { "INVALID" }
 
+            var keysAffected: [ValkeyKey] { [] }
+
             func encode(into commandEncoder: inout Valkey.ValkeyCommandEncoder) {
                 commandEncoder.encodeArray("INVALID")
             }
@@ -349,7 +353,7 @@ struct ClientIntegratedTests {
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
             let transactionError = await #expect(throws: ValkeyTransactionError.self) {
-                try await client.transaction(
+                _ = try await client.transaction(
                     GET("test"),
                     INVALID()
                 )
@@ -375,6 +379,8 @@ struct ClientIntegratedTests {
         // Invalid command that'll cause the transaction to fail
         struct INVALID: ValkeyCommand {
             static var name: String { "INVALID" }
+
+            var keysAffected: [ValkeyKey] { [] }
 
             func encode(into commandEncoder: inout Valkey.ValkeyCommandEncoder) {
                 commandEncoder.encodeArray("INVALID")

@@ -42,6 +42,8 @@ extension CLIENT {
             self.mode = mode
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "CACHING", mode)
         }
@@ -58,6 +60,8 @@ extension CLIENT {
             self.capabilities = capabilities
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "CAPA", capabilities.map { RESPRenderableBulkString($0) })
         }
@@ -72,6 +76,8 @@ extension CLIENT {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "GETNAME")
@@ -88,6 +94,8 @@ extension CLIENT {
         @inlinable public init() {
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "GETREDIR")
         }
@@ -103,6 +111,8 @@ extension CLIENT {
         @inlinable public init() {
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "HELP")
         }
@@ -117,6 +127,8 @@ extension CLIENT {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "ID")
@@ -149,6 +161,8 @@ extension CLIENT {
             self.enabled = enabled
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "IMPORT-SOURCE", enabled)
         }
@@ -163,6 +177,8 @@ extension CLIENT {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "INFO")
@@ -358,6 +374,8 @@ extension CLIENT {
             self.filter = filter
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "KILL", filter)
         }
@@ -507,6 +525,8 @@ extension CLIENT {
             self.notIp = notIp
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray(
                 "CLIENT",
@@ -568,6 +588,8 @@ extension CLIENT {
             self.enabled = enabled
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "NO-EVICT", enabled)
         }
@@ -598,6 +620,8 @@ extension CLIENT {
         @inlinable public init(enabled: Enabled) {
             self.enabled = enabled
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "NO-TOUCH", enabled)
@@ -632,6 +656,8 @@ extension CLIENT {
             self.mode = mode
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "PAUSE", timeout, mode)
         }
@@ -664,6 +690,8 @@ extension CLIENT {
         @inlinable public init(action: Action) {
             self.action = action
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "REPLY", action)
@@ -701,6 +729,8 @@ extension CLIENT {
             self.attr = attr
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "SETINFO", attr)
         }
@@ -716,6 +746,8 @@ extension CLIENT {
         @inlinable public init(connectionName: ConnectionName) {
             self.connectionName = connectionName
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "SETNAME", RESPRenderableBulkString(connectionName))
@@ -768,6 +800,8 @@ extension CLIENT {
             self.noloop = noloop
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray(
                 "CLIENT",
@@ -790,6 +824,8 @@ extension CLIENT {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "TRACKINGINFO")
@@ -826,6 +862,8 @@ extension CLIENT {
             self.unblockType = unblockType
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "UNBLOCK", clientId, unblockType)
         }
@@ -838,6 +876,8 @@ extension CLIENT {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "UNPAUSE")
@@ -859,6 +899,8 @@ public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
         self.password = password
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("AUTH", username, RESPRenderableBulkString(password))
     }
@@ -871,6 +913,8 @@ public struct CLIENT: ValkeyCommand {
 
     @inlinable public init() {
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("CLIENT")
@@ -889,6 +933,8 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
     @inlinable public init(message: Message) {
         self.message = message
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ECHO", RESPRenderableBulkString(message))
@@ -953,6 +999,8 @@ public struct HELLO: ValkeyCommand {
         self.arguments = arguments
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HELLO", arguments)
     }
@@ -969,6 +1017,8 @@ public struct PING: ValkeyCommand {
         self.message = message
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PING", message)
     }
@@ -981,6 +1031,8 @@ public struct QUIT: ValkeyCommand {
 
     @inlinable public init() {
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("QUIT")
@@ -997,6 +1049,8 @@ public struct RESET: ValkeyCommand {
     @inlinable public init() {
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("RESET")
     }
@@ -1012,6 +1066,8 @@ public struct SELECT: ValkeyCommand {
     @inlinable public init(index: Int) {
         self.index = index
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SELECT", index)
@@ -1058,10 +1114,10 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLIENT GETREDIR](https://valkey.io/commands/client-getredir)
     /// - Available: 6.0.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * 0: Not redirecting notifications to any client.
     ///     * -1: Client tracking is not enabled.
-    ///     * [Integer]: ID of the client we are redirecting the notifications to.
+    ///     * ID of the client we are redirecting the notifications to.
     @inlinable
     @discardableResult
     public func clientGetredir() async throws(ValkeyClientError) -> Int {
@@ -1073,7 +1129,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLIENT HELP](https://valkey.io/commands/client-help)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Response: [Array]: Helpful text about subcommands.
+    /// - Returns: Helpful text about subcommands.
     @inlinable
     @discardableResult
     public func clientHelp() async throws(ValkeyClientError) -> RESPToken.Array {
@@ -1105,9 +1161,9 @@ extension ValkeyClientProtocol {
     ///     * 8.1.0: `ID` option accepts multiple IDs.
     ///     * 9.0.0: Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP.
     /// - Complexity: O(N) where N is the number of client connections
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * "OK": When called in 3 argument format.
-    ///     * [Integer]: When called in filter/value format, the number of clients killed.
+    ///     * When called in filter/value format, the number of clients killed.
     @inlinable
     @discardableResult
     public func clientKill(filter: CLIENT.KILL.Filter) async throws(ValkeyClientError) -> Int? {
@@ -1129,7 +1185,7 @@ extension ValkeyClientProtocol {
     ///     * 8.1.0: Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE.
     ///     * 9.0.0: Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP.
     /// - Complexity: O(N) where N is the number of client connections
-    /// - Response: Array of client information dictionaries
+    /// - Returns: Information and statistics about client connections
     @inlinable
     @discardableResult
     public func clientList(
@@ -1231,7 +1287,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLIENT REPLY](https://valkey.io/commands/client-reply)
     /// - Available: 3.2.0
     /// - Complexity: O(1)
-    /// - Response: "OK": When called with either OFF or SKIP subcommands, no reply is made. When called with ON, reply is OK.
     @inlinable
     public func clientReply(action: CLIENT.REPLY.Action) async throws(ValkeyClientError) {
         _ = try await execute(CLIENT.REPLY(action: action))
@@ -1242,7 +1297,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [CLIENT UNBLOCK](https://valkey.io/commands/client-unblock)
     /// - Available: 5.0.0
     /// - Complexity: O(log N) where N is the number of client connections
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * 0: If the client was unblocked successfully.
     ///     * 1: If the client wasn't unblocked.
     @inlinable
@@ -1266,7 +1321,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [ECHO](https://valkey.io/commands/echo)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: [String]: The given string
+    /// - Returns: The given string
     @inlinable
     @discardableResult
     public func echo<Message: RESPStringRenderable>(message: Message) async throws(ValkeyClientError) -> RESPBulkString {
@@ -1292,9 +1347,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [PING](https://valkey.io/commands/ping)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
+    /// - Returns: One of the following
     ///     * "PONG": Default reply.
-    ///     * [String]: Relay of given `message`.
+    ///     * Relay of given `message`.
     @inlinable
     @discardableResult
     public func ping(message: String? = nil) async throws(ValkeyClientError) -> PING.Response {
@@ -1305,7 +1360,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [QUIT](https://valkey.io/commands/quit)
     /// - Available: 1.0.0
-    /// - Deprecated since: 7.2.0. Replaced by just closing the connection.
     /// - Complexity: O(1)
     @inlinable
     public func quit() async throws(ValkeyClientError) {
@@ -1352,9 +1406,9 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT GETNAME](https://valkey.io/commands/client-getname)
     /// - Available: 2.6.9
     /// - Complexity: O(1)
-    /// - Response: One of the following
-    ///     * [String]: The connection name of the current connection
-    ///     * [Null]: Connection name was not set
+    /// - Returns: One of the following
+    ///     * The connection name of the current connection
+    ///     * nil: Connection name was not set
     @inlinable
     @discardableResult
     public func clientGetname() async throws(ValkeyClientError) -> RESPBulkString? {
@@ -1366,7 +1420,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT ID](https://valkey.io/commands/client-id)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Response: [Integer]: The id of the client
+    /// - Returns: The id of the client
     @inlinable
     @discardableResult
     public func clientId() async throws(ValkeyClientError) -> Int {
@@ -1378,7 +1432,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT INFO](https://valkey.io/commands/client-info)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Response: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
+    /// - Returns: A unique string, as described at the CLIENT LIST page, for the current client.
     @inlinable
     @discardableResult
     public func clientInfo() async throws(ValkeyClientError) -> RESPBulkString {
@@ -1410,7 +1464,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT TRACKING](https://valkey.io/commands/client-tracking)
     /// - Available: 6.0.0
     /// - Complexity: O(1). Some options may introduce additional complexity.
-    /// - Response: "OK": If the client was successfully put into or taken out of tracking mode.
     @inlinable
     public func clientTracking(
         status: CLIENT.TRACKING.Status,
