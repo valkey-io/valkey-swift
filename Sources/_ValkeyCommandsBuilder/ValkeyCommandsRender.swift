@@ -265,7 +265,7 @@ extension String {
         self.append("\(tab)/// \(command.summary)\n")
     }
 
-    mutating func appendFunctionCommentHeader(command: ValkeyCommand, name: String, disableResponseCalculation: Bool) {
+    mutating func appendFunctionCommentHeader(command: ValkeyCommand, name: String, hasReturnValue: Bool) {
         let linkName = name.replacingOccurrences(of: " ", with: "-").lowercased()
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
@@ -289,12 +289,12 @@ extension String {
         if let complexity = command.complexity {
             self.append("    /// - Complexity: \(complexity)\n")
         }
-        if !disableResponseCalculation, let replySchema = command.replySchema {
+        if let replySchema = command.replySchema, hasReturnValue {
             let responses = responseTypeComment(replySchema)
             if responses.count == 1 {
-                self.append("    /// - Response: \(responses[0])\n")
+                self.append("    /// - Returns: \(responses[0])\n")
             } else if responses.count > 1 {
-                self.append("    /// - Response: One of the following\n")
+                self.append("    /// - Returns: One of the following\n")
                 for response in responses {
                     self.append("    ///     * \(response)\n")
                 }
@@ -556,7 +556,7 @@ extension String {
 
         func _appendFunction(isArray: Bool) {
             // Comment header
-            self.appendFunctionCommentHeader(command: command, name: name, disableResponseCalculation: disableResponseCalculation)
+            self.appendFunctionCommentHeader(command: command, name: name, hasReturnValue: returnType != "")
             // Operation function
             var parametersString =
                 arguments
@@ -626,15 +626,11 @@ private func responseTypeComment(_ response: ValkeyCommand.ReplySchema.Response)
             "\(integer): "
         case .none:
             switch response.type {
-            case .string: "[String]: "
-            case .integer: "[Integer]: "
-            case .number: "[Double]: "
-            case .array: "[Array]: "
-            case .object: "[Map]: "
-            case .null: "[Null]: "
-            case .unknown: ""
+            case .null: "nil: "
+            default: ""
             }
         }
+
     if let description = response.description {
         return ["\(type)\(description)"]
     } else if let item = response.items?.first {
