@@ -29,6 +29,8 @@ public enum FUNCTION {
             self.libraryName = libraryName
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "DELETE", RESPRenderableBulkString(libraryName))
         }
@@ -43,6 +45,8 @@ public enum FUNCTION {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "DUMP")
@@ -75,6 +79,8 @@ public enum FUNCTION {
             self.flushType = flushType
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "FLUSH", flushType)
         }
@@ -90,6 +96,8 @@ public enum FUNCTION {
         @inlinable public init() {
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "HELP")
         }
@@ -102,6 +110,8 @@ public enum FUNCTION {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "KILL")
@@ -121,6 +131,8 @@ public enum FUNCTION {
             self.withcode = withcode
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "LIST", RESPWithToken("LIBRARYNAME", libraryNamePattern), RESPPureToken("WITHCODE", withcode))
         }
@@ -138,6 +150,8 @@ public enum FUNCTION {
             self.replace = replace
             self.functionCode = functionCode
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "LOAD", RESPPureToken("REPLACE", replace), RESPRenderableBulkString(functionCode))
@@ -174,6 +188,8 @@ public enum FUNCTION {
             self.policy = policy
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "RESTORE", RESPRenderableBulkString(serializedValue), policy)
         }
@@ -186,6 +202,8 @@ public enum FUNCTION {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "STATS")
@@ -225,6 +243,8 @@ public enum SCRIPT {
             self.mode = mode
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "DEBUG", mode)
         }
@@ -242,6 +262,8 @@ public enum SCRIPT {
         @inlinable public init(sha1s: [Sha1]) {
             self.sha1s = sha1s
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "EXISTS", sha1s.map { RESPRenderableBulkString($0) })
@@ -274,6 +296,8 @@ public enum SCRIPT {
             self.flushType = flushType
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "FLUSH", flushType)
         }
@@ -289,6 +313,8 @@ public enum SCRIPT {
         @inlinable public init() {
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "HELP")
         }
@@ -301,6 +327,8 @@ public enum SCRIPT {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "KILL")
@@ -320,6 +348,8 @@ public enum SCRIPT {
             self.script = script
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "LOAD", RESPRenderableBulkString(script))
         }
@@ -337,6 +367,8 @@ public enum SCRIPT {
         @inlinable public init(sha1: Sha1) {
             self.sha1 = sha1
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "SHOW", RESPRenderableBulkString(sha1))
@@ -648,7 +680,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [FUNCTION LOAD](https://valkey.io/commands/function-load)
     /// - Available: 7.0.0
     /// - Complexity: O(1) (considering compilation time is redundant)
-    /// - Response: [String]: The library name that was loaded
     @inlinable
     @discardableResult
     public func functionLoad<FunctionCode: RESPStringRenderable>(
@@ -697,7 +728,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SCRIPT EXISTS](https://valkey.io/commands/script-exists)
     /// - Available: 2.6.0
     /// - Complexity: O(N) with N being the number of scripts to check (so checking a single script is an O(1) operation).
-    /// - Response: [Array]: An array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
     @discardableResult
     public func scriptExists<Sha1: RESPStringRenderable>(sha1s: [Sha1]) async throws(ValkeyClientError) -> [Int] {
@@ -743,7 +773,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SCRIPT LOAD](https://valkey.io/commands/script-load)
     /// - Available: 2.6.0
     /// - Complexity: O(N) with N being the length in bytes of the script body.
-    /// - Response: [String]: The SHA1 digest of the script added into the script cache
     @inlinable
     @discardableResult
     public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws(ValkeyClientError) -> String {
@@ -755,7 +784,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SCRIPT SHOW](https://valkey.io/commands/script-show)
     /// - Available: 8.0.0
     /// - Complexity: O(1).
-    /// - Response: [String]: Lua script if sha1 hash exists in script cache.
     @inlinable
     @discardableResult
     public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws(ValkeyClientError) -> String {

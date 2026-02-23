@@ -512,6 +512,8 @@ extension String {
         self.append("\(tab)    }\n\n")
         if let (keysAffectedType, keysAffected) = constructKeysAffected(command.arguments) {
             self.append("\(tab)    public var keysAffected: \(keysAffectedType) { \(keysAffected) }\n\n")
+        } else {
+            self.append("\(tab)    public var keysAffected: [ValkeyKey] { [] }\n\n")
         }
         if command.commandFlags?.contains("BLOCKING") == true {
             self.append("\(tab)    public var isBlocking: Bool { true }\n\n")
