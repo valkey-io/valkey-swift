@@ -17,7 +17,7 @@ extension ValkeyClient {
     @inlinable
     func withSubscriptionConnection<Value>(
         _ operation: (ValkeyConnection) async throws -> Value
-    ) async throws -> sending Value {
+    ) async throws -> Value {
         let node = self.getNode(readOnly: true)
         let id = node.subscriptionConnectionIDGenerator.next()
 
