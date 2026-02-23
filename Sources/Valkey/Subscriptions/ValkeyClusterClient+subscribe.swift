@@ -63,7 +63,7 @@ extension ValkeyClusterClient {
         }
     }
 
-    /// Execute subscribe command and run closure using related ``ValkeySubscription``
+    /// Execute subscribe command and run closure using related ``ValkeyClientSubscription``
     /// AsyncSequence
     ///
     /// This should not be called directly, used the related commands
@@ -72,10 +72,12 @@ extension ValkeyClusterClient {
     @inlinable
     public func _subscribe<Value>(
         command: some ValkeySubscribeCommand,
-        process: (ValkeySubscription) async throws -> Value
+        process: (ValkeyClientSubscription) async throws -> Value
     ) async throws -> Value {
         try await self.withSubscriptionConnection { connection in
-            try await connection._subscribe(command: command, process: process)
+            try await connection._subscribe(command: command) { subscription in
+                try await process(ValkeyClientSubscription(base: subscription))
+            }
         }
     }
 }
