@@ -811,6 +811,9 @@ public final class ValkeyClusterClient: Sendable {
                 }
 
                 token?.finish()
+
+                await taskGroup.next()
+                taskGroup.cancelAll()
             }
         }
     }
