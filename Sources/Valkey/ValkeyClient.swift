@@ -22,13 +22,18 @@ import ServiceLifecycle
 /// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
+    @usableFromInline
+    typealias StateMachine = ValkeyClientStateMachine<ValkeyNodeClient, ValkeyNodeClientFactory, AsyncStream<Void>.Continuation>
+
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
-    let stateMachine: Mutex<ValkeyClientStateMachine<ValkeyNodeClient, ValkeyNodeClientFactory>>
+    let stateMachine: Mutex<StateMachine>
     /// configuration
     @usableFromInline
     var configuration: ValkeyClientConfiguration { self.nodeClientFactory.configuration }
+    @usableFromInline
+    let clock = ContinuousClock()
     /// EventLoopGroup to use
     let eventLoopGroup: any EventLoopGroup
     /// Logger
@@ -38,6 +43,7 @@ public final class ValkeyClient: Sendable {
 
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
+        case runTimer(ValkeyTimer)
         case runRole
     }
     let actionStream: AsyncStream<RunAction>
@@ -199,6 +205,48 @@ extension ValkeyClient {
                     node.triggerGracefulShutdown()
                 }
             }
+
+        case .runTimer(let timer):
+            await withTaskGroup(of: Void.self) { taskGroup in
+                taskGroup.addTask {
+                    do {
+                        try await self.clock.sleep(for: timer.duration)
+                        // timer has hit
+                        let timerFiredAction = self.stateMachine.withLock {
+                            $0.timerFired(timer)
+                        }
+                        self.runTimerFiredAction(timerFiredAction)
+                    } catch {
+                        // do nothing
+                    }
+                }
+
+                let (stream, continuation) = AsyncStream.makeStream(of: Void.self)
+                taskGroup.addTask {
+                    var iterator = stream.makeAsyncIterator()
+                    await iterator.next()
+                }
+
+                let action = self.stateMachine.withLock {
+                    $0.registerTimerCancellationToken(continuation, for: timer)
+                }
+                switch action {
+                case .cancelTimer(let token):
+                    token.finish()
+                case .doNothing:
+                    break
+                }
+            }
+        }
+    }
+
+    func runTimerFiredAction(_ action: StateMachine.TimerFiredAction) {
+        switch action {
+        case .runRole:
+            self.actionStreamContinuation.yield(.runRole)
+
+        case .doNothing:
+            break
         }
     }
 }

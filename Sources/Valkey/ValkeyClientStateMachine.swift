@@ -6,27 +6,61 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@available(valkeySwift 1.0, *)
+package struct ValkeyTimer: Sendable, Hashable {
+    package enum UseCase: Hashable {
+        case nextTopologyDiscovery
+    }
+
+    package var useCase: UseCase
+    package var duration: Duration
+    package var timerID: Int
+
+    package init(timerID: Int, useCase: UseCase, duration: Duration) {
+        self.useCase = useCase
+        self.timerID = timerID
+        self.duration = duration
+    }
+}
+
 @usableFromInline
 @available(valkeySwift 1.0, *)
 struct ValkeyClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
-    ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory
+    ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory,
+    TimerCancellationToken: Sendable
 > where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription == ValkeyNodeClientFactory.NodeDescription {
+    @usableFromInline
+    struct Timer: Sendable {
+        let id: Int
+        var cancellationToken: TimerCancellationToken?
+    }
     @usableFromInline
     enum State {
         case uninitialized
         case running(ValkeyNodeIDs<ValkeyServerAddress>)
+        case shutdown
     }
+    @usableFromInline
+    enum TopologyRefreshState {
+        case notRefreshing
+        case waitingForNextRefresh(Timer)
+        case refreshing
+    }
+
     @usableFromInline
     var runningClients: ValkeyRunningClientsStateMachine<ConnectionPool, ConnectionPoolFactory>
     @usableFromInline
     var state: State
+    @usableFromInline
+    var topologyRefreshState: TopologyRefreshState
     @usableFromInline
     let findReplicas: Bool
 
     init(poolFactory: ConnectionPoolFactory, configuration: ValkeyClientConfiguration) {
         self.runningClients = .init(poolFactory: poolFactory)
         self.state = .uninitialized
+        self.topologyRefreshState = .notRefreshing
         self.findReplicas = configuration.readOnlyCommandNodeSelection != .primary
     }
 
@@ -87,6 +121,7 @@ struct ValkeyClientStateMachine<
         switch self.state {
         case .uninitialized:
             preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
+
         case .running(let nodes):
             var nodeDescriptions = [
                 ValkeyClientNodeDescription(address: nodes.primary)
@@ -98,6 +133,72 @@ struct ValkeyClientStateMachine<
             let newNodes = ValkeyNodeIDs(primary: nodes.primary, replicas: nodeIDs)
             self.state = .running(newNodes)
             return .init(clientsToShutdown: action.poolsToShutdown, clientsToRun: action.poolsToRun.map { $0.0 })
+
+        case .shutdown:
+            return .init(clientsToShutdown: [], clientsToRun: [])
         }
+    }
+
+    enum TimerFiredAction {
+        case runRole
+        case doNothing
+    }
+
+    mutating func timerFired(_ timer: ValkeyTimer) -> TimerFiredAction {
+        switch timer.useCase {
+        case .nextTopologyDiscovery:
+            switch self.state {
+            case .uninitialized:
+                preconditionFailure("Invalid state: \(self.state)")
+            case .running:
+                break
+            case .shutdown:
+                return .doNothing
+            }
+
+            switch self.topologyRefreshState {
+            case .notRefreshing, .refreshing:
+                return .doNothing
+            case .waitingForNextRefresh(let timerState):
+                guard timer.timerID == timerState.id else { return .doNothing }
+                self.topologyRefreshState = .refreshing
+                return .runRole
+            }
+        }
+    }
+
+    enum RegisterTimerCancellationTokenAction {
+        case cancelTimer(TimerCancellationToken)
+        case doNothing
+    }
+
+    mutating func registerTimerCancellationToken(_ token: TimerCancellationToken, for timer: ValkeyTimer) -> RegisterTimerCancellationTokenAction {
+        switch timer.useCase {
+        case .nextTopologyDiscovery:
+            switch self.state {
+            case .shutdown, .uninitialized:
+                return .cancelTimer(token)
+            case .running:
+                break
+            }
+
+            switch self.topologyRefreshState {
+            case .notRefreshing, .refreshing:
+                return .cancelTimer(token)
+            case .waitingForNextRefresh(var timerState):
+                guard timer.timerID == timerState.id else { return .cancelTimer(token) }
+                timerState.cancellationToken = token
+                self.topologyRefreshState = .waitingForNextRefresh(timerState)
+                return .doNothing
+            }
+        }
+    }
+
+    func topologyRefreshSucceeded() {
+
+    }
+
+    func topologyRefreshFailed() {
+
     }
 }
