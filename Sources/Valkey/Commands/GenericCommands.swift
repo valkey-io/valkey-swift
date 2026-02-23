@@ -72,6 +72,8 @@ public enum OBJECT {
         @inlinable public init() {
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "HELP")
         }
@@ -333,6 +335,8 @@ public struct KEYS: ValkeyCommand {
     @inlinable public init(pattern: String) {
         self.pattern = pattern
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     public var isReadOnly: Bool { true }
 
@@ -641,6 +645,8 @@ public struct RANDOMKEY: ValkeyCommand {
     @inlinable public init() {
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
@@ -753,6 +759,8 @@ public struct SCAN: ValkeyCommand {
         self.count = count
         self.type = type
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     public var isReadOnly: Bool { true }
 
@@ -1028,6 +1036,8 @@ public struct WAIT: ValkeyCommand {
         self.timeout = timeout
     }
 
+    public var keysAffected: [ValkeyKey] { [] }
+
     public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
@@ -1049,6 +1059,8 @@ public struct WAITAOF: ValkeyCommand {
         self.numreplicas = numreplicas
         self.timeout = timeout
     }
+
+    public var keysAffected: [ValkeyKey] { [] }
 
     public var isBlocking: Bool { true }
 
@@ -1433,7 +1445,6 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.0.0: Added the `TYPE` subcommand.
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
-    /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
     public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws(ValkeyClientError) -> SCAN.Response {
         try await execute(SCAN(cursor: cursor, pattern: pattern, count: count, type: type))
@@ -1550,7 +1561,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [WAITAOF](https://valkey.io/commands/waitaof)
     /// - Available: 7.2.0
     /// - Complexity: O(1)
-    /// - Response: [Array]: Number of local and remote AOF files in sync.
     @inlinable
     @discardableResult
     public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws(ValkeyClientError) -> WAITAOF.Response {

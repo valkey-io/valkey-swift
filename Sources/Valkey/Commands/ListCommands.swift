@@ -676,9 +676,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [BLMPOP](https://valkey.io/commands/blmpop)
     /// - Available: 7.0.0
     /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Response: One of the following
-    ///     * [Null]: Operation timed-out
-    ///     * [Array]: The key from which elements were popped and the popped elements
     @inlinable
     @discardableResult
     public func blmpop(timeout: Double, keys: [ValkeyKey], where: BLMPOP.Where, count: Int? = nil) async throws(ValkeyClientError) -> BLMPOP.Response
@@ -693,9 +690,6 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Response: One of the following
-    ///     * [Null]: No element could be popped and timeout expired
-    ///     * [Array]: The key from which the element was popped and the value of the popped element
     @inlinable
     @discardableResult
     public func blpop(keys: [ValkeyKey], timeout: Double) async throws(ValkeyClientError) -> BLPOP.Response {
@@ -709,9 +703,6 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Response: One of the following
-    ///     * [Null]: No element could be popped and the timeout expired.
-    ///     * [Array]: The name of the key where an element was popped
     @inlinable
     @discardableResult
     public func brpop(keys: [ValkeyKey], timeout: Double) async throws(ValkeyClientError) -> BRPOP.Response {
@@ -784,7 +775,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LMOVE](https://valkey.io/commands/lmove)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Response: [String]: The element being popped and pushed.
     @inlinable
     @discardableResult
     public func lmove(
@@ -801,9 +791,6 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LMPOP](https://valkey.io/commands/lmpop)
     /// - Available: 7.0.0
     /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Response: One of the following
-    ///     * [Null]: If no element could be popped.
-    ///     * [Array]: List key from which elements were popped.
     @inlinable
     @discardableResult
     public func lmpop(keys: [ValkeyKey], where: LMPOP.Where, count: Int? = nil) async throws(ValkeyClientError) -> LMPOP.Response {
