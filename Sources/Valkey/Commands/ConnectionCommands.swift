@@ -1408,7 +1408,7 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * The connection name of the current connection
-    ///     * (nil): Connection name was not set
+    ///     * nil: Connection name was not set
     @inlinable
     @discardableResult
     public func clientGetname() async throws(ValkeyClientError) -> RESPBulkString? {

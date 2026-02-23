@@ -1218,7 +1218,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * The value associated with the field.
-    ///     * (nil): If the field is not present in the hash or key does not exist.
+    ///     * nil: If the field is not present in the hash or key does not exist.
     @inlinable
     public func hget<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(HGET(key, field: field))
@@ -1405,7 +1405,7 @@ extension ValkeyClientProtocol {
     /// - Available: 6.2.0
     /// - Complexity: O(N) where N is the number of fields returned
     /// - Returns: One of the following
-    ///     * (nil): Key doesn't exist
+    ///     * nil: Key doesn't exist
     ///     * A single random field. Returned in case `COUNT` was not used.
     ///     * A list of fields. Returned in case `COUNT` was used.
     ///     * Fields and their values. Returned in case `COUNT` and `WITHVALUES` were used. In RESP2 this is returned as a flat array.

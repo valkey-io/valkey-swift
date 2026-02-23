@@ -1247,7 +1247,7 @@ extension ValkeyClientProtocol {
     /// - Available: 3.2.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
-    ///     * (nil): One or both of elements are missing.
+    ///     * nil: One or both of elements are missing.
     ///     * Distance as a double (represented as a string) in the specified units.
     @inlinable
     public func geodist<Member1: RESPStringRenderable, Member2: RESPStringRenderable>(

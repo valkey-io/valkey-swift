@@ -1305,7 +1305,7 @@ extension ValkeyClientProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Returns: One of the following
-    ///     * (nil): Timeout reached and no elements were popped.
+    ///     * nil: Timeout reached and no elements were popped.
     ///     * The keyname and the popped members.
     @inlinable
     @discardableResult
@@ -1322,7 +1322,7 @@ extension ValkeyClientProtocol {
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Returns: One of the following
-    ///     * (nil): Timeout reached and no elements were popped.
+    ///     * nil: Timeout reached and no elements were popped.
     ///     * The keyname, popped member, and its score.
     @inlinable
     @discardableResult
@@ -1338,7 +1338,7 @@ extension ValkeyClientProtocol {
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Returns: One of the following
-    ///     * (nil): Timeout reached and no elements were popped.
+    ///     * nil: Timeout reached and no elements were popped.
     ///     * The keyname, popped member, and its score.
     @inlinable
     @discardableResult
@@ -1356,7 +1356,7 @@ extension ValkeyClientProtocol {
     ///     * 6.2.0: Added the `GT` and `LT` options.
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
     /// - Returns: One of the following
-    ///     * (nil): Operation was aborted (conflict with one of the `XX`/`NX`/`LT`/`GT` options).
+    ///     * nil: Operation was aborted (conflict with one of the `XX`/`NX`/`LT`/`GT` options).
     ///     * The number of new members (when the `CH` option is not used)
     ///     * The number of new or updated members (when the `CH` option is used)
     ///     * The updated score of the member (when the `INCR` option is used)
@@ -1499,7 +1499,7 @@ extension ValkeyClientProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Returns: One of the following
-    ///     * (nil): No element could be popped.
+    ///     * nil: No element could be popped.
     ///     * Name of the key that elements were popped.
     @inlinable
     @discardableResult
@@ -1554,7 +1554,7 @@ extension ValkeyClientProtocol {
     /// - Available: 6.2.0
     /// - Complexity: O(N) where N is the number of members returned
     /// - Returns: One of the following
-    ///     * (nil): Key does not exist.
+    ///     * nil: Key does not exist.
     ///     * Randomly selected element when 'COUNT' is not used.
     ///     * Randomly selected elements when 'COUNT' is used.
     ///     * Randomly selected elements when 'COUNT' and 'WITHSCORES' modifiers are used.
@@ -1651,7 +1651,7 @@ extension ValkeyClientProtocol {
     ///     * 7.2.0: Added the optional `WITHSCORE` argument.
     /// - Complexity: O(log(N))
     /// - Returns: One of the following
-    ///     * (nil): Key does not exist or the member does not exist in the sorted set.
+    ///     * nil: Key does not exist or the member does not exist in the sorted set.
     ///     * The rank of the member when 'WITHSCORE' is not used.
     ///     * The rank and score of the member when 'WITHSCORE' is used.
     @inlinable
@@ -1775,7 +1775,7 @@ extension ValkeyClientProtocol {
     ///     * 7.2.0: Added the optional `WITHSCORE` argument.
     /// - Complexity: O(log(N))
     /// - Returns: One of the following
-    ///     * (nil): Key does not exist or the member does not exist in the sorted set.
+    ///     * nil: Key does not exist or the member does not exist in the sorted set.
     ///     * The rank of the member when 'WITHSCORE' is not used.
     ///     * The rank and score of the member when 'WITHSCORE' is used.
     @inlinable
@@ -1813,7 +1813,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * The score of the member (a double precision floating point number). In RESP2, this is returned as string.
-    ///     * (nil): Member does not exist in the sorted set, or key does not exist.
+    ///     * nil: Member does not exist in the sorted set, or key does not exist.
     @inlinable
     public func zscore<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member) async throws(ValkeyClientError) -> Double? {
         try await execute(ZSCORE(key, member: member))

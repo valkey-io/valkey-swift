@@ -1109,7 +1109,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) to access the key and additional O(N*M) to serialize it, where N is the number of objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1).
     /// - Returns: One of the following
     ///     * The serialized value.
-    ///     * (nil): Key does not exist.
+    ///     * nil: Key does not exist.
     @inlinable
     public func dump(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(DUMP(key))
@@ -1246,7 +1246,7 @@ extension ValkeyClientProtocol {
     /// - Available: 2.2.3
     /// - Complexity: O(1)
     /// - Returns: One of the following
-    ///     * (nil): Key doesn't exist.
+    ///     * nil: Key doesn't exist.
     ///     * Encoding of the object.
     @inlinable
     public func objectEncoding(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {
@@ -1381,7 +1381,7 @@ extension ValkeyClientProtocol {
     /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
-    ///     * (nil): When the database is empty.
+    ///     * nil: When the database is empty.
     ///     * Random key in db.
     @inlinable
     public func randomkey() async throws(ValkeyClientError) -> RESPBulkString? {
@@ -1526,7 +1526,7 @@ extension ValkeyClientProtocol {
     /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
-    ///     * (nil): Key doesn't exist
+    ///     * nil: Key doesn't exist
     ///     * Type of the key
     @inlinable
     public func type(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {

@@ -545,7 +545,7 @@ extension ValkeyClientProtocol {
     ///     * 3.2.0: Added the `count` argument.
     /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the value of the passed count.
     /// - Returns: One of the following
-    ///     * (nil): The key does not exist.
+    ///     * nil: The key does not exist.
     ///     * The removed member when 'COUNT' is not given.
     ///     * List to the removed members when 'COUNT' is given.
     @inlinable
@@ -562,7 +562,7 @@ extension ValkeyClientProtocol {
     ///     * 2.6.0: Added the optional `count` argument.
     /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the absolute value of the passed count.
     /// - Returns: One of the following
-    ///     * (nil): In case `count` is not given and key doesn't exist
+    ///     * nil: In case `count` is not given and key doesn't exist
     ///     * In case `count` is not given, randomly selected element
     ///     * In case `count` is given, an array of elements
     ///     * In case `count` is given and key doesn't exist

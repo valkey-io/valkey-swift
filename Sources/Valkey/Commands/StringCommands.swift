@@ -736,7 +736,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * The value of the key.
-    ///     * (nil): Key does not exist.
+    ///     * nil: Key does not exist.
     @inlinable
     public func get(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {
         try await execute(GET(key))
@@ -749,7 +749,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * The value of the key.
-    ///     * (nil): The key does not exist.
+    ///     * nil: The key does not exist.
     @inlinable
     @discardableResult
     public func getdel(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPBulkString? {
@@ -763,7 +763,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * The value of the key.
-    ///     * (nil): Key does not exist.
+    ///     * nil: Key does not exist.
     @inlinable
     @discardableResult
     public func getex(_ key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws(ValkeyClientError) -> RESPBulkString? {
@@ -788,7 +788,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * The old value stored at the key.
-    ///     * (nil): The key does not exist.
+    ///     * nil: The key does not exist.
     @inlinable
     @discardableResult
     public func getset<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws(ValkeyClientError) -> RESPBulkString? {
@@ -909,9 +909,9 @@ extension ValkeyClientProtocol {
     ///     * 8.1.0: Added the `IFEQ` option.
     /// - Complexity: O(1)
     /// - Returns: One of the following
-    ///     * (nil): `GET` not given: Operation was aborted (conflict with one of the `XX`/`NX` options).
+    ///     * nil: `GET` not given: Operation was aborted (conflict with one of the `XX`/`NX` options).
     ///     * "OK": `GET` not given: The key was set.
-    ///     * (nil): `GET` given: The key didn't exist before the `SET`
+    ///     * nil: `GET` given: The key didn't exist before the `SET`
     ///     * `GET` given: The previous value of the key
     @inlinable
     @discardableResult

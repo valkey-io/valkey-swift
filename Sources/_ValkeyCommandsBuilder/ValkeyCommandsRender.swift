@@ -626,7 +626,7 @@ private func responseTypeComment(_ response: ValkeyCommand.ReplySchema.Response)
             "\(integer): "
         case .none:
             switch response.type {
-            case .null: "(nil): "
+            case .null: "nil: "
             default: ""
             }
         }

@@ -114,7 +114,7 @@ extension ValkeyConnection {
     /// - Complexity: Depends on commands in the transaction
     /// - Returns: One of the following
     ///     * Each element being the reply to each of the commands in the atomic transaction.
-    ///     * (nil): The transaction was aborted because a `WATCH`ed key was touched
+    ///     * nil: The transaction was aborted because a `WATCH`ed key was touched
     @inlinable
     @discardableResult
     public func exec() async throws(ValkeyClientError) -> RESPToken.Array? {

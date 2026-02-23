@@ -996,7 +996,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) when adding a new entry, O(N) when trimming where N being the number of entries evicted.
     /// - Returns: One of the following
     ///     * The ID of the added entry. The ID is the one auto-generated if * is passed as ID argument, otherwise the command just returns the same ID specified by the user during insertion.
-    ///     * (nil): The NOMKSTREAM option is given and the key doesn't exist.
+    ///     * nil: The NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
     @discardableResult
     public func xadd<Field: RESPStringRenderable, Value: RESPStringRenderable>(
@@ -1287,7 +1287,7 @@ extension ValkeyClientProtocol {
     /// - Available: 5.0.0
     /// - Returns: One of the following
     ///     * A map of key-value elements when each element composed of key name and the entries reported for that key.
-    ///     * (nil): If BLOCK option is given, and a timeout occurs, or there is no stream we can serve.
+    ///     * nil: If BLOCK option is given, and a timeout occurs, or there is no stream we can serve.
     @inlinable
     public func xread<Id: RESPStringRenderable>(
         count: Int? = nil,
@@ -1303,7 +1303,7 @@ extension ValkeyClientProtocol {
     /// - Available: 5.0.0
     /// - Complexity: For each stream mentioned: O(M) with M being the number of elements returned. If M is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1). On the other side when XREADGROUP blocks, XADD will pay the O(N) time in order to serve the N clients blocked on the stream getting new data.
     /// - Returns: One of the following
-    ///     * (nil): If BLOCK option is specified and the timeout expired
+    ///     * nil: If BLOCK option is specified and the timeout expired
     ///     * A map of key-value elements when each element composed of key name and the entries reported for that key
     @inlinable
     @discardableResult

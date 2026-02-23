@@ -1738,7 +1738,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N). Where N is the number of password, command and pattern rules that the user has.
     /// - Returns: One of the following
     ///     * A set of ACL rule definitions for the user.
-    ///     * (nil): If user does not exist
+    ///     * nil: If user does not exist
     @inlinable
     @discardableResult
     public func aclGetuser<Username: RESPStringRenderable>(username: Username) async throws(ValkeyClientError) -> ACL.GETUSERResponse? {
@@ -2310,7 +2310,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of samples.
     /// - Returns: One of the following
     ///     * Number of bytes that a key and its value require to be stored in RAM.
-    ///     * (nil): Key does not exist.
+    ///     * nil: Key does not exist.
     @inlinable
     public func memoryUsage(_ key: ValkeyKey, count: Int? = nil) async throws(ValkeyClientError) -> Int? {
         try await execute(MEMORY.USAGE(key, count: count))
