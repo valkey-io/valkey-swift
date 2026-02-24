@@ -65,7 +65,6 @@ try await withThrowingTaskGroup(of: Void.self) { group in
 Or use with [swift-service-lifecycle](https://github.com/swift-server/swift-service-lifecycle) for long-running services.
 
 ```swift
-let valkeyClient = ValkeyClient(.hostname("127.0.0.1", port: 6379), logger: logger)
 let services: [Service] = [myApp, valkeyClient]
 let serviceGroup = ServiceGroup(
     services: services,
