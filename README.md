@@ -154,7 +154,7 @@ let clusterClient = ValkeyClusterClient(
 
 #### Running the Client
 
-In a similar way that `ValkeyClient` requires a background process the cluster client also requires a background process to manage all its connection pools and perform regular cluster topology updates. You can use all the same methods to run the `ValkeyClusterClient` background process: (Swift Concurrency, ServiceLifecycle).
+In a similar way that `ValkeyClient` requires a background process the cluster client also requires a background process to manage all its connection pools and perform regular cluster topology updates. You can use all the same methods to run the `ValkeyClusterClient` background process: ([Swift Concurrency](#option-1-using-swift-concurrency), [ServiceLifecycle](#option-2-using-servicelifecycle)).
 
 #### Command Execution
 
