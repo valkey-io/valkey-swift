@@ -20,7 +20,7 @@ Create a client with server connection details:
 import Valkey
 
 let valkeyClient = ValkeyClient(
-    .hostname("localhost", port: 6379),
+    .hostname("127.0.0.1", port: 6379),
     logger: logger
 )
 ```
@@ -29,7 +29,9 @@ let valkeyClient = ValkeyClient(
 
 The client uses a connection pool that requires a background process. There are two approaches:
 
-**Option 1: Using `async let` (simpler)**
+##### Option 1: Using Swift concurrency
+
+You can run the background process using `async let`. When you leave the scope of the function your async let variable is declared the client will be shutdown.
 
 ```swift
 async let _ = valkeyClient.run()
@@ -40,9 +42,7 @@ let value = try await valkeyClient.get(key: "foo")
 // Client continues running in background
 ```
 
-**Option 2: Using TaskGroup**
-
-When you need explicit lifecycle management:
+Alternatively you could also use a TaskGroup
 
 ```swift
 try await withThrowingTaskGroup(of: Void.self) { group in
@@ -60,7 +60,20 @@ try await withThrowingTaskGroup(of: Void.self) { group in
 // Client is shut down when task group exits
 ```
 
+##### Option 2: Using ServiceLifecycle
+
 Or use with [swift-service-lifecycle](https://github.com/swift-server/swift-service-lifecycle) for long-running services.
+
+```swift
+let valkeyClient = ValkeyClient(.hostname("127.0.0.1", port: 6379), logger: logger)
+let services: [Service] = [myApp, valkeyClient]
+let serviceGroup = ServiceGroup(
+    services: services,
+    gracefulShutdownSignals: [.sigint, .sigterm],
+    logger: logger
+)
+try await serviceGroup.run()
+```
 
 #### Command Execution
 
@@ -141,42 +154,11 @@ let clusterClient = ValkeyClusterClient(
 
 #### Running the Client
 
-The cluster client requires a background process. There are two approaches:
-
-**Option 1: Using `async let` (simpler)**
-
-```swift
-async let _ = clusterClient.run()
-
-// Use cluster client
-try await clusterClient.set(key: "foo", value: "bar")
-let value = try await clusterClient.get(key: "user:123")
-// Client continues running in background
-```
-
-**Option 2: Using TaskGroup**
-
-When you need explicit lifecycle management:
-
-```swift
-try await withThrowingTaskGroup(of: Void.self) { group in
-    group.addTask {
-        await clusterClient.run()
-    }
-
-    // All cluster operations happen in the closure body
-    try await clusterClient.set(key: "foo", value: "bar")
-    let value = try await clusterClient.get(key: "user:123")
-
-    // When done, cancel the run() task
-    group.cancelAll()
-}
-// Client is shut down when task group exits
-```
+In a similar way that `ValkeyClient` requires a background process the cluster client also requires a background process to manage all its connection pools and perform regular cluster topology updates. You can use all the same methods to run the `ValkeyClusterClient` background process: (Swift Concurrency, ServiceLifecycle).
 
 #### Command Execution
 
-The cluster client automatically routes commands to the correct node based on key hash slots:
+The cluster client automatically routes commands to the correct node based on key hash slots. Note a command cannot reference two keys in different hash slots.
 
 ```swift
 // Automatically routed to the node owning the "user:123" hash slot
@@ -222,9 +204,9 @@ let results = try await clusterClient.transaction(
 Get a connection for specific keys when multiple commands need to run on the same node:
 
 ```swift
-try await clusterClient.withConnection(forKeys: ["user:123"], readOnly: false) { connection in
-    try await connection.set(key: "user:123:profile", value: "data")
-    try await connection.set(key: "user:123:email", value: "alice@example.com")
+try await clusterClient.withConnection(forKeys: ["user:{123}"], readOnly: false) { connection in
+    try await connection.set(key: "user:{123}:profile", value: "data")
+    try await connection.set(key: "user:{123}:email", value: "alice@example.com")
 }
 ```
 
