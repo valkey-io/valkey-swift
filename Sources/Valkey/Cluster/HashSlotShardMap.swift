@@ -104,12 +104,8 @@ package struct HashSlotShardMap: Sendable {
 
         var shardID = 0
         for shard in description.shards {
-            guard let primary = shard.primary else {
-                continue
-            }
-
             let nodeIDs = ValkeyShardNodeIDs(
-                primary: primary.nodeID,
+                primary: shard.primary.nodeID,
                 replicas: shard.replicas.map { $0.nodeID }
             )
 

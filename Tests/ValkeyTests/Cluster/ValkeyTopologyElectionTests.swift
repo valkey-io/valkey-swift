@@ -125,7 +125,7 @@ struct ValkeyTopologyElectionTests {
         let multiNodeDescription = Self.createClusterWithReplicas()
 
         let voterID = ValkeyNodeID(endpoint: "voter1.example.com", port: 6380)
-        let metrics = try election.voteReceived(for: multiNodeDescription, from: voterID)
+        let metrics = try election.voteReceived(for: ValkeyClusterTopology(multiNodeDescription), from: voterID)
 
         // With 3 nodes in the cluster, we need 2 votes to win (3/2 + 1 = 2)
         #expect(metrics.votesNeeded == 2)
@@ -142,7 +142,7 @@ struct ValkeyTopologyElectionTests {
 
         // Single node cluster only needs 1 vote to win (1/2 + 1 = 1)
         let voterID = ValkeyNodeID(endpoint: "voter1.example.com", port: 6380)
-        let metrics = try election.voteReceived(for: description, from: voterID)
+        let metrics = try election.voteReceived(for: ValkeyClusterTopology(description), from: voterID)
 
         #expect(metrics.votesNeeded == 1)
         #expect(metrics.votesReceived == 1)
@@ -158,28 +158,30 @@ struct ValkeyTopologyElectionTests {
         // Create two different cluster descriptions
         let description1 = createSingleShardCluster(endpoint: "node1")
         let description2 = createSingleShardCluster(endpoint: "node2")
+        let topology1 = try ValkeyClusterTopology(description1)
+        let topology2 = try ValkeyClusterTopology(description2)
 
         // Vote for the first configuration
         let voter1 = ValkeyNodeID(endpoint: "voter1.example.com", port: 6380)
-        let voteMetrics1 = try election.voteReceived(for: description1, from: voter1)
+        let voteMetrics1 = try election.voteReceived(for: topology1, from: voter1)
 
         #expect(voteMetrics1.votesReceived == 1)
         #expect(voteMetrics1.votesNeeded == 1)
         #expect(voteMetrics1.candidateCount == 1)
 
         // At this point description1 should be the winner
-        #expect(election.winner == description1, "Should have a winner")
+        #expect(election.winner == topology1, "Should have a winner")
 
         // Vote for the second configuration
         let voter2 = ValkeyNodeID(endpoint: "voter2.example.com", port: 6380)
-        let voteMetrics2 = try election.voteReceived(for: description2, from: voter2)
+        let voteMetrics2 = try election.voteReceived(for: topology2, from: voter2)
 
         #expect(voteMetrics2.votesReceived == 1)
         #expect(voteMetrics2.votesNeeded == 1)
         #expect(voteMetrics2.candidateCount == 2)
 
         // The winner should still be the first description
-        #expect(election.winner == description1, "Winner shouldn't change once established")
+        #expect(election.winner == topology1, "Winner shouldn't change once established")
     }
 
     @Test("The same instance voting twice for the same candidate doesn't count twice")
@@ -189,27 +191,28 @@ struct ValkeyTopologyElectionTests {
 
         // Create a description that will need 3 votes to win
         let description = Self.createClusterWithReplicas()
+        let topology = try ValkeyClusterTopology(description)
 
         // Cast 3 votes from different voters
         let voter1 = ValkeyNodeID(endpoint: "primary.example.com", port: 6380)
         let voter2 = ValkeyNodeID(endpoint: "replica1.example.com", port: 6380)
         let voter3 = ValkeyNodeID(endpoint: "replica2.example.com", port: 6380)
 
-        let metrics1 = try election.voteReceived(for: description, from: voter1)
+        let metrics1 = try election.voteReceived(for: topology, from: voter1)
         #expect(metrics1.votesReceived == 1)
         #expect(metrics1.votesNeeded == 2)  // (3 nodes / 2) + 1 = 2
         #expect(election.winner == nil)
 
-        let metrics2 = try election.voteReceived(for: description, from: voter1)
+        let metrics2 = try election.voteReceived(for: topology, from: voter1)
         #expect(metrics2.votesReceived == 1)
         #expect(metrics2.votesNeeded == 2)  // (3 nodes / 2) + 1 = 2
         #expect(election.winner == nil)
 
-        let metrics3 = try election.voteReceived(for: description, from: voter2)
+        let metrics3 = try election.voteReceived(for: topology, from: voter2)
         #expect(metrics3.votesReceived == 2)
-        #expect(election.winner == description, "Should have a winner after reaching the threshold")
+        #expect(election.winner == topology, "Should have a winner after reaching the threshold")
 
-        let metrics4 = try election.voteReceived(for: description, from: voter3)
+        let metrics4 = try election.voteReceived(for: topology, from: voter3)
         #expect(metrics4.votesReceived == 3, "Should count additional votes even after winning")
     }
 
@@ -220,6 +223,7 @@ struct ValkeyTopologyElectionTests {
 
         // Create a description that will need 3 votes to win
         let description1 = Self.createClusterWithReplicas()
+        let topology1 = try ValkeyClusterTopology(description1)
 
         // Cast 3 votes from different voters
         let voter1 = ValkeyNodeID(endpoint: "primary.example.com", port: 6380)
@@ -228,24 +232,25 @@ struct ValkeyTopologyElectionTests {
 
         var description2 = description1
         description2.shards[0].nodes.removeLast()
+        let topology2 = try ValkeyClusterTopology(description2)
 
-        let metrics1 = try election.voteReceived(for: description1, from: voter1)
+        let metrics1 = try election.voteReceived(for: topology1, from: voter1)
         #expect(metrics1.votesReceived == 1)
         #expect(metrics1.votesNeeded == 2)  // (3 nodes / 2) + 1 = 2
         #expect(election.winner == nil)
 
-        let metrics2 = try election.voteReceived(for: description2, from: voter1)
+        let metrics2 = try election.voteReceived(for: topology2, from: voter1)
         #expect(metrics2.votesReceived == 1)
         #expect(metrics2.votesNeeded == 2)  // (3 nodes / 2) + 1 = 2
         #expect(election.winner == nil)
 
-        let metrics3 = try election.voteReceived(for: description1, from: voter2)
+        let metrics3 = try election.voteReceived(for: topology1, from: voter2)
         #expect(metrics3.votesReceived == 1, "Vote count still at one, because voter1 moved his vote to description2")
         #expect(election.winner == nil, "Should have a winner after reaching the threshold")
 
-        let metrics4 = try election.voteReceived(for: description1, from: voter3)
+        let metrics4 = try election.voteReceived(for: topology1, from: voter3)
         #expect(metrics4.votesReceived == 2, "Should count additional votes")
-        #expect(election.winner == description1, "voter2 and voter3 make description1 the winner")
+        #expect(election.winner == topology1, "voter2 and voter3 make description1 the winner")
     }
 
     @Test("Topology candidates with same structure are equal")
@@ -255,8 +260,8 @@ struct ValkeyTopologyElectionTests {
         let description1 = createSingleShardCluster(id: "node1")
         let description2 = createSingleShardCluster(id: "node2")
 
-        let candidate1 = try ValkeyTopologyCandidate(description1)
-        let candidate2 = try ValkeyTopologyCandidate(description2)
+        let candidate1 = try ValkeyTopologyCandidate(ValkeyClusterTopology(description1))
+        let candidate2 = try ValkeyTopologyCandidate(ValkeyClusterTopology(description2))
 
         // The candidates should be considered equal since they have the same structure
         // Note: This assumes ValkeyTopologyCandidate equality is based on structure, not node IDs
@@ -272,8 +277,8 @@ struct ValkeyTopologyElectionTests {
         let description1 = createSingleShardCluster(slots: [0...5000])
         let description2 = createSingleShardCluster(slots: [0...8000])
 
-        let candidate1 = try ValkeyTopologyCandidate(description1)
-        let candidate2 = try ValkeyTopologyCandidate(description2)
+        let candidate1 = try ValkeyTopologyCandidate(ValkeyClusterTopology(description1))
+        let candidate2 = try ValkeyTopologyCandidate(ValkeyClusterTopology(description2))
 
         #expect(
             candidate1 != candidate2,

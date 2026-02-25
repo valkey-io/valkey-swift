@@ -57,29 +57,12 @@ package struct ValkeyTopologyCandidate: Hashable {
     /// - Sorts shards by their starting hash slot for consistent equality checking
     ///
     /// - Parameter description: The cluster description to create a topology candidate from.
-    package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
+    package init(_ description: ValkeyClusterTopology) throws(ValkeyClusterError) {
         self.shards = try description.shards.map({ shard throws(ValkeyClusterError) in
-            let allocatedShard = try ValkeyClusterTopology.Shard(shard) { (_, _) throws(ValkeyClusterError) in
-                throw ValkeyClusterError.shardHasMultiplePrimaryNodes
-            }
-            let sorted = allocatedShard.replicas.map { Node($0) }.sorted(by: { lhs, rhs in
-                if lhs.endpoint != rhs.endpoint {
-                    return lhs.endpoint < rhs.endpoint
-                }
-                if lhs.port != rhs.port {
-                    return lhs.port < rhs.port
-                }
-                return true
-            })
-
-            guard let primary = allocatedShard.primary else {
-                throw ValkeyClusterError.shardIsMissingPrimaryNode
-            }
-
-            return Shard(
-                slots: shard.slots.sorted(by: { $0.startIndex < $1.startIndex }),
-                primary: Node(primary),
-                replicas: sorted
+            Shard(
+                slots: shard.slots,
+                primary: Node(shard.primary),
+                replicas: shard.replicas.map { Node($0) }
             )
         })
         // Sort shards by starting hash slot

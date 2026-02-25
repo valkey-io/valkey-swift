@@ -8,22 +8,6 @@
 
 /// Cluster topology description with nodes assigned to roles
 package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
-    init<Err: Error>(
-        _ description: ValkeyClusterDescription,
-        onDuplicatePrimary: (Node, Node) throws(Err) -> Node
-    ) rethrows {
-        self.shards = try description.shards.map { try Shard($0, onDuplicatePrimary: onDuplicatePrimary) }
-    }
-
-    package init(description: ValkeyClusterDescription) {
-        let shards = description.shards.map {
-            Shard($0, onDuplicatePrimary: { node, _ in node })
-        }
-        self.shards = shards.sorted { lhs, rhs in
-            (lhs.slots.first?.startIndex ?? .pastEnd) < (rhs.slots.first?.startIndex ?? .pastEnd)
-        }
-    }
-
     /// Details for a node within a cluster shard.
     public struct Node: Hashable, Sendable, ValkeyNodeDescriptionProtocol {
         /// The ID of the node
@@ -49,18 +33,12 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
     ///
     /// Failed replicas and failed primaries (if there is another online primary) are dropped
     package struct Shard: Sendable, Equatable, Hashable {
-        let slots: HashSlots
-        let primary: Node?
-        let replicas: ArraySlice<Node>
-        let nodes: [Node]
+        package let slots: HashSlots
+        package var primary: Node { nodes.last! }
+        package let replicas: ArraySlice<Node>
+        package let nodes: [Node]
 
-        init<Err: Error>(
-            _ shard: ValkeyClusterDescription.Shard,
-            onDuplicatePrimary: (Node, Node) throws(Err) -> Node = {
-                node,
-                _ in node
-            }
-        ) throws(Err) {
+        init(_ shard: ValkeyClusterDescription.Shard) throws(ValkeyClusterError) {
             var primary: Node? = nil
             var isFailedPrimary = false
             var nodes = [Node]()
@@ -70,10 +48,9 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
                 switch node.role.base {
                 case .primary:
                     switch (primary, isFailedPrimary) {
-                    case (.some(let primaryNode), false):
+                    case (.some, false):
                         if node.health != .fail {
-                            // only update primary if it is online/loading
-                            primary = try onDuplicatePrimary(primaryNode, Node(node))
+                            throw ValkeyClusterError.shardHasMultiplePrimaryNodes
                         }
                     case (.some, true), (.none, _):
                         primary = Node(node)
@@ -85,6 +62,8 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
                     }
                 }
             }
+            guard let primary else { throw ValkeyClusterError.shardIsMissingPrimaryNode }
+
             // sort nodes before adding primary
             nodes.sort { lhs, rhs in
                 if lhs.endpoint != rhs.endpoint {
@@ -95,22 +74,26 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
                 }
                 return true
             }
-            self.primary = primary
             let replicaCount = nodes.count
-            if let primary {
-                nodes.append(primary)
-            }
+            nodes.append(primary)
             self.nodes = nodes
             if replicaCount > 0 {
                 self.replicas = nodes[..<replicaCount]
             } else {
                 self.replicas = .init()
             }
-            self.slots = shard.slots
+            self.slots = shard.slots.sorted(by: { $0.startIndex < $1.startIndex })
         }
 
         package static func == (lhs: Self, rhs: Self) -> Bool {
             lhs.slots == rhs.slots && lhs.nodes == rhs.nodes
+        }
+    }
+
+    package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
+        let shards = try description.shards.map { (shard) throws(ValkeyClusterError) in try Shard(shard) }
+        self.shards = shards.sorted { lhs, rhs in
+            (lhs.slots.first?.startIndex ?? .pastEnd) < (rhs.slots.first?.startIndex ?? .pastEnd)
         }
     }
 

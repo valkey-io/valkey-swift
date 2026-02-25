@@ -266,7 +266,7 @@ where
     }
 
     package mutating func valkeyClusterDiscoverySucceeded(
-        _ description: ValkeyClusterDescription
+        _ topology: ValkeyClusterTopology
     ) -> ClusterDiscoverySucceededAction {
         switch self.refreshState {
         case .notRefreshing, .waitingForRefresh:
@@ -283,16 +283,15 @@ where
                 } else {
                     nil
                 }
-            let newTopology = ValkeyClusterTopology(description: description)
             var result: ClusterDiscoverySucceededAction
             /// Don't update cluster if description hasnt changed
-            if oldHealthyClusterTopology != newTopology {
+            if oldHealthyClusterTopology != topology {
                 var map = HashSlotShardMap()
-                map.updateCluster(newTopology)
-                self.clusterState = .healthy(.init(clusterDescription: newTopology, hashSlotShardMap: map, consensusStart: self.clock.now))
+                map.updateCluster(topology)
+                self.clusterState = .healthy(.init(clusterDescription: topology, hashSlotShardMap: map, consensusStart: self.clock.now))
 
                 let poolUpdate = self.runningClients.updateNodes(
-                    newTopology.shards.lazy.flatMap {
+                    topology.shards.lazy.flatMap {
                         $0.nodes.lazy.compactMap { $0.health == .online ? ValkeyNodeDescription(description: $0) : nil }
                     },
                     removeUnmentionedPools: true
