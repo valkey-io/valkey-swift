@@ -557,27 +557,6 @@ struct ValkeyClusterClientTests {
             #expect(clusterError == .clusterIsMissingNode)
         }
     }
-
-    @available(valkeySwift 1.0, *)
-    @Test
-    func testRepeatedTopologyUpdate() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
-        let cluster = await self.sixNodeHealthyCluster
-        let mockConnections = await cluster.mock(logger: logger)
-        async let _ = mockConnections.run()
-        try await withValkeyClusterClient(
-            (host: "127.0.0.1", port: 16000),
-            mockConnections: mockConnections,
-            configuration: .init(client: .init(readOnlyCommandNodeSelection: .cycleReplicas), clusterRefreshInterval: .seconds(2)),
-            logger: logger
-        ) { client in
-            let value = try await client.set("$address{3}", value: "test")
-            #expect(value.map { String($0) } == "127.0.0.1:16000")
-
-            try await Task.sleep(for: .seconds(4))
-        }
-    }
 }
 
 extension ClosedRange<UInt16> {

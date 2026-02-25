@@ -23,17 +23,11 @@ package struct HashSlotShardMap: Sendable {
     private static let allSlotsMissing = [OptionalShardID](repeating: .missing, count: HashSlot.count)
 
     private var slotToShardID: [OptionalShardID]
-    private var shardIDToShard: [ValkeyShardNodeIDs] {
-        didSet {
-            self.shardIDToFilteredShard = nil
-        }
-    }
-    private var shardIDToFilteredShard: [ValkeyShardNodeIDs]?
+    private var shardIDToShard: [ValkeyShardNodeIDs]
 
     package init() {
         self.slotToShardID = Self.allSlotsMissing
         self.shardIDToShard = []
-        self.shardIDToFilteredShard = nil
     }
 
     /// Returns the shard node information for the given hash slot, or nil if the slot is unassigned.
@@ -46,18 +40,6 @@ package struct HashSlotShardMap: Sendable {
             return nil
         }
         return self.shardIDToShard[shardID]
-    }
-
-    /// Returns the filtered shard node information for the given hash slot, or nil if the slot is unassigned.
-    ///
-    /// - Parameter key: The hash slot to look up
-    /// - Returns: The filtered shard node information if the slot is assigned, or nil otherwise
-    @usableFromInline
-    package subscript(filtered key: HashSlot) -> ValkeyShardNodeIDs? {
-        guard let shardID = self.slotToShardID[Int(key.rawValue)].value else {
-            return nil
-        }
-        return self.shardIDToFilteredShard?[shardID]
     }
 
     /// Determines the appropriate shard node information for a collection of hash slots.
@@ -81,29 +63,6 @@ package struct HashSlotShardMap: Sendable {
         }
 
         return self.shardIDToShard[nodeIndex]
-    }
-
-    /// Determines the appropriate shard node information for a collection of hash slots.
-    ///
-    /// All slots must map to the same shard, otherwise an error is thrown.
-    /// If no slots are provided, a random shard is returned.
-    ///
-    /// - Parameter slots: A collection of hash slots that should map to the same shard
-    /// - Returns: The shard node information for the given slots
-    /// - Throws: `ValkeyClusterError.clusterHasNoNodes` if the cluster has no nodes
-    ///           `ValkeyClusterError.clusterIsMissingSlotAssignment` if any slot is unassigned
-    ///           `ValkeyClusterError.keysInCommandRequireMultipleNodes` if slots map to different shards
-    @usableFromInline
-    package func filteredNodeID(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ValkeyShardNodeIDs? {
-        guard let nodeIndex = try self.nodeIndex(for: slots) else {
-            if let shardID = self.shardIDToShard.randomElement() {
-                return shardID
-            } else {
-                throw ValkeyClusterError.clusterHasNoNodes
-            }
-        }
-
-        return self.shardIDToFilteredShard?[nodeIndex]
     }
 
     func nodeIndex(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> Int? {
@@ -137,7 +96,7 @@ package struct HashSlotShardMap: Sendable {
     ///
     /// - Parameter shards: A collection of shard descriptions containing slot assignments and node information
     package mutating func updateCluster(
-        _ description: ValkeyClusterParsedDescription
+        _ description: ValkeyClusterTopology
     ) {
         self.slotToShardID = Self.allSlotsMissing
         self.shardIDToShard.removeAll(keepingCapacity: true)

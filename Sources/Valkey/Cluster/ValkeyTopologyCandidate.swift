@@ -40,9 +40,9 @@ package struct ValkeyTopologyCandidate: Hashable {
         /// Creates a simplified node representation from a `ValkeyClusterDescription.Node`.
         ///
         /// - Parameter node: The source node from a cluster description.
-        package init(_ node: ValkeyClusterDescription.Node) {
+        package init(_ node: ValkeyClusterTopology.Node) {
             self.endpoint = node.endpoint
-            self.port = node.tlsPort ?? node.port ?? 6379
+            self.port = node.port
         }
     }
 
@@ -59,7 +59,7 @@ package struct ValkeyTopologyCandidate: Hashable {
     /// - Parameter description: The cluster description to create a topology candidate from.
     package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
         self.shards = try description.shards.map({ shard throws(ValkeyClusterError) in
-            let allocatedShard = try ValkeyClusterParsedDescription.Shard(shard) { (_, _) throws(ValkeyClusterError) in
+            let allocatedShard = try ValkeyClusterTopology.Shard(shard) { (_, _) throws(ValkeyClusterError) in
                 throw ValkeyClusterError.shardHasMultiplePrimaryNodes
             }
             let sorted = allocatedShard.replicas.map { Node($0) }.sorted(by: { lhs, rhs in

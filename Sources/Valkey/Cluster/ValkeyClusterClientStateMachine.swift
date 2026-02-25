@@ -98,7 +98,7 @@ where
             @usableFromInline
             /* private */ var circuitBreakerTimer: Timer?
 
-            var lastHealthyState: ValkeyClusterParsedDescription?
+            var lastHealthyState: ValkeyClusterTopology?
 
             var lastError: any Error
         }
@@ -120,14 +120,14 @@ where
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
 
-            var lastHealthyState: ValkeyClusterParsedDescription
+            var lastHealthyState: ValkeyClusterTopology
 
             var lastError: any Error
         }
 
         @usableFromInline
         struct HealthyContext {
-            var clusterDescription: ValkeyClusterParsedDescription
+            var clusterDescription: ValkeyClusterTopology
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
             var consensusStart: Clock.Instant
@@ -251,6 +251,9 @@ where
     }
 
     package struct ClusterDiscoverySucceededAction {
+        /// A new cluster topology was found, or we moved from another state to healthy
+        package var topologyUpdated: Bool = false
+
         package var createTimer: ValkeyClusterTimer? = nil
 
         package var cancelTimer: TimerCancellationToken? = nil
@@ -274,28 +277,29 @@ where
             self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: .init(consecutiveFailures: 0))
 
             let oldCusterState = self.clusterState
-            let oldHealthyClusterDescription: ValkeyClusterParsedDescription? =
+            let oldHealthyClusterTopology: ValkeyClusterTopology? =
                 if case .healthy(let healthyState) = self.clusterState {
                     healthyState.clusterDescription
                 } else {
                     nil
                 }
-            let newParsedDescription = ValkeyClusterParsedDescription(description: description)
+            let newTopology = ValkeyClusterTopology(description: description)
             var result: ClusterDiscoverySucceededAction
             /// Don't update cluster if description hasnt changed
-            if oldHealthyClusterDescription != newParsedDescription {
+            if oldHealthyClusterTopology != newTopology {
                 var map = HashSlotShardMap()
-                map.updateCluster(newParsedDescription)
-                self.clusterState = .healthy(.init(clusterDescription: newParsedDescription, hashSlotShardMap: map, consensusStart: self.clock.now))
+                map.updateCluster(newTopology)
+                self.clusterState = .healthy(.init(clusterDescription: newTopology, hashSlotShardMap: map, consensusStart: self.clock.now))
 
                 let poolUpdate = self.runningClients.updateNodes(
-                    newParsedDescription.shards.lazy.flatMap {
+                    newTopology.shards.lazy.flatMap {
                         $0.nodes.lazy.compactMap { $0.health == .online ? ValkeyNodeDescription(description: $0) : nil }
                     },
                     removeUnmentionedPools: true
                 )
 
                 result = ClusterDiscoverySucceededAction(
+                    topologyUpdated: true,
                     createTimer: .init(
                         timerID: refreshTimerID,
                         useCase: .nextDiscovery,
@@ -306,6 +310,7 @@ where
                 )
             } else {
                 result = ClusterDiscoverySucceededAction(
+                    topologyUpdated: false,
                     createTimer: .init(
                         timerID: refreshTimerID,
                         useCase: .nextDiscovery,
