@@ -47,7 +47,7 @@ struct HashSlotShardMapTests {
                 )
             ]
         )
-        map.updateCluster([shard1.allocateNodes(), shard2.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard1, shard2])))
 
         let expectedShard1: ValkeyShardNodeIDs = [.init(endpoint: "mockEndpoint", port: 6)]
         let expectedShard2: ValkeyShardNodeIDs = [.init(endpoint: "mockEndpoint2", port: 9)]
@@ -60,7 +60,7 @@ struct HashSlotShardMapTests {
         shard1.slots = [16...16, 18...18]
         shard2.slots = [17...17]
 
-        map.updateCluster([shard1.allocateNodes(), shard2.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard1, shard2])))
 
         #expect(map[3] == nil)
         #expect(map[16] == expectedShard1)
@@ -74,7 +74,7 @@ struct HashSlotShardMapTests {
     func testEmptyCluster() {
         // Test handling of an empty cluster
         var map = HashSlotShardMap()
-        map.updateCluster([])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([])))
 
         // All slots should be unassigned
         #expect(map[0] == nil)
@@ -105,13 +105,14 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard])))
 
         // When we pass an empty collection of slots to nodeID(for:), it should choose a random node
         #expect(throws: Never.self) { try map.nodeID(for: [] as [HashSlot]) }
 
         // Now with an empty cluster, it should throw clusterHasNoNodes
-        map.updateCluster([])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([])))
+
         #expect(throws: ValkeyClusterError.clusterHasNoNodes) { try map.nodeID(for: [] as [HashSlot]) }
     }
 
@@ -137,7 +138,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard])))
 
         let expected: ValkeyShardNodeIDs = [.init(endpoint: "mockEndpoint", port: 6)]
         #expect(map[HashSlot.min] == expected)
@@ -183,7 +184,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard1.allocateNodes(), shard2.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard1, shard2])))
 
         // Test slots from the same shard
         let sameShardSlots: [HashSlot] = [5, 50, 250]
@@ -218,7 +219,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard])))
 
         // Requesting an unassigned slot should throw
         #expect(throws: ValkeyClusterError.clusterIsMissingSlotAssignment) {
@@ -253,7 +254,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard1.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard1])))
 
         let expected1: ValkeyShardNodeIDs = [.init(endpoint: "node1.example.com", port: 6)]
         #expect(map[50] == expected1)
@@ -276,7 +277,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard2.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard2])))
 
         let expected2: ValkeyShardNodeIDs = [.init(endpoint: "node1-new.example.com", port: 8)]
         #expect(map[50] == expected2)
@@ -330,7 +331,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard])))
 
         // Verify that the shard node IDs include both primary and replicas
         let expectedPrimary = ValkeyNodeID(endpoint: "primary1.example.com", port: 6)
@@ -426,7 +427,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard1.allocateNodes(), shard2.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard1, shard2])))
 
         // Test slots from shard 1
         let expectedPrimary1 = ValkeyNodeID(endpoint: "primary1.example.com", port: 6)
@@ -483,7 +484,7 @@ struct HashSlotShardMapTests {
         )
 
         // The updateCluster implementation should skip shards without a primary
-        map.updateCluster([shard1.allocateNodes(), emptyNodeShard.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard1, emptyNodeShard])))
 
         // Slots from shard1 should be assigned
         #expect(map[50] != nil)
@@ -527,7 +528,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard])))
 
         // Verify that even though the primary is failed, it's still mapped correctly
         let expectedPrimary = ValkeyNodeID(endpoint: "primary1.example.com", port: 6)
@@ -586,7 +587,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard])))
 
         // Verify that even though the primary is failed, it's still mapped correctly
         let expectedPrimary = ValkeyNodeID(endpoint: "primary2.example.com", port: 10)
@@ -657,7 +658,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard])))
 
         // Verify all nodes (except the failing and loading replicas) are included in the mapping
         let expectedPrimary = ValkeyNodeID(endpoint: "primary1.example.com", port: 6)
@@ -716,7 +717,7 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        map.updateCluster([shard.allocateNodes()])
+        map.updateCluster(ValkeyClusterParsedDescription(description: ValkeyClusterDescription([shard])))
 
         // Verify the mapping correctly handles nil ports
         let expectedPrimary = ValkeyNodeID(endpoint: "primary1.example.com", port: 6)
@@ -781,7 +782,7 @@ struct HashSlotShardMapTests {
         let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 1)
 
         var map = HashSlotShardMap()
-        map.updateCluster(clusterDescription.shards.map { $0.allocateNodes() })
+        map.updateCluster(ValkeyClusterParsedDescription(description: clusterDescription))
 
         let ogShard = try map.nodeID(for: CollectionOfOne(2))
         let update = map.updateSlots(
@@ -797,7 +798,7 @@ struct HashSlotShardMapTests {
         let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 3)
 
         var map = HashSlotShardMap()
-        map.updateCluster(clusterDescription.shards.map { $0.allocateNodes() })
+        map.updateCluster(ValkeyClusterParsedDescription(description: clusterDescription))
 
         let ogShard = try map.nodeID(for: CollectionOfOne(2))
         let luckyReplica = ogShard.replicas.randomElement()!
@@ -823,7 +824,7 @@ struct HashSlotShardMapTests {
         let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 3)
 
         var map = HashSlotShardMap()
-        map.updateCluster(clusterDescription.shards.map { $0.allocateNodes() })
+        map.updateCluster(ValkeyClusterParsedDescription(description: clusterDescription))
 
         let ogShard = try map.nodeID(for: CollectionOfOne(2))
         let otherShard = try map.nodeID(for: CollectionOfOne(.max))
@@ -849,7 +850,7 @@ struct HashSlotShardMapTests {
         let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 3)
 
         var map = HashSlotShardMap()
-        map.updateCluster(clusterDescription.shards.map { $0.allocateNodes() })
+        map.updateCluster(ValkeyClusterParsedDescription(description: clusterDescription))
 
         let ogShard = try map.nodeID(for: CollectionOfOne(2))
         let otherShard = try map.nodeID(for: CollectionOfOne(.max))
@@ -881,7 +882,7 @@ struct HashSlotShardMapTests {
         let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 3)
 
         var map = HashSlotShardMap()
-        map.updateCluster(clusterDescription.shards.map { $0.allocateNodes() })
+        map.updateCluster(ValkeyClusterParsedDescription(description: clusterDescription))
 
         let ogShard = try map.nodeID(for: CollectionOfOne(2))
         let newPrimary = ValkeyNodeID(endpoint: "new.valkey.io", port: 6379)

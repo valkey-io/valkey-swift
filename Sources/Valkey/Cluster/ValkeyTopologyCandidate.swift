@@ -59,7 +59,7 @@ package struct ValkeyTopologyCandidate: Hashable {
     /// - Parameter description: The cluster description to create a topology candidate from.
     package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
         self.shards = try description.shards.map({ shard throws(ValkeyClusterError) in
-            let allocatedShard = try shard.allocateNodes { (_, _) throws(ValkeyClusterError) in
+            let allocatedShard = try ValkeyClusterParsedDescription.Shard(shard) { (_, _) throws(ValkeyClusterError) in
                 throw ValkeyClusterError.shardHasMultiplePrimaryNodes
             }
             let sorted = allocatedShard.replicas.map { Node($0) }.sorted(by: { lhs, rhs in

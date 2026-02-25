@@ -382,34 +382,57 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             (hashSlots, self.nodes) = try token.decodeMapValues("slots", "nodes")
             self.slots = hashSlots.slots
         }
+    }
 
-        package func allocateNodes<Err: Error>(
-            onDuplicatePrimary: (Node, Node) throws(Err) -> Node
-        ) throws(Err) -> AllocatedShard {
-            try AllocatedShard(self, onDuplicatePrimary: onDuplicatePrimary)
-        }
+    /// The individual portions of a valkey cluster, known as shards.
+    public var shards: [Shard]
 
-        package func allocateNodes() -> AllocatedShard {
-            AllocatedShard(self) { node, _ in node }
+    /// Creates a cluster description from the response token you provide.
+    /// - Parameter respToken: The response token.
+    public init(_ respToken: RESPToken) throws(RESPDecodeError) {
+        self.shards = try [Shard](respToken, decodeSingleElementAsArray: false)
+    }
+
+    /// Creates a cluster description from a list of shards you provide.
+    /// - Parameter shards: The shards that make up the cluster.
+    package init(_ shards: [ValkeyClusterDescription.Shard]) {
+        self.shards = shards
+    }
+}
+
+package struct ValkeyClusterParsedDescription: Sendable, Equatable {
+    init<Err: Error>(
+        description: ValkeyClusterDescription,
+        onDuplicatePrimary: (ValkeyClusterDescription.Node, ValkeyClusterDescription.Node) throws(Err) -> ValkeyClusterDescription.Node
+    ) rethrows {
+        self.shards = try description.shards.map { try Shard($0, onDuplicatePrimary: onDuplicatePrimary) }
+    }
+
+    package init(description: ValkeyClusterDescription) {
+        self.shards = description.shards.map {
+            Shard($0, onDuplicatePrimary: { node, _ in node })
         }
     }
 
     /// Temporary type where nodes are allocated to their roles
     ///
     /// Failed replicas and failed primaries (if there is another online primary) are dropped
-    package struct AllocatedShard {
+    package struct Shard: Sendable, Equatable {
         let slots: HashSlots
-        let primary: Node?
-        let replicas: ArraySlice<Node>
-        let nodes: [Node]
+        let primary: ValkeyClusterDescription.Node?
+        let replicas: ArraySlice<ValkeyClusterDescription.Node>
+        let nodes: [ValkeyClusterDescription.Node]
 
         init<Err: Error>(
-            _ shard: Shard,
-            onDuplicatePrimary: (Node, Node) throws(Err) -> Node = { node, _ in node }
+            _ shard: ValkeyClusterDescription.Shard,
+            onDuplicatePrimary: (ValkeyClusterDescription.Node, ValkeyClusterDescription.Node) throws(Err) -> ValkeyClusterDescription.Node = {
+                node,
+                _ in node
+            }
         ) throws(Err) {
-            var primary: Node? = nil
+            var primary: ValkeyClusterDescription.Node? = nil
             var isFailedPrimary = false
-            var nodes = [Node]()
+            var nodes = [ValkeyClusterDescription.Node]()
             nodes.reserveCapacity(shard.nodes.count)
 
             for node in shard.nodes {
@@ -444,22 +467,14 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             }
             self.slots = shard.slots
         }
+
+        package static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.slots == rhs.slots && lhs.primary == rhs.primary && lhs.nodes == rhs.nodes
+        }
     }
 
     /// The individual portions of a valkey cluster, known as shards.
-    public var shards: [Shard]
-
-    /// Creates a cluster description from the response token you provide.
-    /// - Parameter respToken: The response token.
-    public init(_ respToken: RESPToken) throws(RESPDecodeError) {
-        self.shards = try [Shard](respToken, decodeSingleElementAsArray: false)
-    }
-
-    /// Creates a cluster description from a list of shards you provide.
-    /// - Parameter shards: The shards that make up the cluster.
-    package init(_ shards: [ValkeyClusterDescription.Shard]) {
-        self.shards = shards
-    }
+    package var shards: [Shard]
 }
 
 /// A cluster link between nodes in a Valkey cluster.

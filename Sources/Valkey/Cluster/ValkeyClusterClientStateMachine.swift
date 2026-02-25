@@ -98,7 +98,7 @@ where
             @usableFromInline
             /* private */ var circuitBreakerTimer: Timer?
 
-            var lastHealthyState: ValkeyClusterDescription?
+            var lastHealthyState: ValkeyClusterParsedDescription?
 
             var lastError: any Error
         }
@@ -120,14 +120,14 @@ where
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
 
-            var lastHealthyState: ValkeyClusterDescription
+            var lastHealthyState: ValkeyClusterParsedDescription
 
             var lastError: any Error
         }
 
         @usableFromInline
         struct HealthyContext {
-            var clusterDescription: ValkeyClusterDescription
+            var clusterDescription: ValkeyClusterParsedDescription
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
             var consensusStart: Clock.Instant
@@ -270,32 +270,51 @@ where
             preconditionFailure("Invalid state: \(self.refreshState)")
 
         case .refreshing:
-            let oldCusterState = self.clusterState
-            var map = HashSlotShardMap()
-            let newShards = description.shards.map { $0.allocateNodes { node, _ in node } }
-            map.updateCluster(newShards)
-            self.clusterState = .healthy(.init(clusterDescription: description, hashSlotShardMap: map, consensusStart: self.clock.now))
-
             let refreshTimerID = self.nextTimerID()
             self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: .init(consecutiveFailures: 0))
 
-            let poolUpdate = self.runningClients.updateNodes(
-                newShards.lazy.flatMap {
-                    $0.nodes.lazy.compactMap { $0.health == .online ? ValkeyNodeDescription(description: $0) : nil }
-                },
-                removeUnmentionedPools: true
-            )
+            let oldCusterState = self.clusterState
+            let oldHealthyClusterDescription: ValkeyClusterParsedDescription? =
+                if case .healthy(let healthyState) = self.clusterState {
+                    healthyState.clusterDescription
+                } else {
+                    nil
+                }
+            let newParsedDescription = ValkeyClusterParsedDescription(description: description)
+            var result: ClusterDiscoverySucceededAction
+            /// Don't update cluster if description hasnt changed
+            if oldHealthyClusterDescription != newParsedDescription {
+                var map = HashSlotShardMap()
+                map.updateCluster(newParsedDescription)
+                self.clusterState = .healthy(.init(clusterDescription: newParsedDescription, hashSlotShardMap: map, consensusStart: self.clock.now))
 
-            var result = ClusterDiscoverySucceededAction(
-                createTimer: .init(
-                    timerID: refreshTimerID,
-                    useCase: .nextDiscovery,
-                    duration: self.configuration.defaultClusterRefreshInterval
-                ),
-                clientsToShutdown: poolUpdate.poolsToShutdown,
-                clientsToRun: poolUpdate.poolsToRun.map(\.0)
-            )
+                let poolUpdate = self.runningClients.updateNodes(
+                    newParsedDescription.shards.lazy.flatMap {
+                        $0.nodes.lazy.compactMap { $0.health == .online ? ValkeyNodeDescription(description: $0) : nil }
+                    },
+                    removeUnmentionedPools: true
+                )
 
+                result = ClusterDiscoverySucceededAction(
+                    createTimer: .init(
+                        timerID: refreshTimerID,
+                        useCase: .nextDiscovery,
+                        duration: self.configuration.defaultClusterRefreshInterval
+                    ),
+                    clientsToShutdown: poolUpdate.poolsToShutdown,
+                    clientsToRun: poolUpdate.poolsToRun.map(\.0)
+                )
+            } else {
+                result = ClusterDiscoverySucceededAction(
+                    createTimer: .init(
+                        timerID: refreshTimerID,
+                        useCase: .nextDiscovery,
+                        duration: self.configuration.defaultClusterRefreshInterval
+                    ),
+                    clientsToShutdown: [],
+                    clientsToRun: []
+                )
+            }
             switch oldCusterState {
             case .healthy:
                 return result
