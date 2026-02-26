@@ -288,8 +288,65 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ///
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
+    #if compiler(<6.2)
+    /// Because we don't have nonisolated(nonsending) in Swift 6.1 we have to duplicate this function
     @inlinable
-    public nonisolated func execute<Commands: Collection>(
+    public func execute<Commands: Collection>(
+        _ commands: Commands
+    ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
+        self.logger.trace("execute", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
+
+        #if DistributedTracingSupport
+        let span = self.tracer?.startSpan("Pipeline", ofKind: .client)
+        defer { span?.end() }
+
+        if !(span is NoOpTracer.Span) {
+            let databaseOperationName = Self.concatenateCommandNames(commands)
+            let databaseOperationBatchSize = commands.count
+            span?.updateAttributes { attributes in
+                self.applyCommonAttributes(to: &attributes)
+                attributes[self.configuration.tracing.attributeNames.databaseOperationName] = databaseOperationName
+                attributes[self.configuration.tracing.attributeNames.databaseOperationBatchSize] = databaseOperationBatchSize
+            }
+        }
+        #endif
+
+        // this currently allocates a promise for every command. We could collapse this down to one promise
+        var promises: [EventLoopPromise<RESPToken>] = []
+        promises.reserveCapacity(commands.count)
+        var encoder = ValkeyCommandEncoder()
+        for command in commands {
+            command.encode(into: &encoder)
+            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        }
+        let count = commands.count
+        return await _execute(
+            buffer: encoder.buffer,
+            promises: promises,
+            valkeyPromises: promises.map { .nio($0) }
+        ) { promises in
+            // get response from channel handler
+            var results: [Result<RESPToken, ValkeyClientError>] = .init()
+            results.reserveCapacity(count)
+            for promise in promises {
+                await results.append(
+                    promise.futureResult._valkeyErrorResult()
+                )
+            }
+            return results
+        }
+    }
+    #else
+    @inlinable
+    public func execute<Commands: Collection>(
+        _ commands: Commands
+    ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
+        await _execute(commands)
+    }
+    #endif
+
+    @inlinable
+    nonisolated func _execute<Commands: Collection>(
         _ commands: Commands
     ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         self.logger.trace("execute", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
@@ -502,8 +559,69 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     /// - Throws: ValkeyTransactionError when EXEC aborts
+    #if compiler(<6.2)
+    /// Because we don't have nonisolated(nonsending) in Swift 6.1 we have to duplicate this function
     @inlinable
-    public nonisolated func transaction<Commands: Collection>(
+    public func transaction<Commands: Collection>(
+        _ commands: Commands
+    ) async throws(ValkeyTransactionError) -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
+        self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
+
+        #if DistributedTracingSupport
+        let span = self.tracer?.startSpan("MULTI", ofKind: .client)
+        defer { span?.end() }
+
+        if !(span is NoOpTracer.Span) {
+            let databaseOperationName = Self.concatenateCommandNames(commands)
+            let databaseOperationBatchSize = commands.count
+            span?.updateAttributes { attributes in
+                self.applyCommonAttributes(to: &attributes)
+                attributes[self.configuration.tracing.attributeNames.databaseOperationName] = databaseOperationName
+                attributes[self.configuration.tracing.attributeNames.databaseOperationBatchSize] = databaseOperationBatchSize
+            }
+        }
+        #endif
+
+        // Construct encoded commands and promise array
+        var encoder = ValkeyCommandEncoder()
+        var promises: [EventLoopPromise<RESPToken>] = []
+        MULTI().encode(into: &encoder)
+        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        for command in commands {
+            command.encode(into: &encoder)
+            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        }
+        EXEC().encode(into: &encoder)
+        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+
+        do {
+            return try await _execute(
+                buffer: encoder.buffer,
+                promises: promises,
+                valkeyPromises: promises.map { .nio($0) },
+                processResults: self._processTransactionPromises
+            ).get()
+        } catch {
+            #if DistributedTracingSupport
+            if let span {
+                span.recordError(error)
+                span.setStatus(SpanStatus(code: .error))
+            }
+            #endif
+            throw error
+        }
+    }
+    #else
+    @inlinable
+    public func transaction<Commands: Collection>(
+        _ commands: Commands
+    ) async throws(ValkeyTransactionError) -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
+        try await _transaction(commands)
+    }
+    #endif
+
+    @inlinable
+    public nonisolated func _transaction<Commands: Collection>(
         _ commands: Commands
     ) async throws(ValkeyTransactionError) -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
