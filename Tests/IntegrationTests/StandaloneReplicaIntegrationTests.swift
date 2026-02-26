@@ -106,6 +106,89 @@ struct StandaloneReplicaIntegrationTests {
     }
 
     @available(valkeySwift 1.0, *)
+    @Test func testPipelineRedirectErrorFromReplica() async throws {
+        let logger = {
+            var logger = Logger(label: "testRedirectErrorFromReplica")
+            logger.logLevel = .trace
+            return logger
+        }()
+        try await withValkeyClient(
+            .hostname(primaryHostname!, port: primaryPort!),
+            configuration: .init(retryParameters: .init(minWaitTime: .milliseconds(10))),
+            logger: logger
+        ) { client in
+            // only run this test on valkey
+            guard try await client.hello(arguments: .init(protover: 3)).decodeValues("server") == "valkey" else { return }
+            try await withKey(client) { key in
+                // get replica address
+                let replicaAddress = try #require(try await getReplicaAddresses(client).first)
+                // connect to replica. We set the value `connectToReplica` to true so we are not immediately
+                // redirected to the primary by the role command
+                _ = try await withValkeyClient(
+                    replicaAddress,
+                    configuration: .init(
+                        retryParameters: .init(minWaitTime: .milliseconds(10)),
+                        readOnlyCommandNodeSelection: .cycleReplicas,
+                        connectingToReplica: true
+                    ),
+                    logger: logger
+                ) { client in
+                    // we called a pipeline including a non-readonly command. This should work because we will receive a REDIRECT error
+                    let results = await client.execute(
+                        SET(key, value: "redirect"),
+                        GET(key)
+                    )
+                    try #expect(results.1.get().map { String($0) } == "redirect")
+                }
+            }
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test func testPipelineCollectionRedirectErrorFromReplica() async throws {
+        let logger = {
+            var logger = Logger(label: "testRedirectErrorFromReplica")
+            logger.logLevel = .trace
+            return logger
+        }()
+        try await withValkeyClient(
+            .hostname(primaryHostname!, port: primaryPort!),
+            configuration: .init(retryParameters: .init(minWaitTime: .milliseconds(10))),
+            logger: logger
+        ) { client in
+            // only run this test on valkey
+            guard try await client.hello(arguments: .init(protover: 3)).decodeValues("server") == "valkey" else { return }
+            try await withKey(client) { key in
+                try await client.set(key, value: "before")
+                // get replica address
+                let replicaAddress = try #require(try await getReplicaAddresses(client).first)
+                // connect to replica. We set the value `connectToReplica` to true so we are not immediately
+                // redirected to the primary by the role command
+                _ = try await withValkeyClient(
+                    replicaAddress,
+                    configuration: .init(
+                        retryParameters: .init(minWaitTime: .milliseconds(10)),
+                        readOnlyCommandNodeSelection: .cycleReplicas,
+                        connectingToReplica: true
+                    ),
+                    logger: logger
+                ) { client in
+                    _ = try await client.get(key)
+                    // we called a pipeline including a non-readonly command. This should work because we will receive a REDIRECT error
+                    let commands: [any ValkeyCommand] = [
+                        GET(key),
+                        SET(key, value: "redirect"),
+                        GET(key),
+                    ]
+                    let results = await client.execute(commands)
+                    try #expect(results[0].get().decode(as: String.self) == "before")
+                    try #expect(results[2].get().decode(as: String.self) == "redirect")
+                }
+            }
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
     @Test func testTransactionRedirectErrorFromReplica() async throws {
         let logger = {
             var logger = Logger(label: "testRedirectErrorFromReplica")
@@ -126,7 +209,10 @@ struct StandaloneReplicaIntegrationTests {
                 // redirected to the primary by the role command
                 _ = try await withValkeyClient(
                     replicaAddress,
-                    configuration: .init(retryParameters: .init(minWaitTime: .milliseconds(10)), connectingToReplica: true),
+                    configuration: .init(
+                        retryParameters: .init(minWaitTime: .milliseconds(10)),
+                        connectingToReplica: true
+                    ),
                     logger: logger
                 ) { client in
                     // we called a transaction including a non-readonly command. This should work because we will receive a REDIRECT error
@@ -139,7 +225,7 @@ struct StandaloneReplicaIntegrationTests {
     }
 
     @available(valkeySwift 1.0, *)
-    @Test func testTransactionArrayRedirectErrorFromReplica() async throws {
+    @Test func testTransactionCollectionRedirectErrorFromReplica() async throws {
         let logger = {
             var logger = Logger(label: "testRedirectErrorFromReplica")
             logger.logLevel = .trace
@@ -159,7 +245,10 @@ struct StandaloneReplicaIntegrationTests {
                 // redirected to the primary by the role command
                 _ = try await withValkeyClient(
                     replicaAddress,
-                    configuration: .init(retryParameters: .init(minWaitTime: .milliseconds(10)), connectingToReplica: true),
+                    configuration: .init(
+                        retryParameters: .init(minWaitTime: .milliseconds(10)),
+                        connectingToReplica: true
+                    ),
                     logger: logger
                 ) { client in
                     // we called a transaction including a non-readonly command. This should work because we will receive a REDIRECT error
@@ -181,7 +270,7 @@ struct StandaloneReplicaIntegrationTests {
         }()
         try await withValkeyClient(
             .hostname(primaryHostname!, port: primaryPort!),
-            configuration: .init(retryParameters: .init(minWaitTime: .milliseconds(10))),
+            configuration: .init(retryParameters: .init(minWaitTime: .milliseconds(10)), readOnlyCommandNodeSelection: .cycleReplicas),
             logger: logger
         ) { client in
             // only run this test on valkey
