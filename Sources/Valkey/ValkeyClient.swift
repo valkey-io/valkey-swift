@@ -323,6 +323,10 @@ extension ValkeyClient {
             }
         var attempt = 0
         let index = commands.startIndex
+        #if compiler(<6.2)
+        let node = self.getNode(readOnly: readOnly)
+        return await node.execute(commands[index...])
+        #else
         outsideLoop: while true {
             let node = self.getNode(readOnly: readOnly)
             let results = await node.execute(commands[index...])
@@ -356,6 +360,7 @@ extension ValkeyClient {
             }
             return results
         }
+        #endif
     }
     /// Pipeline a series of commands as a transaction to Valkey connection
     ///
