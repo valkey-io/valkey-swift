@@ -35,7 +35,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y libjemalloc-dev
-          apt-get install curl
+          apt-get install -y curl
       - name: Checkout
         uses: actions/checkout@v6
       - name: Generate certificates
