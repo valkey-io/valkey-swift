@@ -219,6 +219,7 @@ struct ValkeyClientTests {
         }
     }
 
+    #if compiler(>=6.2)
     @Test
     @available(valkeySwift 1.0, *)
     func testPipelineRedirectError() async throws {
@@ -240,6 +241,7 @@ struct ValkeyClientTests {
             try #expect(results.1.get().map { String($0) } == "primary")
         }
     }
+    #endif
 
     @Test
     @available(valkeySwift 1.0, *)
