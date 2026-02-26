@@ -258,11 +258,13 @@ struct ValkeyClientTests {
             logger: logger
         ) { client in
             let commands: [any ValkeyCommand] = [
+                GET("foo"),
                 SET("foo", value: "bar"),
                 GET("foo"),
             ]
             let results = await client.execute(commands)
-            try #expect(results[1].get().decode(as: String.self) == "primary")
+            try #expect(results[0].get().decode(as: String.self) == "replica")
+            try #expect(results[2].get().decode(as: String.self) == "primary")
         }
     }
 }

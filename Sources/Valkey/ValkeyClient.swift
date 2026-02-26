@@ -326,15 +326,18 @@ extension ValkeyClient {
             } else {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
+        // get node client and execute commands
+        let node = self.getNode(readOnly: readOnly)
+        var results = await node.execute(commands)
+
         var attempt = 0
-        let index = commands.startIndex
-        outsideLoop: while true {
-            let node = self.getNode(readOnly: readOnly)
-            let results = await node.execute(commands[index...])
-            if Task.isCancelled {
-                return results
-            }
-            for result in results {
+        var startIndex = commands.startIndex
+        var resultIndex = results.startIndex
+
+        // Process results, If we find one that needs a retry, then retry command and all the commands that follow
+        while !Task.isCancelled {
+            // loop through results that haven't been checked
+            resultLoop: for result in results[resultIndex...] {
                 if case .failure(let error) = result {
                     switch self.getRetryAction(from: error) {
                     case .redirect(let redirectError):
@@ -344,23 +347,34 @@ extension ValkeyClient {
                         try? await Task.sleep(for: wait)
                         attempt += 1
                         self.setPrimary(redirectError.address)
-                        continue outsideLoop
+                        break resultLoop
                     case .tryAgain:
                         guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
                             return results
                         }
                         try? await Task.sleep(for: wait)
                         attempt += 1
-                        continue outsideLoop
+                        break resultLoop
 
                     case .dontRetry:
                         break
                     }
-
                 }
+                resultIndex += 1
+                startIndex = commands.index(after: startIndex)
             }
-            return results
+            // if no results require a retry break out of loop
+            if resultIndex == results.count {
+                break
+            }
+            // Retry commands that failed and all subsequent commands
+            let node = self.getNode(readOnly: readOnly)
+            let newResults = await node.execute(commands[startIndex...])
+            // Replace old results with new results
+            results.removeLast(newResults.count)
+            results.append(contentsOf: newResults)
         }
+        return results
     }
     /// Pipeline a series of commands as a transaction to Valkey connection
     ///
