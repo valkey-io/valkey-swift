@@ -263,8 +263,40 @@ extension ValkeyClient {
         for command in repeat each commands {
             readOnly = readOnly && command.isReadOnly
         }
-        let node = self.getNode(readOnly: readOnly)
-        return await node.execute(repeat each commands)
+        var attempt = 0
+        executeCommands: while true {
+            let node = self.getNode(readOnly: readOnly)
+            let results = await node.execute(repeat each commands)
+            if Task.isCancelled {
+                return results
+            }
+            for result in repeat each results {
+                if case .failure(let error) = result {
+                    switch self.getRetryAction(from: error) {
+                    case .redirect(let redirectError):
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        self.setPrimary(redirectError.address)
+                        continue executeCommands
+                    case .tryAgain:
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        continue executeCommands
+
+                    case .dontRetry:
+                        break
+                    }
+
+                }
+            }
+            return results
+        }
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -280,7 +312,7 @@ extension ValkeyClient {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    public func execute<Commands: Collection & Sendable>(
+    public func execute<Commands: Collection>(
         _ commands: Commands
     ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         let readOnly =
@@ -289,8 +321,41 @@ extension ValkeyClient {
             } else {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
-        let node = self.getNode(readOnly: readOnly)
-        return await node.execute(commands)
+        var attempt = 0
+        let index = commands.startIndex
+        outsideLoop: while true {
+            let node = self.getNode(readOnly: readOnly)
+            let results = await node.execute(commands[index...])
+            if Task.isCancelled {
+                return results
+            }
+            for result in results {
+                if case .failure(let error) = result {
+                    switch self.getRetryAction(from: error) {
+                    case .redirect(let redirectError):
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        self.setPrimary(redirectError.address)
+                        continue outsideLoop
+                    case .tryAgain:
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        continue outsideLoop
+
+                    case .dontRetry:
+                        break
+                    }
+
+                }
+            }
+            return results
+        }
     }
     /// Pipeline a series of commands as a transaction to Valkey connection
     ///
@@ -365,7 +430,7 @@ extension ValkeyClient {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    public func transaction<Commands: Collection & Sendable>(
+    public func transaction<Commands: Collection>(
         _ commands: Commands
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         let readOnly =

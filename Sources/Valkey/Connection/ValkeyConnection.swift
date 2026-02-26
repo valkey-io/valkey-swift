@@ -289,7 +289,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    public func execute<Commands: Collection & Sendable>(
+    public nonisolated func execute<Commands: Collection>(
         _ commands: Commands
     ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         self.logger.trace("execute", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
@@ -503,7 +503,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// - Returns: Array holding the RESPToken responses of all the commands
     /// - Throws: ValkeyTransactionError when EXEC aborts
     @inlinable
-    public func transaction<Commands: Collection & Sendable>(
+    public nonisolated func transaction<Commands: Collection>(
         _ commands: Commands
     ) async throws(ValkeyTransactionError) -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
@@ -694,7 +694,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         return commonAttributes
     }
     @usableFromInline
-    func applyCommonAttributes(to attributes: inout SpanAttributes) {
+    nonisolated func applyCommonAttributes(to attributes: inout SpanAttributes) {
         attributes.merge(self.commonSpanAttributes)
     }
     #endif
@@ -743,7 +743,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     /// Concatenate names from collection of command together
     @inlinable
-    static func concatenateCommandNames<Commands: Collection>(
+    static nonisolated func concatenateCommandNames<Commands: Collection>(
         _ commands: Commands
     ) -> String where Commands.Element == any ValkeyCommand {
         // get length of string so we only do one allocation

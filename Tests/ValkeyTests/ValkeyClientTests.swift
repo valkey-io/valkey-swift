@@ -218,4 +218,49 @@ struct ValkeyClientTests {
             #expect(value.map { String($0) } == "replica")
         }
     }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testPipelineRedirectError() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        let mockConnections = await getStandaloneMock(logger: logger)
+        async let _ = mockConnections.run()
+
+        try await withValkeyClient(
+            .hostname("127.0.0.1", port: 6380),
+            mockConnections: mockConnections,
+            configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas, connectingToReplica: true),
+            logger: logger
+        ) { client in
+            let results = await client.execute(
+                SET("foo", value: "bar"),
+                GET("foo")
+            )
+            try #expect(results.1.get().map { String($0) } == "primary")
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testPipelineCollectionRedirectError() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        let mockConnections = await getStandaloneMock(logger: logger)
+        async let _ = mockConnections.run()
+
+        try await withValkeyClient(
+            .hostname("127.0.0.1", port: 6380),
+            mockConnections: mockConnections,
+            configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas, connectingToReplica: true),
+            logger: logger
+        ) { client in
+            let commands: [any ValkeyCommand] = [
+                SET("foo", value: "bar"),
+                GET("foo"),
+            ]
+            let results = await client.execute(commands)
+            try #expect(results[1].get().decode(as: String.self) == "primary")
+        }
+    }
 }
