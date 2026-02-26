@@ -85,7 +85,7 @@ package struct ValkeyTopologyElection {
     /// 3. If this vote causes a candidate to reach the required threshold, it becomes the winner
     ///
     /// - Parameters:
-    ///   - description: The cluster configuration the node is voting for
+    ///   - topology: The cluster configuration the node is voting for
     ///   - voter: The ID of the node casting the vote
     ///
     /// - Returns: Metrics about the current state of the election after recording this vote

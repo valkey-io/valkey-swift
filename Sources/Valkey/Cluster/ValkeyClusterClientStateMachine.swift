@@ -127,7 +127,7 @@ where
 
         @usableFromInline
         struct HealthyContext {
-            var clusterDescription: ValkeyClusterTopology
+            var clusterTopology: ValkeyClusterTopology
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
             var consensusStart: Clock.Instant
@@ -279,7 +279,7 @@ where
             let oldCusterState = self.clusterState
             let oldHealthyClusterTopology: ValkeyClusterTopology? =
                 if case .healthy(let healthyState) = self.clusterState {
-                    healthyState.clusterDescription
+                    healthyState.clusterTopology
                 } else {
                     nil
                 }
@@ -288,7 +288,7 @@ where
             if oldHealthyClusterTopology != topology {
                 var map = HashSlotShardMap()
                 map.updateCluster(topology)
-                self.clusterState = .healthy(.init(clusterDescription: topology, hashSlotShardMap: map, consensusStart: self.clock.now))
+                self.clusterState = .healthy(.init(clusterTopology: topology, hashSlotShardMap: map, consensusStart: self.clock.now))
 
                 let poolUpdate = self.runningClients.updateNodes(
                     topology.shards.lazy.flatMap {
@@ -369,7 +369,7 @@ where
                         pendingSuccessNotifiers: [:],
                         circuitBreakerTimer: .init(id: circuitBreakerTimerID),
                         hashSlotShardMap: healthyContext.hashSlotShardMap,
-                        lastHealthyState: healthyContext.clusterDescription,
+                        lastHealthyState: healthyContext.clusterTopology,
                         lastError: error
                     )
                 )
@@ -677,7 +677,7 @@ where
                     pendingSuccessNotifiers: [:],
                     circuitBreakerTimer: .init(id: circuitBreakerTimerID),
                     hashSlotShardMap: healthyContext.hashSlotShardMap,
-                    lastHealthyState: healthyContext.clusterDescription,
+                    lastHealthyState: healthyContext.clusterTopology,
                     lastError: ValkeyClusterError.clusterIsMissingMovedErrorNode
                 )
             )

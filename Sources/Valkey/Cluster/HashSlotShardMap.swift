@@ -94,16 +94,16 @@ package struct HashSlotShardMap: Sendable {
     ///    - Creates a `ValkeyShardNodeIDs` object with the primary and its replicas
     ///    - Assigns all slots belonging to this shard in the mapping
     ///
-    /// - Parameter shards: A collection of shard descriptions containing slot assignments and node information
+    /// - Parameter topology: The cluster topology containing slot assignments and node information
     package mutating func updateCluster(
-        _ description: ValkeyClusterTopology
+        _ topology: ValkeyClusterTopology
     ) {
         self.slotToShardID = Self.allSlotsMissing
         self.shardIDToShard.removeAll(keepingCapacity: true)
-        self.shardIDToShard.reserveCapacity(description.shards.count)
+        self.shardIDToShard.reserveCapacity(topology.shards.count)
 
         var shardID = 0
-        for shard in description.shards {
+        for shard in topology.shards {
             let nodeIDs = ValkeyShardNodeIDs(
                 primary: shard.primary.nodeID,
                 replicas: shard.replicas.map { $0.nodeID }

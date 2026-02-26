@@ -56,9 +56,9 @@ package struct ValkeyTopologyCandidate: Hashable {
     /// - Sorts replicas within each shard for consistent equality checking
     /// - Sorts shards by their starting hash slot for consistent equality checking
     ///
-    /// - Parameter description: The cluster description to create a topology candidate from.
-    package init(_ description: ValkeyClusterTopology) throws(ValkeyClusterError) {
-        self.shards = try description.shards.map({ shard throws(ValkeyClusterError) in
+    /// - Parameter topology: The cluster description to create a topology candidate from.
+    package init(_ topology: ValkeyClusterTopology) throws(ValkeyClusterError) {
+        self.shards = try topology.shards.map({ shard throws(ValkeyClusterError) in
             Shard(
                 slots: shard.slots,
                 primary: Node(shard.primary),
