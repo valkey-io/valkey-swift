@@ -187,6 +187,8 @@ public enum JSON {
             self.subcommandArguments = subcommandArguments
         }
 
+        public var keysAffected: [ValkeyKey] { [] }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("JSON.DEBUG", RESPRenderableBulkString(subcommandArguments))
         }
@@ -219,6 +221,8 @@ public enum JSON {
 
         @inlinable public init() {
         }
+
+        public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("JSON.FORGET")

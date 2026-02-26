@@ -6,8 +6,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+/// Configuration for Valkey cluster client
 @available(valkeySwift 1.0, *)
-/// Configuration for ValkeyClusterClient
 public struct ValkeyClusterClientConfiguration: Sendable {
     /// Configuration for underlying Valkey client connections
     public var client: ValkeyClientConfiguration

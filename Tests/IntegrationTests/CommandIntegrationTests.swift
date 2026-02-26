@@ -227,11 +227,11 @@ struct CommandIntegratedTests {
 
                 // Non-existent hash
                 var response = try await client.hrandfield(key)
-                var singleField = try response.singleField()
+                var singleField = try response?.singleField()
                 #expect(singleField == nil)
-                var multipleFields = try response.multipleFields()
+                var multipleFields = try response?.multipleFields()
                 #expect(multipleFields == nil)
-                var fieldValuePairs = try response.multipleFieldsWithValues()
+                var fieldValuePairs = try response?.multipleFieldsWithValues()
                 #expect(fieldValuePairs == nil)
 
                 // Hash with multiple fields
@@ -246,7 +246,7 @@ struct CommandIntegratedTests {
 
                 // Get Single Field
                 response = try await client.hrandfield(key)
-                singleField = try response.singleField()
+                singleField = try response?.singleField()
                 #expect(singleField != nil)
                 let fieldName = String(singleField!)
                 #expect(["field1", "field2", "field3"].contains(fieldName))
@@ -254,7 +254,7 @@ struct CommandIntegratedTests {
                 // Get multiple fields
                 var options = HRANDFIELD.Options(count: 2, withvalues: false)
                 response = try await client.hrandfield(key, options: options)
-                multipleFields = try response.multipleFields()
+                multipleFields = try response?.multipleFields()
                 #expect(multipleFields != nil)
                 if let unwrappedFields = multipleFields {
                     #expect(unwrappedFields.count == 2)
@@ -270,7 +270,7 @@ struct CommandIntegratedTests {
                 // Get multiple fields with values
                 options = HRANDFIELD.Options(count: 3, withvalues: true)
                 response = try await client.hrandfield(key, options: options)
-                fieldValuePairs = try response.multipleFieldsWithValues()
+                fieldValuePairs = try response?.multipleFieldsWithValues()
                 #expect(fieldValuePairs != nil)
                 if let unwrappedFieldValuePairs = fieldValuePairs {
                     #expect(unwrappedFieldValuePairs.count == 3)

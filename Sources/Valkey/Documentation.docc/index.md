@@ -59,6 +59,7 @@ Valkey-swift is a swift based client for Valkey, the high-performance key/value 
 ### Cluster
 
 - ``ValkeyClusterClient``
+- ``ValkeyClusterClientConfiguration``
 - ``ValkeyNodeDiscovery``
 - ``ValkeyNodeDescriptionProtocol``
 - ``ValkeyStaticNodeDiscovery``

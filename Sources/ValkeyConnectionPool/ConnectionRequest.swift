@@ -28,10 +28,10 @@ let requestIDGenerator = _ValkeyConnectionPool.ConnectionIDGenerator()
 extension ConnectionPool where Request == ConnectionRequest<Connection> {
     public convenience init(
         configuration: ConnectionPoolConfiguration,
-        idGenerator: ConnectionIDGenerator = _ValkeyConnectionPool.ConnectionIDGenerator(),
+        idGenerator: ConnectionIDGenerator,
         keepAliveBehavior: KeepAliveBehavior,
         observabilityDelegate: ObservabilityDelegate,
-        clock: Clock = ContinuousClock(),
+        clock: Clock,
         connectionFactory: @escaping ConnectionFactory
     ) {
         self.init(

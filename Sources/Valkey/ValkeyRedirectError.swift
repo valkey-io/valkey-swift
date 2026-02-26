@@ -10,7 +10,8 @@ import NIOCore
 /// Represents a `REDIRECT` redirection error from a Valkey replica node.
 ///
 /// When a client sends a command to a Valkey replica when CAPA redirect is enabled
-/// the node responds with a `REDIECT` error containing information about the primary node.
+/// (with ``ValkeyClientConfiguration/enableClientCapaRedirect``) the node responds
+/// with a `REDIRECT` error containing information about the primary node.
 ///
 /// This error provides the necessary information for clients to redirect their
 /// request to the correct node in the cluster.

@@ -42,6 +42,7 @@ extension CLUSTER.NODES {
 /// Response type for cluster node listing commands.
 ///
 /// Contains an array of cluster nodes from CLUSTER NODES, CLUSTER REPLICAS responses.
+@_documentation(visibility: internal)
 public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
     /// The array of cluster nodes
     public var nodes: [ValkeyClusterNode]
@@ -79,6 +80,7 @@ public struct ValkeyClusterNodes: Hashable, Sendable, RESPTokenDecodable {
 ///
 /// Represents a node from CLUSTER NODES or CLUSTER REPLICAS responses.
 /// Each node contains information about its ID, endpoint, role, status, and assigned slots.
+@_documentation(visibility: internal)
 public struct ValkeyClusterNode: Hashable, Sendable, RESPTokenDecodable {
     /// Individual node flag indicating the node's role or status
     public struct Flag: Hashable, RawRepresentable, RESPTokenDecodable, CustomStringConvertible, Sendable {
@@ -294,6 +296,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             }
 
             private var base: Base
+            package var rawValue: String { base.rawValue }
 
             init(base: Base) {
                 self.base = base
@@ -379,6 +382,68 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             (hashSlots, self.nodes) = try token.decodeMapValues("slots", "nodes")
             self.slots = hashSlots.slots
         }
+
+        package func allocateNodes<Err: Error>(
+            onDuplicatePrimary: (Node, Node) throws(Err) -> Node
+        ) throws(Err) -> AllocatedShard {
+            try AllocatedShard(self, onDuplicatePrimary: onDuplicatePrimary)
+        }
+
+        package func allocateNodes() -> AllocatedShard {
+            AllocatedShard(self) { node, _ in node }
+        }
+    }
+
+    /// Temporary type where nodes are allocated to their roles
+    ///
+    /// Failed replicas and failed primaries (if there is another online primary) are dropped
+    package struct AllocatedShard {
+        let slots: HashSlots
+        let primary: Node?
+        let replicas: ArraySlice<Node>
+        let nodes: [Node]
+
+        init<Err: Error>(
+            _ shard: Shard,
+            onDuplicatePrimary: (Node, Node) throws(Err) -> Node = { node, _ in node }
+        ) throws(Err) {
+            var primary: Node? = nil
+            var isFailedPrimary = false
+            var nodes = [Node]()
+            nodes.reserveCapacity(shard.nodes.count)
+
+            for node in shard.nodes {
+                switch node.role.base {
+                case .primary:
+                    switch (primary, isFailedPrimary) {
+                    case (.some(let primaryNode), false):
+                        if node.health != .fail {
+                            // only update primary if it is online/loading
+                            primary = try onDuplicatePrimary(primaryNode, node)
+                        }
+                    case (.some, true), (.none, _):
+                        primary = node
+                        isFailedPrimary = (node.health == .fail)
+                    }
+                case .replica:
+                    if node.health == .online {
+                        nodes.append(node)
+                    }
+                }
+            }
+            self.primary = primary
+            let replicaCount = nodes.count
+            if let primary {
+                nodes.append(primary)
+            }
+            self.nodes = nodes
+            if replicaCount > 0 {
+                self.replicas = nodes[..<replicaCount]
+            } else {
+                self.replicas = .init()
+            }
+            self.slots = shard.slots
+        }
     }
 
     /// The individual portions of a valkey cluster, known as shards.
@@ -400,6 +465,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
 /// A cluster link between nodes in a Valkey cluster.
 ///
 /// A description is returned when you call ``ValkeyClientProtocol/clusterLinks()``.
+@_documentation(visibility: internal)
 public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
     /// Direction of the cluster link.
     public struct Direction: Sendable, Hashable, RESPTokenDecodable {
@@ -482,6 +548,7 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
 /// Slot usage statistics for a hash slot in a Valkey cluster.
 ///
 /// A description is returned when you call ``ValkeyClientProtocol/clusterSlotStats(filter:)``.
+@_documentation(visibility: internal)
 public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
     /// The hash slot number
     public var slot: Int
@@ -517,6 +584,7 @@ public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
 /// A slot range mapping in a Valkey cluster.
 ///
 /// A description is returned when you call ``ValkeyClientProtocol/clusterSlots()``.
+@_documentation(visibility: internal)
 public struct ValkeyClusterSlotRange: Hashable, Sendable, RESPTokenDecodable {
     /// A node serving a slot range in a Valkey cluster.
     public struct Node: Hashable, Sendable, RESPTokenDecodable {
@@ -599,9 +667,6 @@ public struct ValkeyClusterSlotRange: Hashable, Sendable, RESPTokenDecodable {
             nodes: nodes
         )
     }
-}
-
-extension ValkeyClusterDescription.Node {
 }
 
 struct MapStyleArray: Sequence {

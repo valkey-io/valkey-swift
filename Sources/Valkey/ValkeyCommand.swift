@@ -31,8 +31,6 @@ public protocol ValkeyCommand: Sendable, Hashable {
 }
 
 extension ValkeyCommand {
-    /// Default to no keys affected
-    public var keysAffected: [ValkeyKey] { [] }
     /// Default is not blocking
     public var isBlocking: Bool { false }
     /// Default is not read only
@@ -54,7 +52,7 @@ struct ValkeyRawResponseCommand<Command: ValkeyCommand>: ValkeyCommand {
     }
 
     @usableFromInline
-    var keysAffected: [ValkeyKey] { command.keysAffected }
+    var keysAffected: Command.Keys { command.keysAffected }
 
     @inlinable
     func encode(into commandEncoder: inout ValkeyCommandEncoder) {

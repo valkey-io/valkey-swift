@@ -1229,7 +1229,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `CH`, `NX` and `XX` options.
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
-    /// - Response: [Integer]: When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
+    /// - Returns: When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
     @discardableResult
     public func geoadd<Member: RESPStringRenderable>(
@@ -1246,9 +1246,9 @@ extension ValkeyClientProtocol {
     /// - Documentation: [GEODIST](https://valkey.io/commands/geodist)
     /// - Available: 3.2.0
     /// - Complexity: O(1)
-    /// - Response: One of the following
-    ///     * [Null]: One or both of elements are missing.
-    ///     * [String]: Distance as a double (represented as a string) in the specified units.
+    /// - Returns: One of the following
+    ///     * nil: One or both of elements are missing.
+    ///     * Distance as a double (represented as a string) in the specified units.
     @inlinable
     public func geodist<Member1: RESPStringRenderable, Member2: RESPStringRenderable>(
         _ key: ValkeyKey,
@@ -1264,7 +1264,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [GEOHASH](https://valkey.io/commands/geohash)
     /// - Available: 3.2.0
     /// - Complexity: O(1) for each member requested.
-    /// - Response: [Array]: An array where each element is the Geohash corresponding to each member name passed as argument to the command.
+    /// - Returns: An array where each element is the Geohash corresponding to each member name passed as argument to the command.
     @inlinable
     public func geohash(_ key: ValkeyKey, members: [String] = []) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(GEOHASH(key, members: members))
@@ -1275,7 +1275,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [GEOPOS](https://valkey.io/commands/geopos)
     /// - Available: 3.2.0
     /// - Complexity: O(1) for each member requested.
-    /// - Response: [Array]: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
+    /// - Returns: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
     @inlinable
     public func geopos(_ key: ValkeyKey, members: [String] = []) async throws(ValkeyClientError) -> GEOPOS.Response {
         try await execute(GEOPOS(key, members: members))
@@ -1288,9 +1288,8 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Response: Array of matched members information.
+    /// - Returns: Array of matched members information.
     @inlinable
     @discardableResult
     public func georadius(
@@ -1330,9 +1329,8 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Response: Array of matched members information.
+    /// - Returns: Array of matched members information.
     @inlinable
     @discardableResult
     public func georadiusbymember<Member: RESPStringRenderable>(
@@ -1370,9 +1368,8 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Response: Array of matched members information.
+    /// - Returns: Array of matched members information.
     @inlinable
     public func georadiusbymemberRo<Member: RESPStringRenderable>(
         _ key: ValkeyKey,
@@ -1407,9 +1404,8 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Response: Array of matched members information.
+    /// - Returns: Array of matched members information.
     @inlinable
     public func georadiusRo(
         _ key: ValkeyKey,
@@ -1447,7 +1443,7 @@ extension ValkeyClientProtocol {
     ///     * 7.0.0: Added support for uppercase unit names.
     ///     * 9.0.0: Added support for the BYPOLYGON option.
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
-    /// - Response: Array of matched members information.
+    /// - Returns: Array of matched members information.
     @inlinable
     public func geosearch(
         _ key: ValkeyKey,
@@ -1472,7 +1468,7 @@ extension ValkeyClientProtocol {
     ///     * 7.0.0: Added support for uppercase unit names.
     ///     * 9.0.0: Added support for the BYPOLYGON option.
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
-    /// - Response: [Integer]: The number of elements in the resulting set.
+    /// - Returns: The number of elements in the resulting set.
     @inlinable
     @discardableResult
     public func geosearchstore(

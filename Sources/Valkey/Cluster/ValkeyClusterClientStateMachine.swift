@@ -272,15 +272,17 @@ where
         case .refreshing:
             let oldCusterState = self.clusterState
             var map = HashSlotShardMap()
-            map.updateCluster(description.shards)
+            let newShards = description.shards.map { $0.allocateNodes { node, _ in node } }
+            map.updateCluster(newShards)
             self.clusterState = .healthy(.init(clusterDescription: description, hashSlotShardMap: map, consensusStart: self.clock.now))
 
             let refreshTimerID = self.nextTimerID()
             self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: .init(consecutiveFailures: 0))
 
-            let newShards = description.shards
             let poolUpdate = self.runningClients.updateNodes(
-                newShards.lazy.flatMap { $0.nodes.lazy.map { ValkeyNodeDescription(description: $0) } },
+                newShards.lazy.flatMap {
+                    $0.nodes.lazy.compactMap { $0.health == .online ? ValkeyNodeDescription(description: $0) : nil }
+                },
                 removeUnmentionedPools: true
             )
 
@@ -542,10 +544,9 @@ where
             if let pool = self.runningClients[nodeID]?.pool {
                 return pool
             }
-            // If we don't have a node for a shard, that means that this shard got created from
-            // a MOVED error. It might be that we are missing info about this node, which is why
-            // we need to wait for the next discovery cycle.
-            throw ValkeyClusterError.clusterIsMissingMovedErrorNode
+            // We don't have a client for a particular node. This is most likely due to a primary
+            // node of a shard being in the fail state
+            throw ValkeyClusterError.clusterIsMissingNode
 
         case .healthy(let context):
             let shardID = try context.hashSlotShardMap.nodeID(for: slots)
@@ -553,10 +554,9 @@ where
             if let pool = self.runningClients[nodeID]?.pool {
                 return pool
             }
-            // If we don't have a node for a shard, that means that this shard got created from
-            // a MOVED error. It might be that we are missing info about this node, which is why
-            // we need to wait for the next discovery cycle.
-            throw ValkeyClusterError.clusterIsMissingMovedErrorNode
+            // We don't have a client for a particular node. This is most likely due to a primary
+            // node of a shard being in the fail state
+            throw ValkeyClusterError.clusterIsMissingNode
 
         case .shutdown:
             throw ValkeyClusterError.clusterClientIsShutDown
@@ -568,14 +568,20 @@ where
         case connectionPool(ConnectionPool)
         case runAndUseConnectionPool(ConnectionPool)
         case moveToDegraded(MoveToDegraded)
-        case waitForDiscovery
+        case waitForDiscovery(ConnectionPool?)
 
         @usableFromInline
         package struct MoveToDegraded {
+            package var runConnectionPool: ConnectionPool?
             package var runDiscoveryAndCancelTimer: TimerCancellationToken?
             package var circuitBreakerTimer: ValkeyClusterTimer
 
-            package init(runDiscoveryAndCancelTimer: TimerCancellationToken? = nil, circuitBreakerTimer: ValkeyClusterTimer) {
+            package init(
+                runConnectionPool: ConnectionPool?,
+                runDiscoveryAndCancelTimer: TimerCancellationToken? = nil,
+                circuitBreakerTimer: ValkeyClusterTimer
+            ) {
+                self.runConnectionPool = runConnectionPool
                 self.runDiscoveryAndCancelTimer = runDiscoveryAndCancelTimer
                 self.circuitBreakerTimer = circuitBreakerTimer
             }
@@ -609,7 +615,7 @@ where
         switch self.clusterState {
         case .unavailable(let unavailableContext):
             if unavailableContext.start.advanced(by: self.configuration.circuitBreakerDuration) > self.clock.now {
-                return .waitForDiscovery
+                return .waitForDiscovery(nil)
             }
             throw ValkeyClusterError.noConsensusReachedCircuitBreakerOpen
 
@@ -617,10 +623,12 @@ where
             switch degradedContext.hashSlotShardMap.updateSlots(with: movedError) {
             case .updatedSlotToExistingNode, .updatedSlotToUnknownNode:
                 self.clusterState = .degraded(degradedContext)
-                if let pool = self.runningClients[movedError.nodeID]?.pool {
-                    return .connectionPool(pool)
+                switch self.runningClients.addNode(ValkeyNodeDescription(redirectionError: movedError)) {
+                case .useExistingPool(let connectionPool):
+                    return .connectionPool(connectionPool)
+                case .runAndUsePool(let connectionPool):
+                    return .waitForDiscovery(connectionPool)
                 }
-                return .waitForDiscovery
             }
 
         case .healthy(var healthyContext):
@@ -656,9 +664,16 @@ where
                 self.refreshState = .refreshing(previousRefresh)
                 cancelTimer = context.cancellationToken
             }
-
+            let pool: ConnectionPool? =
+                switch self.runningClients.addNode(ValkeyNodeDescription(redirectionError: movedError)) {
+                case .useExistingPool:
+                    nil
+                case .runAndUsePool(let connectionPool):
+                    connectionPool
+                }
             return .moveToDegraded(
                 .init(
+                    runConnectionPool: pool,
                     runDiscoveryAndCancelTimer: cancelTimer,
                     circuitBreakerTimer: .init(
                         timerID: circuitBreakerTimerID,
@@ -718,7 +733,11 @@ where
             case .refreshing:
                 let newShards = description.shards
                 let poolActions = self.runningClients.updateNodes(
-                    newShards.lazy.flatMap { $0.nodes.lazy.map { ValkeyNodeDescription(description: $0) } },
+                    newShards.lazy.flatMap {
+                        $0.nodes.lazy.compactMap {
+                            if $0.health != .fail { ValkeyNodeDescription(description: $0) } else { nil }
+                        }
+                    },
                     removeUnmentionedPools: false
                 )
                 return .init(

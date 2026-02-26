@@ -40,7 +40,7 @@ struct BenchmarkGetHandler: BenchmarkCommandHandler {
         }
     }
 }
-func makeLocalServer(commandHandler: some BenchmarkCommandHandler = BenchmarkGetHandler()) async throws -> Channel {
+func makeLocalServer(commandHandler: some BenchmarkCommandHandler = BenchmarkGetHandler()) async throws -> any Channel {
     try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
         .serverChannelOption(.socketOption(.so_reuseaddr), value: 1)
         .childChannelInitializer { channel in

@@ -75,8 +75,7 @@ let valkeyClient = ValkeyClient(.hostname("localhost", port: 6379), logger: logg
 let services: [Service] = [valkeyClient, webserver, other-service]
 let serviceGroup = ServiceGroup(
     services: services,
-    gracefulShutdownSignals: [.sigint],
-    cancellationSignals: [.sigterm],
+    gracefulShutdownSignals: [.sigint, .sigterm],
     logger: logger
 )
 try await serviceGroup.run()

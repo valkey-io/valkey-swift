@@ -10,6 +10,7 @@
 public struct ValkeyClusterError: Error, Equatable {
     private enum Internal: Error, Equatable {
         case clusterIsMissingSlotAssignment
+        case clusterIsMissingNode
         case clusterIsMissingMovedErrorNode
         case shardIsMissingPrimaryNode
         case shardHasMultiplePrimaryNodes
@@ -32,6 +33,8 @@ public struct ValkeyClusterError: Error, Equatable {
 
     /// Slot is not assigned to any shard
     static public var clusterIsMissingSlotAssignment: Self { .init(.clusterIsMissingSlotAssignment) }
+    /// We don't have a node for a shard. This most likely due to the primary node of a shard being in the fail state
+    static public var clusterIsMissingNode: Self { .init(.clusterIsMissingNode) }
     /// We don't have a node for a shard associated with move error.
     static public var clusterIsMissingMovedErrorNode: Self { .init(.clusterIsMissingMovedErrorNode) }
     /// Shard in cluster description is missing a primary node
