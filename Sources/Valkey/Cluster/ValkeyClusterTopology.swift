@@ -9,24 +9,24 @@
 /// Cluster topology description with nodes assigned to roles
 package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
     /// Details for a node within a cluster shard.
-    public struct Node: Hashable, Sendable, ValkeyNodeDescriptionProtocol {
+    package struct Node: Hashable, Sendable, ValkeyNodeDescriptionProtocol {
         /// The ID of the node
-        public var id: String
+        package var id: String
         /// The port
-        public var port: Int
+        package var port: Int
         /// The endpoint
-        public var endpoint: String
+        package var endpoint: String
         /// The health of the node
-        public var health: ValkeyClusterDescription.Node.Health
+        package var health: ValkeyClusterDescription.Node.Health
 
-        public init(_ description: ValkeyClusterDescription.Node) {
+        package init(_ description: ValkeyClusterDescription.Node) {
             self.id = description.id
             self.endpoint = description.endpoint
             self.port = description.tlsPort ?? description.port ?? 6379
             self.health = description.health
         }
 
-        public var nodeID: ValkeyNodeID { .init(endpoint: self.endpoint, port: self.port) }
+        package var nodeID: ValkeyNodeID { .init(endpoint: self.endpoint, port: self.port) }
     }
 
     /// Shard description where nodes are allocated to their roles
@@ -54,7 +54,7 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
                         }
                     case (.some, true), (.none, _):
                         primary = Node(node)
-                        isFailedPrimary = (node.health == .fail)
+                        isFailedPrimary = (node.health != .online)
                     }
                 case .replica:
                     if node.health == .online {
