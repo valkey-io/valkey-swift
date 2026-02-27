@@ -1340,11 +1340,205 @@ extension ValkeyClientProtocol {
 */
 
 extension FT.DROPINDEX {
-    public var key: ValkeyKey { self.indexName }
+    @available(*, deprecated, renamed: "FT.DROPINDEX.indexName")
+    public var key: ValkeyKey {
+        get { self.indexName }
+        set { self.indexName = newValue }
+    }
 
+    @available(*, deprecated, renamed: "FT.DROPINDEX.init(indexNamed:)")
     @inlinable public init(_ key: ValkeyKey) {
         self.indexName = key
     }
+}
+
+extension FT.INFO {
+    @available(*, deprecated, renamed: "FT.INFO.indexName")
+    public var key: ValkeyKey {
+        get { self.indexName }
+        set { self.indexName = newValue }
+    }
+
+    @available(*, deprecated, renamed: "FT.INFO.init(indexNamed:scope:)")
+    @inlinable public init(_ key: ValkeyKey, scope: FT.INFO.Scope? = nil) {
+        self.indexName = key
+        self.scope = scope
+    }
+}
+
+extension FT.AGGREGATE {
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public enum ReduceFunction: RESPRenderable, Sendable, Hashable {
+        case count
+        case countDistinct
+        case countDistinctish
+        case sum
+        case min
+        case max
+        case avg
+        case stddev
+        case quantile
+        case tolist
+        case firstValue
+        case randomSample
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .count: "COUNT".encode(into: &commandEncoder)
+            case .countDistinct: "COUNT_DISTINCT".encode(into: &commandEncoder)
+            case .countDistinctish: "COUNT_DISTINCT_ISH".encode(into: &commandEncoder)
+            case .sum: "SUM".encode(into: &commandEncoder)
+            case .min: "MIN".encode(into: &commandEncoder)
+            case .max: "MAX".encode(into: &commandEncoder)
+            case .avg: "AVG".encode(into: &commandEncoder)
+            case .stddev: "STDDEV".encode(into: &commandEncoder)
+            case .quantile: "QUANTILE".encode(into: &commandEncoder)
+            case .tolist: "TOLIST".encode(into: &commandEncoder)
+            case .firstValue: "FIRST_VALUE".encode(into: &commandEncoder)
+            case .randomSample: "RANDOM_SAMPLE".encode(into: &commandEncoder)
+            }
+        }
+    }
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct ReduceAlias: RESPRenderable, Sendable, Hashable {
+        public var identifier: String
+
+        @inlinable
+        public init(identifier: String) {
+            self.identifier = identifier
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "AS".respEntries + identifier.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "AS".encode(into: &commandEncoder)
+            identifier.encode(into: &commandEncoder)
+        }
+    }
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct Reduce: RESPRenderable, Sendable, Hashable {
+        public var function: ReduceFunction
+        public var nargs: Int
+        public var identifiers: [String]
+        public var alias: ReduceAlias?
+
+        @inlinable
+        public init(function: ReduceFunction, nargs: Int, identifiers: [String], alias: ReduceAlias? = nil) {
+            self.function = function
+            self.nargs = nargs
+            self.identifiers = identifiers
+            self.alias = alias
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "REDUCE".respEntries + function.respEntries + nargs.respEntries + identifiers.respEntries + alias.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "REDUCE".encode(into: &commandEncoder)
+            function.encode(into: &commandEncoder)
+            nargs.encode(into: &commandEncoder)
+            identifiers.encode(into: &commandEncoder)
+            alias.encode(into: &commandEncoder)
+        }
+    }
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct Scorer: RESPRenderable, Sendable, Hashable {
+        public var scorer: String
+
+        @inlinable
+        public init(scorer: String) {
+            self.scorer = scorer
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "SCORER".respEntries + scorer.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "SCORER".encode(into: &commandEncoder)
+            scorer.encode(into: &commandEncoder)
+        }
+    }
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct WithcursorCount: RESPRenderable, Sendable, Hashable {
+        public var readSize: Int
+
+        @inlinable
+        public init(readSize: Int) {
+            self.readSize = readSize
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "COUNT".respEntries + readSize.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "COUNT".encode(into: &commandEncoder)
+            readSize.encode(into: &commandEncoder)
+        }
+    }
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct WithcursorMaxidle: RESPRenderable, Sendable, Hashable {
+        public var idleTime: Int
+
+        @inlinable
+        public init(idleTime: Int) {
+            self.idleTime = idleTime
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "MAXIDLE".respEntries + idleTime.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "MAXIDLE".encode(into: &commandEncoder)
+            idleTime.encode(into: &commandEncoder)
+        }
+    }
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct Withcursor: RESPRenderable, Sendable, Hashable {
+        public var count: WithcursorCount
+        public var maxidle: WithcursorMaxidle?
+
+        @inlinable
+        public init(count: WithcursorCount, maxidle: WithcursorMaxidle? = nil) {
+            self.count = count
+            self.maxidle = maxidle
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "WITHCURSOR".respEntries + count.respEntries + maxidle.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "WITHCURSOR".encode(into: &commandEncoder)
+            count.encode(into: &commandEncoder)
+            maxidle.encode(into: &commandEncoder)
+        }
+    }
+}
+
+extension FT.SEARCH {
+
 }
 
 @available(valkeySwift 1.0, *)
@@ -1355,6 +1549,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(log N)
     @inlinable
     @discardableResult
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
     public func ftAggregate<Query: RESPStringRenderable>(
         index: ValkeyKey,
         query: Query,
@@ -1364,7 +1559,7 @@ extension ValkeyClientProtocol {
         reduces: [FT.AGGREGATE<Query>.Reduce] = [],
         sortby: FT.AGGREGATE<Query>.Sortby? = nil,
         applys: [FT.AGGREGATE<Query>.Apply] = [],
-        limit: FT.AGGREGATE<Query>.Limit? = nil,
+        limit: FT.AGGREGATE<Query>.Limit?,
         filters: [FT.AGGREGATE<Query>.Filter] = [],
         withcursor: FT.AGGREGATE<Query>.Withcursor? = nil,
         timeout: FT.AGGREGATE<Query>.Timeout? = nil,
@@ -1377,37 +1572,22 @@ extension ValkeyClientProtocol {
             FT.AGGREGATE(
                 index: index,
                 query: query,
-                verbatim: verbatim,
+                dialect: dialect,
                 load: load,
-                groupbys: groupbys,
-                reduces: reduces,
-                sortby: sortby,
-                applys: applys,
-                limit: limit,
-                filters: filters,
-                withcursor: withcursor,
-                timeout: timeout,
                 params: params,
+                timeout: timeout,
+                verbatim: verbatim,
+                applys: applys,
+                filters: filters,
+                groupbys: groupbys,
+                limits: limit.map { [$0] } ?? [],
+                sortby: sortby
+                    /*,
+                withcursor: withcursor,
                 scorer: scorer,
-                addscores: addscores,
-                dialect: dialect
+                addscores: addscores*/
             )
         )
-    }
-
-    /// Creates an empty search index and initiates the backfill process
-    ///
-    /// - Documentation: [FT.CREATE](https://valkey.io/commands/ft.create)
-    /// - Complexity: Construction time O(N log N), where N is the number of indexed items
-    @inlinable
-    @discardableResult
-    public func ftCreate<IndexName: RESPStringRenderable, FieldIdentifier: RESPStringRenderable>(
-        indexName: IndexName,
-        on: FT.CREATE<IndexName, FieldIdentifier>.On? = nil,
-        prefix: FT.CREATE<IndexName, FieldIdentifier>.Prefix? = nil,
-        schema: FT.CREATE<IndexName, FieldIdentifier>.Schema
-    ) async throws(ValkeyClientError) -> RESPToken {
-        try await execute(FT.CREATE(indexName: indexName, on: on, prefix: prefix, schema: schema))
     }
 
     /// Drop the index created by FT.CREATE command. It is an error if the index doesn't exist
@@ -1416,6 +1596,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N)
     @inlinable
     @discardableResult
+    @available(*, deprecated, renamed: "ValkeyClientProtocol.ftDropIndex(indexName:)")
     public func ftDropindex(_ key: ValkeyKey) async throws(ValkeyClientError) -> FT.DROPINDEX.Response {
         try await execute(FT.DROPINDEX(key))
     }
@@ -1426,6 +1607,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
+    @available(*, deprecated, renamed: "ValkeyClientProtocol.ftInfo(indexName:scope:)")
     public func ftInfo(_ key: ValkeyKey, scope: FT.INFO.Scope? = nil) async throws(ValkeyClientError) -> FT.INFO.Response {
         try await execute(FT.INFO(key, scope: scope))
     }
@@ -1436,6 +1618,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(log N)
     @inlinable
     @discardableResult
+    @available(*, deprecated, renamed: "ValkeyClientProtocol.ftInfo(indexName:scope:)")
     public func ftSearch<Query: RESPStringRenderable>(
         index: ValkeyKey,
         query: Query,
@@ -1451,13 +1634,13 @@ extension ValkeyClientProtocol {
             FT.SEARCH(
                 index: index,
                 query: query,
-                nocontent: nocontent,
-                timeout: timeout,
-                params: params,
-                returnFields: returnFields,
-                limit: limit,
                 dialect: dialect,
-                localonly: localonly
+                limit: limit,
+                nocontent: nocontent,
+                params: params,
+                return: returnFields.map { .init(count: 1, fields: [$0]) },
+                timeout: timeout,
+                //localonly: localonly
             )
         )
     }
