@@ -242,32 +242,13 @@ public enum FT {
                 count.encode(into: &commandEncoder)
             }
         }
-        public struct SortbyMax: RESPRenderable, Sendable, Hashable {
-            public var num: Int
-
-            @inlinable
-            public init(num: Int) {
-                self.num = num
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "MAX".respEntries + num.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "MAX".encode(into: &commandEncoder)
-                num.encode(into: &commandEncoder)
-            }
-        }
         public struct Sortby: RESPRenderable, Sendable, Hashable {
             public var count: Int
             public var sortParams: [String]
-            public var max: SortbyMax?
+            public var max: Int?
 
             @inlinable
-            public init(count: Int, sortParams: [String], max: SortbyMax? = nil) {
+            public init(count: Int, sortParams: [String], max: Int? = nil) {
                 self.count = count
                 self.sortParams = sortParams
                 self.max = max
@@ -275,14 +256,14 @@ public enum FT {
 
             @inlinable
             public var respEntries: Int {
-                count.respEntries + sortParams.respEntries + max.respEntries
+                count.respEntries + sortParams.respEntries + RESPWithToken("MAX", max).respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 count.encode(into: &commandEncoder)
                 sortParams.encode(into: &commandEncoder)
-                max.encode(into: &commandEncoder)
+                RESPWithToken("MAX", max).encode(into: &commandEncoder)
             }
         }
         @inlinable public static var name: String { "FT.AGGREGATE" }

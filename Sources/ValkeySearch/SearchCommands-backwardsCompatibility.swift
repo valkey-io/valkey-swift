@@ -1638,6 +1638,25 @@ extension FT.AGGREGATE {
             maxidle.encode(into: &commandEncoder)
         }
     }
+    public struct SortbyMax: RESPRenderable, Sendable, Hashable {
+        public var num: Int
+
+        @inlinable
+        public init(num: Int) {
+            self.num = num
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "MAX".respEntries + num.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "MAX".encode(into: &commandEncoder)
+            num.encode(into: &commandEncoder)
+        }
+    }
 
     @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
     @inlinable public init(
@@ -1698,7 +1717,7 @@ extension FT.AGGREGATE.Sortby {
     public init(nargs: Int, sortParams: [String], max: FT.AGGREGATE<Query>.SortbyMax? = nil, withcount: Bool = false) {
         self.count = nargs
         self.sortParams = sortParams
-        self.max = max
+        self.max = max?.num
     }
 }
 

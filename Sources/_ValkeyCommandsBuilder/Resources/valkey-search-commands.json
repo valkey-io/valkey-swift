@@ -290,19 +290,9 @@
           },
           {
             "name": "max",
-            "type": "block",
-            "optional": true,
-            "arguments": [
-              {
-                "name": "max_token",
-                "type": "pure-token",
-                "token": "MAX"
-              },
-              {
-                "name": "num",
-                "type": "integer"
-              }
-            ]
+            "token": "MAX",
+            "type": "integer",
+            "optional": true
           }
         ]
       }
