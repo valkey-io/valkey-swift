@@ -2447,7 +2447,11 @@ struct CommandTests {
                     on: .init(type: .json),
                     prefix: .init(count: 1, prefixes: ["item:"]),
                     schema: .init(fields: [
-                        .init(fieldIdentifier: "$.name", alias: .init(fieldIdentifier: "name"), fieldType: .text)
+                        .init(
+                            fieldIdentifier: "$.name",
+                            alias: .init(fieldIdentifier: "name"),
+                            fieldType: .text
+                        )
                     ])
                 )
             }
@@ -2823,10 +2827,10 @@ struct CommandTests {
                                     attrCount: 10,
                                     vectorParams: .init(
                                         type: .init(),
-                                        dim: .init(value: 20),
-                                        distanceMetric: .init(metric: .cosine),
-                                        m: .init(value: 4),
-                                        efConstruction: .init(value: 100)
+                                        dim: 20,
+                                        distanceMetric: .cosine,
+                                        m: 4,
+                                        efConstruction: 100
                                     )
                                 )
                             )

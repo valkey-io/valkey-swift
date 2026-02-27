@@ -45,19 +45,9 @@
       },
       {
         "name": "DIALECT",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "dialect_token",
-            "type": "pure-token",
-            "token": "DIALECT"
-          },
-          {
-            "name": "dialect_version",
-            "type": "integer"
-          }
-        ]
+        "token": "DIALECT",
+        "type": "integer",
+        "optional": true
       },
       {
         "name": "INORDER",
@@ -67,37 +57,27 @@
       },
       {
         "name": "LOAD",
-        "type": "block",
+        "token": "LOAD",
         "optional": true,
+        "type": "oneof",
         "arguments": [
           {
-            "name": "load_token",
+            "name": "all",
             "type": "pure-token",
-            "token": "LOAD"
+            "token": "*"
           },
           {
-            "name": "load_args",
-            "type": "oneof",
+            "name": "fields",
+            "type": "block",
             "arguments": [
               {
-                "name": "all",
-                "type": "pure-token",
-                "token": "*"
+                "name": "count",
+                "type": "integer"
               },
               {
-                "name": "fields",
-                "type": "block",
-                "arguments": [
-                  {
-                    "name": "count",
-                    "type": "integer"
-                  },
-                  {
-                    "name": "field",
-                    "type": "string",
-                    "multiple": true
-                  }
-                ]
+                "name": "field",
+                "type": "string",
+                "multiple": true
               }
             ]
           }
@@ -105,14 +85,10 @@
       },
       {
         "name": "PARAMS",
+        "token": "PARAMS",
         "type": "block",
         "optional": true,
         "arguments": [
-          {
-            "name": "params_token",
-            "type": "pure-token",
-            "token": "PARAMS"
-          },
           {
             "name": "count",
             "type": "integer"
@@ -136,35 +112,15 @@
       },
       {
         "name": "SLOP",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "slop_token",
-            "type": "pure-token",
-            "token": "SLOP"
-          },
-          {
-            "name": "slop",
-            "type": "integer"
-          }
-        ]
+        "token": "SLOP",
+        "type": "integer",
+        "optional": true
       },
       {
-        "name": "TIMEOUT",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "timeout_token",
-            "type": "pure-token",
-            "token": "TIMEOUT"
-          },
-          {
-            "name": "milliseconds",
-            "type": "integer"
-          }
-        ]
+        "name": "timeout_ms",
+        "token": "TIMEOUT",
+        "type": "integer",
+        "optional": true
       },
       {
         "name": "VERBATIM",
@@ -174,15 +130,12 @@
       },
       {
         "name": "APPLY",
+        "token": "APPLY",
         "type": "block",
         "optional": true,
         "multiple": true,
+        "multiple_token": true,
         "arguments": [
-          {
-            "name": "apply_token",
-            "type": "pure-token",
-            "token": "APPLY"
-          },
           {
             "name": "expression",
             "type": "string"
@@ -200,32 +153,20 @@
       },
       {
         "name": "FILTER",
-        "type": "block",
+        "token": "FILTER",
+        "type": "string",
         "optional": true,
         "multiple": true,
-        "arguments": [
-          {
-            "name": "filter_token",
-            "type": "pure-token",
-            "token": "FILTER"
-          },
-          {
-            "name": "expression",
-            "type": "string"
-          }
-        ]
+        "multiple_token": true
       },
       {
         "name": "GROUPBY",
+        "token": "GROUPBY",
         "type": "block",
         "optional": true,
         "multiple": true,
+        "multiple_token": true,
         "arguments": [
-          {
-            "name": "groupby_token",
-            "type": "pure-token",
-            "token": "GROUPBY"
-          },
           {
             "name": "count",
             "type": "integer"
@@ -237,15 +178,12 @@
           },
           {
             "name": "REDUCE",
+            "token": "REDUCE",
             "type": "block",
             "optional": true,
             "multiple": true,
+            "multiple_token": true,
             "arguments": [
-              {
-                "name": "reduce_token",
-                "type": "pure-token",
-                "token": "REDUCE"
-              },
               {
                 "name": "function",
                 "type": "oneof",
@@ -319,15 +257,12 @@
       },
       {
         "name": "LIMIT",
+        "token": "LIMIT",
         "type": "block",
         "optional": true,
         "multiple": true,
+        "multiple_token": true,
         "arguments": [
-          {
-            "name": "limit_token",
-            "type": "pure-token",
-            "token": "LIMIT"
-          },
           {
             "name": "offset",
             "type": "integer"
@@ -340,14 +275,10 @@
       },
       {
         "name": "SORTBY",
+        "token": "SORTBY",
         "type": "block",
         "optional": true,
         "arguments": [
-          {
-            "name": "sortby_token",
-            "type": "pure-token",
-            "token": "SORTBY"
-          },
           {
             "name": "count",
             "type": "integer"
@@ -396,43 +327,29 @@
       },
       {
         "name": "on",
-        "type": "block",
+        "token": "ON",
         "optional": true,
         "description": "Index source type",
+        "type": "oneof",
         "arguments": [
           {
-            "name": "on_token",
+            "name": "hash",
             "type": "pure-token",
-            "token": "ON"
+            "token": "HASH"
           },
           {
-            "name": "type",
-            "type": "oneof",
-            "arguments": [
-              {
-                "name": "hash",
-                "type": "pure-token",
-                "token": "HASH"
-              },
-              {
-                "name": "json",
-                "type": "pure-token",
-                "token": "JSON"
-              }
-            ]
+            "name": "json",
+            "type": "pure-token",
+            "token": "JSON"
           }
         ]
       },
       {
         "name": "prefix",
+        "token": "PREFIX",
         "type": "block",
         "optional": true,
         "arguments": [
-          {
-            "name": "prefix_token",
-            "type": "pure-token",
-            "token": "PREFIX"
-          },
           {
             "name": "count",
             "type": "integer"
@@ -446,35 +363,15 @@
       },
       {
         "name": "SCORE",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "score_token",
-            "type": "pure-token",
-            "token": "SCORE"
-          },
-          {
-            "name": "default_value",
-            "type": "string"
-          }
-        ]
+        "token": "SCORE",
+        "type": "string",
+        "optional": true
       },
       {
         "name": "LANGUAGE",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "language_token",
-            "type": "pure-token",
-            "token": "LANGUAGE"
-          },
-          {
-            "name": "language",
-            "type": "string"
-          }
-        ]
+        "token": "LANGUAGE",
+        "type": "string",
+        "optional": true
       },
       {
         "name": "SKIPINITIALSCAN",
@@ -483,20 +380,10 @@
         "token": "SKIPINITIALSCAN"
       },
       {
-        "name": "MINSTEMSIZE",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "minstemsize_token",
-            "type": "pure-token",
-            "token": "MINSTEMSIZE"
-          },
-          {
-            "name": "min_stem_size",
-            "type": "integer"
-          }
-        ]
+        "name": "min_stem_size",
+        "token": "MINSTEMSIZE",
+        "type": "integer",
+        "optional": true
       },
       {
         "name": "offsets",
@@ -549,30 +436,16 @@
       },
       {
         "name": "PUNCTUATION",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "punctuation_token",
-            "type": "pure-token",
-            "token": "PUNCTUATION"
-          },
-          {
-            "name": "punctuation",
-            "type": "string"
-          }
-        ]
+        "token": "PUNCTUATION",
+        "type": "string",
+        "optional": true
       },
       {
         "name": "schema",
+        "token": "SCHEMA",
         "type": "block",
         "description": "Schema definition: one or more field definitions",
         "arguments": [
-          {
-            "name": "schema_token",
-            "type": "pure-token",
-            "token": "SCHEMA"
-          },
           {
             "name": "fields",
             "type": "block",
@@ -584,19 +457,9 @@
               },
               {
                 "name": "alias",
+                "token": "AS",
                 "optional": true,
-                "type": "block",
-                "arguments": [
-                  {
-                    "name": "as_token",
-                    "type": "pure-token",
-                    "token": "AS"
-                  },
-                  {
-                    "name": "field-alias",
-                    "type": "string"
-                  }
-                ]
+                "type": "string"
               },
               {
                 "name": "field-type",
@@ -618,19 +481,9 @@
                       },
                       {
                         "name": "separator",
+                        "token": "SEPARATOR",
                         "optional": true,
-                        "type": "block",
-                        "arguments": [
-                          {
-                            "name": "separator_token",
-                            "type": "pure-token",
-                            "token": "SEPARATOR"
-                          },
-                          {
-                            "name": "sep",
-                            "type": "string"
-                          }
-                        ]
+                        "type": "string"
                       },
                       {
                         "name": "CASESENSITIVE",
@@ -674,19 +527,9 @@
                       },
                       {
                         "name": "weight",
+                        "token": "WEIGHT",
                         "optional": true,
-                        "type": "block",
-                        "arguments": [
-                          {
-                            "name": "weight_token",
-                            "type": "pure-token",
-                            "token": "WEIGHT"
-                          },
-                          {
-                            "name": "weight",
-                            "type": "string"
-                          }
-                        ]
+                        "type": "string"
                       }
                     ]
                   },
@@ -726,15 +569,11 @@
                         "arguments": [
                           {
                             "name": "type",
-                            "type": "block",
+                            "token": "TYPE",
+                            "type": "oneof",
                             "arguments": [
                               {
-                                "name": "type_token",
-                                "type": "pure-token",
-                                "token": "TYPE"
-                              },
-                              {
-                                "name": "format",
+                                "name": "float32",
                                 "type": "pure-token",
                                 "token": "FLOAT32"
                               }
@@ -742,114 +581,54 @@
                           },
                           {
                             "name": "dim",
-                            "type": "block",
-                            "arguments": [
-                              {
-                                "name": "dim_token",
-                                "type": "pure-token",
-                                "token": "DIM"
-                              },
-                              {
-                                "name": "value",
-                                "type": "integer"
-                              }
-                            ]
+                            "token": "DIM",
+                            "type": "integer"
                           },
                           {
                             "name": "distance_metric",
-                            "type": "block",
+                            "token": "DISTANCE_METRIC",
+                            "type": "oneof",
                             "arguments": [
                               {
-                                "name": "dm_token",
+                                "name": "L2",
                                 "type": "pure-token",
-                                "token": "DISTANCE_METRIC"
+                                "token": "L2"
                               },
                               {
-                                "name": "metric",
-                                "type": "oneof",
-                                "arguments": [
-                                  {
-                                    "name": "L2",
-                                    "type": "pure-token",
-                                    "token": "L2"
-                                  },
-                                  {
-                                    "name": "IP",
-                                    "type": "pure-token",
-                                    "token": "IP"
-                                  },
-                                  {
-                                    "name": "COSINE",
-                                    "type": "pure-token",
-                                    "token": "COSINE"
-                                  }
-                                ]
+                                "name": "IP",
+                                "type": "pure-token",
+                                "token": "IP"
+                              },
+                              {
+                                "name": "COSINE",
+                                "type": "pure-token",
+                                "token": "COSINE"
                               }
                             ]
                           },
                           {
                             "name": "initial_cap",
-                            "type": "block",
-                            "optional": true,
-                            "arguments": [
-                              {
-                                "name": "ic_token",
-                                "type": "pure-token",
-                                "token": "INITIAL_CAP"
-                              },
-                              {
-                                "name": "value",
-                                "type": "integer"
-                              }
-                            ]
+                            "token": "INITIAL_CAP",
+                            "type": "integer",
+                            "optional": true
                           },
                           {
                             "name": "m",
-                            "type": "block",
-                            "optional": true,
-                            "arguments": [
-                              {
-                                "name": "m_token",
-                                "type": "pure-token",
-                                "token": "M"
-                              },
-                              {
-                                "name": "value",
-                                "type": "integer"
-                              }
-                            ]
+                            "token": "M",
+                            "type": "integer",
+                            "optional": true
                           },
                           {
                             "name": "ef_construction",
-                            "type": "block",
-                            "optional": true,
-                            "arguments": [
-                              {
-                                "name": "efc_token",
-                                "type": "pure-token",
-                                "token": "EF_CONSTRUCTION"
-                              },
-                              {
-                                "name": "value",
-                                "type": "integer"
-                              }
-                            ]
+                            "token": "EF_CONSTRUCTION",
+                            "type": "integer",
+                            "optional": true
                           },
                           {
                             "name": "ef_runtime",
-                            "type": "block",
-                            "optional": true,
-                            "arguments": [
-                              {
-                                "name": "efr_token",
-                                "type": "pure-token",
-                                "token": "EF_RUNTIME"
-                              },
-                              {
-                                "name": "value",
-                                "type": "integer"
-                              }
-                            ]
+                            "token": "EF_RUNTIME",
+                            "type": "integer",
+                            "optional": true
                           }
                         ]
                       }
@@ -1020,19 +799,9 @@
       },
       {
         "name": "DIALECT",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "dialect_token",
-            "type": "pure-token",
-            "token": "DIALECT"
-          },
-          {
-            "name": "dialect",
-            "type": "integer"
-          }
-        ]
+        "token": "DIALECT",
+        "type": "integer",
+        "optional": true
       },
       {
         "name": "INORDER",
@@ -1042,14 +811,10 @@
       },
       {
         "name": "LIMIT",
+        "token": "LIMIT",
         "type": "block",
         "optional": true,
         "arguments": [
-          {
-            "name": "limit_token",
-            "type": "pure-token",
-            "token": "LIMIT"
-          },
           {
             "name": "offset",
             "type": "integer"
@@ -1068,14 +833,10 @@
       },
       {
         "name": "PARAMS",
+        "token": "PARAMS",
         "type": "block",
         "optional": true,
         "arguments": [
-          {
-            "name": "params_token",
-            "type": "pure-token",
-            "token": "PARAMS"
-          },
           {
             "name": "count",
             "type": "integer"
@@ -1099,14 +860,10 @@
       },
       {
         "name": "RETURN",
+        "token": "RETURN",
         "type": "block",
         "optional": true,
         "arguments": [
-          {
-            "name": "return_token",
-            "type": "pure-token",
-            "token": "RETURN"
-          },
           {
             "name": "count",
             "type": "integer"
@@ -1142,30 +899,16 @@
       },
       {
         "name": "SLOP",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "slop_token",
-            "type": "pure-token",
-            "token": "SLOP"
-          },
-          {
-            "name": "slop",
-            "type": "integer"
-          }
-        ]
+        "token": "SLOP",
+        "type": "integer",
+        "optional": true
       },
       {
         "name": "SORTBY",
+        "token": "SORTBY",
         "type": "block",
         "optional": true,
         "arguments": [
-          {
-            "name": "sortby_token",
-            "type": "pure-token",
-            "token": "SORTBY"
-          },
           {
             "name": "field",
             "type": "string"
@@ -1190,20 +933,10 @@
         ]
       },
       {
-        "name": "TIMEOUT",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "timeout_token",
-            "type": "pure-token",
-            "token": "TIMEOUT"
-          },
-          {
-            "name": "timeout_ms",
-            "type": "integer"
-          }
-        ]
+        "name": "timeout_ms",
+        "token": "TIMEOUT",
+        "type": "integer",
+        "optional": true
       },
       {
         "name": "VERBATIM",
