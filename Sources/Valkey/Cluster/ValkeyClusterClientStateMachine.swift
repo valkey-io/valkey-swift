@@ -386,7 +386,7 @@ where
         }
     }
 
-    package struct TimerFiredAction {
+    package enum TimerFiredAction {
         package struct RunDiscovery {
             package var runNodeDiscoveryFirst: Bool
 
@@ -401,13 +401,9 @@ where
             package var error: any Error
         }
 
-        package var runDiscovery: RunDiscovery?
-        package var failWaiters: FailWaiters?
-
-        package init(runDiscovery: RunDiscovery? = nil, failWaiters: FailWaiters? = nil) {
-            self.runDiscovery = runDiscovery
-            self.failWaiters = failWaiters
-        }
+        case failWaiters(FailWaiters)
+        case runDiscovery(RunDiscovery)
+        case doNothing
     }
 
     package mutating func timerFired(_ timer: ValkeyClusterTimer) -> TimerFiredAction {
@@ -416,7 +412,7 @@ where
             let runNodeDiscoveryFirst: Bool
             switch self.clusterState {
             case .shutdown:
-                return .init()
+                return .doNothing
 
             case .healthy:
                 runNodeDiscoveryFirst = false
@@ -428,15 +424,15 @@ where
             switch self.refreshState {
             case .refreshing, .notRefreshing:
                 // race condition. we are already refreshing
-                return .init()
+                return .doNothing
 
             case .waitingForRefresh(let storedTimer, let previousRefresh):
                 guard storedTimer.id == timer.timerID else {
                     // race condition. the timer that fired isn't interesting anymore
-                    return .init()
+                    return .doNothing
                 }
                 self.refreshState = .refreshing(previousRefresh)
-                return .init(runDiscovery: .init(runNodeDiscoveryFirst: runNodeDiscoveryFirst))
+                return .runDiscovery(.init(runNodeDiscoveryFirst: runNodeDiscoveryFirst))
             }
 
         case .circuitBreaker:
@@ -445,15 +441,15 @@ where
                 // this will only happen at startup, if we can't find a cluster within the circuit
                 // breaker interval
                 guard unavailableContext.circuitBreakerTimer?.id == timer.timerID else {
-                    return .init()
+                    return .doNothing
                 }
 
                 unavailableContext.circuitBreakerTimer = nil
                 let successNotifiers = Array(unavailableContext.pendingSuccessNotifiers.values)
                 unavailableContext.pendingSuccessNotifiers.removeAll()
                 self.clusterState = .unavailable(unavailableContext)
-                return .init(
-                    failWaiters: .init(
+                return .failWaiters(
+                    .init(
                         waitersToFail: successNotifiers,
                         error: unavailableContext.lastError
                     )
@@ -462,7 +458,7 @@ where
             case .degraded(let degradedContext):
                 guard degradedContext.circuitBreakerTimer?.id == timer.timerID else {
                     // we were degraded, got healthy and are now degraded again. timerID doesn't match
-                    return .init()
+                    return .doNothing
                 }
 
                 self.clusterState = .unavailable(
@@ -473,8 +469,8 @@ where
                         lastError: degradedContext.lastError
                     )
                 )
-                return .init(
-                    failWaiters: .init(
+                return .failWaiters(
+                    .init(
                         waitersToFail: Array(degradedContext.pendingSuccessNotifiers.values),
                         error: degradedContext.lastError
                     )
@@ -482,10 +478,10 @@ where
 
             case .healthy:
                 // race. we likely where degraded before but we just recovered. therefore ignore
-                return .init()
+                return .doNothing
 
             case .shutdown:
-                return .init()
+                return .doNothing
             }
         }
     }
