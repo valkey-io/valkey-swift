@@ -159,4 +159,5 @@ private let swiftReservedWords: Set<String> = [
     "where",
     "operator",
     "Type",
+    "return",
 ]
