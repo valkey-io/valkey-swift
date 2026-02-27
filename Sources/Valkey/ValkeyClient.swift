@@ -268,8 +268,8 @@ extension ValkeyClient {
         return await node.execute(repeat each commands)
         #else
         var attempt = 0
+        var node = self.getNode(readOnly: readOnly)
         executeCommands: while true {
-            let node = self.getNode(readOnly: readOnly)
             let results = await node.execute(repeat each commands)
             if Task.isCancelled {
                 return results
@@ -284,6 +284,7 @@ extension ValkeyClient {
                         try? await Task.sleep(for: wait)
                         attempt += 1
                         self.setPrimary(redirectError.address)
+                        node = self.getNode(readOnly: false)
                         continue executeCommands
                     case .tryAgain:
                         guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
@@ -291,12 +292,12 @@ extension ValkeyClient {
                         }
                         try? await Task.sleep(for: wait)
                         attempt += 1
+                        node = self.getNode(readOnly: readOnly)
                         continue executeCommands
 
                     case .dontRetry:
                         break
                     }
-
                 }
             }
             return results
@@ -327,7 +328,7 @@ extension ValkeyClient {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
         // get node client and execute commands
-        let node = self.getNode(readOnly: readOnly)
+        var node = self.getNode(readOnly: readOnly)
         var results = await node.execute(commands)
 
         var attempt = 0
@@ -347,6 +348,7 @@ extension ValkeyClient {
                         try? await Task.sleep(for: wait)
                         attempt += 1
                         self.setPrimary(redirectError.address)
+                        node = self.getNode(readOnly: false)
                         break resultLoop
                     case .tryAgain:
                         guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
@@ -354,6 +356,7 @@ extension ValkeyClient {
                         }
                         try? await Task.sleep(for: wait)
                         attempt += 1
+                        node = self.getNode(readOnly: readOnly)
                         break resultLoop
 
                     case .dontRetry:
@@ -368,7 +371,6 @@ extension ValkeyClient {
                 break
             }
             // Retry commands that failed and all subsequent commands
-            let node = self.getNode(readOnly: readOnly)
             let newResults = await node.execute(commands[startIndex...])
             // Replace old results with new results
             results.removeLast(newResults.count)
