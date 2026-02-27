@@ -651,22 +651,22 @@ public enum FT {
             }
         }
         public struct SchemaFieldsAlias: RESPRenderable, Sendable, Hashable {
-            public var fieldAlias: FieldIdentifier
+            public var fieldAlias: String
 
             @inlinable
-            public init(fieldAlias: FieldIdentifier) {
+            public init(fieldAlias: String) {
                 self.fieldAlias = fieldAlias
             }
 
             @inlinable
             public var respEntries: Int {
-                "AS".respEntries + RESPRenderableBulkString(fieldAlias).respEntries
+                "AS".respEntries + fieldAlias.respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 "AS".encode(into: &commandEncoder)
-                RESPRenderableBulkString(fieldAlias).encode(into: &commandEncoder)
+                fieldAlias.encode(into: &commandEncoder)
             }
         }
         public struct SchemaFieldsFieldTypeTagSeparator: RESPRenderable, Sendable, Hashable {
