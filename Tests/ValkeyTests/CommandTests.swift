@@ -2196,7 +2196,7 @@ struct CommandTests {
                 (
                     request: .command([
                         "FT.AGGREGATE", "idx:testIndex", "hello",
-                        "SORTBY", "2", "@foo", "DESC",
+                        "SORTBY", "1", "@foo", "DESC",
                         "MAX", "100",
                     ]),
                     response: .array([.number(0)])

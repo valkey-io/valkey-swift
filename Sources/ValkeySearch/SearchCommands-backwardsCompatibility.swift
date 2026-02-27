@@ -1715,9 +1715,25 @@ extension FT.AGGREGATE.Sortby {
     @inlinable
     @available(*, deprecated, renamed: "FT.AGGREGATE.Sortby.init(count:sortParams:max:)")
     public init(nargs: Int, sortParams: [String], max: FT.AGGREGATE<Query>.SortbyMax? = nil, withcount: Bool = false) {
-        self.count = nargs
-        self.sortParams = sortParams
+        self.count = nargs / 2
+        self.expressions = sortParams.chunks(ofCount: 2).compactMap { values in
+            print(values)
+            guard values.count == 2 else { return nil }
+            guard let direction = FT.AGGREGATE<Query>.SortbyExpressionDirection(rawValue: values[values.startIndex + 1]) else { return nil }
+            return .init(expression: values[values.startIndex], direction: direction)
+        }
         self.max = max?.num
+    }
+}
+
+extension FT.AGGREGATE.SortbyExpressionDirection {
+    @usableFromInline
+    init?(rawValue: String) {
+        switch rawValue {
+        case "ASC": self = .asc
+        case "DESC": self = .desc
+        default: return nil
+        }
     }
 }
 
@@ -2063,7 +2079,7 @@ extension FT.SEARCH.Params {
     @available(*, deprecated, renamed: "FT.SEARCH.Params(count:parameters:)")
     public init(count: Int, pairs: [String]) {
         self.count = count / 2
-        self.parameters = pairs.evenlyChunked(in: 2).compactMap {
+        self.parameters = pairs.chunks(ofCount: 2).compactMap {
             guard $0.count == 2 else { return nil }
             return .init(name: $0[$0.startIndex], value: $0[$0.startIndex + 1])
         }

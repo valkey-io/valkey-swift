@@ -284,9 +284,32 @@
             "type": "integer"
           },
           {
-            "name": "sort_params",
-            "type": "string",
-            "multiple": true
+            "name": "expression",
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "expression",
+                "type": "string"
+              },
+              {
+                "name": "direction",
+                "type": "oneof",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "ASC",
+                    "type": "pure-token",
+                    "token": "ASC"
+                  },
+                  {
+                    "name": "DESC",
+                    "type": "pure-token",
+                    "token": "DESC"
+                  }
+                ]
+              }
+            ]
           },
           {
             "name": "max",
