@@ -49,12 +49,9 @@ package struct ValkeyTopologyCandidate: Hashable {
     /// Shards in the cluster topology, sorted by starting hash slot for consistent equality checking.
     package var shards: [Shard]
 
-    /// Creates a topology candidate from a cluster description.
+    /// Creates a topology candidate from a cluster topology.
     ///
-    /// This initializer:
-    /// - Filters out non-essential details from the cluster description
-    /// - Sorts replicas within each shard for consistent equality checking
-    /// - Sorts shards by their starting hash slot for consistent equality checking
+    /// The initializer filters out non-essential details from the cluster description
     ///
     /// - Parameter topology: The cluster description to create a topology candidate from.
     package init(_ topology: ValkeyClusterTopology) throws(ValkeyClusterError) {

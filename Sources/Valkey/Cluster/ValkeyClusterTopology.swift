@@ -90,6 +90,13 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
         }
     }
 
+    /// Create ValkeyClusterTopology from ValkeyClusterDescription
+    ///
+    /// Filters out unused data, sorts shards by slot start and sorts replicas in a shard by address
+    ///
+    /// - Parameter description: ValkeyClusterDescription returned by CLUSTER SHARDS
+    /// - Throws: ValkeyClusterError.shardHasMultiplePrimaryNodes if a shard has multiple online primaries.
+    ///         ValkeyClusterError.shardIsMissingPrimaryNode if a shard has no primary
     package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
         let shards = try description.shards.map { (shard) throws(ValkeyClusterError) in try Shard(shard) }
         self.shards = shards.sorted { lhs, rhs in
