@@ -104,9 +104,13 @@ struct ValkeyClusterClientStateMachineTests {
         clock.advance(to: clock.now.advanced(by: self.testConfiguration.circuitBreakerDuration))
 
         let timerFiredAction = stateMachine.timerFired(circuitBreakerTimer)
-        #expect(timerFiredAction.failWaiters?.waitersToFail.count == 1)
-        #expect(timerFiredAction.failWaiters?.waitersToFail.first === successNotifier)
-        #expect(timerFiredAction.failWaiters?.error as? ValkeyClusterError == .noConsensusReachedCircuitBreakerOpen)
+        guard case .failWaiters(let waiters) = timerFiredAction else {
+            Issue.record()
+            return
+        }
+        #expect(waiters.waitersToFail.count == 1)
+        #expect(waiters.waitersToFail.first === successNotifier)
+        #expect(waiters.error as? ValkeyClusterError == .noConsensusReachedCircuitBreakerOpen)
 
         // wait for healthy calls are rejected right away
         let nextSuccessNotifier = SuccessNotifier()
