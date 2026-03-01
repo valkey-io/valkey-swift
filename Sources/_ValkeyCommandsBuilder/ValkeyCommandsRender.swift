@@ -395,7 +395,7 @@ extension String {
             if case .oneOf = arg.type {
                 self.appendOneOfEnum(argument: arg, names: names, tab: tab)
             } else if case .block = arg.type {
-                self.appendBlock(argument: arg, names: names, tab: tab, genericStrings: genericStrings)
+                self.appendBlock(argument: arg, names: names, tab: tab, genericStrings: genericStrings && !arg.optional)
             }
         }
         self.append("\(tab)    public struct \(blockName): RESPRenderable, Sendable, Hashable {\n")

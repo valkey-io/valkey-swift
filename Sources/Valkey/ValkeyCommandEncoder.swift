@@ -10,7 +10,7 @@ import NIOCore
 /// A type that encodes Valkey commands into a buffer.
 public struct ValkeyCommandEncoder {
     @usableFromInline
-    var buffer: ByteBuffer
+    package var buffer: ByteBuffer
 
     @inlinable
     package init() {

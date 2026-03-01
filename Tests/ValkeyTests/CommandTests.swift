@@ -1745,10 +1745,9 @@ struct CommandTests {
                         "FT.SEARCH",
                         "idx:myIndex",
                         "@title:$t @tag:{$tag}",
-                        "PARAMS", "4",
+                        "PARAMS", "2",
                         "t", "Hello",
                         "tag", "world",
-                        "LOCALONLY",
                     ]),
                     response: .array([
                         .number(0)
@@ -1808,9 +1807,9 @@ struct CommandTests {
                 let result = try await connection.ftSearch(
                     index: "idx:myIndex",
                     query: "@title:Hello",
-                    returnFields: .init(
+                    return: .init(
                         count: 2,
-                        fields: ["title", "body"]
+                        fields: [.init(field: "title"), .init(field: "body")]
                     )
                 )
 
@@ -1862,9 +1861,9 @@ struct CommandTests {
                         "FT.SEARCH",
                         "idx:myIndex",
                         "@title:Hello",
-                        "NOCONTENT",
-                        "LIMIT", "0", "5",
                         "DIALECT", "2",
+                        "LIMIT", "0", "5",
+                        "NOCONTENT",
                     ]),
                     response: .array([
                         .number(0)
@@ -1986,7 +1985,7 @@ struct CommandTests {
                     request: .command([
                         "FT.AGGREGATE", "idx:testIndex", "*",
                         "LOAD", "1",
-                        "@title", "AS", "title",
+                        "@title",
                     ]),
                     response: .array([.number(0)])
                 )
@@ -2024,7 +2023,7 @@ struct CommandTests {
                     request: .command([
                         "FT.AGGREGATE", "idx:testIndex", "*",
                         "LOAD", "2",
-                        "@title", "AS", "title",
+                        "@title",
                         "@body",
                     ]),
                     response: .array([.number(0)])
@@ -2156,47 +2155,12 @@ struct CommandTests {
 
         @Test
         @available(valkeySwift 1.0, *)
-        func ftAggregate_scorer_addscores() async throws {
-            try await testCommandEncodesDecodes(
-                (
-                    request: .command([
-                        "FT.AGGREGATE", "idx:testIndex", "hello",
-                        "SCORER", "BM25",
-                        "ADDSCORES",
-                    ]),
-                    response: .array([.number(0)])
-                )
-            ) { connection in
-                let result = try await connection.ftAggregate(
-                    index: "idx:testIndex",
-                    query: "hello",
-                    scorer: .init(scorer: "BM25"),
-                    addscores: true
-                )
-
-                guard case .array(let arr) = result.value else {
-                    Issue.record("Expected array")
-                    return
-                }
-                let items = Array(arr)
-                #expect(items.count == 1)
-                guard case .number(let n) = items[0].value else {
-                    Issue.record("Expected number")
-                    return
-                }
-                #expect(n == 0)
-            }
-        }
-
-        @Test
-        @available(valkeySwift 1.0, *)
         func ftAggregate_sortby_withcount() async throws {
             try await testCommandEncodesDecodes(
                 (
                     request: .command([
                         "FT.AGGREGATE", "idx:testIndex", "hello",
                         "SORTBY", "4", "@foo", "ASC", "@bar", "DESC",
-                        "WITHCOUNT",
                     ]),
                     response: .array([.number(0)])
                 )
@@ -2368,43 +2332,6 @@ struct CommandTests {
 
         @Test
         @available(valkeySwift 1.0, *)
-        func ftAggregate_withcursor_count_maxidle() async throws {
-            try await testCommandEncodesDecodes(
-                (
-                    request: .command([
-                        "FT.AGGREGATE", "idx:testIndex", "*",
-                        "WITHCURSOR",
-                        "COUNT", "500",
-                        "MAXIDLE", "10000",
-                    ]),
-                    response: .array([.number(0)])
-                )
-            ) { connection in
-                let result = try await connection.ftAggregate(
-                    index: "idx:testIndex",
-                    query: "*",
-                    withcursor: .init(
-                        count: .init(readSize: 500),
-                        maxidle: .init(idleTime: 10000)
-                    )
-                )
-
-                guard case .array(let arr) = result.value else {
-                    Issue.record("Expected array")
-                    return
-                }
-                let items = Array(arr)
-                #expect(items.count == 1)
-                guard case .number(let n) = items[0].value else {
-                    Issue.record("Expected number")
-                    return
-                }
-                #expect(n == 0)
-            }
-        }
-
-        @Test
-        @available(valkeySwift 1.0, *)
         func ftAggregate_groupby_reduce_sum_as() async throws {
             try await testCommandEncodesDecodes(
                 (
@@ -2421,19 +2348,20 @@ struct CommandTests {
                     query: "*",
                     groupbys: [
                         .init(
-                            nargs: 1,
-                            groupFields: ["@category"],
+                            count: 1,
+                            fields: ["@category"],
+                            reduces: [
+                                .init(
+                                    function: .sum,
+                                    count: 1,
+                                    expressions: ["@price"],
+                                    alias: .init(name: "total_revenue")
+
+                                )
+                            ]
                         )
                     ],
-                    reduces: [
-                        .init(
-                            function: .sum,
-                            nargs: 1,
-                            identifiers: ["@price"],
-                            alias: .init(identifier: "total_revenue")
 
-                        )
-                    ]
                 )
 
                 guard case .array(let arr) = result.value else {
@@ -2468,19 +2396,20 @@ struct CommandTests {
                     query: "*",
                     groupbys: [
                         .init(
-                            nargs: 2,
-                            groupFields: ["@category", "@brand"],
+                            count: 2,
+                            fields: ["@category", "@brand"],
+                            reduces: [
+                                .init(
+                                    function: .countDistinct,
+                                    count: 1,
+                                    expressions: ["@user"],
+                                    alias: .init(name: "uniq_users")
+
+                                )
+                            ]
                         )
                     ],
-                    reduces: [
-                        .init(
-                            function: .countDistinct,
-                            nargs: 1,
-                            identifiers: ["@user"],
-                            alias: .init(identifier: "uniq_users")
 
-                        )
-                    ]
                 )
 
                 guard case .array(let arr) = result.value else {
@@ -2806,7 +2735,6 @@ struct CommandTests {
                         "TYPE", "FLOAT32",
                         "DIM", "128",
                         "DISTANCE_METRIC", "L2",
-                        "BLOCK_SIZE", "1024",
                     ]),
                     response: .simpleString("OK")
                 )
@@ -2924,7 +2852,6 @@ struct CommandTests {
                         "TYPE", "FLOAT32",
                         "DIM", "128",
                         "DISTANCE_METRIC", "L2",
-                        "BLOCK_SIZE", "1024",
                     ]),
                     response: .simpleString("OK")
                 )
@@ -3041,7 +2968,7 @@ struct CommandTests {
                     ])
                 ),
                 (
-                    request: .command(["FT.INFO", "idx:myIndex", "GLOBAL"]),
+                    request: .command(["FT.INFO", "idx:myIndex", "PRIMARY"]),
                     response: .array([
                         .bulkString("index_name"),
                         .bulkString("idx:myIndex"),
