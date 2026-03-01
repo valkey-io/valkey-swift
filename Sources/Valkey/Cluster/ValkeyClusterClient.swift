@@ -1124,9 +1124,9 @@ public final class ValkeyClusterClient: Sendable {
     /// on the topology before accepting it.
     ///
     /// - Parameter voters: The list of nodes that can vote on cluster topology.
-    /// - Returns: The agreed-upon cluster description.
+    /// - Returns: The agreed-upon cluster topology.
     /// - Throws: `ValkeyClusterError.clusterIsUnavailable` if consensus cannot be reached.
-    private func runClusterDiscoveryFindingConsensus(voters: [ValkeyClusterVoter<ValkeyNodeClient>]) async throws -> ValkeyClusterDescription {
+    private func runClusterDiscoveryFindingConsensus(voters: [ValkeyClusterVoter<ValkeyNodeClient>]) async throws -> ValkeyClusterTopology {
         try await withThrowingTaskGroup(of: (ValkeyClusterDescription, ValkeyNodeID).self) { taskGroup in
             for voter in voters {
                 taskGroup.addTask {
@@ -1140,7 +1140,8 @@ public final class ValkeyClusterClient: Sendable {
                 switch result {
                 case .success((let description, let nodeID)):
                     do {
-                        let metrics = try election.voteReceived(for: description, from: nodeID)
+                        let topology = try ValkeyClusterTopology(description)
+                        let metrics = try election.voteReceived(for: topology, from: nodeID)
 
                         self.logger.debug(
                             "Vote received",

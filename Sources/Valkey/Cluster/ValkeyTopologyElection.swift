@@ -24,7 +24,7 @@ package struct ValkeyTopologyElection {
     /// count of the votes it has received and how many votes it needs to win.
     private struct Candidate {
         /// The cluster configuration this candidate represents.
-        var description: ValkeyClusterDescription
+        var topology: ValkeyClusterTopology
 
         /// The number of votes needed for this candidate to win the election.
         /// Calculated as a simple majority of the total nodes in the cluster.
@@ -33,10 +33,10 @@ package struct ValkeyTopologyElection {
         /// The number of votes this candidate has received so far.
         var received: Int
 
-        init(description: ValkeyClusterDescription) {
-            self.description = description
+        init(topology: ValkeyClusterTopology) {
+            self.topology = topology
             // Calculate the needed votes as a simple majority of all nodes across all shards
-            self.needed = description.shards.reduce(0) { $0 + $1.nodes.count } / 2 + 1
+            self.needed = topology.shards.reduce(0) { $0 + $1.nodes.count } / 2 + 1
             self.received = 0
         }
 
@@ -73,7 +73,7 @@ package struct ValkeyTopologyElection {
 
     /// The currently elected cluster configuration, if any.
     /// This is set to the first candidate that reaches the required vote threshold.
-    package private(set) var winner: ValkeyClusterDescription?
+    package private(set) var winner: ValkeyClusterTopology?
 
     package init() {}
 
@@ -85,29 +85,29 @@ package struct ValkeyTopologyElection {
     /// 3. If this vote causes a candidate to reach the required threshold, it becomes the winner
     ///
     /// - Parameters:
-    ///   - description: The cluster configuration the node is voting for
+    ///   - topology: The cluster configuration the node is voting for
     ///   - voter: The ID of the node casting the vote
     ///
     /// - Returns: Metrics about the current state of the election after recording this vote
     ///
     /// - Throws: ``ValkeyClusterError`` if the provided cluster description cannot be converted to a valid topology candidate
     package mutating func voteReceived(
-        for description: ValkeyClusterDescription,
+        for topology: ValkeyClusterTopology,
         from voter: ValkeyNodeID
     ) throws(ValkeyClusterError) -> VoteMetrics {
         // 1. check that the voter hasn't voted before.
         //    - if it has voted before, remove its earlier vote.
 
-        let topologyCandidate = try ValkeyTopologyCandidate(description)
+        let topologyCandidate = try ValkeyTopologyCandidate(topology)
 
         if let previousVote = self.votes[voter] {
             self.results[previousVote]!.received -= 1
         }
 
         self.votes[voter] = topologyCandidate
-        if self.results[topologyCandidate, default: .init(description: description)].addVote() {
+        if self.results[topologyCandidate, default: .init(topology: topology)].addVote() {
             if self.winner == nil {
-                self.winner = description
+                self.winner = topology
             }
         }
 
