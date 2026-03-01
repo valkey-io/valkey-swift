@@ -621,7 +621,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     #endif
 
     @inlinable
-    public nonisolated func _transaction<Commands: Collection>(
+    nonisolated func _transaction<Commands: Collection>(
         _ commands: Commands
     ) async throws(ValkeyTransactionError) -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
