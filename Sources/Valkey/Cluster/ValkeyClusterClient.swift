@@ -824,14 +824,15 @@ public final class ValkeyClusterClient: Sendable {
     ///
     /// - Parameter action: The action to execute after a timer fires.
     private func runTimerFiredAction(_ action: StateMachine.TimerFiredAction) {
-        if let failWaiters = action.failWaiters {
-            for waiter in failWaiters.waitersToFail {
-                waiter.resume(throwing: failWaiters.error)
+        switch action {
+        case .failWaiters(let waiters):
+            for waiter in waiters.waitersToFail {
+                waiter.resume(throwing: waiters.error)
             }
-        }
-
-        if let runDiscovery = action.runDiscovery {
-            self.queueAction(.runClusterDiscovery(runNodeDiscovery: runDiscovery.runNodeDiscoveryFirst))
+        case .runDiscovery(let clusterDiscovery):
+            self.queueAction(.runClusterDiscovery(runNodeDiscovery: clusterDiscovery.runNodeDiscoveryFirst))
+        case .doNothing:
+            break
         }
     }
 
@@ -1123,9 +1124,9 @@ public final class ValkeyClusterClient: Sendable {
     /// on the topology before accepting it.
     ///
     /// - Parameter voters: The list of nodes that can vote on cluster topology.
-    /// - Returns: The agreed-upon cluster description.
+    /// - Returns: The agreed-upon cluster topology.
     /// - Throws: `ValkeyClusterError.clusterIsUnavailable` if consensus cannot be reached.
-    private func runClusterDiscoveryFindingConsensus(voters: [ValkeyClusterVoter<ValkeyNodeClient>]) async throws -> ValkeyClusterDescription {
+    private func runClusterDiscoveryFindingConsensus(voters: [ValkeyClusterVoter<ValkeyNodeClient>]) async throws -> ValkeyClusterTopology {
         try await withThrowingTaskGroup(of: (ValkeyClusterDescription, ValkeyNodeID).self) { taskGroup in
             for voter in voters {
                 taskGroup.addTask {
@@ -1139,7 +1140,8 @@ public final class ValkeyClusterClient: Sendable {
                 switch result {
                 case .success((let description, let nodeID)):
                     do {
-                        let metrics = try election.voteReceived(for: description, from: nodeID)
+                        let topology = try ValkeyClusterTopology(description)
+                        let metrics = try election.voteReceived(for: topology, from: nodeID)
 
                         self.logger.debug(
                             "Vote received",

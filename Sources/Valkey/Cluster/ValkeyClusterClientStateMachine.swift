@@ -98,7 +98,7 @@ where
             @usableFromInline
             /* private */ var circuitBreakerTimer: Timer?
 
-            var lastHealthyState: ValkeyClusterDescription?
+            var lastHealthyState: ValkeyClusterTopology?
 
             var lastError: any Error
         }
@@ -120,14 +120,14 @@ where
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
 
-            var lastHealthyState: ValkeyClusterDescription
+            var lastHealthyState: ValkeyClusterTopology
 
             var lastError: any Error
         }
 
         @usableFromInline
         struct HealthyContext {
-            var clusterDescription: ValkeyClusterDescription
+            var clusterTopology: ValkeyClusterTopology
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
             var consensusStart: Clock.Instant
@@ -251,6 +251,9 @@ where
     }
 
     package struct ClusterDiscoverySucceededAction {
+        /// A new cluster topology was found, or we moved from another state to healthy
+        package var topologyUpdated: Bool = false
+
         package var createTimer: ValkeyClusterTimer? = nil
 
         package var cancelTimer: TimerCancellationToken? = nil
@@ -263,39 +266,59 @@ where
     }
 
     package mutating func valkeyClusterDiscoverySucceeded(
-        _ description: ValkeyClusterDescription
+        _ topology: ValkeyClusterTopology
     ) -> ClusterDiscoverySucceededAction {
         switch self.refreshState {
         case .notRefreshing, .waitingForRefresh:
             preconditionFailure("Invalid state: \(self.refreshState)")
 
         case .refreshing:
-            let oldCusterState = self.clusterState
-            var map = HashSlotShardMap()
-            let newShards = description.shards.map { $0.allocateNodes { node, _ in node } }
-            map.updateCluster(newShards)
-            self.clusterState = .healthy(.init(clusterDescription: description, hashSlotShardMap: map, consensusStart: self.clock.now))
-
             let refreshTimerID = self.nextTimerID()
             self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: .init(consecutiveFailures: 0))
 
-            let poolUpdate = self.runningClients.updateNodes(
-                newShards.lazy.flatMap {
-                    $0.nodes.lazy.compactMap { $0.health == .online ? ValkeyNodeDescription(description: $0) : nil }
-                },
-                removeUnmentionedPools: true
-            )
+            let oldCusterState = self.clusterState
+            let oldHealthyClusterTopology: ValkeyClusterTopology? =
+                if case .healthy(let healthyState) = self.clusterState {
+                    healthyState.clusterTopology
+                } else {
+                    nil
+                }
+            var result: ClusterDiscoverySucceededAction
+            /// Don't update cluster if description hasnt changed
+            if oldHealthyClusterTopology != topology {
+                var map = HashSlotShardMap()
+                map.updateCluster(topology)
+                self.clusterState = .healthy(.init(clusterTopology: topology, hashSlotShardMap: map, consensusStart: self.clock.now))
 
-            var result = ClusterDiscoverySucceededAction(
-                createTimer: .init(
-                    timerID: refreshTimerID,
-                    useCase: .nextDiscovery,
-                    duration: self.configuration.defaultClusterRefreshInterval
-                ),
-                clientsToShutdown: poolUpdate.poolsToShutdown,
-                clientsToRun: poolUpdate.poolsToRun.map(\.0)
-            )
+                let poolUpdate = self.runningClients.updateNodes(
+                    topology.shards.lazy.flatMap {
+                        $0.nodes.lazy.compactMap { $0.health == .online ? ValkeyNodeDescription(description: $0) : nil }
+                    },
+                    removeUnmentionedPools: true
+                )
 
+                result = ClusterDiscoverySucceededAction(
+                    topologyUpdated: true,
+                    createTimer: .init(
+                        timerID: refreshTimerID,
+                        useCase: .nextDiscovery,
+                        duration: self.configuration.defaultClusterRefreshInterval
+                    ),
+                    clientsToShutdown: poolUpdate.poolsToShutdown,
+                    clientsToRun: poolUpdate.poolsToRun.map(\.0)
+                )
+            } else {
+                result = ClusterDiscoverySucceededAction(
+                    topologyUpdated: false,
+                    createTimer: .init(
+                        timerID: refreshTimerID,
+                        useCase: .nextDiscovery,
+                        duration: self.configuration.defaultClusterRefreshInterval
+                    ),
+                    clientsToShutdown: [],
+                    clientsToRun: []
+                )
+            }
             switch oldCusterState {
             case .healthy:
                 return result
@@ -346,7 +369,7 @@ where
                         pendingSuccessNotifiers: [:],
                         circuitBreakerTimer: .init(id: circuitBreakerTimerID),
                         hashSlotShardMap: healthyContext.hashSlotShardMap,
-                        lastHealthyState: healthyContext.clusterDescription,
+                        lastHealthyState: healthyContext.clusterTopology,
                         lastError: error
                     )
                 )
@@ -386,7 +409,7 @@ where
         }
     }
 
-    package struct TimerFiredAction {
+    package enum TimerFiredAction {
         package struct RunDiscovery {
             package var runNodeDiscoveryFirst: Bool
 
@@ -401,13 +424,9 @@ where
             package var error: any Error
         }
 
-        package var runDiscovery: RunDiscovery?
-        package var failWaiters: FailWaiters?
-
-        package init(runDiscovery: RunDiscovery? = nil, failWaiters: FailWaiters? = nil) {
-            self.runDiscovery = runDiscovery
-            self.failWaiters = failWaiters
-        }
+        case failWaiters(FailWaiters)
+        case runDiscovery(RunDiscovery)
+        case doNothing
     }
 
     package mutating func timerFired(_ timer: ValkeyClusterTimer) -> TimerFiredAction {
@@ -416,7 +435,7 @@ where
             let runNodeDiscoveryFirst: Bool
             switch self.clusterState {
             case .shutdown:
-                return .init()
+                return .doNothing
 
             case .healthy:
                 runNodeDiscoveryFirst = false
@@ -428,15 +447,15 @@ where
             switch self.refreshState {
             case .refreshing, .notRefreshing:
                 // race condition. we are already refreshing
-                return .init()
+                return .doNothing
 
             case .waitingForRefresh(let storedTimer, let previousRefresh):
                 guard storedTimer.id == timer.timerID else {
                     // race condition. the timer that fired isn't interesting anymore
-                    return .init()
+                    return .doNothing
                 }
                 self.refreshState = .refreshing(previousRefresh)
-                return .init(runDiscovery: .init(runNodeDiscoveryFirst: runNodeDiscoveryFirst))
+                return .runDiscovery(.init(runNodeDiscoveryFirst: runNodeDiscoveryFirst))
             }
 
         case .circuitBreaker:
@@ -445,15 +464,15 @@ where
                 // this will only happen at startup, if we can't find a cluster within the circuit
                 // breaker interval
                 guard unavailableContext.circuitBreakerTimer?.id == timer.timerID else {
-                    return .init()
+                    return .doNothing
                 }
 
                 unavailableContext.circuitBreakerTimer = nil
                 let successNotifiers = Array(unavailableContext.pendingSuccessNotifiers.values)
                 unavailableContext.pendingSuccessNotifiers.removeAll()
                 self.clusterState = .unavailable(unavailableContext)
-                return .init(
-                    failWaiters: .init(
+                return .failWaiters(
+                    .init(
                         waitersToFail: successNotifiers,
                         error: unavailableContext.lastError
                     )
@@ -462,7 +481,7 @@ where
             case .degraded(let degradedContext):
                 guard degradedContext.circuitBreakerTimer?.id == timer.timerID else {
                     // we were degraded, got healthy and are now degraded again. timerID doesn't match
-                    return .init()
+                    return .doNothing
                 }
 
                 self.clusterState = .unavailable(
@@ -473,8 +492,8 @@ where
                         lastError: degradedContext.lastError
                     )
                 )
-                return .init(
-                    failWaiters: .init(
+                return .failWaiters(
+                    .init(
                         waitersToFail: Array(degradedContext.pendingSuccessNotifiers.values),
                         error: degradedContext.lastError
                     )
@@ -482,10 +501,10 @@ where
 
             case .healthy:
                 // race. we likely where degraded before but we just recovered. therefore ignore
-                return .init()
+                return .doNothing
 
             case .shutdown:
-                return .init()
+                return .doNothing
             }
         }
     }
@@ -654,7 +673,7 @@ where
                     pendingSuccessNotifiers: [:],
                     circuitBreakerTimer: .init(id: circuitBreakerTimerID),
                     hashSlotShardMap: healthyContext.hashSlotShardMap,
-                    lastHealthyState: healthyContext.clusterDescription,
+                    lastHealthyState: healthyContext.clusterTopology,
                     lastError: ValkeyClusterError.clusterIsMissingMovedErrorNode
                 )
             )

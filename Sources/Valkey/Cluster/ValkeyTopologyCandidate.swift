@@ -40,46 +40,26 @@ package struct ValkeyTopologyCandidate: Hashable {
         /// Creates a simplified node representation from a `ValkeyClusterDescription.Node`.
         ///
         /// - Parameter node: The source node from a cluster description.
-        package init(_ node: ValkeyClusterDescription.Node) {
+        package init(_ node: ValkeyClusterTopology.Node) {
             self.endpoint = node.endpoint
-            self.port = node.tlsPort ?? node.port ?? 6379
+            self.port = node.port
         }
     }
 
     /// Shards in the cluster topology, sorted by starting hash slot for consistent equality checking.
     package var shards: [Shard]
 
-    /// Creates a topology candidate from a cluster description.
+    /// Creates a topology candidate from a cluster topology.
     ///
-    /// This initializer:
-    /// - Filters out non-essential details from the cluster description
-    /// - Sorts replicas within each shard for consistent equality checking
-    /// - Sorts shards by their starting hash slot for consistent equality checking
+    /// The initializer filters out non-essential details from the cluster description
     ///
-    /// - Parameter description: The cluster description to create a topology candidate from.
-    package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
-        self.shards = try description.shards.map({ shard throws(ValkeyClusterError) in
-            let allocatedShard = try shard.allocateNodes { (_, _) throws(ValkeyClusterError) in
-                throw ValkeyClusterError.shardHasMultiplePrimaryNodes
-            }
-            let sorted = allocatedShard.replicas.map { Node($0) }.sorted(by: { lhs, rhs in
-                if lhs.endpoint != rhs.endpoint {
-                    return lhs.endpoint < rhs.endpoint
-                }
-                if lhs.port != rhs.port {
-                    return lhs.port < rhs.port
-                }
-                return true
-            })
-
-            guard let primary = allocatedShard.primary else {
-                throw ValkeyClusterError.shardIsMissingPrimaryNode
-            }
-
-            return Shard(
-                slots: shard.slots.sorted(by: { $0.startIndex < $1.startIndex }),
-                primary: Node(primary),
-                replicas: sorted
+    /// - Parameter topology: The cluster description to create a topology candidate from.
+    package init(_ topology: ValkeyClusterTopology) throws(ValkeyClusterError) {
+        self.shards = try topology.shards.map({ shard throws(ValkeyClusterError) in
+            Shard(
+                slots: shard.slots,
+                primary: Node(shard.primary),
+                replicas: shard.replicas.map { Node($0) }
             )
         })
         // Sort shards by starting hash slot
