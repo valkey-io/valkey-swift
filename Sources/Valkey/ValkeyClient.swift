@@ -263,8 +263,46 @@ extension ValkeyClient {
         for command in repeat each commands {
             readOnly = readOnly && command.isReadOnly
         }
+        #if compiler(<6.2)
         let node = self.getNode(readOnly: readOnly)
         return await node.execute(repeat each commands)
+        #else
+        var attempt = 0
+        var node = self.getNode(readOnly: readOnly)
+        executeCommands: while true {
+            let results = await node.execute(repeat each commands)
+            if Task.isCancelled {
+                return results
+            }
+            for result in repeat each results {
+                if case .failure(let error) = result {
+                    switch self.getRetryAction(from: error) {
+                    case .redirect(let redirectError):
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        self.setPrimary(redirectError.address)
+                        node = self.getNode(readOnly: false)
+                        continue executeCommands
+                    case .tryAgain:
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        node = self.getNode(readOnly: readOnly)
+                        continue executeCommands
+
+                    case .dontRetry:
+                        break
+                    }
+                }
+            }
+            return results
+        }
+        #endif
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -280,7 +318,7 @@ extension ValkeyClient {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    public func execute<Commands: Collection & Sendable>(
+    public func execute<Commands: Collection>(
         _ commands: Commands
     ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         let readOnly =
@@ -289,8 +327,56 @@ extension ValkeyClient {
             } else {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
-        let node = self.getNode(readOnly: readOnly)
-        return await node.execute(commands)
+        // get node client and execute commands
+        var node = self.getNode(readOnly: readOnly)
+        var results = await node.execute(commands)
+
+        var attempt = 0
+        var startIndex = commands.startIndex
+        var resultIndex = results.startIndex
+
+        // Process results, If we find one that needs a retry, then retry command and all the commands that follow
+        while !Task.isCancelled {
+            // loop through results that haven't been checked
+            resultLoop: for result in results[resultIndex...] {
+                if case .failure(let error) = result {
+                    switch self.getRetryAction(from: error) {
+                    case .redirect(let redirectError):
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        self.setPrimary(redirectError.address)
+                        node = self.getNode(readOnly: false)
+                        break resultLoop
+                    case .tryAgain:
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        node = self.getNode(readOnly: readOnly)
+                        break resultLoop
+
+                    case .dontRetry:
+                        break
+                    }
+                }
+                resultIndex += 1
+                startIndex = commands.index(after: startIndex)
+            }
+            // if no results require a retry break out of loop
+            if resultIndex == results.count {
+                break
+            }
+            // Retry commands that failed and all subsequent commands
+            let newResults = await node.execute(commands[startIndex...])
+            // Replace old results with new results
+            results.removeLast(newResults.count)
+            results.append(contentsOf: newResults)
+        }
+        return results
     }
     /// Pipeline a series of commands as a transaction to Valkey connection
     ///
@@ -365,7 +451,7 @@ extension ValkeyClient {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    public func transaction<Commands: Collection & Sendable>(
+    public func transaction<Commands: Collection>(
         _ commands: Commands
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         let readOnly =
