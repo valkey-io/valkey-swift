@@ -5,34 +5,37 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+
 import DequeModule
 import Logging
 import NIOCore
 
 @usableFromInline
 @available(valkeySwift 1.0, *)
-enum ValkeyPromise<T: Sendable>: Sendable {
+enum ValkeyPromise<T: Sendable>: ~Copyable, Sendable {
     case nio(EventLoopPromise<T>)
-    case swift(CheckedContinuation<T, any Error>)
+    case swift(Continuation<T, any Error>)
     case forget
 
-    func succeed(_ t: T) {
-        switch self {
+    @inlinable
+    consuming func succeed(_ t: T) {
+        switch consume self {
         case .nio(let eventLoopPromise):
             eventLoopPromise.succeed(t)
-        case .swift(let checkedContinuation):
-            checkedContinuation.resume(returning: t)
+        case .swift(let continuation):
+            continuation.resume(returning: t)
         case .forget:
             break
         }
     }
 
-    func fail(_ e: any Error) {
-        switch self {
+    @inlinable
+    consuming func fail(_ e: any Error) {
+        switch consume self {
         case .nio(let eventLoopPromise):
             eventLoopPromise.fail(e)
-        case .swift(let checkedContinuation):
-            checkedContinuation.resume(throwing: e)
+        case .swift(let continuation):
+            continuation.resume(throwing: e)
         case .forget:
             break
         }
@@ -41,9 +44,9 @@ enum ValkeyPromise<T: Sendable>: Sendable {
 
 @usableFromInline
 @available(valkeySwift 1.0, *)
-enum ValkeyRequest: Sendable {
+enum ValkeyRequest: ~Copyable, Sendable {
     case single(buffer: ByteBuffer, promise: ValkeyPromise<RESPToken>, id: Int)
-    case multiple(buffer: ByteBuffer, promises: [ValkeyPromise<RESPToken>], id: Int)
+    case multiple(buffer: ByteBuffer, promises: UniqueDeque<ValkeyPromise<RESPToken>>, id: Int)
 }
 
 @available(valkeySwift 1.0, *)
@@ -62,14 +65,15 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         let databaseNumber: Int
     }
     @usableFromInline
-    struct PendingCommand {
+    struct PendingCommand: ~Copyable {
         @usableFromInline
-        internal init(promise: ValkeyPromise<RESPToken>, requestID: Int, deadline: NIODeadline) {
-            self.promise = promise
+        internal init(promise: consuming ValkeyPromise<RESPToken>, requestID: Int, deadline: NIODeadline) {
+            self.promise = consume promise
             self.requestID = requestID
             self.deadline = deadline
         }
 
+        @usableFromInline
         var promise: ValkeyPromise<RESPToken>
         let requestID: Int
         let deadline: NIODeadline
@@ -81,8 +85,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         func handleScheduledCallback(eventLoop: some NIOCore.EventLoop) {
             let channelHandler = self.channelHandler.value
             switch channelHandler.stateMachine.hitDeadline(now: .now()) {
-            case .failPendingCommandsAndClose(let context, let commands):
-                for command in commands {
+            case .failPendingCommandsAndClose(let context, var commands):
+                while let command = commands.popFirst() {
                     command.promise.fail(ValkeyClientError(.timeout))
                 }
                 channelHandler.closeSubscriptionsAndConnection(context: context, error: ValkeyClientError(.timeout))
@@ -133,12 +137,12 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     ///   - request: Valkey command request
     ///   - promise: Promise to fulfill when command is complete
     @inlinable
-    func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
+    func write<Command: ValkeyCommand>(command: Command, continuation: consuming Continuation<RESPToken, any Error>, requestID: Int) {
         self.eventLoop.assertInEventLoop()
         let deadline: NIODeadline =
             command.isBlocking ? .now() + self.configuration.blockingCommandTimeout : .now() + self.configuration.commandTimeout
         let pendingCommand = PendingCommand(
-            promise: .swift(continuation),
+            promise: ValkeyPromise.swift(continuation),
             requestID: requestID,
             deadline: deadline
         )
@@ -152,13 +156,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 self.scheduleDeadlineCallback(deadline: deadline)
             }
 
-        case .throwError(let error):
-            continuation.resume(throwing: error)
+        case .throwError(let error, let command):
+            command.promise.fail(error)
         }
     }
 
     @usableFromInline
-    func write(request: ValkeyRequest) {
+    func write(request: consuming ValkeyRequest) {
         self.eventLoop.assertInEventLoop()
         let deadline = .now() + self.configuration.commandTimeout
         switch request {
@@ -170,13 +174,17 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 if self.deadlineCallback == nil {
                     scheduleDeadlineCallback(deadline: deadline)
                 }
-            case .throwError(let error):
-                tokenPromise.fail(error)
+            case .throwError(let error, let command):
+                command.promise.fail(error)
             }
 
-        case .multiple(let buffer, let tokenPromises, let requestID):
-            let pendingCommands = tokenPromises.map {
-                PendingCommand(promise: $0, requestID: requestID, deadline: deadline)
+        case .multiple(let buffer, var tokenPromises, let requestID):
+            var pendingCommands = UniqueDeque<PendingCommand>()
+            pendingCommands.reserveCapacity(tokenPromises.count)
+            while let promise = tokenPromises.popFirst() {
+                pendingCommands.append(
+                    PendingCommand(promise: promise, requestID: requestID, deadline: deadline)
+                )
             }
             switch self.stateMachine.sendCommands(pendingCommands) {
             case .sendCommand(let context):
@@ -184,9 +192,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 if self.deadlineCallback == nil {
                     scheduleDeadlineCallback(deadline: deadline)
                 }
-            case .throwError(let error):
-                for promise in tokenPromises {
-                    promise.fail(error)
+            case .throwError(let error, var pendingCommands):
+                while let command = pendingCommands.popFirst() {
+                    command.promise.fail(error)
                 }
             }
         }
@@ -197,7 +205,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         command: some ValkeyCommand,
         streamContinuation: ValkeySubscription.Continuation,
         filters: [ValkeySubscriptionFilter],
-        promise: ValkeyPromise<Int>,
+        promise: consuming ValkeyPromise<Int>,
         requestID: Int
     ) {
         self.eventLoop.assertInEventLoop()
@@ -207,7 +215,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             //   But it would be cool to build the subscribe command based on what filters we aren't subscribed to
             self.subscriptions.pushCommand(filters: subscription.filters)
             let subscriptionID = subscription.id
+            let box = NonCopyableSmugleBox(consume promise)
             return self._execute(command: command, requestID: requestID).assumeIsolated().whenComplete { result in
+                let promise = box.get()
                 switch result {
                 case .success:
                     promise.succeed(subscriptionID)
@@ -226,7 +236,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     /// Remove subscription and if required call UNSUBSCRIBE command
     func unsubscribe(
         id: Int,
-        promise: ValkeyPromise<Void>,
+        promise: consuming ValkeyPromise<Void>,
         requestID: Int
     ) {
         self.eventLoop.assertInEventLoop()
@@ -260,11 +270,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func performUnsubscribe(
         command: some ValkeyCommand,
         filters: [ValkeySubscriptionFilter],
-        promise: ValkeyPromise<Void>,
+        promise: consuming ValkeyPromise<Void>,
         requestID: Int
     ) {
         self.subscriptions.pushCommand(filters: filters)
+        let box = NonCopyableSmugleBox(promise)
         self._execute(command: command, requestID: requestID).assumeIsolated().whenComplete { result in
+            let promise = box.get()
             switch result {
             case .success:
                 promise.succeed(())
@@ -311,16 +323,22 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             CLIENT.CAPA(capabilities: ["redirect"]).encode(into: &self.encoder)
         }
 
-        let promise = eventLoop.makePromise(of: RESPToken.self)
+        let promise = ValkeyPromise.nio(self.eventLoop.makePromise(of: RESPToken.self))
 
         let deadline = .now() + self.configuration.commandTimeout
         context.writeAndFlush(self.wrapOutboundOut(self.encoder.buffer), promise: nil)
         self.scheduleDeadlineCallback(deadline: deadline)
 
+        var pendingCommands = UniqueDeque<PendingCommand>()
+        pendingCommands.reserveCapacity(numberOfPendingCommands)
+        for _ in 0..<numberOfPendingCommands {
+            pendingCommands.append(.init(promise: .forget, requestID: 0, deadline: deadline))
+        }
+
         self.stateMachine.setConnected(
             context: context,
-            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: deadline),
-            pendingCommands: .init(repeating: .init(promise: .forget, requestID: 0, deadline: deadline), count: numberOfPendingCommands)
+            pendingHelloCommand: PendingCommand(promise: consume promise, requestID: 0, deadline: deadline),
+            pendingCommands: pendingCommands
         )
     }
 
@@ -390,11 +408,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func cancel(requestID: Int) {
         self.eventLoop.assertInEventLoop()
         switch self.stateMachine.cancel(requestID: requestID) {
-        case .failPendingCommandsAndClose(let context, let cancelled, let closeConnectionDueToCancel):
-            for command in cancelled {
+        case .failPendingCommandsAndClose(let context, var cancelAction):
+            while let command = cancelAction.cancelled.popFirst() {
                 command.promise.fail(ValkeyClientError.init(.cancelled))
             }
-            for command in closeConnectionDueToCancel {
+            while let command = cancelAction.connectionClosedDueToCancellation.popFirst() {
                 command.promise.fail(ValkeyClientError.init(.connectionClosedDueToCancellation))
             }
             self.closeSubscriptionsAndConnection(context: context, error: ValkeyClientError(.cancelled))
@@ -468,8 +486,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func handleError(context: ChannelHandlerContext, error: ValkeyClientError) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
         switch self.stateMachine.close() {
-        case .failPendingCommandsAndClose(let context, let commands):
-            for command in commands {
+        case .failPendingCommandsAndClose(let context, var commands):
+            while let command = commands.popFirst() {
                 command.promise.fail(error)
             }
             self.closeSubscriptionsAndConnection(context: context, error: error)
@@ -524,8 +542,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     private func setClosed() {
         switch self.stateMachine.setClosed() {
-        case .failPendingCommandsAndSubscriptions(let commands):
-            for command in commands {
+        case .failPendingCommandsAndSubscriptions(var commands):
+            while let command = commands.popFirst() {
                 command.promise.fail(ValkeyClientError.init(.connectionClosed))
             }
             self.subscriptions.close(error: ValkeyClientError.init(.connectionClosed))

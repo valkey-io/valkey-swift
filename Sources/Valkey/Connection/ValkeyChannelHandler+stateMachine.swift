@@ -5,6 +5,7 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+
 import DequeModule
 import NIOCore
 
@@ -37,29 +38,45 @@ extension ValkeyChannelHandler {
         var state: State
 
         @usableFromInline
-        struct ActiveState {
-            let context: Context
-            var pendingCommands: Deque<PendingCommand>
+        struct ActiveStateCancelAction: ~Copyable {
+            var cancelled: UniqueDeque<PendingCommand>
+            var connectionClosedDueToCancellation: UniqueDeque<PendingCommand>
+        }
 
-            func cancel(requestID: Int) -> (cancel: [PendingCommand], connectionClosedDueToCancellation: [PendingCommand]) {
-                var withRequestID = [PendingCommand]()
-                var withoutRequestID = [PendingCommand]()
-                for command in pendingCommands {
+        @usableFromInline
+        struct ActiveState: ~Copyable {
+            let context: Context
+            var pendingCommands: UniqueDeque<PendingCommand>
+
+            consuming func cancel(requestID: Int) -> ActiveStateCancelAction {
+                var withRequestID = UniqueDeque<PendingCommand>()
+                var withoutRequestID = UniqueDeque<PendingCommand>()
+                while let command = self.pendingCommands.popFirst() {
                     if command.requestID == requestID {
                         withRequestID.append(command)
                     } else {
                         withoutRequestID.append(command)
                     }
                 }
-                return (withRequestID, withoutRequestID)
+                return ActiveStateCancelAction(cancelled: withRequestID, connectionClosedDueToCancellation: withoutRequestID)
             }
         }
 
         @usableFromInline
-        struct ConnectedState {
+        struct ConnectedState: ~Copyable {
             let context: Context
             let pendingHelloCommand: PendingCommand
-            var pendingCommands: Deque<PendingCommand>
+            var pendingCommands: UniqueDeque<PendingCommand>
+
+            init(
+                context: Context,
+                pendingHelloCommand: consuming PendingCommand,
+                pendingCommands: consuming UniqueDeque<PendingCommand>
+            ) {
+                self.context = context
+                self.pendingHelloCommand = pendingHelloCommand
+                self.pendingCommands = pendingCommands
+            }
         }
 
         init() {
@@ -72,11 +89,19 @@ extension ValkeyChannelHandler {
 
         /// handler has become active
         @usableFromInline
-        mutating func setConnected(context: Context, pendingHelloCommand: PendingCommand, pendingCommands: Deque<PendingCommand>) {
+        mutating func setConnected(
+            context: Context,
+            pendingHelloCommand: consuming PendingCommand,
+            pendingCommands: consuming UniqueDeque<PendingCommand>
+        ) {
             switch consume self.state {
             case .initialized:
                 self = .connected(
-                    .init(context: context, pendingHelloCommand: pendingHelloCommand, pendingCommands: pendingCommands)
+                    ConnectedState(
+                        context: context,
+                        pendingHelloCommand: pendingHelloCommand,
+                        pendingCommands: pendingCommands
+                    )
                 )
             case .connected:
                 preconditionFailure("Cannot set connected state when state is connected")
@@ -90,35 +115,60 @@ extension ValkeyChannelHandler {
         }
 
         @usableFromInline
-        enum SendCommandAction {
+        enum SendCommandAction: ~Copyable {
             case sendCommand(Context)
-            case throwError(ValkeyClientError)
+            case throwError(ValkeyClientError, PendingCommand)
         }
 
         /// handler wants to send a command
         @usableFromInline
-        mutating func sendCommand(_ pendingCommand: PendingCommand) -> SendCommandAction {
-            self.sendCommands(CollectionOfOne(pendingCommand))
-        }
-
-        /// handler wants to send pipelined commands
-        @usableFromInline
-        mutating func sendCommands(_ pendingCommands: some Collection<PendingCommand>) -> SendCommandAction {
+        mutating func sendCommand(_ pendingCommand: consuming PendingCommand) -> SendCommandAction {
             switch consume self.state {
             case .initialized:
                 preconditionFailure("Cannot send command when initialized")
             case .connected:
                 preconditionFailure("Cannot send command when in connected state")
             case .active(var state):
-                state.pendingCommands.append(contentsOf: pendingCommands)
+                let context = state.context
+                state.pendingCommands.append(pendingCommand)
                 self = .active(state)
-                return .sendCommand(state.context)
+                return .sendCommand(context)
             case .closing(let state):
                 self = .closing(state)
-                return .throwError(ValkeyClientError(.connectionClosing))
+                return .throwError(ValkeyClientError(.connectionClosing), pendingCommand)
             case .closed(let error):
                 self = .closed(error)
-                return .throwError(ValkeyClientError(.connectionClosed))
+                return .throwError(ValkeyClientError(.connectionClosed), pendingCommand)
+            }
+        }
+
+        @usableFromInline
+        enum SendCommandsAction: ~Copyable {
+            case sendCommand(Context)
+            case throwError(ValkeyClientError, UniqueDeque<PendingCommand>)
+        }
+
+        /// handler wants to send pipelined commands
+        @usableFromInline
+        mutating func sendCommands(_ pendingCommands: consuming UniqueDeque<PendingCommand>) -> SendCommandsAction {
+            switch consume self.state {
+            case .initialized:
+                preconditionFailure("Cannot send command when initialized")
+            case .connected:
+                preconditionFailure("Cannot send command when in connected state")
+            case .active(var state):
+                let context = state.context
+                while let command = pendingCommands.popFirst() {
+                    state.pendingCommands.append(command)
+                }
+                self = .active(state)
+                return .sendCommand(context)
+            case .closing(let state):
+                self = .closing(state)
+                return .throwError(ValkeyClientError(.connectionClosing), pendingCommands)
+            case .closed(let error):
+                self = .closed(error)
+                return .throwError(ValkeyClientError(.connectionClosed), pendingCommands)
             }
         }
 
@@ -130,7 +180,7 @@ extension ValkeyChannelHandler {
         }
 
         @usableFromInline
-        enum ReceivedResponseAction {
+        enum ReceivedResponseAction: ~Copyable {
             case respond(PendingCommand, DeadlineCallbackAction)
             case respondAndClose(PendingCommand, ValkeyClientError?)
             case closeWithError(ValkeyClientError)
@@ -149,20 +199,23 @@ extension ValkeyChannelHandler {
                     self = .closed(error)
                     return .respondAndClose(state.pendingHelloCommand, error)
                 default:
-                    self = .active(.init(context: state.context, pendingCommands: state.pendingCommands))
+                    self = .active(ActiveState(context: state.context, pendingCommands: state.pendingCommands))
                     return .respond(state.pendingHelloCommand, .cancel)
                 }
-            case .active(var state):
-                guard let command = state.pendingCommands.popFirst() else {
+            case .active(let state):
+                var pendingCommands = state.pendingCommands
+                let context = state.context
+                guard let command = pendingCommands.popFirst() else {
                     self = .closed(nil)
                     return .closeWithError(ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"))
                 }
-                self = .active(state)
+                let nextCommandDeadline = pendingCommands.isEmpty ? nil : pendingCommands[pendingCommands.startIndex].deadline
+                self = .active(ActiveState(context: context, pendingCommands: pendingCommands))
                 let deadlineCallback: DeadlineCallbackAction =
-                    if let nextCommand = state.pendingCommands.first {
-                        if nextCommand.deadline < command.deadline {
+                    if let nextCommandDeadline {
+                        if nextCommandDeadline < command.deadline {
                             // if the next command has an earlier deadline than the current then reschedule the callback
-                            .reschedule(nextCommand.deadline)
+                            .reschedule(nextCommandDeadline)
                         } else {
                             // otherwise do nothing
                             .doNothing
@@ -176,12 +229,13 @@ extension ValkeyChannelHandler {
                 guard let command = state.pendingCommands.popFirst() else {
                     preconditionFailure("Cannot be in closing state with no pending commands")
                 }
-                if let nextCommand = state.pendingCommands.first {
+                let nextCommandDeadline = state.pendingCommands.isEmpty ? nil : state.pendingCommands[state.pendingCommands.startIndex].deadline
+                if let nextCommandDeadline {
                     self = .closing(state)
                     let deadlineCallback: DeadlineCallbackAction =
-                        if nextCommand.deadline < command.deadline {
+                        if nextCommandDeadline < command.deadline {
                             // if the next command has an earlier deadline than the current then reschedule the callback
-                            .reschedule(nextCommand.deadline)
+                            .reschedule(nextCommandDeadline)
                         } else {
                             // otherwise do nothing
                             .doNothing
@@ -212,11 +266,27 @@ extension ValkeyChannelHandler {
             case .initialized:
                 preconditionFailure("Cannot wait until connection has succeeded")
             case .connected(let state):
-                switch state.pendingHelloCommand.promise {
+                let pendingCommands = state.pendingCommands
+                let pendingHelloCommand = state.pendingHelloCommand
+
+                switch consume pendingHelloCommand.promise {
                 case .nio(let promise):
-                    self = .connected(state)
+                    self = .connected(
+                        ConnectedState(
+                            context: state.context,
+                            pendingHelloCommand: .init(
+                                promise: .nio(promise),
+                                requestID: pendingHelloCommand.requestID,
+                                deadline: pendingHelloCommand.deadline
+                            ),
+                            pendingCommands: pendingCommands
+                        )
+                    )
                     return .waitForPromise(promise)
-                case .swift, .forget:
+                case .swift:
+                    preconditionFailure("Connected state cannot be setup with a Swift continuation")
+
+                case .forget:
                     preconditionFailure("Connected state cannot be setup with a Swift continuation")
                 }
             case .active(let state):
@@ -232,8 +302,8 @@ extension ValkeyChannelHandler {
         }
 
         @usableFromInline
-        enum HitDeadlineAction {
-            case failPendingCommandsAndClose(Context, Deque<PendingCommand>)
+        enum HitDeadlineAction: ~Copyable {
+            case failPendingCommandsAndClose(Context, UniqueDeque<PendingCommand>)
             case reschedule(NIODeadline)
             case clearCallback
         }
@@ -250,33 +320,42 @@ extension ValkeyChannelHandler {
                     pendingCommands.prepend(state.pendingHelloCommand)
                     return .failPendingCommandsAndClose(state.context, pendingCommands)
                 } else {
+                    let deadline = state.pendingHelloCommand.deadline
                     self = .connected(state)
-                    return .reschedule(state.pendingHelloCommand.deadline)
+                    return .reschedule(deadline)
                 }
             case .active(let state):
-                if let firstCommand = state.pendingCommands.first {
-                    if firstCommand.deadline <= now {
-                        self = .closed(ValkeyClientError(.timeout))
-                        return .failPendingCommandsAndClose(state.context, state.pendingCommands)
-                    } else {
-                        self = .active(state)
-                        return .reschedule(firstCommand.deadline)
-                    }
-                } else {
-                    self = .active(state)
-                    return .clearCallback
-                }
+                fatalError()
+//                let context = state.context
+//                let pendingCommands = consume state.pendingCommands
+//                let firstCommandDeadline: NIODeadline? = if pendingCommands.isEmpty { nil } else { pendingCommands[pendingCommands.startIndex].deadline }
+//                if let firstCommandDeadline {
+//                    if firstCommandDeadline <= now {
+//                        self = .closed(ValkeyClientError(.timeout))
+//                        return .failPendingCommandsAndClose(context, consume pendingCommands)
+//                    } else {
+//                        self = .active(ActiveState(context: context, pendingCommands: consume pendingCommands))
+//                        return .reschedule(firstCommandDeadline)
+//                    }
+//                } else {
+//                    self = .active(ActiveState(context: context, pendingCommands: pendingCommands))
+//                    return .clearCallback
+//                }
             case .closing(let state):
-                guard let firstCommand = state.pendingCommands.first else {
-                    preconditionFailure("Cannot be in closing state with no pending commands")
-                }
-                if firstCommand.deadline <= now {
-                    self = .closed(ValkeyClientError(.timeout))
-                    return .failPendingCommandsAndClose(state.context, state.pendingCommands)
-                } else {
-                    self = .closing(state)
-                    return .reschedule(firstCommand.deadline)
-                }
+                fatalError()
+//                let context = state.context
+//                let pendingCommands = state.pendingCommands
+//                let firstCommandDeadline = pendingCommands.isEmpty ? nil : pendingCommands[pendingCommands.startIndex].deadline
+//                guard let firstCommandDeadline else {
+//                    preconditionFailure("Cannot be in closing state with no pending commands")
+//                }
+//                if firstCommandDeadline <= now {
+//                    self = .closed(ValkeyClientError(.timeout))
+//                    return .failPendingCommandsAndClose(context, pendingCommands)
+//                } else {
+//                    self = .closing(ActiveState(context: context, pendingCommands: pendingCommands))
+//                    return .reschedule(firstCommandDeadline)
+//                }
             case .closed(let error):
                 self = .closed(error)
                 return .clearCallback
@@ -284,8 +363,8 @@ extension ValkeyChannelHandler {
         }
 
         @usableFromInline
-        enum CancelAction {
-            case failPendingCommandsAndClose(Context, cancel: [PendingCommand], closeConnectionDueToCancel: [PendingCommand])
+        enum CancelAction: ~Copyable {
+            case failPendingCommandsAndClose(Context, cancel: ActiveStateCancelAction)
             case doNothing
         }
 
@@ -298,29 +377,29 @@ extension ValkeyChannelHandler {
             case .connected:
                 preconditionFailure("Cannot cancel while in connected state")
             case .active(let state):
-                let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
-                if cancel.count > 0 {
+                let context = state.context
+                let cancelAction = state.cancel(requestID: requestID)
+                if cancelAction.cancelled.count > 0 {
                     self = .closed(ValkeyClientError(.cancelled))
                     return .failPendingCommandsAndClose(
-                        state.context,
-                        cancel: cancel,
-                        closeConnectionDueToCancel: closeConnectionDueToCancel
+                        context,
+                        cancel: cancelAction
                     )
                 } else {
-                    self = .active(state)
+                    self = .active(ActiveState(context: context, pendingCommands: cancelAction.connectionClosedDueToCancellation))
                     return .doNothing
                 }
             case .closing(let state):
-                let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
-                if cancel.count > 0 {
+                let context = state.context
+                let cancelAction = state.cancel(requestID: requestID)
+                if cancelAction.cancelled.count > 0 {
                     self = .closed(ValkeyClientError(.cancelled))
                     return .failPendingCommandsAndClose(
-                        state.context,
-                        cancel: cancel,
-                        closeConnectionDueToCancel: closeConnectionDueToCancel
+                        context,
+                        cancel: cancelAction
                     )
                 } else {
-                    self = .closing(state)
+                    self = .closing(ActiveState(context: context, pendingCommands: cancelAction.connectionClosedDueToCancellation))
                     return .doNothing
                 }
             case .closed(let error):
@@ -344,11 +423,11 @@ extension ValkeyChannelHandler {
             case .connected(let state):
                 var pendingCommands = state.pendingCommands
                 pendingCommands.prepend(state.pendingHelloCommand)
-                self = .closing(.init(context: state.context, pendingCommands: pendingCommands))
+                self = .closing(ActiveState(context: state.context, pendingCommands: pendingCommands))
                 return .doNothing
             case .active(let state):
                 if state.pendingCommands.count > 0 {
-                    self = .closing(.init(context: state.context, pendingCommands: state.pendingCommands))
+                    self = .closing(ActiveState(context: state.context, pendingCommands: state.pendingCommands))
                     return .doNothing
                 } else {
                     self = .closed(nil)
@@ -364,8 +443,8 @@ extension ValkeyChannelHandler {
         }
 
         @usableFromInline
-        enum CloseAction {
-            case failPendingCommandsAndClose(Context, Deque<PendingCommand>)
+        enum CloseAction: ~Copyable {
+            case failPendingCommandsAndClose(Context, UniqueDeque<PendingCommand>)
             case doNothing
         }
         /// Want to close the connection
@@ -379,7 +458,7 @@ extension ValkeyChannelHandler {
                 self = .closed(nil)
                 var pendingCommands = state.pendingCommands
                 pendingCommands.prepend(state.pendingHelloCommand)
-                return .failPendingCommandsAndClose(state.context, state.pendingCommands)
+                return .failPendingCommandsAndClose(state.context, pendingCommands)
             case .active(let state):
                 self = .closed(nil)
                 return .failPendingCommandsAndClose(state.context, state.pendingCommands)
@@ -393,8 +472,8 @@ extension ValkeyChannelHandler {
         }
 
         @usableFromInline
-        enum SetClosedAction {
-            case failPendingCommandsAndSubscriptions(Deque<PendingCommand>)
+        enum SetClosedAction: ~Copyable {
+            case failPendingCommandsAndSubscriptions(UniqueDeque<PendingCommand>)
             case doNothing
         }
 
@@ -426,15 +505,15 @@ extension ValkeyChannelHandler {
             StateMachine(.initialized)
         }
 
-        private static func connected(_ state: ConnectedState) -> Self {
+        private static func connected(_ state: consuming ConnectedState) -> Self {
             StateMachine(.connected(state))
         }
 
-        private static func active(_ state: ActiveState) -> Self {
+        private static func active(_ state: consuming ActiveState) -> Self {
             StateMachine(.active(state))
         }
 
-        private static func closing(_ state: ActiveState) -> Self {
+        private static func closing(_ state: consuming ActiveState) -> Self {
             StateMachine(.closing(state))
         }
 
