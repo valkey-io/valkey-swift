@@ -456,7 +456,7 @@ extension RESPToken.Map: RESPTokenDecodable {
         return .init(array) { first, _ in first }
     }
 
-    /// Convert RESPToken Map to a Array of Key Value pairs
+    /// Convert RESPToken Map to an Array of Key Value pairs
     /// - Parameter type: Type to convert to
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: String value dictionary
