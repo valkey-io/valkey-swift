@@ -80,4 +80,4 @@ let result = try await asyncResult
 
 Use caution when sharing a single connection across multiple tasks.
 The result of a command becomes available only when the results of all previously queued commands have arrived.
-A command that either blocks the connection or takes a long time can affect the response time of commands that follow it.
+A command that either blocks the connection or takes a long time affects the response time of commands that follow it.
