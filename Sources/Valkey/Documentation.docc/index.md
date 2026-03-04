@@ -1,6 +1,6 @@
 # ``Valkey``
 
-Connect to and interact with a Valkey key-value data store from Swift.
+Connect to and interact with a Valkey database from Swift.
 
 ## Overview
 
