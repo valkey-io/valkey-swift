@@ -186,11 +186,13 @@ extension ValkeyClient {
         }
     }
 
+    /// Run ROLE command and update topology based on results
     func runRoleAction() async {
         var primary: ValkeyServerAddress?
         var replicas: [ValkeyServerAddress]?
         let nodeClient = self.getNode(readOnly: false)
-        if let role = try? await nodeClient.execute(ROLE()) {
+        do {
+            let role = try await nodeClient.execute(ROLE())
             switch role {
             case .primary(let primaryState):
                 replicas = primaryState.replicas.map { .hostname($0.ip, port: $0.port) }
@@ -215,15 +217,25 @@ extension ValkeyClient {
             }
             switch action.nextAction {
             case .refreshTopology:
-                self.actionStreamContinuation.yield(.runRole)
+                self.queueAction(.runRole)
             case .startTimer(let timer):
-                self.actionStreamContinuation.yield(.runTimer(timer))
+                self.queueAction(.runTimer(timer))
             case .doNothing:
                 break
+            }
+        } catch {
+            let action = self.stateMachine.withLock { $0.topologyRefreshFailed() }
+            if let timer = action.retryTimer {
+                self.queueAction(.runTimer(timer))
             }
         }
     }
 
+    /// Run timer action
+    ///
+    /// Run timer task that triggers timer after specified time, register timer cancellation token with
+    /// state machine and run second task waiting on cancellation token. Wait for one of these tasks to
+    /// finish and cancel the other
     func runTimerAction(_ timer: ValkeyTimer) async {
         await withTaskGroup(of: Void.self) { taskGroup in
             taskGroup.addTask {
@@ -263,7 +275,7 @@ extension ValkeyClient {
     func runTimerFiredAction(_ action: StateMachine.TimerFiredAction) {
         switch action {
         case .runRole:
-            self.actionStreamContinuation.yield(.runRole)
+            self.queueAction(.runRole)
 
         case .doNothing:
             break
@@ -578,6 +590,7 @@ extension ValkeyClient {
         switch action.nextAction {
         case .refreshTopology(let cancelTimer):
             cancelTimer?.yield()
+            self.queueAction(.runRole)
         case .doNothing:
             break
         }
