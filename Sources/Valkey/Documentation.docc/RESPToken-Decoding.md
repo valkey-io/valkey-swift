@@ -9,7 +9,7 @@ It's simple, human-readable, and fast to parse.
 It can serialize many different types, including strings, integers, doubles, arrays, and maps.
 For more information about RESP, see the [Valkey documentation](https://valkey.io/topics/protocol/).
 
-Valkey represents a raw RESP token using ``RESPToken``.
+The Valkey client represents a raw RESP token using ``RESPToken``.
 ``RESPToken/Value`` is an enum representing a parsed RESP value, with cases for each data type a RESP token can represent.
 
 Most Valkey commands return the Swift equivalent of their expected response type.
