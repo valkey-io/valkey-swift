@@ -268,10 +268,6 @@ where
     package mutating func valkeyClusterDiscoverySucceeded(
         _ topology: ValkeyClusterTopology
     ) -> ClusterDiscoverySucceededAction {
-        // If we are shutdown ignore
-        if case .shutdown = self.clusterState {
-            return .init()
-        }
         switch self.refreshState {
         case .notRefreshing, .waitingForRefresh:
             preconditionFailure("Invalid state: \(self.refreshState)")
@@ -352,10 +348,6 @@ where
     package mutating func valkeyClusterDiscoveryFailed(
         _ error: any Error
     ) -> ClusterDiscoveryFailedAction {
-        // If we are shutdown ignore
-        if case .shutdown = self.clusterState {
-            return .init()
-        }
         switch self.refreshState {
         case .notRefreshing, .waitingForRefresh:
             preconditionFailure("Invalid state: \(self.refreshState)")
