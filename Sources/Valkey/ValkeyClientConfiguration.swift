@@ -80,12 +80,12 @@ public struct ValkeyClientConfiguration: Sendable {
 
     /// Retry parameters for when a client needs to retry a command
     public struct RetryParameters: Sendable {
-        let exponentBase: Double
-        let factor: Double
-        let minWaitTime: Double
-        let maxWaitTime: Double
+        var exponentBase: Double
+        var factor: Double
+        var minWaitTime: Double
+        var maxWaitTime: Double
         @usableFromInline
-        let maxAttempts: Int
+        var maxAttempts: Int
 
         /// Initialize RetryParameters
         /// - Parameters:

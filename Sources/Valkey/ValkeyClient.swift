@@ -187,31 +187,46 @@ extension ValkeyClient {
     }
 
     /// Run ROLE command and update topology based on results
-    func runRoleAction() async {
-        var replicas: [ValkeyServerAddress] = []
+    private func runRoleAction() async {
+        var primary: ValkeyServerAddress?
+        var replicas: [ValkeyServerAddress]?
         let nodeClient = self.getNode(readOnly: false)
-        if let role = try? await nodeClient.execute(ROLE()) {
+        do {
+            let role = try await nodeClient.execute(ROLE())
             switch role {
-            case .primary(let primary):
-                replicas = primary.replicas.map { .hostname($0.ip, port: $0.port) }
-                self.logger.debug("Found replicas \(replicas)")
+            case .primary(let primaryState):
+                replicas = primaryState.replicas.map { .hostname($0.ip, port: $0.port) }
+                self.logger.debug("Found replicas \(replicas!)")
 
             case .replica(let replica):
                 if !self.configuration.connectingToReplica {
-                    // if client is pointing to a replica then redirect to the primary
-                    self.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort))
+                    primary = .hostname(replica.primaryIP, port: replica.primaryPort)
+                    self.logger.debug("Redirect to primary \(primary!)")
                 }
                 break
             case .sentinel:
                 preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
             }
 
-            let action = self.stateMachine.withLock { $0.addReplicas(nodeIDs: replicas) }
+            let action = self.stateMachine.withLock { $0.topologyRefreshSucceeded(primary: primary, replicas: replicas) }
             for node in action.clientsToRun {
                 self.queueAction(.runNodeClient(node))
             }
             for node in action.clientsToShutdown {
                 node.triggerGracefulShutdown()
+            }
+            switch action.nextAction {
+            case .refreshTopology:
+                self.queueAction(.runRole)
+            case .startTimer(let timer):
+                self.queueAction(.runTimer(timer))
+            case .doNothing:
+                break
+            }
+        } catch {
+            let action = self.stateMachine.withLock { $0.topologyRefreshFailed() }
+            if let timer = action.retryTimer {
+                self.queueAction(.runTimer(timer))
             }
         }
     }
@@ -221,7 +236,7 @@ extension ValkeyClient {
     /// Run timer task that triggers timer after specified time, register timer cancellation token with
     /// state machine and run second task waiting on cancellation token. Wait for one of these tasks to
     /// finish and cancel the other
-    func runTimerAction(_ timer: ValkeyTimer) async {
+    private func runTimerAction(_ timer: ValkeyTimer) async {
         await withTaskGroup(of: Void.self) { taskGroup in
             taskGroup.addTask {
                 do {
@@ -569,13 +584,12 @@ extension ValkeyClient {
     @usableFromInline
     /* private */ func setPrimary(_ address: ValkeyServerAddress) {
         let action = self.stateMachine.withLock { $0.setPrimary(address) }
-        switch action {
-        case .runNode(let client):
-            self.queueAction(.runNodeClient(client))
-        case .runNodeAndFindReplicas(let client):
-            self.queueAction(.runNodeClient(client))
-            self.queueAction(.runRole)
-        case .findReplicas:
+        if let node = action.nodeToRun {
+            self.queueAction(.runNodeClient(node))
+        }
+        switch action.nextAction {
+        case .refreshTopology(let cancelTimer):
+            cancelTimer?.yield()
             self.queueAction(.runRole)
         case .doNothing:
             break
