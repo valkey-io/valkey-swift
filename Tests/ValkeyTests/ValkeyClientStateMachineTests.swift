@@ -10,10 +10,14 @@ import Testing
 @testable import Valkey
 
 struct ValkeyClientStateMachineTests {
+    struct TimerCancellationToken: Sendable {
+        var id: Int
+    }
     @available(valkeySwift 1.0, *)
     typealias TestStateMachine = ValkeyClientStateMachine<
         MockClient<ValkeyClientNodeDescription>,
-        MockClientFactory<ValkeyClientNodeDescription>
+        MockClientFactory<ValkeyClientNodeDescription>,
+        TimerCancellationToken
     >
 
     @Test
