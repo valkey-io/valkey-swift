@@ -204,36 +204,39 @@ struct ValkeyClientStateMachine<
         var clientsToRun: [ConnectionPool] = []
     }
 
-    mutating func topologyRefreshSucceeded(primary: ValkeyServerAddress?, replicas: [ValkeyServerAddress]?) -> TopologyRefreshAction {
+    /// Input to topologyRefreshSucceeded
+    enum TopologyRefreshInput {
+        /// We are connected to a primary and here is a list of its replicas
+        case primary(replicas: [ValkeyServerAddress])
+        /// We are connected to a replica and here is its primary
+        case replica(primary: ValkeyServerAddress)
+    }
+
+    /// Report topology refresh
+    ///
+    /// Depending on what node we are connected to we either get a primary node or a list of replicas
+    mutating func topologyRefreshSucceeded(_ topology: TopologyRefreshInput) -> TopologyRefreshAction {
         // If we are shutdown ignore
         guard case .running(let nodes) = self.state else {
             return .init()
         }
+
         switch self.topologyRefreshState {
         case .notRefreshing, .waitingForNextRefresh:
             preconditionFailure("Invalid state: \(self.topologyRefreshState)")
 
         case .refreshing:
-            let newPrimary = primary ?? nodes.primary
-            let newReplicas = replicas ?? []
-            let rebuildPools = (replicas != nil)
-            var nodeDescriptions = [
-                ValkeyClientNodeDescription(address: newPrimary)
-            ]
-            nodeDescriptions.append(
-                contentsOf: newReplicas.lazy.map { ValkeyClientNodeDescription(address: $0) }
-            )
-            let newNodes = ValkeyNodeIDs(primary: newPrimary, replicas: newReplicas)
-            self.state = .running(newNodes)
-            let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: rebuildPools)
-            // if primary was set but no replicas were set then refresh topology to get replica list
-            if primary != nil, replicas == nil {
-                return .init(
-                    nextAction: .refreshTopology,
-                    clientsToShutdown: action.poolsToShutdown,
-                    clientsToRun: action.poolsToRun.map { $0.0 }
+            switch topology {
+            case .primary(let replicas):
+                var nodeDescriptions = [
+                    ValkeyClientNodeDescription(address: nodes.primary)
+                ]
+                nodeDescriptions.append(
+                    contentsOf: replicas.lazy.map { ValkeyClientNodeDescription(address: $0) }
                 )
-            } else {
+                let newNodes = ValkeyNodeIDs(primary: nodes.primary, replicas: replicas)
+                self.state = .running(newNodes)
+                let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: true)
                 let refreshTimerID = self.nextTimerID()
                 self.topologyRefreshState = .waitingForNextRefresh(.init(timer: .init(id: refreshTimerID)))
                 return .init(
@@ -244,6 +247,19 @@ struct ValkeyClientStateMachine<
                             duration: self.configuration.topologyRefreshInterval
                         )
                     ),
+                    clientsToShutdown: action.poolsToShutdown,
+                    clientsToRun: action.poolsToRun.map { $0.0 }
+                )
+
+            case .replica(let primary):
+                let nodeDescriptions = [
+                    ValkeyClientNodeDescription(address: primary)
+                ]
+                let newNodes = ValkeyNodeIDs(primary: primary, replicas: [])
+                self.state = .running(newNodes)
+                let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: false)
+                return .init(
+                    nextAction: .refreshTopology,
                     clientsToShutdown: action.poolsToShutdown,
                     clientsToRun: action.poolsToRun.map { $0.0 }
                 )

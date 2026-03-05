@@ -188,27 +188,30 @@ extension ValkeyClient {
 
     /// Run ROLE command and update topology based on results
     private func runRoleAction() async {
-        var primary: ValkeyServerAddress?
-        var replicas: [ValkeyServerAddress]?
+        var topology: StateMachine.TopologyRefreshInput
         let nodeClient = self.getNode(readOnly: false)
         do {
             let role = try await nodeClient.execute(ROLE())
             switch role {
             case .primary(let primaryState):
-                replicas = primaryState.replicas.map { .hostname($0.ip, port: $0.port) }
-                self.logger.debug("Found replicas \(replicas!)")
+                let replicas = primaryState.replicas.map { ValkeyServerAddress.hostname($0.ip, port: $0.port) }
+                topology = .primary(replicas: replicas)
+                self.logger.debug("Found replicas \(replicas)")
 
             case .replica(let replica):
                 if !self.configuration.connectingToReplica {
-                    primary = .hostname(replica.primaryIP, port: replica.primaryPort)
-                    self.logger.debug("Redirect to primary \(primary!)")
+                    let primary = ValkeyServerAddress.hostname(replica.primaryIP, port: replica.primaryPort)
+                    topology = .replica(primary: primary)
+                    self.logger.debug("Redirect to primary \(primary)")
+                } else {
+                    topology = .primary(replicas: [])
                 }
                 break
             case .sentinel:
                 preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
             }
 
-            let action = self.stateMachine.withLock { $0.topologyRefreshSucceeded(primary: primary, replicas: replicas) }
+            let action = self.stateMachine.withLock { $0.topologyRefreshSucceeded(topology) }
             for node in action.clientsToRun {
                 self.queueAction(.runNodeClient(node))
             }

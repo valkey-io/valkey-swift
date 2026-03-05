@@ -42,10 +42,7 @@ struct ValkeyClientStateMachineTests {
             #expect(cancelTimer == nil)
 
             // replicas found, should return timer for topology refresh
-            let refreshAction = stateMachine.topologyRefreshSucceeded(
-                primary: nil,
-                replicas: replicas
-            )
+            let refreshAction = stateMachine.topologyRefreshSucceeded(.primary(replicas: replicas))
             guard case .startTimer(let timer) = refreshAction.nextAction else {
                 Issue.record()
                 return nil
@@ -125,8 +122,7 @@ struct ValkeyClientStateMachineTests {
         let timerFired = stateMachine.timerFired(timer)
         #expect(timerFired == .runRole)
         let refreshAction2 = stateMachine.topologyRefreshSucceeded(
-            primary: nil,
-            replicas: [.hostname("127.0.0.1", port: 9002), .hostname("127.0.0.1", port: 9003)]
+            .primary(replicas: [.hostname("127.0.0.1", port: 9002), .hostname("127.0.0.1", port: 9003)])
         )
 
         #expect(refreshAction2.clientsToRun.count == 1)
@@ -159,8 +155,7 @@ struct ValkeyClientStateMachineTests {
         }
         // topology refresh
         _ = stateMachine.topologyRefreshSucceeded(
-            primary: nil,
-            replicas: [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9003)]
+            .primary(replicas: [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9003)])
         )
     }
 
@@ -181,8 +176,7 @@ struct ValkeyClientStateMachineTests {
         #expect(cancelTimer?.id == 1)
         // topology refresh
         let refreshAction = stateMachine.topologyRefreshSucceeded(
-            primary: nil,
-            replicas: [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9003)]
+            .primary(replicas: [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9003)])
         )
         guard case .startTimer(let timer2) = refreshAction.nextAction else {
             Issue.record()
