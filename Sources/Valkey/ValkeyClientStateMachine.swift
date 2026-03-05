@@ -10,12 +10,21 @@
 @available(valkeySwift 1.0, *)
 struct ValkeyClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
-    ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory
+    ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory,
+    TimerCancellationToken: Sendable
 > where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription == ValkeyNodeClientFactory.NodeDescription {
+    /// State machine timer description
+    @usableFromInline
+    struct Timer: Sendable {
+        let id: Int
+        var cancellationToken: TimerCancellationToken?
+    }
+    /// current state
     @usableFromInline
     enum State {
         case uninitialized
         case running(ValkeyNodeIDs<ValkeyServerAddress>)
+        case shutdown
     }
     @usableFromInline
     var runningClients: ValkeyRunningClientsStateMachine<ConnectionPool, ConnectionPoolFactory>
@@ -98,6 +107,64 @@ struct ValkeyClientStateMachine<
             let newNodes = ValkeyNodeIDs(primary: nodes.primary, replicas: nodeIDs)
             self.state = .running(newNodes)
             return .init(clientsToShutdown: action.poolsToShutdown, clientsToRun: action.poolsToRun.map { $0.0 })
+        case .shutdown:
+            return .init(clientsToShutdown: [], clientsToRun: [])
         }
+    }
+
+    enum TimerFiredAction {
+        case runRole
+        case doNothing
+    }
+
+    mutating func timerFired(_ timer: ValkeyTimer) -> TimerFiredAction {
+        switch timer.useCase {
+        case .nextTopologyDiscovery:
+            switch self.state {
+            case .uninitialized:
+                preconditionFailure("Invalid state: \(self.state)")
+            case .running:
+                break
+            case .shutdown:
+                return .doNothing
+            }
+
+            return .runRole
+        }
+    }
+
+    enum RegisterTimerCancellationTokenAction {
+        case cancelTimer(TimerCancellationToken)
+        case doNothing
+    }
+
+    mutating func registerTimerCancellationToken(_ token: TimerCancellationToken, for timer: ValkeyTimer) -> RegisterTimerCancellationTokenAction {
+        switch timer.useCase {
+        case .nextTopologyDiscovery:
+            switch self.state {
+            case .shutdown, .uninitialized:
+                return .cancelTimer(token)
+            case .running:
+                break
+            }
+            return .doNothing
+        }
+    }
+}
+
+@available(valkeySwift 1.0, *)
+package struct ValkeyTimer: Sendable, Hashable {
+    package enum UseCase: Hashable {
+        case nextTopologyDiscovery
+    }
+
+    package var useCase: UseCase
+    package var duration: Duration
+    package var timerID: Int
+
+    package init(timerID: Int, useCase: UseCase, duration: Duration) {
+        self.useCase = useCase
+        self.timerID = timerID
+        self.duration = duration
     }
 }
