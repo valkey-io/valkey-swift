@@ -35,7 +35,7 @@ public final class ValkeyClient: Sendable {
     @usableFromInline
     let clock = ContinuousClock()
     /// EventLoopGroup to use
-    let eventLoopGroup: any EventLoopGroup
+    var eventLoopGroup: any EventLoopGroup { self.nodeClientFactory.eventLoopGroup }
     /// Logger
     let logger: Logger
     /// running atomic
@@ -106,7 +106,6 @@ public final class ValkeyClient: Sendable {
             ),
             eventLoopGroup: eventLoopGroup
         )
-        self.eventLoopGroup = eventLoopGroup
         self.logger = logger
         self.runningAtomic = .init(false)
         self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))

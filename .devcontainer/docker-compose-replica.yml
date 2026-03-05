@@ -28,6 +28,8 @@ services:
     environment:
       - VALKEY_PRIMARY_HOSTNAME=127.0.0.1
       - VALKEY_PRIMARY_PORT=9000
+      - VALKEY_SENTINEL_HOSTNAME=127.0.0.1
+      - VALKEY_SENTINEL_PORT=10000
     command: sleep infinity
 
   valkey:
@@ -70,18 +72,18 @@ services:
     network_mode: "host"
     volumes:
       - ../valkey:/valkey
-    command: valkey-sentinel /valkey/sentinel/sentinel1.conf --port 9003
+    command: valkey-sentinel /valkey/sentinel/sentinel1.conf --port 10000
 
   valkey_sentinel_2:
     image: 'valkey/valkey:latest'
     network_mode: "host"
     volumes:
       - ../valkey:/valkey
-    command: valkey-sentinel /valkey/sentinel/sentinel2.conf --port 9004
+    command: valkey-sentinel /valkey/sentinel/sentinel2.conf --port 10001
 
   valkey_sentinel_3:
     image: 'valkey/valkey:latest'
     network_mode: "host"
     volumes:
       - ../valkey:/valkey
-    command: valkey-sentinel /valkey/sentinel/sentinel3.conf --port 9005
+    command: valkey-sentinel /valkey/sentinel/sentinel3.conf --port 10002
