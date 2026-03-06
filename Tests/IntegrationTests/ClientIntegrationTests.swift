@@ -8,6 +8,7 @@
 import Foundation
 import Logging
 import NIOCore
+import ServiceLifecycle
 import Testing
 import Valkey
 
@@ -159,6 +160,24 @@ struct ClientIntegratedTests {
         }
         await #expect(throws: ValkeyClientError(.clientIsShutDown)) {
             _ = try await client.get("sdf65fsdf").map { String($0) }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testServiceLifecycleGracefulShutdown() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+
+        let client = ValkeyClient(.hostname(valkeyHostname, port: 6379), configuration: .init(), logger: logger)
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            let serviceGroup = ServiceGroup(services: [client], logger: logger)
+            group.addTask {
+                try await serviceGroup.run()
+            }
+            _ = try await client.info()
+            await serviceGroup.triggerGracefulShutdown()
         }
     }
 

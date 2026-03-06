@@ -167,6 +167,8 @@ extension ValkeyClient {
     }
 }
 
+// MARK: Actions
+
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
     func queueAction(_ action: RunAction) {
