@@ -103,89 +103,15 @@ extension ValkeySentinelClient {
     private func runSentinelDiscoveryAction(runNodeDiscoveryFirst: Bool) async {
         do {
             self.logger.trace("Running node discovery")
-            let nodes =
+            let voters =
                 if runNodeDiscoveryFirst {
                     try await runNodeDiscovery(self.nodeDiscovery)
                 } else {
                     stateMachine.withLock { $0.getSentinelClients() }
                 }
-            try await withThrowingTaskGroup(of: (RESPToken.Array, ValkeyServerAddress).self) { taskGroup in
-                for node in nodes {
-                    taskGroup.addTask {
-                        let sentinelsResponse = try await node.execute(SENTINEL.SENTINELS(primaryName: self.primaryName))
-                        return (sentinelsResponse, node.serverAddress)
-                    }
-                }
-
-                var election = ValkeyTopologyElection<ValkeySentinelNodes, ValkeyServerAddress>()
-
-                while let result = await taskGroup.nextResult() {
-                    switch result {
-                    case .success((let sentinelsResponse, let serverAddress)):
-                        do {
-                            let nodes = sentinelsResponse.asMap().map {
-                                ValkeyNodeDescription(endpoint: $0.key.decode(as: String.self), port: $0.value.decode(as: Int.self))
-                            }
-                            let sentinelNodes = ValkeySentinelNodes(nodes)
-                            let metrics = try election.voteReceived(for: sentinelNodes, from: serverAddress)
-
-                            self.logger.debug(
-                                "Vote received",
-                                metadata: [
-                                    "candidate_count": "\(metrics.candidateCount)",
-                                    "candidate": "\(metrics.candidate)",
-                                    "votes_received": "\(metrics.votesReceived)",
-                                    "votes_needed": "\(metrics.votesNeeded)",
-                                ]
-                            )
-                        } catch let error as ValkeyClusterError {
-                            self.logger.debug(
-                                "Vote invalid",
-                                metadata: [
-                                    "nodeID": "\(serverAddress)",
-                                    "error": "\(error)",
-                                ]
-                            )
-                            continue
-                        }
-
-                        if let electionWinner = election.winner {
-                            taskGroup.cancelAll()
-                            return electionWinner
-                        }
-
-                        // ensure that we have pools for all returned nodes so that we can reach consensus
-                        let action = self.stateMachine.withLock { $0.updateSentinelNodes(sentinelNodes) }
-                        for node in action.clientsToRun {
-                            self.queueAction(.runNodeClient(node))
-                        }
-                        for node in action.clientsToShutdown {
-                            node.triggerGracefulShutdown()
-                        }
-
-                        for node in action.clients {
-                            taskGroup.addTask {
-                                let sentinelsResponse = try await node.execute(SENTINEL.SENTINELS(primaryName: self.primaryName))
-                                return (sentinelsResponse, node.serverAddress)
-                            }
-                        }
-
-                    case .failure(let error):
-                        self.logger.debug(
-                            "Received an error while asking for cluster topology",
-                            metadata: [
-                                "error": "\(error)"
-                            ]
-                        )
-                    }
-                }
-
-                // no consensus reached
-                throw ValkeyClientError.init(.timeout)
-            }
-            let sentinelNodes = ValkeySentinelNodes(nodes)
+            let sentinelNodes = try await self.runSentinelConsensusDiscoveryAction(voters: voters)
             let action = self.stateMachine.withLock {
-                $0.updateSentinelNodes(sentinelNodes)
+                $0.topologyDiscoverySucceeded(sentinelNodes)
             }
             for node in action.clientsToRun {
                 self.queueAction(.runNodeClient(node))
@@ -199,7 +125,7 @@ extension ValkeySentinelClient {
 
             self.logger.debug(
                 "Discovered nodes",
-                metadata: ["node_count": "\(nodes.count)"]
+                metadata: ["node_count": "\(sentinelNodes.nodes.count)"]
             )
         } catch {
             self.logger.debug(
@@ -214,6 +140,73 @@ extension ValkeySentinelClient {
         }
     }
 
+    private func runSentinelConsensusDiscoveryAction(voters: [ValkeyNodeClient]) async throws -> ValkeySentinelNodes {
+        try await withThrowingTaskGroup(of: (ValkeySentinelNodes, ValkeyServerAddress).self) { taskGroup in
+            for node in voters {
+                taskGroup.addTask {
+                    (try await self.getSentinelList(node), node.serverAddress)
+                }
+            }
+
+            var election = ValkeyTopologyElection<ValkeySentinelNodes, ValkeyServerAddress>()
+
+            while let result = await taskGroup.nextResult() {
+                switch result {
+                case .success((let sentinels, let serverAddress)):
+                    let metrics = election.voteReceived(for: sentinels, from: serverAddress)
+
+                    self.logger.debug(
+                        "Vote received",
+                        metadata: [
+                            "candidate_count": "\(metrics.candidateCount)",
+                            "candidate": "\(metrics.candidate)",
+                            "votes_received": "\(metrics.votesReceived)",
+                            "votes_needed": "\(metrics.votesNeeded)",
+                        ]
+                    )
+
+                    if let electionWinner = election.winner {
+                        taskGroup.cancelAll()
+                        return electionWinner
+                    }
+
+                    // ensure that we have pools for all returned nodes so that we can reach consensus
+                    let action = self.stateMachine.withLock { $0.updateSentinelNodes(sentinels) }
+                    runUpdateSentinelNodesAction(action)
+
+                    for node in action.clients {
+                        taskGroup.addTask {
+                            (try await self.getSentinelList(node), node.serverAddress)
+                        }
+                    }
+
+                case .failure(let error):
+                    self.logger.debug(
+                        "Received an error while asking for sentinel node list",
+                        metadata: [
+                            "error": "\(error)"
+                        ]
+                    )
+                }
+            }
+            // no consensus reached
+            throw ValkeyClientError.init(.timeout)
+        }
+    }
+
+    private func getSentinelList(_ node: ValkeyNodeClient) async throws -> ValkeySentinelNodes {
+        let sentinelsResponse = try await node.execute(SENTINEL.SENTINELS(primaryName: self.primaryName))
+        var nodes = try sentinelsResponse.map {
+            let (endpoint, port) = try $0.decodeMapValues("ip", "port", as: (String, Int).self)
+            return ValkeyNodeDescription(endpoint: endpoint, port: port)
+        }
+        guard case .hostname(let hostname, let port) = node.serverAddress.value else {
+            fatalError("Sentinel address is not ip/port")
+        }
+        nodes.append(.init(endpoint: hostname, port: port))
+        return .init(nodes)
+    }
+
     private func runNodeDiscovery(_ nodeDiscovery: some ValkeyNodeDiscovery) async throws -> [ValkeyNodeClient] {
         self.logger.trace("Running node discovery")
         let nodes = try await nodeDiscovery.lookupNodes()
@@ -221,13 +214,17 @@ extension ValkeySentinelClient {
         let action = self.stateMachine.withLock {
             $0.updateSentinelNodes(sentinelNodes)
         }
+        runUpdateSentinelNodesAction(action)
+        return action.clients
+    }
+
+    private func runUpdateSentinelNodesAction(_ action: StateMachine.UpdateNodesAction) {
         for node in action.clientsToRun {
             self.queueAction(.runNodeClient(node))
         }
         for node in action.clientsToShutdown {
             node.triggerGracefulShutdown()
         }
-        return action.clients
     }
 
     public func getPrimaryNode() async throws -> ValkeyServerAddress {
