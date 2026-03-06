@@ -5,6 +5,8 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+
+import DequeModule
 import NIOSSL
 import Synchronization
 
@@ -13,7 +15,20 @@ import Synchronization
 package protocol ValkeySSLContextProvider: Sendable {
 
     func getSSLContext() async throws -> NIOSSLContext
+}
 
+final class NonCopyableSmugleBox<Value: ~Copyable> {
+    var value: Value?
+
+    init(_ value: consuming Value) {
+        self.value = consume value
+    }
+
+    func get() -> Value {
+        var result: Value?
+        swap(&self.value, &result)
+        return result!
+    }
 }
 
 @available(valkeySwift 1.0, *)
@@ -24,7 +39,7 @@ final class SSLContextCache: ValkeySSLContextProvider {
 
     enum State: ~Copyable {
         case initialized
-        case producing([ValkeyPromise<NIOSSLContext>])
+        case producing(UniqueDeque<ValkeyPromise<NIOSSLContext>>)
         case cached(NIOSSLContext)
         case failed(any Error)
     }
@@ -34,27 +49,31 @@ final class SSLContextCache: ValkeySSLContextProvider {
     }
 
     func getSSLContext() async throws -> NIOSSLContext {
-        enum Action {
+        enum Action: ~Copyable {
             case produce
-            case succeed(NIOSSLContext)
-            case fail(any Error)
+            case succeed(NIOSSLContext, Continuation<NIOSSLContext, any Error>)
+            case fail(any Error, Continuation<NIOSSLContext, any Error>)
             case wait
         }
 
-        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<NIOSSLContext, any Error>) in
+        return try await withThrowingContinuation(of: NIOSSLContext.self) { continuation in
+            let box = NonCopyableSmugleBox(continuation)
             let action = self.stateLock.withLock { state -> Action in
+                let continuation = box.get()
                 switch consume state {
                 case .initialized:
-                    state = .producing([.swift(continuation)])
+                    var deque = UniqueDeque<ValkeyPromise<NIOSSLContext>>()
+                    deque.append(.swift(continuation))
+                    state = .producing(deque)
                     return .produce
 
                 case .cached(let context):
                     state = .cached(context)
-                    return .succeed(context)
+                    return .succeed(context, continuation)
 
                 case .failed(let error):
                     state = .failed(error)
-                    return .fail(error)
+                    return .fail(error, continuation)
 
                 case .producing(var continuations):
                     continuations.append(.swift(continuation))
@@ -63,7 +82,7 @@ final class SSLContextCache: ValkeySSLContextProvider {
                 }
             }
 
-            switch action {
+            switch consume action {
             case .wait:
                 break
 
@@ -74,19 +93,19 @@ final class SSLContextCache: ValkeySSLContextProvider {
                     for: tlsConfiguration
                 )
 
-            case .succeed(let context):
+            case .succeed(let context, let continuation):
                 continuation.resume(returning: context)
 
-            case .fail(let error):
+            case .fail(let error, let continuation):
                 continuation.resume(throwing: error)
             }
         }
     }
 
     private func reportProduceSSLContextResult(_ result: Result<NIOSSLContext, any Error>, for tlsConfiguration: TLSConfiguration) {
-        enum Action {
-            case fail(any Error, [ValkeyPromise<NIOSSLContext>])
-            case succeed(NIOSSLContext, [ValkeyPromise<NIOSSLContext>])
+        enum Action: ~Copyable {
+            case fail(any Error, UniqueDeque<ValkeyPromise<NIOSSLContext>>)
+            case succeed(NIOSSLContext, UniqueDeque<ValkeyPromise<NIOSSLContext>>)
             case none
         }
 
@@ -120,11 +139,15 @@ final class SSLContextCache: ValkeySSLContextProvider {
         case .none:
             break
 
-        case .succeed(let context, let continuations):
-            for continuation in continuations { continuation.succeed(context) }
+        case .succeed(let context, var continuations):
+            while let continuation = continuations.popFirst() {
+                continuation.succeed(context)
+            }
 
-        case .fail(let error, let continuations):
-            for continuation in continuations { continuation.fail(error) }
+        case .fail(let error, var continuations):
+            while let continuation = continuations.popFirst() {
+                continuation.fail(error)
+            }
         }
     }
 }

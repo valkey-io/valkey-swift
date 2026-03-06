@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import DequeModule
 import Logging
 import NIOCore
 import NIOPosix
@@ -197,7 +198,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 if Task.isCancelled {
                     throw ValkeyClientError(.cancelled)
                 }
-                return try await withCheckedThrowingContinuation { continuation in
+                return try await withThrowingContinuation { continuation in
                     self.channelHandler.write(command: command, continuation: continuation, requestID: requestID)
                 }
             } onCancel: {
@@ -261,15 +262,18 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
+        var valkeyPromises = UniqueDeque<ValkeyPromise<RESPToken>>()
         var encoder = ValkeyCommandEncoder()
         for command in repeat each commands {
             command.encode(into: &encoder)
-            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+            let promise = self.channel.eventLoop.makePromise(of: RESPToken.self)
+            promises.append(promise)
+            valkeyPromises.append(ValkeyPromise.nio(promise))
         }
         return await _execute(
             buffer: encoder.buffer,
             promises: promises,
-            valkeyPromises: promises.map { .nio($0) }
+            valkeyPromises: valkeyPromises
         ) { promises in
             // get response from channel handler
             var index = AutoIncrementingInteger()
@@ -367,16 +371,20 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
         promises.reserveCapacity(commands.count)
+        var valkeyPromises = UniqueDeque<ValkeyPromise<RESPToken>>()
+        valkeyPromises.reserveCapacity(commands.count)
         var encoder = ValkeyCommandEncoder()
         for command in commands {
             command.encode(into: &encoder)
-            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+            let promise = self.channel.eventLoop.makePromise(of: RESPToken.self)
+            promises.append(promise)
+            valkeyPromises.append(ValkeyPromise.nio(promise))
         }
         let count = commands.count
         return await _execute(
             buffer: encoder.buffer,
             promises: promises,
-            valkeyPromises: promises.map { .nio($0) }
+            valkeyPromises: valkeyPromises
         ) { promises in
             // get response from channel handler
             var results: [Result<RESPToken, ValkeyClientError>] = .init()
@@ -408,7 +416,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
         promises.reserveCapacity(commands.count)
-        var valkeyPromises: [ValkeyPromise<RESPToken>] = []
+        var valkeyPromises = UniqueDeque<ValkeyPromise<RESPToken>>()
         valkeyPromises.reserveCapacity(commands.count * 2)
         var encoder = ValkeyCommandEncoder()
         for command in commands {
@@ -481,20 +489,28 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
+        var valkeyPromises = UniqueDeque<ValkeyPromise<RESPToken>>()
         MULTI().encode(into: &encoder)
-        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        let multiPromise = self.channel.eventLoop.makePromise(of: RESPToken.self)
+        promises.append(multiPromise)
+        valkeyPromises.append(.nio(multiPromise))
+
         for command in repeat each commands {
             command.encode(into: &encoder)
-            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+            let promise = self.channel.eventLoop.makePromise(of: RESPToken.self)
+            promises.append(promise)
+            valkeyPromises.append(.nio(promise))
         }
         EXEC().encode(into: &encoder)
-        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        let execPromise = self.channel.eventLoop.makePromise(of: RESPToken.self)
+        promises.append(execPromise)
+        valkeyPromises.append(.nio(execPromise))
 
         do {
             return try await _execute(
                 buffer: encoder.buffer,
                 promises: promises,
-                valkeyPromises: promises.map { .nio($0) }
+                valkeyPromises: valkeyPromises
             ) { promises -> sending Result<(repeat Result<(each Command).Response, ValkeyClientError>), ValkeyTransactionError> in
                 let responses: EXEC.Response
                 do {
@@ -539,7 +555,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 span.setStatus(SpanStatus(code: .error))
             }
             #endif
-            throw error
+            throw error // as! ValkeyTransactionError // TODO: Fix
         }
     }
 
@@ -641,21 +657,28 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
-        var promises: [EventLoopPromise<RESPToken>] = []
+        var promises = [EventLoopPromise<RESPToken>]()
+        var valkeyPromises = UniqueDeque<ValkeyPromise<RESPToken>>()
         MULTI().encode(into: &encoder)
-        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        let multiPromise = self.channel.eventLoop.makePromise(of: RESPToken.self)
+        promises.append(multiPromise)
+        valkeyPromises.append(ValkeyPromise.nio(multiPromise))
         for command in commands {
             command.encode(into: &encoder)
-            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+            let promise = self.channel.eventLoop.makePromise(of: RESPToken.self)
+            valkeyPromises.append(ValkeyPromise.nio(promise))
+            promises.append(promise)
         }
         EXEC().encode(into: &encoder)
-        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        let execPromise = self.channel.eventLoop.makePromise(of: RESPToken.self)
+        valkeyPromises.append(ValkeyPromise.nio(execPromise))
+        promises.append(execPromise)
 
         do {
             return try await _execute(
                 buffer: encoder.buffer,
                 promises: promises,
-                valkeyPromises: promises.map { .nio($0) },
+                valkeyPromises: valkeyPromises,
                 processResults: self._processTransactionPromises
             ).get()
         } catch {
@@ -685,14 +708,14 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         self.logger.trace("transaction asking", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
         var promises: [EventLoopPromise<RESPToken>] = []
         promises.reserveCapacity(commands.count)
-        var valkeyPromises: [ValkeyPromise<RESPToken>] = []
+        var valkeyPromises = UniqueDeque<ValkeyPromise<RESPToken>>()
         valkeyPromises.reserveCapacity(commands.count + 3)
         var encoder = ValkeyCommandEncoder()
         ASKING().encode(into: &encoder)
         MULTI().encode(into: &encoder)
         promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
-        valkeyPromises.append(.forget)
-        valkeyPromises.append(.nio(promises.last!))
+        valkeyPromises.append(ValkeyPromise.forget)
+        valkeyPromises.append(ValkeyPromise.nio(promises.last!))
 
         for command in commands {
             command.encode(into: &encoder)
@@ -719,11 +742,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     func _execute<Value>(
         buffer: ByteBuffer,
         promises: [EventLoopPromise<RESPToken>],
-        valkeyPromises: [ValkeyPromise<RESPToken>],
+        valkeyPromises: consuming UniqueDeque<ValkeyPromise<RESPToken>>,
         processResults: sending ([EventLoopPromise<RESPToken>]) async throws -> sending Value
     ) async rethrows -> Value {
         let requestID = Self.requestIDGenerator.next()
+        let box = NonCopyableSmugleBox(valkeyPromises)
         return try await withTaskCancellationHandler {
+            let valkeyPromises = box.get()
             if Task.isCancelled {
                 for promise in promises {
                     promise.fail(ValkeyClientError(.cancelled))
