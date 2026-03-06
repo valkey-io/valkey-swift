@@ -134,8 +134,11 @@ extension ValkeySentinelClient {
                     "error": "\(error)"
                 ]
             )
-            _ = self.stateMachine.withLock {
+            let action = self.stateMachine.withLock {
                 $0.topologyDiscoveryFailed(error: error)
+            }
+            for waiter in action.waitersToFail {
+                waiter.resume(throwing: error)
             }
         }
     }
@@ -148,9 +151,12 @@ extension ValkeySentinelClient {
                 }
             }
 
-            var election = ValkeyTopologyElection<ValkeySentinelNodes, ValkeyNodeID>()
+            var election = ValkeyTopologyElection<ValkeySentinelNodes>()
 
+            var primaryNameErrorCount = 0
+            var resultCount = 0
             while let result = await taskGroup.nextResult() {
+                resultCount += 1
                 switch result {
                 case .success((let sentinels, let serverAddress)):
                     let metrics = election.voteReceived(for: sentinels, from: serverAddress)
@@ -187,10 +193,19 @@ extension ValkeySentinelClient {
                             "error": "\(error)"
                         ]
                     )
+                    if let clientError = error as? ValkeyClientError, clientError.errorCode == .commandError,
+                        clientError.message == "ERR No such master with that name"
+                    {
+                        primaryNameErrorCount += 1
+                    }
                 }
             }
-            // no consensus reached
-            throw ValkeyClientError.init(.timeout)
+            if primaryNameErrorCount == resultCount {
+                throw ValkeySentinelError.sentinelUnknownPrimary
+            } else {
+                // no consensus reached
+                throw ValkeySentinelError.sentinelNoConsensusReached
+            }
         }
     }
 
@@ -265,7 +280,7 @@ extension ValkeySentinelClient {
                     break
                 }
             }
-            throw ValkeyClientError(.timeout)
+            throw ValkeySentinelError.sentinelIsUnavailable
         }
     }
 }

@@ -35,6 +35,25 @@ struct SentinelIntegrationTests {
         let primaryAddress = try await sentinelClient.getPrimaryNode()
         #expect(primaryAddress == .hostname("127.0.0.1", port: 9000))
     }
+
+    @Test
+    func testSentinelUnknownPrimary() async throws {
+        let logger = {
+            var logger = Logger(label: "testSentinelGetPrimary")
+            logger.logLevel = .trace
+            return logger
+        }()
+        let sentinelClient = ValkeySentinelClient(
+            primaryName: "unknown-primary",
+            nodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: sentinelHostname!, port: sentinelPort!)]),
+            configuration: .init(clientConfiguration: .init()),
+            logger: logger
+        )
+        async let _ = sentinelClient.run()
+        await #expect(throws: ValkeySentinelError.sentinelUnknownPrimary) {
+            _ = try await sentinelClient.getPrimaryNode()
+        }
+    }
 }
 
 private let sentinelHostname: String? = ProcessInfo.processInfo.environment["VALKEY_SENTINEL_HOSTNAME"]
