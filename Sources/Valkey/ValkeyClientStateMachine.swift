@@ -291,6 +291,7 @@ struct ValkeyClientStateMachine<
                     )
                 )
             } else {
+                self.topologyRefreshState = .notRefreshing
                 return .init(retryTimer: nil)
             }
         }
