@@ -18,7 +18,7 @@ struct ValkeyClientStateMachine<
     struct Configuration {
         let findReplicas: Bool
         let topologyRefreshInterval: Duration
-        var retryParameters: ValkeyClientConfiguration.RetryParameters
+        var backoffParameters: ValkeyClientConfiguration.RetryParameters
     }
     /// State machine timer description
     @usableFromInline
@@ -70,8 +70,8 @@ struct ValkeyClientStateMachine<
         self.topologyRefreshState = .notRefreshing
         self.configuration = .init(
             findReplicas: configuration.readOnlyCommandNodeSelection != .primary,
-            topologyRefreshInterval: configuration.primaryReplicaTopology.topologyRefreshInternal,
-            retryParameters: configuration.primaryReplicaTopology.retryRefreshBackoffParameters
+            topologyRefreshInterval: configuration.standalone.topologyRefreshInternal,
+            backoffParameters: configuration.standalone.topologyDiscoveryBackoffParameters
         )
     }
 
@@ -281,7 +281,7 @@ struct ValkeyClientStateMachine<
         case .refreshing(var refreshState):
             refreshState.attempts += 1
             self.topologyRefreshState = .refreshing(refreshState)
-            if let backoff = self.configuration.retryParameters.calculateWaitTime(attempt: refreshState.attempts - 1) {
+            if let backoff = self.configuration.backoffParameters.calculateWaitTime(attempt: refreshState.attempts - 1) {
                 let refreshTimerID = self.nextTimerID()
                 return .init(
                     retryTimer: .init(

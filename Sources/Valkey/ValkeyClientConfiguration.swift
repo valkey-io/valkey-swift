@@ -212,12 +212,12 @@ public struct ValkeyClientConfiguration: Sendable {
         public static var cycleAllNodes: Self { .init(value: .cycleAllNodes) }
     }
 
-    public struct PrimaryReplicaTopology: Sendable {
+    public struct StandaloneConfiguration: Sendable {
         /// Interval between each Primary/Replica topology refresh
         public let topologyRefreshInternal: Duration
 
-        /// Calculate backoff if topology refresh fails
-        public let retryRefreshBackoffParameters: RetryParameters
+        /// Calculate backoff if topology discovery fails
+        public let topologyDiscoveryBackoffParameters: RetryParameters
 
         /// Initialize primary/replica configuration
         /// - Parameters:
@@ -225,10 +225,10 @@ public struct ValkeyClientConfiguration: Sendable {
         ///   - retryRefreshBackoffParameters: Calculate backoff if topology refresh fails
         public init(
             topologyRefreshInternal: Duration = .seconds(30),
-            retryRefreshBackoffParameters: RetryParameters = .init(maxAttempts: .max)
+            topologyDiscoveryBackoffParameters: RetryParameters = .init(maxAttempts: .max)
         ) {
             self.topologyRefreshInternal = topologyRefreshInternal
-            self.retryRefreshBackoffParameters = retryRefreshBackoffParameters
+            self.topologyDiscoveryBackoffParameters = topologyDiscoveryBackoffParameters
         }
     }
 
@@ -279,10 +279,10 @@ public struct ValkeyClientConfiguration: Sendable {
     /// This is only valid when used with `ValkeyClient`as it is a standalone client feature.
     public var connectingToReplica: Bool
 
-    /// Primary/Replica Topology configuration
+    /// Standalone with replicas configuration
     ///
     /// Configuration details for when when we are connecting to a standalone client with replicas
-    public var primaryReplicaTopology: PrimaryReplicaTopology
+    public var standalone: StandaloneConfiguration
 
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for the Valkey connection.
@@ -328,6 +328,6 @@ public struct ValkeyClientConfiguration: Sendable {
         self.readOnlyCommandNodeSelection = readOnlyCommandNodeSelection
         self.enableClientCapaRedirect = enableClientCapaRedirect
         self.connectingToReplica = connectingToReplica
-        self.primaryReplicaTopology = .init()
+        self.standalone = .init()
     }
 }
