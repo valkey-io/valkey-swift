@@ -32,8 +32,10 @@ struct SentinelIntegrationTests {
             logger: logger
         )
         async let _ = sentinelClient.run()
-        let primaryAddress = try await sentinelClient.getPrimaryNode()
-        #expect(primaryAddress == .hostname("127.0.0.1", port: 9000))
+        let nodes = try await sentinelClient.getNodes()
+        #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
+        #expect(nodes.replicas.contains(where: { $0 == .hostname("127.0.0.1", port: 9001) }))
+        #expect(nodes.replicas.contains(where: { $0 == .hostname("127.0.0.1", port: 9002) }))
     }
 
     @Test
@@ -51,7 +53,7 @@ struct SentinelIntegrationTests {
         )
         async let _ = sentinelClient.run()
         await #expect(throws: ValkeySentinelError.sentinelUnknownPrimary) {
-            _ = try await sentinelClient.getPrimaryNode()
+            _ = try await sentinelClient.getNodes()
         }
     }
 }
