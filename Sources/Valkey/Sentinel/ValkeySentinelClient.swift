@@ -58,19 +58,9 @@ package final class ValkeySentinelClient: Sendable {
     }
 
     /// Run ValkeyClient connection pool
-    public func run() async {
+    package func run() async {
         self.queueAction(.runSentinelDiscovery(runNodeDiscover: true))
 
-        #if ServiceLifecycleSupport
-        await cancelWhenGracefulShutdown {
-            await self._withTaskGroup()
-        }
-        #else
-        await self._withTaskGroup()
-        #endif
-    }
-
-    private func _withTaskGroup() async {
         /// Run discarding task group running actions
         await withDiscardingTaskGroup { group in
             for await action in self.actionStream {
@@ -78,6 +68,55 @@ package final class ValkeySentinelClient: Sendable {
                     await self.runAction(action)
                 }
             }
+        }
+    }
+
+    package func getNodes() async throws -> ValkeyNodeIDs<ValkeyServerAddress> {
+        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
+            switch self.stateMachine.withLock({ $0.waitForDiscovery(cont) }) {
+            case .complete:
+                cont.resume()
+            case .fail(let error):
+                cont.resume(throwing: error)
+            case .doNothing:
+                break
+            }
+        }
+        let sentinels = self.stateMachine.withLock({ $0.getSentinelClients() })
+        return try await withThrowingTaskGroup(of: (index: Int, address: ValkeyNodeIDs<ValkeyServerAddress>).self) { group in
+            for index in 0..<sentinels.count {
+                group.addTask {
+                    let (primaryResult, replicaResults) = await sentinels[index].execute(
+                        SENTINEL.GETPRIMARYADDRBYNAME(primaryName: self.primaryName),
+                        SENTINEL.REPLICAS(primaryName: self.primaryName)
+                    )
+                    let (primaryHost, primaryPort) = try primaryResult.get().decodeElements(as: (String, Int).self)
+                    let replicas = try replicaResults.get().map {
+                        let (host, port) = try $0.decodeMapValues("ip", "port", as: (String, Int).self)
+                        return ValkeyServerAddress.hostname(host, port: port)
+                    }
+                    return (index, .init(primary: .hostname(primaryHost, port: primaryPort), replicas: replicas))
+                }
+            }
+            group.addTask {
+                try await Task.sleep(for: .milliseconds(500))
+                throw CancellationError()
+            }
+            while let result = await group.nextResult() {
+                switch result {
+                case .success(let successfulResult):
+                    return successfulResult.address
+                case .failure(let error):
+                    switch error {
+                    case is CancellationError:
+                        throw ValkeyClientError(.timeout)
+                    default:
+                        break
+                    }
+                    break
+                }
+            }
+            throw ValkeySentinelError.sentinelIsUnavailable
         }
     }
 }
@@ -239,48 +278,6 @@ extension ValkeySentinelClient {
         }
         for node in action.clientsToShutdown {
             node.triggerGracefulShutdown()
-        }
-    }
-
-    public func getPrimaryNode() async throws -> ValkeyServerAddress {
-        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
-            switch self.stateMachine.withLock({ $0.waitForDiscovery(cont) }) {
-            case .complete:
-                cont.resume()
-            case .fail(let error):
-                cont.resume(throwing: error)
-            case .doNothing:
-                break
-            }
-        }
-        let sentinels = self.stateMachine.withLock({ $0.getSentinelClients() })
-        return try await withThrowingTaskGroup(of: (index: Int, address: ValkeyServerAddress).self) { group in
-            for index in 0..<sentinels.count {
-                group.addTask {
-                    let primaryName = try await sentinels[index].execute(SENTINEL.GETPRIMARYADDRBYNAME(primaryName: self.primaryName))
-                    let (host, port) = try primaryName.decodeElements(as: (String, Int).self)
-                    return (index, .hostname(host, port: port))
-                }
-            }
-            group.addTask {
-                try await Task.sleep(for: .milliseconds(500))
-                throw CancellationError()
-            }
-            while let result = await group.nextResult() {
-                switch result {
-                case .success(let successfulResult):
-                    return successfulResult.address
-                case .failure(let error):
-                    switch error {
-                    case is CancellationError:
-                        throw ValkeyClientError(.timeout)
-                    default:
-                        break
-                    }
-                    break
-                }
-            }
-            throw ValkeySentinelError.sentinelIsUnavailable
         }
     }
 }
