@@ -8,6 +8,7 @@
 import Foundation
 import Logging
 import NIOCore
+import ServiceLifecycle
 import Testing
 import XCTest
 
@@ -69,6 +70,30 @@ struct ClusterIntegrationTests {
                     #expect(response.map { String($0) } == "Hello")
                 }
             }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testServiceLifecycleGracefulShutdown() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+
+        let client = ValkeyClusterClient(
+            nodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: firstNodeHostname, port: firstNodePort)]),
+            configuration: .init(),
+            logger: logger
+        )
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            let serviceGroup = ServiceGroup(services: [client], logger: logger)
+            group.addTask {
+                try await serviceGroup.run()
+            }
+            _ = try await client.info()
+            await serviceGroup.triggerGracefulShutdown()
         }
     }
 
