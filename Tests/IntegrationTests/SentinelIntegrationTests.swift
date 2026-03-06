@@ -21,7 +21,7 @@ struct SentinelIntegrationTests {
     @Test
     func testSentinelGetPrimary() async throws {
         let logger = {
-            var logger = Logger(label: "testRedirectErrorFromReplica")
+            var logger = Logger(label: "testSentinelGetPrimary")
             logger.logLevel = .trace
             return logger
         }()
