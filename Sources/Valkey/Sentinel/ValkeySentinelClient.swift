@@ -15,11 +15,11 @@ import Synchronization
 package final class ValkeySentinelClient: Sendable {
     @usableFromInline
     typealias StateMachine = ValkeySentinelClientStateMachine<
-        ValkeyNodeClient, ValkeyNodeClientFactory, CheckedContinuation<Void, any Error>, AsyncStream<Void>.Continuation
+        ValkeyNodeClient, ValkeyClusterNodeClientFactory, CheckedContinuation<Void, any Error>, AsyncStream<Void>.Continuation
     >
 
     let primaryName: String
-    let nodeClientFactory: ValkeyNodeClientFactory
+    let nodeClientFactory: ValkeyClusterNodeClientFactory
     /// single node
     @usableFromInline
     let stateMachine: Mutex<StateMachine>
@@ -41,7 +41,7 @@ package final class ValkeySentinelClient: Sendable {
         logger: Logger
     ) {
         let connectionFactory = ValkeyConnectionFactory(configuration: configuration.clientConfiguration)
-        self.nodeClientFactory = ValkeyNodeClientFactory(
+        self.nodeClientFactory = ValkeyClusterNodeClientFactory(
             logger: logger,
             configuration: connectionFactory.configuration,
             connectionFactory: ValkeyConnectionFactory(
@@ -107,7 +107,7 @@ extension ValkeySentinelClient {
                 if runNodeDiscoveryFirst {
                     try await runNodeDiscovery(self.nodeDiscovery)
                 } else {
-                    stateMachine.withLock { $0.getSentinelClients() }
+                    stateMachine.withLock { $0.getInitialVoters() }
                 }
             let sentinelNodes = try await self.runSentinelConsensusDiscoveryAction(voters: voters)
             let action = self.stateMachine.withLock {
@@ -140,15 +140,15 @@ extension ValkeySentinelClient {
         }
     }
 
-    private func runSentinelConsensusDiscoveryAction(voters: [ValkeyNodeClient]) async throws -> ValkeySentinelNodes {
-        try await withThrowingTaskGroup(of: (ValkeySentinelNodes, ValkeyServerAddress).self) { taskGroup in
-            for node in voters {
+    private func runSentinelConsensusDiscoveryAction(voters: [ValkeyTopologyVoter<ValkeyNodeClient>]) async throws -> ValkeySentinelNodes {
+        try await withThrowingTaskGroup(of: (ValkeySentinelNodes, ValkeyNodeID).self) { taskGroup in
+            for voter in voters {
                 taskGroup.addTask {
-                    (try await self.getSentinelList(node), node.serverAddress)
+                    (try await self.getSentinelList(voter.client), voter.nodeID)
                 }
             }
 
-            var election = ValkeyTopologyElection<ValkeySentinelNodes, ValkeyServerAddress>()
+            var election = ValkeyTopologyElection<ValkeySentinelNodes, ValkeyNodeID>()
 
             while let result = await taskGroup.nextResult() {
                 switch result {
@@ -174,9 +174,9 @@ extension ValkeySentinelClient {
                     let action = self.stateMachine.withLock { $0.updateSentinelNodes(sentinels) }
                     runUpdateSentinelNodesAction(action)
 
-                    for node in action.clients {
+                    for voter in action.voters {
                         taskGroup.addTask {
-                            (try await self.getSentinelList(node), node.serverAddress)
+                            (try await self.getSentinelList(voter.client), voter.nodeID)
                         }
                     }
 
@@ -207,7 +207,7 @@ extension ValkeySentinelClient {
         return .init(nodes)
     }
 
-    private func runNodeDiscovery(_ nodeDiscovery: some ValkeyNodeDiscovery) async throws -> [ValkeyNodeClient] {
+    private func runNodeDiscovery(_ nodeDiscovery: some ValkeyNodeDiscovery) async throws -> [ValkeyTopologyVoter<ValkeyNodeClient>] {
         self.logger.trace("Running node discovery")
         let nodes = try await nodeDiscovery.lookupNodes()
         let sentinelNodes = ValkeySentinelNodes(nodes.map { ValkeyNodeDescription(description: $0) })
@@ -215,7 +215,7 @@ extension ValkeySentinelClient {
             $0.updateSentinelNodes(sentinelNodes)
         }
         runUpdateSentinelNodesAction(action)
-        return action.clients
+        return action.voters
     }
 
     private func runUpdateSentinelNodesAction(_ action: StateMachine.UpdateNodesAction) {

@@ -13,7 +13,9 @@ struct ValkeySentinelClientStateMachine<
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory,
     WaiterToken: Sendable,
     TimerCancellationToken: Sendable
-> where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription == ValkeyNodeClientFactory.NodeDescription {
+>
+where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription == ValkeyClusterNodeClientFactory.NodeDescription
+{
     /// Configuration
     @usableFromInline
     struct Configuration {}
@@ -48,6 +50,21 @@ struct ValkeySentinelClientStateMachine<
         self.runningClients = .init(poolFactory: poolFactory)
     }
 
+    func getInitialVoters() -> [ValkeyTopologyVoter<ConnectionPool>] {
+        switch self.state {
+        case .unavailable, .shutdown:
+            return []
+        case .degraded(let degradedState):
+            return degradedState.nodes.nodes.compactMap { (element) -> ValkeyTopologyVoter<ConnectionPool>? in
+                self.runningClients[element.id].map { .init(client: $0.pool, nodeID: $0.nodeID) }
+            }
+        case .healthy(let healthyState):
+            return healthyState.nodes.nodes.compactMap { (element) -> ValkeyTopologyVoter<ConnectionPool>? in
+                self.runningClients[element.id].map { .init(client: $0.pool, nodeID: $0.nodeID) }
+            }
+        }
+    }
+
     func getSentinelClients() -> [ConnectionPool] {
         switch self.state {
         case .unavailable, .shutdown:
@@ -66,14 +83,14 @@ struct ValkeySentinelClientStateMachine<
     struct UpdateNodesAction {
         let clientsToRun: [ConnectionPool]
         let clientsToShutdown: [ConnectionPool]
-        let clients: [ConnectionPool]
+        let voters: [ValkeyTopologyVoter<ConnectionPool>]
     }
     mutating func updateSentinelNodes(_ nodes: ValkeySentinelNodes) -> UpdateNodesAction {
         let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: false)
         return .init(
             clientsToRun: action.poolsToRun.map { $0.0 },
             clientsToShutdown: action.poolsToShutdown,
-            clients: self.runningClients.clients.map { $0.pool }
+            voters: action.poolsToRun.map { .init(client: $0.0, nodeID: $0.1) }
         )
     }
 
