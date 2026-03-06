@@ -1134,7 +1134,7 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
 
-            var election = ValkeyTopologyElection()
+            var election = ValkeyTopologyElection<ValkeyClusterTopology>()
 
             while let result = await taskGroup.nextResult() {
                 switch result {

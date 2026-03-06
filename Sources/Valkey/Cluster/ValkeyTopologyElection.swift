@@ -5,11 +5,18 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
-/// ``ValkeyTopologyElection`` manages the consensus process for electing a cluster topology.
+
+package protocol ValkeyTopologyElectable {
+    associatedtype Hash: Hashable
+    var votesNeeded: Int { get }
+    var topologyHash: Hash { get }
+}
+
+/// ``ValkeyTopologyElection`` manages the consensus process for electing a server topology.
 ///
-/// This struct tracks votes from cluster nodes for different topology candidates, keeping count of
+/// This struct tracks votes from differemt nodes for different topology candidates, keeping count of
 /// received votes and determining when a consensus is reached. Once a candidate receives more than half
-/// of the possible votes from all nodes in the cluster, it becomes the elected topology configuration.
+/// of the possible votes from all nodes, it becomes the elected topology configuration.
 ///
 /// The election process handles:
 /// - Recording votes from nodes
@@ -17,26 +24,26 @@
 /// - Managing revotes (nodes changing their vote)
 /// - Determining when a winner has been elected
 @available(valkeySwift 1.0, *)
-package struct ValkeyTopologyElection {
+package struct ValkeyTopologyElection<Topology: ValkeyTopologyElectable> {
     /// Represents a candidate in the topology election, tracking votes and thresholds.
     ///
-    /// Each candidate corresponds to a specific cluster description and maintains
+    /// Each candidate corresponds to a specific server topology and maintains
     /// count of the votes it has received and how many votes it needs to win.
     private struct Candidate {
-        /// The cluster configuration this candidate represents.
-        var topology: ValkeyClusterTopology
+        /// The server topology this candidate represents.
+        var topology: Topology
 
         /// The number of votes needed for this candidate to win the election.
-        /// Calculated as a simple majority of the total nodes in the cluster.
+        /// Calculated as a simple majority of the total nodes in the server topology.
         var needed: Int
 
         /// The number of votes this candidate has received so far.
         var received: Int
 
-        init(topology: ValkeyClusterTopology) {
+        init(topology: Topology) {
             self.topology = topology
             // Calculate the needed votes as a simple majority of all nodes across all shards
-            self.needed = topology.shards.reduce(0) { $0 + $1.nodes.count } / 2 + 1
+            self.needed = topology.votesNeeded
             self.received = 0
         }
 
@@ -58,7 +65,7 @@ package struct ValkeyTopologyElection {
         package var candidateCount: Int
 
         /// The specific topology candidate these metrics refer to.
-        package var candidate: ValkeyTopologyCandidate
+        package var candidate: Topology.Hash
 
         /// The number of votes this candidate has received so far.
         package var votesReceived: Int
@@ -68,16 +75,16 @@ package struct ValkeyTopologyElection {
         package var votesNeeded: Int
     }
 
-    private var votes = [ValkeyNodeID: ValkeyTopologyCandidate]()
-    private var results = [ValkeyTopologyCandidate: Candidate]()
+    private var votes = [ValkeyNodeID: Topology.Hash]()
+    private var results = [Topology.Hash: Candidate]()
 
-    /// The currently elected cluster configuration, if any.
+    /// The currently elected server topology configuration, if any.
     /// This is set to the first candidate that reaches the required vote threshold.
-    package private(set) var winner: ValkeyClusterTopology?
+    package private(set) var winner: Topology?
 
     package init() {}
 
-    /// Records a vote from a node for a specific cluster description.
+    /// Records a vote from a node for a specific server topology.
     ///
     /// This method handles the core voting logic:
     /// 1. If the node has voted before, its previous vote is removed
@@ -85,20 +92,18 @@ package struct ValkeyTopologyElection {
     /// 3. If this vote causes a candidate to reach the required threshold, it becomes the winner
     ///
     /// - Parameters:
-    ///   - topology: The cluster configuration the node is voting for
+    ///   - topology: The server topology the node is voting for
     ///   - voter: The ID of the node casting the vote
     ///
     /// - Returns: Metrics about the current state of the election after recording this vote
-    ///
-    /// - Throws: ``ValkeyClusterError`` if the provided cluster description cannot be converted to a valid topology candidate
     package mutating func voteReceived(
-        for topology: ValkeyClusterTopology,
+        for topology: Topology,
         from voter: ValkeyNodeID
-    ) throws(ValkeyClusterError) -> VoteMetrics {
+    ) -> VoteMetrics {
         // 1. check that the voter hasn't voted before.
         //    - if it has voted before, remove its earlier vote.
 
-        let topologyCandidate = try ValkeyTopologyCandidate(topology)
+        let topologyCandidate = topology.topologyHash
 
         if let previousVote = self.votes[voter] {
             self.results[previousVote]!.received -= 1
@@ -117,5 +122,16 @@ package struct ValkeyTopologyElection {
             votesReceived: self.results[topologyCandidate]!.received,
             votesNeeded: self.results[topologyCandidate]!.needed
         )
+    }
+}
+
+@available(valkeySwift 1.0, *)
+package struct ValkeyTopologyVoter<ConnectionPool: ValkeyNodeConnectionPool> {
+    package var client: ConnectionPool
+    package var nodeID: ValkeyNodeID
+
+    package init(client: ConnectionPool, nodeID: ValkeyNodeID) {
+        self.client = client
+        self.nodeID = nodeID
     }
 }
