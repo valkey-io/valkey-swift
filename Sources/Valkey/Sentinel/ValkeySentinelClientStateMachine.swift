@@ -133,6 +133,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     }
 
     struct DiscoveryFailedAction {
+        let waitersToFail: [WaiterToken]
     }
 
     mutating func topologyDiscoveryFailed(error: any Error) -> DiscoveryFailedAction {
@@ -141,16 +142,16 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             if unavailableState.error == nil {
                 self.state = .unavailable(.init(waiters: unavailableState.waiters, error: error))
             }
-            return .init()
+            return .init(waitersToFail: unavailableState.waiters)
         case .degraded:
-            return .init()
+            return .init(waitersToFail: [])
 
         case .healthy(let healthyState):
             self.state = .degraded(.init(nodes: healthyState.nodes))
-            return .init()
+            return .init(waitersToFail: [])
 
         case .shutdown:
-            return .init()
+            return .init(waitersToFail: [])
         }
     }
 
