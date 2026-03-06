@@ -37,11 +37,11 @@ struct ValkeyClientStateMachine<
     @usableFromInline
     enum TopologyRefreshState {
         @usableFromInline
-        struct WaitingState {
+        struct WaitingContext {
             var timer: Timer
         }
         @usableFromInline
-        struct RefreshState {
+        struct RefreshContext {
             var attempts: Int
 
             init(attempts: Int = 0) {
@@ -49,8 +49,8 @@ struct ValkeyClientStateMachine<
             }
         }
         case notRefreshing
-        case waitingForNextRefresh(WaitingState)
-        case refreshing(RefreshState)
+        case waitingForNextRefresh(WaitingContext)
+        case refreshing(RefreshContext)
     }
 
     @usableFromInline
@@ -68,12 +68,10 @@ struct ValkeyClientStateMachine<
         self.runningClients = .init(poolFactory: poolFactory)
         self.state = .uninitialized
         self.topologyRefreshState = .notRefreshing
-        var retryParameters = configuration.retryParameters
-        retryParameters.maxAttempts = .max
         self.configuration = .init(
             findReplicas: configuration.readOnlyCommandNodeSelection != .primary,
-            topologyRefreshInterval: .seconds(30),
-            retryParameters: retryParameters
+            topologyRefreshInterval: configuration.primaryReplicaTopology.topologyRefreshInternal,
+            retryParameters: configuration.primaryReplicaTopology.retryRefreshBackoffParameters
         )
     }
 
