@@ -7,9 +7,9 @@
 //
 
 package protocol ValkeyTopologyElectable {
-    associatedtype Hash: Hashable
+    associatedtype TopologyHashValue: Hashable
     var votesNeeded: Int { get }
-    var topologyHash: Hash { get }
+    var topologyHashValue: TopologyHashValue { get }
 }
 
 /// ``ValkeyTopologyElection`` manages the consensus process for electing a server topology.
@@ -65,7 +65,7 @@ package struct ValkeyTopologyElection<Topology: ValkeyTopologyElectable> {
         package var candidateCount: Int
 
         /// The specific topology candidate these metrics refer to.
-        package var candidate: Topology.Hash
+        package var candidate: Topology.TopologyHashValue
 
         /// The number of votes this candidate has received so far.
         package var votesReceived: Int
@@ -75,8 +75,8 @@ package struct ValkeyTopologyElection<Topology: ValkeyTopologyElectable> {
         package var votesNeeded: Int
     }
 
-    private var votes = [ValkeyNodeID: Topology.Hash]()
-    private var results = [Topology.Hash: Candidate]()
+    private var votes = [ValkeyNodeID: Topology.TopologyHashValue]()
+    private var results = [Topology.TopologyHashValue: Candidate]()
 
     /// The currently elected server topology configuration, if any.
     /// This is set to the first candidate that reaches the required vote threshold.
@@ -103,7 +103,7 @@ package struct ValkeyTopologyElection<Topology: ValkeyTopologyElectable> {
         // 1. check that the voter hasn't voted before.
         //    - if it has voted before, remove its earlier vote.
 
-        let topologyCandidate = topology.topologyHash
+        let topologyCandidate = topology.topologyHashValue
 
         if let previousVote = self.votes[voter] {
             self.results[previousVote]!.received -= 1

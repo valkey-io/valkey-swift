@@ -113,7 +113,7 @@ extension ValkeyClusterTopology: ValkeyTopologyElectable {
     package var votesNeeded: Int { self.shards.reduce(0) { $0 + $1.nodes.count } / 2 + 1 }
 
     // Calculate the hash by hashing each individial shard and then hashing those value together
-    package var topologyHash: Int {
+    package var topologyHashValue: Int {
         var hasher = Hasher()
         for shard in shards {
             var shardHasher = Hasher()
