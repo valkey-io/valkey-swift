@@ -8,11 +8,11 @@
 
 @usableFromInline
 struct ValkeySentinelNodes: Equatable, Sendable {
-    let nodes: [ValkeyClientNodeDescription]
+    let nodes: [ValkeyNodeDescription]
 
     /// Initial Sentinel node collection
     init(_ nodes: some Collection<ValkeyNodeDescription>) {
-        let nodes = nodes.map { ValkeyClientNodeDescription(address: .hostname($0.endpoint, port: $0.port)) }
+        let nodes = nodes.map { ValkeyNodeDescription(endpoint: $0.endpoint, port: $0.port) }
         self.nodes = nodes.sorted(by: { $0.id.hashValue < $1.id.hashValue })
     }
 }
@@ -25,7 +25,8 @@ extension ValkeySentinelNodes: ValkeyTopologyElectable {
     package var topologyHash: Int {
         var hasher = Hasher()
         for node in nodes {
-            hasher.combine(node.address)
+            hasher.combine(node.endpoint)
+            hasher.combine(node.port)
         }
         return hasher.finalize()
     }
