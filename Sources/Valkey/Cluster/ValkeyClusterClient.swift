@@ -1147,7 +1147,7 @@ public final class ValkeyClusterClient: Sendable {
                             "Vote received",
                             metadata: [
                                 "candidate_count": "\(metrics.candidateCount)",
-                                "candidate": "\(metrics.candidate)",
+                                "candidate": "\(topology)",
                                 "votes_received": "\(metrics.votesReceived)",
                                 "votes_needed": "\(metrics.votesNeeded)",
                             ]

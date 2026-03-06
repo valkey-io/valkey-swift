@@ -7,9 +7,9 @@
 //
 
 /// Cluster topology description with nodes assigned to roles
-package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
+package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStringConvertible {
     /// Details for a node within a cluster shard.
-    package struct Node: Hashable, Sendable, ValkeyNodeDescriptionProtocol {
+    package struct Node: Hashable, Sendable, ValkeyNodeDescriptionProtocol, CustomStringConvertible {
         /// The ID of the node
         package var id: String
         /// The port
@@ -27,12 +27,16 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
         }
 
         package var nodeID: ValkeyNodeID { .init(endpoint: self.endpoint, port: self.port) }
+
+        package var description: String {
+            "Node(\(endpoint):\(port))"
+        }
     }
 
     /// Shard description where nodes are allocated to their roles
     ///
     /// Failed replicas and failed primaries (if there is another online primary) are dropped
-    package struct Shard: Sendable, Equatable, Hashable {
+    package struct Shard: Sendable, Equatable, Hashable, CustomStringConvertible {
         package let slots: HashSlots
         package var primary: Node { nodes.last! }
         package let replicas: ArraySlice<Node>
@@ -88,6 +92,10 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
         package static func == (lhs: Self, rhs: Self) -> Bool {
             lhs.slots == rhs.slots && lhs.nodes == rhs.nodes
         }
+
+        package var description: String {
+            "Shard(primary: \(self.primary), replicas: [\(self.replicas.map(\.description).joined(separator: ", "))])"
+        }
     }
 
     /// Create ValkeyClusterTopology from ValkeyClusterDescription
@@ -103,6 +111,8 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
             (lhs.slots.first?.startIndex ?? .pastEnd) < (rhs.slots.first?.startIndex ?? .pastEnd)
         }
     }
+
+    package var description: String { "ValkeyClusterTopology([\(shards.map(\.description).joined(separator: ", "))])" }
 
     /// The individual portions of a valkey cluster, known as shards.
     package var shards: [Shard]

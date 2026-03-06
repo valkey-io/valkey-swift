@@ -64,9 +64,6 @@ package struct ValkeyTopologyElection<Topology: ValkeyTopologyElectable> {
         /// The total number of topology configurations being considered in this election.
         package var candidateCount: Int
 
-        /// The specific topology candidate these metrics refer to.
-        package var candidate: Topology.TopologyHashValue
-
         /// The number of votes this candidate has received so far.
         package var votesReceived: Int
 
@@ -118,7 +115,6 @@ package struct ValkeyTopologyElection<Topology: ValkeyTopologyElectable> {
 
         return VoteMetrics(
             candidateCount: self.results.count,
-            candidate: topologyCandidate,
             votesReceived: self.results[topologyCandidate]!.received,
             votesNeeded: self.results[topologyCandidate]!.needed
         )
