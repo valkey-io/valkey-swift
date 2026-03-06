@@ -1141,7 +1141,7 @@ public final class ValkeyClusterClient: Sendable {
                 case .success((let description, let nodeID)):
                     do {
                         let topology = try ValkeyClusterTopology(description)
-                        let metrics = try election.voteReceived(for: topology, from: nodeID)
+                        let metrics = election.voteReceived(for: topology, from: nodeID)
 
                         self.logger.debug(
                             "Vote received",

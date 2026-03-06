@@ -107,3 +107,22 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable {
     /// The individual portions of a valkey cluster, known as shards.
     package var shards: [Shard]
 }
+
+extension ValkeyClusterTopology: ValkeyTopologyElectable {
+    // Calculate the needed votes as a simple majority of all nodes across all shards
+    package var votesNeeded: Int { self.shards.reduce(0) { $0 + $1.nodes.count } / 2 + 1 }
+
+    // Calculate the hash by hashing each individial shard and then hashing those value together
+    package var topologyHash: Int {
+        var hasher = Hasher()
+        for shard in shards {
+            var shardHasher = Hasher()
+            for node in shard.nodes {
+                shardHasher.combine(node.endpoint)
+                shardHasher.combine(node.port)
+            }
+            hasher.combine(shardHasher.finalize())
+        }
+        return hasher.finalize()
+    }
+}
