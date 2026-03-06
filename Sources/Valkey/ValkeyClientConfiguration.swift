@@ -222,7 +222,7 @@ public struct ValkeyClientConfiguration: Sendable {
         /// Initialize primary/replica configuration
         /// - Parameters:
         ///   - topologyRefreshInternal: Interval between each Primary/Replica topology refresh
-        ///   - retryRefreshBackoffParameters: Calculate backoff if topology refresh fails
+        ///   - topologyDiscoveryBackoffParameters: Calculate backoff if topology refresh fails
         public init(
             topologyRefreshInternal: Duration = .seconds(30),
             topologyDiscoveryBackoffParameters: RetryParameters = .init(maxAttempts: .max)
