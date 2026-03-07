@@ -1,10 +1,11 @@
 # ``Valkey``
 
-A Swift client library for Valkey.
+Connect to and interact with a Valkey database from Swift.
 
 ## Overview
 
-Valkey-swift is a swift based client for Valkey, the high-performance key/value datastore. It supports all the Valkey commands, pipelining, transactions, subscriptions and Valkey clusters.
+This package provides a Swift client for Valkey, the high-performance key-value data store.
+It supports all the Valkey commands, pipelining, transactions, subscriptions, and Valkey clusters.
 
 ## Topics
 
