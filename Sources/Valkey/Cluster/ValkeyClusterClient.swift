@@ -590,6 +590,16 @@ public final class ValkeyClusterClient: Sendable {
         self.queueAction(.runTimer(circuitBreakerTimer))
         self.queueAction(.runClusterDiscovery(runNodeDiscovery: true))
 
+        #if ServiceLifecycleSupport
+        await cancelWhenGracefulShutdown {
+            await self._withTaskGroup()
+        }
+        #else
+        await self._withTaskGroup()
+        #endif
+    }
+
+    private func _withTaskGroup() async {
         await withTaskCancellationHandler {
             /// Run discarding task group running actions
             await withDiscardingTaskGroup { group in
@@ -603,8 +613,6 @@ public final class ValkeyClusterClient: Sendable {
             _ = self.stateLock.withLock {
                 $0.shutdown()
             }
-
-            // TODO: All the pools shutdown automatically because of task cancellation propagation
         }
     }
 
