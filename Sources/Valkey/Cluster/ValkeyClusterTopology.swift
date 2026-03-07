@@ -132,6 +132,7 @@ extension ValkeyClusterTopology: ValkeyTopologyElectable {
                 shardHasher.combine(node.port)
             }
             hasher.combine(shardHasher.finalize())
+            hasher.combine(shard.slots)
         }
         return hasher.finalize()
     }
