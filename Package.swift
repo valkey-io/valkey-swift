@@ -124,7 +124,7 @@ var package = Package(
 )
 
 #if compiler(>=6.2)
-package.dependencies.append(.package(url: "https://github.com/apple/swift-configuration.git", from: "1.0.0"))
+package.dependencies.append(.package(url: "https://github.com/apple/swift-configuration.git", from: "1.0.0", traits: []))
 let index = package.targets.firstIndex(where: { $0.name == "Valkey" })!
 package.targets[index].dependencies.append(.product(name: "Configuration", package: "swift-configuration"))
 #endif
