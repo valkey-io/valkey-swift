@@ -215,7 +215,7 @@ where
 
         package var clientsToShutdown: [ConnectionPool]
 
-        package var voters: [ValkeyClusterVoter<ConnectionPool>]
+        package var voters: [ValkeyTopologyVoter<ConnectionPool>]
 
         static func empty() -> Self {
             .init(clientsToRun: [], clientsToShutdown: [], voters: [])
@@ -233,7 +233,7 @@ where
             switch self.clusterState {
             case .unavailable, .degraded, .healthy:
                 let action = self.runningClients.updateNodes(newNodes, removeUnmentionedPools: false)
-                let voters = self.runningClients.clients.map { ValkeyClusterVoter(client: $0.pool, nodeID: $0.nodeID) }
+                let voters = self.runningClients.clients.map { ValkeyTopologyVoter(client: $0.pool, nodeID: $0.nodeID) }
                 return .init(
                     clientsToRun: action.poolsToRun.map(\.0),
                     clientsToShutdown: action.poolsToShutdown,
@@ -246,8 +246,8 @@ where
         }
     }
 
-    package func getInitialVoters() -> [ValkeyClusterVoter<ConnectionPool>] {
-        self.runningClients.clients.map { ValkeyClusterVoter(client: $0.pool, nodeID: $0.nodeID) }
+    package func getInitialVoters() -> [ValkeyTopologyVoter<ConnectionPool>] {
+        self.runningClients.clients.map { ValkeyTopologyVoter(client: $0.pool, nodeID: $0.nodeID) }
     }
 
     package struct ClusterDiscoverySucceededAction {
@@ -766,7 +766,7 @@ where
                 return .init(
                     clientsToRun: poolActions.poolsToRun.map(\.0),
                     clientsToShutdown: poolActions.poolsToShutdown,
-                    voters: poolActions.poolsToRun.map { ValkeyClusterVoter(client: $0.0, nodeID: $0.1) }
+                    voters: poolActions.poolsToRun.map { ValkeyTopologyVoter(client: $0.0, nodeID: $0.1) }
                 )
             }
 
