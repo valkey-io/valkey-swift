@@ -7,7 +7,7 @@
 //
 
 @usableFromInline
-struct ValkeySentinelNodes: Equatable, Sendable {
+struct ValkeySentinelNodeList: Equatable, Sendable {
     let nodes: [ValkeyNodeDescription]
 
     /// Initial Sentinel node collection
@@ -17,12 +17,12 @@ struct ValkeySentinelNodes: Equatable, Sendable {
     }
 }
 
-extension ValkeySentinelNodes: ValkeyTopologyElectable {
+extension ValkeySentinelNodeList: ValkeyTopologyElectable {
     // Calculate the needed votes as a simple majority of all nodes across all shards
     package var votesNeeded: Int { self.nodes.count / 2 + 1 }
 
     // Calculate the hash by hashing the important elements of each node
-    package var topologyHash: Int {
+    package var topologyHashValue: Int {
         var hasher = Hasher()
         for node in nodes {
             hasher.combine(node.endpoint)

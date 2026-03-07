@@ -91,10 +91,11 @@ package final class ValkeySentinelClient: Sendable {
                         SENTINEL.REPLICAS(primaryName: self.primaryName)
                     )
                     let (primaryHost, primaryPort) = try primaryResult.get().decodeElements(as: (String, Int).self)
-                    let replicas = try replicaResults.get().map {
-                        let (host, port) = try $0.decodeMapValues("ip", "port", as: (String, Int).self)
-                        return ValkeyServerAddress.hostname(host, port: port)
-                    }
+                    let replicas = try replicaResults.get()
+                        .map {
+                            let (endpoint, port) = try $0.decodeMapValues("ip", "port", as: (String, Int).self)
+                            return ValkeyServerAddress.hostname(endpoint, port: port)
+                        }
                     return (index, .init(primary: .hostname(primaryHost, port: primaryPort), replicas: replicas))
                 }
             }
@@ -182,15 +183,15 @@ extension ValkeySentinelClient {
         }
     }
 
-    private func runSentinelConsensusDiscoveryAction(voters: [ValkeyTopologyVoter<ValkeyNodeClient>]) async throws -> ValkeySentinelNodes {
-        try await withThrowingTaskGroup(of: (ValkeySentinelNodes, ValkeyNodeID).self) { taskGroup in
+    private func runSentinelConsensusDiscoveryAction(voters: [ValkeyTopologyVoter<ValkeyNodeClient>]) async throws -> ValkeySentinelNodeList {
+        try await withThrowingTaskGroup(of: (ValkeySentinelNodeList, ValkeyNodeID).self) { taskGroup in
             for voter in voters {
                 taskGroup.addTask {
-                    (try await self.getSentinelList(voter.client), voter.nodeID)
+                    (try await self.getSentinelList(voter.client, nodeID: voter.nodeID), voter.nodeID)
                 }
             }
 
-            var election = ValkeyTopologyElection<ValkeySentinelNodes>()
+            var election = ValkeyTopologyElection<ValkeySentinelNodeList>()
 
             var primaryNameErrorCount = 0
             var resultCount = 0
@@ -204,7 +205,7 @@ extension ValkeySentinelClient {
                         "Vote received",
                         metadata: [
                             "candidate_count": "\(metrics.candidateCount)",
-                            "candidate": "\(metrics.candidate)",
+                            "candidate": "\(sentinels)",
                             "votes_received": "\(metrics.votesReceived)",
                             "votes_needed": "\(metrics.votesNeeded)",
                         ]
@@ -221,7 +222,7 @@ extension ValkeySentinelClient {
 
                     for voter in action.voters {
                         taskGroup.addTask {
-                            (try await self.getSentinelList(voter.client), voter.nodeID)
+                            (try await self.getSentinelList(voter.client, nodeID: voter.nodeID), voter.nodeID)
                         }
                     }
 
@@ -248,23 +249,20 @@ extension ValkeySentinelClient {
         }
     }
 
-    private func getSentinelList(_ node: ValkeyNodeClient) async throws -> ValkeySentinelNodes {
-        let sentinelsResponse = try await node.execute(SENTINEL.SENTINELS(primaryName: self.primaryName))
-        var nodes = try sentinelsResponse.map {
-            let (endpoint, port) = try $0.decodeMapValues("ip", "port", as: (String, Int).self)
-            return ValkeyNodeDescription(endpoint: endpoint, port: port)
-        }
-        guard case .hostname(let hostname, let port) = node.serverAddress.value else {
-            fatalError("Sentinel address is not ip/port")
-        }
-        nodes.append(.init(endpoint: hostname, port: port))
-        return .init(nodes)
+    private func getSentinelList(_ node: ValkeyNodeClient, nodeID: ValkeyNodeID) async throws -> ValkeySentinelNodeList {
+        var sentinels = try await node.execute(SENTINEL.SENTINELS(primaryName: self.primaryName))
+            .map {
+                let (endpoint, port) = try $0.decodeMapValues("ip", "port", as: (String, Int).self)
+                return ValkeyNodeDescription(endpoint: endpoint, port: port)
+            }
+        sentinels.append(.init(endpoint: nodeID.endpoint, port: nodeID.port))
+        return .init(sentinels)
     }
 
     private func runNodeDiscovery(_ nodeDiscovery: some ValkeyNodeDiscovery) async throws -> [ValkeyTopologyVoter<ValkeyNodeClient>] {
         self.logger.trace("Running node discovery")
         let nodes = try await nodeDiscovery.lookupNodes()
-        let sentinelNodes = ValkeySentinelNodes(nodes.map { ValkeyNodeDescription(description: $0) })
+        let sentinelNodes = ValkeySentinelNodeList(nodes.map { ValkeyNodeDescription(description: $0) })
         let action = self.stateMachine.withLock {
             $0.updateSentinelNodes(sentinelNodes)
         }
