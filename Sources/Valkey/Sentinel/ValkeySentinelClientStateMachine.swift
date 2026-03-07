@@ -29,11 +29,11 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         }
         @usableFromInline
         struct HealthyState {
-            let nodes: ValkeySentinelNodes
+            let nodes: ValkeySentinelNodeList
         }
         @usableFromInline
         struct DegradedState {
-            let nodes: ValkeySentinelNodes
+            let nodes: ValkeySentinelNodeList
         }
         case unavailable(UnavailableState)
         case degraded(DegradedState)
@@ -85,7 +85,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         let clientsToShutdown: [ConnectionPool]
         let voters: [ValkeyTopologyVoter<ConnectionPool>]
     }
-    mutating func updateSentinelNodes(_ nodes: ValkeySentinelNodes) -> UpdateNodesAction {
+    mutating func updateSentinelNodes(_ nodes: ValkeySentinelNodeList) -> UpdateNodesAction {
         let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: false)
         return .init(
             clientsToRun: action.poolsToRun.map { $0.0 },
@@ -99,7 +99,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         let clientsToRun: [ConnectionPool]
         let clientsToShutdown: [ConnectionPool]
     }
-    mutating func topologyDiscoverySucceeded(_ nodes: ValkeySentinelNodes) -> DiscoverySucceededAction {
+    mutating func topologyDiscoverySucceeded(_ nodes: ValkeySentinelNodeList) -> DiscoverySucceededAction {
         switch self.state {
         case .unavailable(let unavailableState):
             self.state = .healthy(.init(nodes: nodes))
