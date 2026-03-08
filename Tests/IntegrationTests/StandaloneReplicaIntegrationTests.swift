@@ -321,8 +321,8 @@ struct StandaloneReplicaIntegrationTests {
     func withFailover<Value>(_ client: ValkeyClient, operation: () async throws -> Value) async throws -> Value {
         // get primary address
         let (host, port) = client.stateMachine.withLock {
-            guard case .running(let nodes) = $0.state else { fatalError("Expected a running primary node") }
-            guard case .hostname(let host, let port) = nodes.primary.value else { fatalError("Expected a hostname") }
+            guard case .healthy(let healthContext) = $0.state else { fatalError("Expected a running primary node") }
+            guard case .hostname(let host, let port) = healthContext.nodes.primary.value else { fatalError("Expected a hostname") }
             return (host, port)
         }
         // extract replica address
