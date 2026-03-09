@@ -72,17 +72,7 @@ package final class ValkeySentinelClient: Sendable {
     }
 
     package func getNodes() async throws -> ValkeyNodeIDs<ValkeyServerAddress> {
-        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
-            switch self.stateMachine.withLock({ $0.waitForDiscovery(cont) }) {
-            case .complete:
-                cont.resume()
-            case .fail(let error):
-                cont.resume(throwing: error)
-            case .doNothing:
-                break
-            }
-        }
-        let sentinels = self.stateMachine.withLock({ $0.getSentinelClients() })
+        let sentinels = try await self.getSentinelClients()
         return try await withThrowingTaskGroup(of: (index: Int, address: ValkeyNodeIDs<ValkeyServerAddress>).self) { group in
             for index in 0..<sentinels.count {
                 group.addTask {
@@ -119,6 +109,55 @@ package final class ValkeySentinelClient: Sendable {
             }
             throw ValkeySentinelError.sentinelIsUnavailable
         }
+    }
+
+    package func subscribeEvents(command: some ValkeySubscribeCommand, _ operation: (ValkeyClientSubscription) async throws -> Void) async throws {
+        try await withSubscriptionConnection { connection in
+            try await connection._subscribe(command: command) { subscription in
+                try await operation(.init(base: subscription))
+            }
+        }
+    }
+
+    private func getSentinelClients() async throws -> [ValkeyNodeClient] {
+        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
+            switch self.stateMachine.withLock({ $0.waitForDiscovery(cont) }) {
+            case .complete:
+                cont.resume()
+            case .fail(let error):
+                cont.resume(throwing: error)
+            case .doNothing:
+                break
+            }
+        }
+        return self.stateMachine.withLock({ $0.getSentinelClients() })
+    }
+
+    /// Run operation with the valkey subscription connection
+    ///
+    /// - Parameters:
+    ///   - operation: Closure to run with subscription connection
+    @inlinable
+    func withSubscriptionConnection<Value>(
+        _ operation: (ValkeyConnection) async throws -> Value
+    ) async throws -> Value {
+        guard let node = try await self.getSentinelClients().randomElement() else {
+            throw ValkeySentinelError.sentinelIsUnavailable
+        }
+        let id = node.subscriptionConnectionIDGenerator.next()
+
+        let connection = try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, Error>) in
+                node.leaseSubscriptionConnection(id: id, request: cont)
+            }
+        } onCancel: {
+            node.cancelSubscriptionConnection(id: id)
+        }
+
+        defer {
+            node.releaseSubscriptionConnection(id: id)
+        }
+        return try await operation(connection)
     }
 }
 
