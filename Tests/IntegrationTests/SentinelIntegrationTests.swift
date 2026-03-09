@@ -19,6 +19,7 @@ import Testing
 )
 struct SentinelIntegrationTests {
     @Test
+    @available(valkeySwift 1.0, *)
     func testSentinelGetPrimary() async throws {
         let logger = {
             var logger = Logger(label: "testSentinelGetPrimary")
@@ -39,6 +40,7 @@ struct SentinelIntegrationTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSentinelUnknownPrimary() async throws {
         let logger = {
             var logger = Logger(label: "testSentinelGetPrimary")
