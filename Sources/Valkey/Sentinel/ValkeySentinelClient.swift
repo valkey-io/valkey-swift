@@ -82,9 +82,13 @@ package final class ValkeySentinelClient: Sendable {
                     )
                     let (primaryHost, primaryPort) = try primaryResult.get().decodeElements(as: (String, Int).self)
                     let replicas = try replicaResults.get()
-                        .map {
-                            let (endpoint, port) = try $0.decodeMapValues("ip", "port", as: (String, Int).self)
-                            return ValkeyServerAddress.hostname(endpoint, port: port)
+                        .decode(as: [SentinelInstance].self)
+                        .compactMap {
+                            if !$0.flags.contains(.disconnected) {
+                                ValkeyServerAddress.hostname($0.endpoint, port: $0.port)
+                            } else {
+                                nil
+                            }
                         }
                     return (index, .init(primary: .hostname(primaryHost, port: primaryPort), replicas: replicas))
                 }
@@ -290,9 +294,13 @@ extension ValkeySentinelClient {
 
     private func getSentinelList(_ node: ValkeyNodeClient, nodeID: ValkeyNodeID) async throws -> ValkeySentinelNodeList {
         var sentinels = try await node.execute(SENTINEL.SENTINELS(primaryName: self.primaryName))
-            .map {
-                let (endpoint, port) = try $0.decodeMapValues("ip", "port", as: (String, Int).self)
-                return ValkeyNodeDescription(endpoint: endpoint, port: port)
+            .decode(as: [SentinelInstance].self)
+            .compactMap {
+                if !$0.flags.contains(.disconnected) {
+                    ValkeyNodeDescription(endpoint: $0.endpoint, port: $0.port)
+                } else {
+                    nil
+                }
             }
         sentinels.append(.init(endpoint: nodeID.endpoint, port: nodeID.port))
         return .init(sentinels)
@@ -316,5 +324,26 @@ extension ValkeySentinelClient {
         for node in action.clientsToShutdown {
             node.triggerGracefulShutdown()
         }
+    }
+}
+
+/// Sentinel instance
+struct SentinelInstance: RESPTokenDecodable {
+    enum Flag: Substring {
+        case primary = "master"
+        case replica = "slave"
+        case sentinel
+        case disconnected
+        case s_down
+    }
+    let endpoint: String
+    let port: Int
+    let flags: Set<Flag>
+
+    init(_ token: RESPToken) throws(RESPDecodeError) {
+        let flags: String
+        (self.endpoint, self.port, flags) = try token.decodeMapValues("ip", "port", "flags", as: (String, Int, String).self)
+        let splitFlags = flags.splitSequence(separator: ",")
+        self.flags = Set(splitFlags.compactMap { Flag(rawValue: $0) })
     }
 }
