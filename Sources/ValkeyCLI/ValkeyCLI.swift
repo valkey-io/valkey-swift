@@ -23,7 +23,7 @@ import Musl
 @main
 struct App {
     static func usage() -> Never {
-        print("ValkeyCLI <host/ip> <port>")
+        print("Usage: ValkeyCLI <host/ip> <port>")
         exit(-1)
     }
 
