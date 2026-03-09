@@ -94,6 +94,12 @@ var package = Package(
             resources: [.process("Resources")],
             swiftSettings: defaultSwiftSettings
         ),
+        .executableTarget(
+            name: "ValkeyCLI",
+            dependencies: ["Valkey"],
+            path: "Sources/ValkeyCLI",
+            swiftSettings: defaultSwiftSettings
+        ),
         .testTarget(
             name: "IntegrationTests",
             dependencies: [
