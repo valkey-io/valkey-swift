@@ -1581,7 +1581,7 @@
     }
   },
   "BRPOPLPUSH": {
-    "summary": "Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.",
+    "summary": "Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was popped.",
     "complexity": "O(1)",
     "group": "list",
     "since": "2.2.0",
@@ -1785,7 +1785,7 @@
     ]
   },
   "BZPOPMAX": {
-    "summary": "Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.",
+    "summary": "Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member is available otherwise.  Deletes the sorted set if the last element was popped.",
     "complexity": "O(log(N)) with N being the number of elements in the sorted set.",
     "group": "sorted_set",
     "since": "5.0.0",

@@ -22,13 +22,18 @@ import ServiceLifecycle
 /// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
+    @usableFromInline
+    typealias StateMachine = ValkeyClientStateMachine<ValkeyNodeClient, ValkeyNodeClientFactory, AsyncStream<Void>.Continuation>
+
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
-    let stateMachine: Mutex<ValkeyClientStateMachine<ValkeyNodeClient, ValkeyNodeClientFactory>>
+    let stateMachine: Mutex<StateMachine>
     /// configuration
     @usableFromInline
     var configuration: ValkeyClientConfiguration { self.nodeClientFactory.configuration }
+    @usableFromInline
+    let clock = ContinuousClock()
     /// EventLoopGroup to use
     let eventLoopGroup: any EventLoopGroup
     /// Logger
@@ -38,6 +43,7 @@ public final class ValkeyClient: Sendable {
 
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
+        case runTimer(ValkeyTimer)
         case runRole
     }
     let actionStream: AsyncStream<RunAction>
@@ -161,6 +167,8 @@ extension ValkeyClient {
     }
 }
 
+// MARK: Actions
+
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
     func queueAction(_ action: RunAction) {
@@ -173,32 +181,109 @@ extension ValkeyClient {
             await nodeClient.run()
 
         case .runRole:
-            var replicas: [ValkeyServerAddress] = []
-            let nodeClient = self.getNode(readOnly: false)
-            if let role = try? await nodeClient.execute(ROLE()) {
-                switch role {
-                case .primary(let primary):
-                    replicas = primary.replicas.map { .hostname($0.ip, port: $0.port) }
-                    self.logger.debug("Found replicas \(replicas)")
+            await runRoleAction()
 
-                case .replica(let replica):
-                    if !self.configuration.connectingToReplica {
-                        // if client is pointing to a replica then redirect to the primary
-                        self.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort))
+        case .runTimer(let timer):
+            await runTimerAction(timer)
+        }
+    }
+
+    /// Run ROLE command and update topology based on results
+    private func runRoleAction() async {
+        var topology: StateMachine.TopologyRefreshInput
+        let nodeClient = self.getNode(readOnly: false)
+        do {
+            let role = try await nodeClient.execute(ROLE())
+            switch role {
+            case .primary(let primaryState):
+                let replicas = primaryState.replicas.map { ValkeyServerAddress.hostname($0.ip, port: $0.port) }
+                topology = .primary(replicas: replicas)
+                self.logger.debug("Found replicas \(replicas)")
+
+            case .replica(let replica):
+                if !self.configuration.connectingToReplica {
+                    let primary = ValkeyServerAddress.hostname(replica.primaryIP, port: replica.primaryPort)
+                    topology = .replica(primary: primary)
+                    self.logger.debug("Redirect to primary \(primary)")
+                } else {
+                    topology = .primary(replicas: [])
+                }
+                break
+            case .sentinel:
+                preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
+            }
+
+            let action = self.stateMachine.withLock { $0.topologyRefreshSucceeded(topology) }
+            for node in action.clientsToRun {
+                self.queueAction(.runNodeClient(node))
+            }
+            for node in action.clientsToShutdown {
+                node.triggerGracefulShutdown()
+            }
+            switch action.nextAction {
+            case .refreshTopology:
+                self.queueAction(.runRole)
+            case .startTimer(let timer):
+                self.queueAction(.runTimer(timer))
+            case .doNothing:
+                break
+            }
+        } catch {
+            let action = self.stateMachine.withLock { $0.topologyRefreshFailed() }
+            if let timer = action.retryTimer {
+                self.queueAction(.runTimer(timer))
+            }
+        }
+    }
+
+    /// Run timer action
+    ///
+    /// Run timer task that triggers timer after specified time, register timer cancellation token with
+    /// state machine and run second task waiting on cancellation token. Wait for one of these tasks to
+    /// finish and cancel the other
+    private func runTimerAction(_ timer: ValkeyTimer) async {
+        await withTaskGroup(of: Void.self) { taskGroup in
+            taskGroup.addTask {
+                do {
+                    try await self.clock.sleep(for: timer.duration)
+                    // timer has hit
+                    let timerFiredAction = self.stateMachine.withLock {
+                        $0.timerFired(timer)
                     }
-                    break
-                case .sentinel:
-                    preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
-                }
-
-                let action = self.stateMachine.withLock { $0.addReplicas(nodeIDs: replicas) }
-                for node in action.clientsToRun {
-                    self.queueAction(.runNodeClient(node))
-                }
-                for node in action.clientsToShutdown {
-                    node.triggerGracefulShutdown()
+                    self.runTimerFiredAction(timerFiredAction)
+                } catch {
+                    // do nothing
                 }
             }
+
+            let (stream, continuation) = AsyncStream.makeStream(of: Void.self)
+            taskGroup.addTask {
+                var iterator = stream.makeAsyncIterator()
+                await iterator.next()
+            }
+
+            let action = self.stateMachine.withLock {
+                $0.registerTimerCancellationToken(continuation, for: timer)
+            }
+            switch action {
+            case .cancelTimer(let token):
+                token.finish()
+            case .doNothing:
+                break
+            }
+
+            await taskGroup.next()
+            taskGroup.cancelAll()
+        }
+    }
+
+    func runTimerFiredAction(_ action: StateMachine.TimerFiredAction) {
+        switch action {
+        case .runRole:
+            self.queueAction(.runRole)
+
+        case .doNothing:
+            break
         }
     }
 }
@@ -504,13 +589,12 @@ extension ValkeyClient {
     @usableFromInline
     /* private */ func setPrimary(_ address: ValkeyServerAddress) {
         let action = self.stateMachine.withLock { $0.setPrimary(address) }
-        switch action {
-        case .runNode(let client):
-            self.queueAction(.runNodeClient(client))
-        case .runNodeAndFindReplicas(let client):
-            self.queueAction(.runNodeClient(client))
-            self.queueAction(.runRole)
-        case .findReplicas:
+        if let node = action.nodeToRun {
+            self.queueAction(.runNodeClient(node))
+        }
+        switch action.nextAction {
+        case .refreshTopology(let cancelTimer):
+            cancelTimer?.yield()
             self.queueAction(.runRole)
         case .doNothing:
             break
