@@ -17,20 +17,6 @@ package protocol ValkeySSLContextProvider: Sendable {
     func getSSLContext() async throws -> NIOSSLContext
 }
 
-final class NonCopyableSmugleBox<Value: ~Copyable> {
-    var value: Value?
-
-    init(_ value: consuming Value) {
-        self.value = consume value
-    }
-
-    func get() -> Value {
-        var result: Value?
-        swap(&self.value, &result)
-        return result!
-    }
-}
-
 @available(valkeySwift 1.0, *)
 final class SSLContextCache: ValkeySSLContextProvider {
 
@@ -57,9 +43,9 @@ final class SSLContextCache: ValkeySSLContextProvider {
         }
 
         return try await withThrowingContinuation(of: NIOSSLContext.self) { continuation in
-            let box = NonCopyableSmugleBox(continuation)
+            var continuation: Optional<Continuation<NIOSSLContext, any Error>> = continuation
             let action = self.stateLock.withLock { state -> Action in
-                let continuation = box.get()
+                let continuation = continuation.take()!
                 switch consume state {
                 case .initialized:
                     var deque = UniqueDeque<ValkeyPromise<NIOSSLContext>>()

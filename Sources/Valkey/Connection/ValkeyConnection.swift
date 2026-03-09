@@ -90,6 +90,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ///   - logger: Logger for connection
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Return value of operation closure
+    @inlinable
     public static func withConnection<Value>(
         address: ValkeyServerAddress,
         configuration: ValkeyConnectionConfiguration = .init(),
@@ -119,11 +120,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ///   - eventLoop: EventLoop to run connection on
     ///   - logger: Logger for connection
     /// - Returns: ValkeyConnection
+    @usableFromInline
     static func connect(
         address: ValkeyServerAddress,
         connectionID: ID,
         configuration: ValkeyConnectionConfiguration,
-        eventLoop: any EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
+        eventLoop: any EventLoop,
         logger: Logger
     ) async throws -> ValkeyConnection {
         let future =
@@ -177,7 +179,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// - Parameter command: ValkeyCommand structure
     /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
-    public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
+    public func execute<Command: ValkeyCommand, Response>(_ command: Command) async throws(ValkeyClientError) -> Response where Command.Response == Response {
         #if DistributedTracingSupport
         let span = self.tracer?.startSpan(Command.name, ofKind: .client)
         defer { span?.end() }
@@ -746,9 +748,9 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         processResults: sending ([EventLoopPromise<RESPToken>]) async throws -> sending Value
     ) async rethrows -> Value {
         let requestID = Self.requestIDGenerator.next()
-        let box = NonCopyableSmugleBox(valkeyPromises)
+        var valkeyPromises: Optional<UniqueDeque<ValkeyPromise<RESPToken>>> = valkeyPromises
         return try await withTaskCancellationHandler {
-            let valkeyPromises = box.get()
+            let valkeyPromises = valkeyPromises.take()!
             if Task.isCancelled {
                 for promise in promises {
                     promise.fail(ValkeyClientError(.cancelled))

@@ -215,9 +215,10 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             //   But it would be cool to build the subscribe command based on what filters we aren't subscribed to
             self.subscriptions.pushCommand(filters: subscription.filters)
             let subscriptionID = subscription.id
-            let box = NonCopyableSmugleBox(consume promise)
+            // we use an optional to smuggle the ValkeyPromise in
+            var promise: Optional<ValkeyPromise> = consume promise
             return self._execute(command: command, requestID: requestID).assumeIsolated().whenComplete { result in
-                let promise = box.get()
+                let promise = promise.take()!
                 switch result {
                 case .success:
                     promise.succeed(subscriptionID)
@@ -274,9 +275,10 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         requestID: Int
     ) {
         self.subscriptions.pushCommand(filters: filters)
-        let box = NonCopyableSmugleBox(promise)
+        // we use an optional to smuggle the ValkeyPromise in
+        var promise: Optional<ValkeyPromise> = consume promise
         self._execute(command: command, requestID: requestID).assumeIsolated().whenComplete { result in
-            let promise = box.get()
+            let promise = promise.take()!
             switch result {
             case .success:
                 promise.succeed(())
