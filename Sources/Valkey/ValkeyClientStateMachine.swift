@@ -144,7 +144,7 @@ struct ValkeyClientStateMachine<
     func getNodes() -> ValkeyNodeIDs<ValkeyServerAddress>? {
         switch self.state {
         case .uninitialized:
-            fatalError("Invalid state: \(self.state)")
+            preconditionFailure("Invalid state: \(self.state)")
         case .healthy(let healthContext):
             return healthContext.nodes
         case .shutdown:
