@@ -247,6 +247,48 @@ actor TestCluster {
                 }
                 await self.setKey(key, value: value)
                 return .simpleString("OK")
+            case "MGET":
+                var keys: [String] = []
+                while let key = iterator.next() {
+                    keys.append(key)
+                }
+                var values: [RESP3Value] = []
+                for key in keys {
+                    let hashSlot = HashSlot(key: key.utf8)
+                    guard let shard = await self.getShard(hashSlot) else {
+                        values.append(.null)
+                        continue
+                    }
+                    let addressDetails = await self.addressMap[address]
+                    if shard.index != addressDetails?.shardIndex {
+                        return .bulkError("MOVED \(hashSlot.rawValue) \(shard.shard.primary.address)")
+                    }
+                    if key.hasPrefix("$address") {
+                        values.append(.bulkString(address.description))
+                    } else {
+                        values.append(await self.getKey(key).map { .bulkString($0) } ?? .null)
+                    }
+                }
+                return .array(values)
+
+            case "MSET":
+                var pairs: [(key: String, value: String)] = []
+                while let key = iterator.next(), let value = iterator.next() {
+                    pairs.append((key: key, value: value))
+                }
+                for (key, _) in pairs {
+                    let hashSlot = HashSlot(key: key.utf8)
+                    guard let shard = await self.getShard(hashSlot) else { continue }
+                    let addressDetails = await self.addressMap[address]
+                    if shard.index != addressDetails?.shardIndex || addressDetails?.role == .replica {
+                        return .bulkError("MOVED \(hashSlot.rawValue) \(shard.shard.primary.address)")
+                    }
+                }
+                for (key, value) in pairs {
+                    await self.setKey(key, value: value)
+                }
+                return .simpleString("OK")
+
             case "CLUSTER":
                 switch iterator.next() {
                 case "SHARDS":
@@ -613,6 +655,147 @@ struct ValkeyClusterClientTests {
             }
             let clusterError = try #require(error?.underlyingError as? ValkeyClusterError)
             #expect(clusterError == .clusterIsMissingNode)
+        }
+    }
+
+    // MARK: - MGET cross-slot tests
+
+    // Hash-tag reference for sixNodeHealthyCluster:
+    //   {3} → slot 1584 → shard 0...5460     (primary 16000, replica 16001)
+    //   {1} → slot 9842 → shard 5461...10922  (primary 16002, replica 16003)
+    //   {4} → slot 13898 → shard 10923...16383 (primary 16004, replica 16005)
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testMGETCrossSlot() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            // Populate keys across three shards
+            _ = try await client.set("key{3}", value: "value3")
+            _ = try await client.set("key{1}", value: "value1")
+            _ = try await client.set("key{4}", value: "value4")
+
+            // key{2} is not set — its slot (5649) is in shard 5461...10922
+            let result = try await client.mget(keys: ["key{3}", "key{1}", "key{2}", "key{4}"])
+            let tokens = Swift.Array(result)
+
+            #expect(try String(tokens[0]) == "value3")
+            #expect(try String(tokens[1]) == "value1")
+            #expect(tokens[2].value == .null)
+            #expect(try String(tokens[3]) == "value4")
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testMGETKeyOrderIsPreserved() async throws {
+        // Verifies that results are returned in the original key order
+        // even though sub-commands execute on different nodes concurrently.
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            _ = try await client.set("key{4}", value: "first")
+            _ = try await client.set("key{3}", value: "second")
+
+            // key{4} (slot 13898, shard 2) is passed first, key{3} (slot 1584, shard 0) second.
+            // Regardless of which node responds first, result[0] must be "first".
+            let result = try await client.mget(keys: ["key{4}", "key{3}"])
+            let tokens = Swift.Array(result)
+
+            #expect(try String(tokens[0]) == "first")
+            #expect(try String(tokens[1]) == "second")
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testMGETSameSlot() async throws {
+        // Single-slot path: all keys share the same hash tag.
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            _ = try await client.set("a{1}", value: "alpha")
+            _ = try await client.set("b{1}", value: "beta")
+
+            let result = try await client.mget(keys: ["a{1}", "b{1}"])
+            let tokens = Swift.Array(result)
+
+            #expect(try String(tokens[0]) == "alpha")
+            #expect(try String(tokens[1]) == "beta")
+        }
+    }
+
+    // MARK: - MSET cross-slot tests
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testMSETCrossSlot() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            // Set keys across three shards in one call
+            try await client.mset(data: [
+                .init(key: "mset{3}", value: "v3"),
+                .init(key: "mset{1}", value: "v1"),
+                .init(key: "mset{4}", value: "v4"),
+            ])
+
+            // Verify each key landed on its correct node via single-key GET
+            #expect(try await client.get("mset{3}").map { String($0) } == "v3")
+            #expect(try await client.get("mset{1}").map { String($0) } == "v1")
+            #expect(try await client.get("mset{4}").map { String($0) } == "v4")
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testMSETSameSlot() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            try await client.mset(data: [
+                .init(key: "a{1}", value: "alpha"),
+                .init(key: "b{1}", value: "beta"),
+            ])
+
+            #expect(try await client.get("a{1}").map { String($0) } == "alpha")
+            #expect(try await client.get("b{1}").map { String($0) } == "beta")
         }
     }
 }
