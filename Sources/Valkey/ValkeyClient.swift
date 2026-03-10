@@ -45,6 +45,7 @@ public final class ValkeyClient: Sendable {
         case runNodeClient(ValkeyNodeClient)
         case runTimer(ValkeyTimer)
         case runRole
+        case verifyReplicas
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -185,11 +186,15 @@ extension ValkeyClient {
 
         case .runTimer(let timer):
             await runTimerAction(timer)
+
+        case .verifyReplicas:
+            break
         }
     }
 
     /// Run ROLE command and update topology based on results
     private func runRoleAction() async {
+        struct NotReplicaError: Error {}
         var topology: StateMachine.TopologyRefreshInput
         let nodeClient = self.getNode(readOnly: false)
         do {
@@ -197,6 +202,14 @@ extension ValkeyClient {
             switch role {
             case .primary(let primaryState):
                 let replicas = primaryState.replicas.map { ValkeyServerAddress.hostname($0.ip, port: $0.port) }
+                // add nodes primary found
+                let action = self.stateMachine.withLock { $0.addNewNodesFromRefresh(replicas) }
+                for replicaClient in action.clientsToRun {
+                    self.queueAction(.runNodeClient(replicaClient))
+                }
+                // verify all replicas are replicas
+                guard try await self.verifyReplicas(action.clientsToRun) else { throw NotReplicaError() }
+
                 topology = .primary(replicas: replicas)
                 self.logger.debug("Found replicas \(replicas)")
 
@@ -277,13 +290,28 @@ extension ValkeyClient {
         }
     }
 
-    func runTimerFiredAction(_ action: StateMachine.TimerFiredAction) {
+    private func runTimerFiredAction(_ action: StateMachine.TimerFiredAction) {
         switch action {
         case .runRole:
             self.queueAction(.runRole)
 
         case .doNothing:
             break
+        }
+    }
+
+    private func verifyReplicas(_ replicas: [ValkeyNodeClient]) async throws -> Bool {
+        try await withThrowingTaskGroup(of: Bool.self) { group in
+            for replica in replicas {
+                group.addTask {
+                    let role = try await replica.execute(ROLE())
+                    guard case .replica = role else {
+                        return false
+                    }
+                    return true
+                }
+            }
+            return try await group.reduce(true) { $0 && $1 }
         }
     }
 }
