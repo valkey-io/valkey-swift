@@ -33,13 +33,15 @@ struct App {
         print("Connecting to \(host):\(port)")
         let valkeyClient = ValkeyClient(.hostname(host, port: port), logger: Logger(label: "ValkeyCLI"))
         async let _ = valkeyClient.run()
+
         while true {
             print("> ", terminator: "")
             guard let input = readLine() else {
                 print("")
                 return
             }
-            let split = input.split(separator: " ")
+            let split = input.splitWithSpeechMarks(separator: " ")
+            print(split)
             guard let commandName = split.first else { continue }
             let command = ValkeyRawCommand(String(commandName), parameters: split.dropFirst().map { String($0) })
             do {
@@ -67,6 +69,49 @@ struct App {
         default:
             usage()
         }
+    }
+}
+
+extension StringProtocol {
+    func splitWithSpeechMarks(separator: Character, speechMarks: Character = "\"") -> [Self.SubSequence] {
+        var split: [Self.SubSequence] = []
+        var position = self.startIndex
+        var prevPosition = position
+        var insideSpeechMarks = false
+        while position != self.endIndex {
+            if self[position] == separator, insideSpeechMarks == false {
+                if prevPosition != position {
+                    split.append(self[prevPosition..<position])
+                }
+                position = self.index(after: position)
+                prevPosition = position
+                continue
+            }
+            if self[position] == speechMarks {
+                if !insideSpeechMarks {
+                    insideSpeechMarks = true
+                    // we also consider speech marks as a separator
+                    if position != prevPosition {
+                        split.append(self[prevPosition..<position])
+                    }
+                    position = self.index(after: position)
+                    prevPosition = position
+                    continue
+                } else {
+                    insideSpeechMarks = false
+                    // we also consider speech marks as a separator
+                    split.append(self[prevPosition..<position])
+                    position = self.index(after: position)
+                    prevPosition = position
+                    continue
+                }
+            }
+            position = self.index(after: position)
+        }
+        if prevPosition != position {
+            split.append(self[prevPosition..<position])
+        }
+        return split
     }
 }
 
