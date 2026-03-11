@@ -20,6 +20,7 @@ import Musl
 #error("Platform not supported")
 #endif
 
+@available(valkeySwift 1.0, *)
 @main
 struct App {
     static func usage() -> Never {
