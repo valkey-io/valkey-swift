@@ -24,16 +24,14 @@ import Musl
 @main
 struct App {
     static func usage() -> Never {
-        print("Usage: ValkeyCLI <host/ip> <port>")
+        print("Usage: ValkeyCLI <host/ip>:<port>")
         exit(-1)
     }
 
     static func main() async throws {
-        let arguments = CommandLine.arguments
-        guard arguments.count > 2 else { usage() }
-        guard let port = Int(arguments[2]) else { usage() }
-        print("Connecting to \(arguments[1]):\(port)")
-        let valkeyClient = ValkeyClient(.hostname(arguments[1], port: port), logger: Logger(label: "ValkeyCLI"))
+        let (host, port) = getHostAndPort()
+        print("Connecting to \(host):\(port)")
+        let valkeyClient = ValkeyClient(.hostname(host, port: port), logger: Logger(label: "ValkeyCLI"))
         async let _ = valkeyClient.run()
         while true {
             print("> ", terminator: "")
@@ -54,6 +52,20 @@ struct App {
                     throw error
                 }
             }
+        }
+    }
+
+    static func getHostAndPort() -> (String, Int) {
+        let arguments = CommandLine.arguments
+        guard arguments.count > 1 else { usage() }
+        let hostAndPort = arguments[1].split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
+        switch hostAndPort.count {
+        case 1: return (String(hostAndPort[0]), 6379)
+        case 2:
+            guard let port = Int(hostAndPort[1]) else { usage() }
+            return (String(hostAndPort[0]), port)
+        default:
+            usage()
         }
     }
 }
