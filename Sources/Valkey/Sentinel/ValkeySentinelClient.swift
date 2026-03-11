@@ -84,7 +84,7 @@ package final class ValkeySentinelClient: Sendable {
                     let replicas = try replicaResults.get()
                         .decode(as: [SentinelInstance].self)
                         .compactMap {
-                            if !$0.flags.contains(.disconnected) {
+                            if !$0.flags.contains(.disconnected) && !$0.flags.contains(.s_down) {
                                 ValkeyServerAddress.hostname($0.endpoint, port: $0.port)
                             } else {
                                 nil
@@ -296,7 +296,7 @@ extension ValkeySentinelClient {
         var sentinels = try await node.execute(SENTINEL.SENTINELS(primaryName: self.primaryName))
             .decode(as: [SentinelInstance].self)
             .compactMap {
-                if !$0.flags.contains(.disconnected) {
+                if !$0.flags.contains(.disconnected) && !$0.flags.contains(.s_down) {
                     ValkeyNodeDescription(endpoint: $0.endpoint, port: $0.port)
                 } else {
                     nil
@@ -335,6 +335,8 @@ struct SentinelInstance: RESPTokenDecodable {
         case sentinel
         case disconnected
         case s_down
+        // case o_down
+        case master_down
     }
     let endpoint: String
     let port: Int
