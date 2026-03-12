@@ -91,21 +91,38 @@ struct ValkeyCommand: Decodable {
                 index = arrayIndex
             }
             //}
-            return arguments.map {
-                guard $0.type == .block else { return $0 }
-                guard let arguments = $0.arguments else { return $0 }
-                guard arguments.count == 2 else { return $0 }
-                guard arguments[0].type == .pureToken else { return $0 }
-                guard arguments[1].optional == false else { return $0 }
-                guard arguments[1].token == nil else { return $0 }
-                guard !(arguments[1].multiple && $0.multiple) else { return $0 }
-                var argument = arguments[1]
-                argument.name = $0.name
-                argument.token = arguments[0].token
-                argument.optional = $0.optional
-                argument.multiple = $0.multiple || argument.multiple
-                argument.multipleToken = $0.multiple
-                return argument
+            return arguments.map { argument in
+                guard argument.type == .block else { return argument }
+                guard let arguments = argument.arguments else { return argument }
+                switch arguments.count {
+                case 1:
+                    // Collapse blocks that consist of one argument into that argument
+                    guard arguments.count == 1 else { return argument }
+                    guard argument.token == nil || arguments[0].token == nil else { return argument }
+                    var newArgument = arguments[0]
+                    newArgument.name = argument.name
+                    newArgument.token = argument.token ?? newArgument.token
+                    newArgument.optional = argument.optional || newArgument.optional
+                    newArgument.multiple = argument.multiple || newArgument.multiple
+                    return newArgument
+                case 2:
+                    // Collapse blocks that consist of a pure token and one other single argument into
+                    // a none block type with a token attribute
+                    guard argument.token == nil else { return argument }
+                    guard arguments[0].type == .pureToken else { return argument }
+                    guard arguments[1].optional == false else { return argument }
+                    guard arguments[1].token == nil else { return argument }
+                    guard !(arguments[1].multiple && argument.multiple) else { return argument }
+                    var newArgument = arguments[1]
+                    newArgument.name = argument.name
+                    newArgument.token = arguments[0].token
+                    newArgument.optional = argument.optional
+                    newArgument.multiple = argument.multiple || newArgument.multiple
+                    newArgument.multipleToken = argument.multiple
+                    return newArgument
+                default:
+                    return argument
+                }
             }
         }
 
