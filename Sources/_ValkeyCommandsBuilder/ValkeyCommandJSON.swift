@@ -58,8 +58,49 @@ struct ValkeyCommand: Decodable {
                 token = ""
             }
             self.token = token
-            self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
+            if self.type == .oneOf {
+                self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
+            } else {
+                if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
+                    self.arguments = Self.processArguments(arguments, keySpecs: nil)
+                } else {
+                    self.arguments = nil
+                }
+            }
             self.keySpecIndex = try container.decodeIfPresent(Int.self, forKey: .keySpecIndex)
+        }
+
+        static func processArguments(_ arguments: [InternalArgument], keySpecs: [KeySpec]?) -> [Argument] {
+            var arguments =
+                arguments
+                .map { Argument(argument: $0, keySpec: $0.keySpecIndex.flatMap { keySpecs?[$0] }) }
+                .map {
+                    guard $0.type == .block else { return $0 }
+                    guard let arguments = $0.arguments else { return $0 }
+                    guard arguments.count == 2 else { return $0 }
+                    guard arguments[0].type == .pureToken else { return $0 }
+                    guard arguments[1].optional == false else { return $0 }
+                    guard arguments[1].token == nil else { return $0 }
+                    guard !(arguments[1].multiple && $0.multiple) else { return $0 }
+                    var argument = arguments[1]
+                    argument.name = $0.name
+                    argument.token = arguments[1].token
+                    argument.optional = $0.optional
+                    argument.multiple = $0.multiple
+                    argument.multipleToken = $0.multiple
+                    return argument
+                }
+            if keySpecs != nil {
+                // combine argument and keyspec
+                // remove counts for arrays flagged with `combinedWithCount`
+                var index = arguments.startIndex
+                while let arrayIndex = arguments[index...].firstIndex(where: { $0.combinedWithCount == true }) {
+                    let previousIndex = arguments.index(before: arrayIndex)
+                    arguments.remove(at: previousIndex)
+                    index = arrayIndex
+                }
+            }
+            return arguments
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -74,14 +115,14 @@ struct ValkeyCommand: Decodable {
         }
     }
     struct Argument: Decodable {
-        let name: String
-        let type: ArgumentType
-        let multiple: Bool
-        let optional: Bool
-        let multipleToken: Bool
-        let token: String?
-        let arguments: [Argument]?
-        let combinedWithCount: Bool?
+        var name: String
+        var type: ArgumentType
+        var multiple: Bool
+        var optional: Bool
+        var multipleToken: Bool
+        var token: String?
+        var arguments: [Argument]?
+        var combinedWithCount: Bool?
 
         init(argument: InternalArgument, keySpec: KeySpec?) {
             self.name = argument.name
@@ -118,7 +159,15 @@ struct ValkeyCommand: Decodable {
                 token = ""
             }
             self.token = token
-            self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
+            if self.type == .oneOf {
+                self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
+            } else {
+                if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
+                    self.arguments = InternalArgument.processArguments(arguments, keySpecs: nil)
+                } else {
+                    self.arguments = nil
+                }
+            }
             self.combinedWithCount = false
         }
 
@@ -332,20 +381,8 @@ struct ValkeyCommand: Decodable {
         self.commandFlags = try container.decodeIfPresent([String].self, forKey: .commandFlags)
         self.aclCategories = try container.decodeIfPresent([String].self, forKey: .aclCategories)
         if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
-            if let keySpecs = try container.decodeIfPresent([KeySpec].self, forKey: .keySpecs) {
-                // combine argument and keyspec
-                var arguments = arguments.map { Argument(argument: $0, keySpec: $0.keySpecIndex.map { keySpecs[$0] }) }
-                // remove array counts before arrays
-                if let index = arguments.firstIndex(where: { $0.combinedWithCount == true }) {
-                    let previousIndex = arguments.index(before: index)
-                    arguments.remove(at: previousIndex)
-                    self.arguments = arguments
-                } else {
-                    self.arguments = arguments
-                }
-            } else {
-                self.arguments = arguments.map { .init(argument: $0, keySpec: nil) }
-            }
+            let keySpecs = try container.decodeIfPresent([KeySpec].self, forKey: .keySpecs)
+            self.arguments = InternalArgument.processArguments(arguments, keySpecs: keySpecs)
         } else {
             self.arguments = nil
         }

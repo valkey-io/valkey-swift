@@ -21,26 +21,7 @@ public enum FT {
     /// Performs a search of the specified index. The keys which match the query expression are subjected to further processing as specified
     @_documentation(visibility: internal)
     public struct AGGREGATE<Query: RESPStringRenderable>: ValkeyCommand {
-        public struct Dialect: RESPRenderable, Sendable, Hashable {
-            public var dialectVersion: Int
-
-            @inlinable
-            public init(dialectVersion: Int) {
-                self.dialectVersion = dialectVersion
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "DIALECT".respEntries + dialectVersion.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "DIALECT".encode(into: &commandEncoder)
-                dialectVersion.encode(into: &commandEncoder)
-            }
-        }
-        public struct LoadLoadArgsFields: RESPRenderable, Sendable, Hashable {
+        public struct LoadFields: RESPRenderable, Sendable, Hashable {
             public var count: Int
             public var fields: [String]
 
@@ -61,9 +42,9 @@ public enum FT {
                 fields.encode(into: &commandEncoder)
             }
         }
-        public enum LoadLoadArgs: RESPRenderable, Sendable, Hashable {
+        public enum Load: RESPRenderable, Sendable, Hashable {
             case all
-            case fields(LoadLoadArgsFields)
+            case fields(LoadFields)
 
             @inlinable
             public var respEntries: Int {
@@ -79,25 +60,6 @@ public enum FT {
                 case .all: "*".encode(into: &commandEncoder)
                 case .fields(let fields): fields.encode(into: &commandEncoder)
                 }
-            }
-        }
-        public struct Load: RESPRenderable, Sendable, Hashable {
-            public var loadArgs: LoadLoadArgs
-
-            @inlinable
-            public init(loadArgs: LoadLoadArgs) {
-                self.loadArgs = loadArgs
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "LOAD".respEntries + loadArgs.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "LOAD".encode(into: &commandEncoder)
-                loadArgs.encode(into: &commandEncoder)
             }
         }
         public struct ParamsParameters: RESPRenderable, Sendable, Hashable {
@@ -143,44 +105,6 @@ public enum FT {
                 parameters.encode(into: &commandEncoder)
             }
         }
-        public struct Slop: RESPRenderable, Sendable, Hashable {
-            public var slop: Int
-
-            @inlinable
-            public init(slop: Int) {
-                self.slop = slop
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "SLOP".respEntries + slop.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "SLOP".encode(into: &commandEncoder)
-                slop.encode(into: &commandEncoder)
-            }
-        }
-        public struct Timeout: RESPRenderable, Sendable, Hashable {
-            public var milliseconds: Int
-
-            @inlinable
-            public init(milliseconds: Int) {
-                self.milliseconds = milliseconds
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "TIMEOUT".respEntries + milliseconds.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "TIMEOUT".encode(into: &commandEncoder)
-                milliseconds.encode(into: &commandEncoder)
-            }
-        }
         public struct Apply: RESPRenderable, Sendable, Hashable {
             public var expression: String
             public var field: String
@@ -202,25 +126,6 @@ public enum FT {
                 expression.encode(into: &commandEncoder)
                 "AS".encode(into: &commandEncoder)
                 field.encode(into: &commandEncoder)
-            }
-        }
-        public struct Filter: RESPRenderable, Sendable, Hashable {
-            public var expression: String
-
-            @inlinable
-            public init(expression: String) {
-                self.expression = expression
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "FILTER".respEntries + expression.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "FILTER".encode(into: &commandEncoder)
-                expression.encode(into: &commandEncoder)
             }
         }
         public enum GroupbyReduceFunction: RESPRenderable, Sendable, Hashable {
@@ -248,33 +153,14 @@ public enum FT {
                 }
             }
         }
-        public struct GroupbyReduceAlias: RESPRenderable, Sendable, Hashable {
-            public var name: String
-
-            @inlinable
-            public init(name: String) {
-                self.name = name
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "AS".respEntries + name.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "AS".encode(into: &commandEncoder)
-                name.encode(into: &commandEncoder)
-            }
-        }
         public struct GroupbyReduce: RESPRenderable, Sendable, Hashable {
             public var function: GroupbyReduceFunction
             public var count: Int
             public var expressions: [String]
-            public var alias: GroupbyReduceAlias?
+            public var alias: String?
 
             @inlinable
-            public init(function: GroupbyReduceFunction, count: Int, expressions: [String] = [], alias: GroupbyReduceAlias? = nil) {
+            public init(function: GroupbyReduceFunction, count: Int, expressions: [String] = [], alias: String? = nil) {
                 self.function = function
                 self.count = count
                 self.expressions = expressions
@@ -342,32 +228,13 @@ public enum FT {
                 count.encode(into: &commandEncoder)
             }
         }
-        public struct SortbyMax: RESPRenderable, Sendable, Hashable {
-            public var num: Int
-
-            @inlinable
-            public init(num: Int) {
-                self.num = num
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "MAX".respEntries + num.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "MAX".encode(into: &commandEncoder)
-                num.encode(into: &commandEncoder)
-            }
-        }
         public struct Sortby: RESPRenderable, Sendable, Hashable {
             public var count: Int
             public var sortParams: [String]
-            public var max: SortbyMax?
+            public var max: Int?
 
             @inlinable
-            public init(count: Int, sortParams: [String], max: SortbyMax? = nil) {
+            public init(count: Int, sortParams: [String], max: Int? = nil) {
                 self.count = count
                 self.sortParams = sortParams
                 self.max = max
@@ -390,15 +257,15 @@ public enum FT {
 
         public var index: ValkeyKey
         public var query: Query
-        public var dialect: Dialect?
+        public var dialect: Int?
         public var inorder: Bool
         public var load: Load?
         public var params: Params?
-        public var slop: Slop?
-        public var timeout: Timeout?
+        public var slop: Int?
+        public var timeout: Int?
         public var verbatim: Bool
         public var applys: [Apply]
-        public var filters: [Filter]
+        public var filters: [String]
         public var groupbys: [Groupby]
         public var limits: [Limit]
         public var sortby: Sortby?
@@ -406,15 +273,15 @@ public enum FT {
         @inlinable public init(
             index: ValkeyKey,
             query: Query,
-            dialect: Dialect? = nil,
+            dialect: Int? = nil,
             inorder: Bool = false,
             load: Load? = nil,
             params: Params? = nil,
-            slop: Slop? = nil,
-            timeout: Timeout? = nil,
+            slop: Int? = nil,
+            timeout: Int? = nil,
             verbatim: Bool = false,
             applys: [Apply] = [],
-            filters: [Filter] = [],
+            filters: [String] = [],
             groupbys: [Groupby] = [],
             limits: [Limit] = [],
             sortby: Sortby? = nil
@@ -461,7 +328,7 @@ public enum FT {
     /// Creates an empty search index and initiates the backfill process
     @_documentation(visibility: internal)
     public struct CREATE<IndexName: RESPStringRenderable, FieldIdentifier: RESPStringRenderable>: ValkeyCommand {
-        public enum On_Type: RESPRenderable, Sendable, Hashable {
+        public enum On: RESPRenderable, Sendable, Hashable {
             case hash
             case json
 
@@ -474,25 +341,6 @@ public enum FT {
                 case .hash: "HASH".encode(into: &commandEncoder)
                 case .json: "JSON".encode(into: &commandEncoder)
                 }
-            }
-        }
-        public struct On: RESPRenderable, Sendable, Hashable {
-            public var type: On_Type
-
-            @inlinable
-            public init(type: On_Type) {
-                self.type = type
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "ON".respEntries + type.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "ON".encode(into: &commandEncoder)
-                type.encode(into: &commandEncoder)
             }
         }
         public struct Prefix: RESPRenderable, Sendable, Hashable {
@@ -515,63 +363,6 @@ public enum FT {
                 "PREFIX".encode(into: &commandEncoder)
                 count.encode(into: &commandEncoder)
                 prefixes.encode(into: &commandEncoder)
-            }
-        }
-        public struct Score: RESPRenderable, Sendable, Hashable {
-            public var defaultValue: String
-
-            @inlinable
-            public init(defaultValue: String) {
-                self.defaultValue = defaultValue
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "SCORE".respEntries + defaultValue.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "SCORE".encode(into: &commandEncoder)
-                defaultValue.encode(into: &commandEncoder)
-            }
-        }
-        public struct Language: RESPRenderable, Sendable, Hashable {
-            public var language: String
-
-            @inlinable
-            public init(language: String) {
-                self.language = language
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "LANGUAGE".respEntries + language.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "LANGUAGE".encode(into: &commandEncoder)
-                language.encode(into: &commandEncoder)
-            }
-        }
-        public struct Minstemsize: RESPRenderable, Sendable, Hashable {
-            public var minStemSize: Int
-
-            @inlinable
-            public init(minStemSize: Int) {
-                self.minStemSize = minStemSize
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "MINSTEMSIZE".respEntries + minStemSize.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "MINSTEMSIZE".encode(into: &commandEncoder)
-                minStemSize.encode(into: &commandEncoder)
             }
         }
         public enum Offsets: RESPRenderable, Sendable, Hashable {
@@ -631,69 +422,12 @@ public enum FT {
                 }
             }
         }
-        public struct Punctuation: RESPRenderable, Sendable, Hashable {
-            public var punctuation: String
-
-            @inlinable
-            public init(punctuation: String) {
-                self.punctuation = punctuation
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "PUNCTUATION".respEntries + punctuation.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "PUNCTUATION".encode(into: &commandEncoder)
-                punctuation.encode(into: &commandEncoder)
-            }
-        }
-        public struct SchemaFieldsAlias: RESPRenderable, Sendable, Hashable {
-            public var fieldAlias: String
-
-            @inlinable
-            public init(fieldAlias: String) {
-                self.fieldAlias = fieldAlias
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "AS".respEntries + fieldAlias.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "AS".encode(into: &commandEncoder)
-                fieldAlias.encode(into: &commandEncoder)
-            }
-        }
-        public struct SchemaFieldsFieldTypeTagSeparator: RESPRenderable, Sendable, Hashable {
-            public var sep: String
-
-            @inlinable
-            public init(sep: String) {
-                self.sep = sep
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "SEPARATOR".respEntries + sep.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "SEPARATOR".encode(into: &commandEncoder)
-                sep.encode(into: &commandEncoder)
-            }
-        }
-        public struct SchemaFieldsFieldTypeTag: RESPRenderable, Sendable, Hashable {
-            public var separator: SchemaFieldsFieldTypeTagSeparator?
+        public struct SchemaFieldTypeTag: RESPRenderable, Sendable, Hashable {
+            public var separator: String?
             public var casesensitive: Bool
 
             @inlinable
-            public init(separator: SchemaFieldsFieldTypeTagSeparator? = nil, casesensitive: Bool = false) {
+            public init(separator: String? = nil, casesensitive: Bool = false) {
                 self.separator = separator
                 self.casesensitive = casesensitive
             }
@@ -710,7 +444,7 @@ public enum FT {
                 RESPPureToken("CASESENSITIVE", casesensitive).encode(into: &commandEncoder)
             }
         }
-        public enum SchemaFieldsFieldTypeTextSuffixTrie: RESPRenderable, Sendable, Hashable {
+        public enum SchemaFieldTypeTextSuffixTrie: RESPRenderable, Sendable, Hashable {
             case withsuffixtrie
             case nosuffixtrie
 
@@ -725,33 +459,13 @@ public enum FT {
                 }
             }
         }
-        public struct SchemaFieldsFieldTypeTextWeight: RESPRenderable, Sendable, Hashable {
-            public var weight: String
-
-            @inlinable
-            public init(weight: String) {
-                self.weight = weight
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "WEIGHT".respEntries + weight.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "WEIGHT".encode(into: &commandEncoder)
-                weight.encode(into: &commandEncoder)
-            }
-        }
-        public struct SchemaFieldsFieldTypeText: RESPRenderable, Sendable, Hashable {
+        public struct SchemaFieldTypeText: RESPRenderable, Sendable, Hashable {
             public var nostem: Bool
-            public var suffixTrie: SchemaFieldsFieldTypeTextSuffixTrie?
-            public var weight: SchemaFieldsFieldTypeTextWeight?
+            public var suffixTrie: SchemaFieldTypeTextSuffixTrie?
+            public var weight: String?
 
             @inlinable
-            public init(nostem: Bool = false, suffixTrie: SchemaFieldsFieldTypeTextSuffixTrie? = nil, weight: SchemaFieldsFieldTypeTextWeight? = nil)
-            {
+            public init(nostem: Bool = false, suffixTrie: SchemaFieldTypeTextSuffixTrie? = nil, weight: String? = nil) {
                 self.nostem = nostem
                 self.suffixTrie = suffixTrie
                 self.weight = weight
@@ -770,7 +484,7 @@ public enum FT {
                 weight.encode(into: &commandEncoder)
             }
         }
-        public enum SchemaFieldsFieldTypeVectorAlgorithm: RESPRenderable, Sendable, Hashable {
+        public enum SchemaFieldTypeVectorAlgorithm: RESPRenderable, Sendable, Hashable {
             case hnsw
             case flat
 
@@ -785,7 +499,7 @@ public enum FT {
                 }
             }
         }
-        public struct SchemaFieldsFieldTypeVectorVectorParams_Type: RESPRenderable, Sendable, Hashable {
+        public struct SchemaFieldTypeVectorVectorParams_Type: RESPRenderable, Sendable, Hashable {
 
             @inlinable
             public init() {
@@ -802,26 +516,7 @@ public enum FT {
                 "FLOAT32".encode(into: &commandEncoder)
             }
         }
-        public struct SchemaFieldsFieldTypeVectorVectorParamsDim: RESPRenderable, Sendable, Hashable {
-            public var value: Int
-
-            @inlinable
-            public init(value: Int) {
-                self.value = value
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "DIM".respEntries + value.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "DIM".encode(into: &commandEncoder)
-                value.encode(into: &commandEncoder)
-            }
-        }
-        public enum SchemaFieldsFieldTypeVectorVectorParamsDistanceMetricMetric: RESPRenderable, Sendable, Hashable {
+        public enum SchemaFieldTypeVectorVectorParamsDistanceMetric: RESPRenderable, Sendable, Hashable {
             case l2
             case ip
             case cosine
@@ -838,119 +533,24 @@ public enum FT {
                 }
             }
         }
-        public struct SchemaFieldsFieldTypeVectorVectorParamsDistanceMetric: RESPRenderable, Sendable, Hashable {
-            public var metric: SchemaFieldsFieldTypeVectorVectorParamsDistanceMetricMetric
-
-            @inlinable
-            public init(metric: SchemaFieldsFieldTypeVectorVectorParamsDistanceMetricMetric) {
-                self.metric = metric
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "DISTANCE_METRIC".respEntries + metric.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "DISTANCE_METRIC".encode(into: &commandEncoder)
-                metric.encode(into: &commandEncoder)
-            }
-        }
-        public struct SchemaFieldsFieldTypeVectorVectorParamsInitialCap: RESPRenderable, Sendable, Hashable {
-            public var value: Int
-
-            @inlinable
-            public init(value: Int) {
-                self.value = value
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "INITIAL_CAP".respEntries + value.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "INITIAL_CAP".encode(into: &commandEncoder)
-                value.encode(into: &commandEncoder)
-            }
-        }
-        public struct SchemaFieldsFieldTypeVectorVectorParamsM: RESPRenderable, Sendable, Hashable {
-            public var value: Int
-
-            @inlinable
-            public init(value: Int) {
-                self.value = value
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "M".respEntries + value.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "M".encode(into: &commandEncoder)
-                value.encode(into: &commandEncoder)
-            }
-        }
-        public struct SchemaFieldsFieldTypeVectorVectorParamsEfConstruction: RESPRenderable, Sendable, Hashable {
-            public var value: Int
-
-            @inlinable
-            public init(value: Int) {
-                self.value = value
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "EF_CONSTRUCTION".respEntries + value.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "EF_CONSTRUCTION".encode(into: &commandEncoder)
-                value.encode(into: &commandEncoder)
-            }
-        }
-        public struct SchemaFieldsFieldTypeVectorVectorParamsEfRuntime: RESPRenderable, Sendable, Hashable {
-            public var value: Int
-
-            @inlinable
-            public init(value: Int) {
-                self.value = value
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "EF_RUNTIME".respEntries + value.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "EF_RUNTIME".encode(into: &commandEncoder)
-                value.encode(into: &commandEncoder)
-            }
-        }
-        public struct SchemaFieldsFieldTypeVectorVectorParams: RESPRenderable, Sendable, Hashable {
-            public var type: SchemaFieldsFieldTypeVectorVectorParams_Type
-            public var dim: SchemaFieldsFieldTypeVectorVectorParamsDim
-            public var distanceMetric: SchemaFieldsFieldTypeVectorVectorParamsDistanceMetric
-            public var initialCap: SchemaFieldsFieldTypeVectorVectorParamsInitialCap?
-            public var m: SchemaFieldsFieldTypeVectorVectorParamsM?
-            public var efConstruction: SchemaFieldsFieldTypeVectorVectorParamsEfConstruction?
-            public var efRuntime: SchemaFieldsFieldTypeVectorVectorParamsEfRuntime?
+        public struct SchemaFieldTypeVectorVectorParams: RESPRenderable, Sendable, Hashable {
+            public var type: SchemaFieldTypeVectorVectorParams_Type
+            public var dim: Int
+            public var distanceMetric: SchemaFieldTypeVectorVectorParamsDistanceMetric
+            public var initialCap: Int?
+            public var m: Int?
+            public var efConstruction: Int?
+            public var efRuntime: Int?
 
             @inlinable
             public init(
-                type: SchemaFieldsFieldTypeVectorVectorParams_Type,
-                dim: SchemaFieldsFieldTypeVectorVectorParamsDim,
-                distanceMetric: SchemaFieldsFieldTypeVectorVectorParamsDistanceMetric,
-                initialCap: SchemaFieldsFieldTypeVectorVectorParamsInitialCap? = nil,
-                m: SchemaFieldsFieldTypeVectorVectorParamsM? = nil,
-                efConstruction: SchemaFieldsFieldTypeVectorVectorParamsEfConstruction? = nil,
-                efRuntime: SchemaFieldsFieldTypeVectorVectorParamsEfRuntime? = nil
+                type: SchemaFieldTypeVectorVectorParams_Type,
+                dim: Int,
+                distanceMetric: SchemaFieldTypeVectorVectorParamsDistanceMetric,
+                initialCap: Int? = nil,
+                m: Int? = nil,
+                efConstruction: Int? = nil,
+                efRuntime: Int? = nil
             ) {
                 self.type = type
                 self.dim = dim
@@ -978,13 +578,13 @@ public enum FT {
                 efRuntime.encode(into: &commandEncoder)
             }
         }
-        public struct SchemaFieldsFieldTypeVector: RESPRenderable, Sendable, Hashable {
-            public var algorithm: SchemaFieldsFieldTypeVectorAlgorithm
+        public struct SchemaFieldTypeVector: RESPRenderable, Sendable, Hashable {
+            public var algorithm: SchemaFieldTypeVectorAlgorithm
             public var attrCount: Int
-            public var vectorParams: SchemaFieldsFieldTypeVectorVectorParams
+            public var vectorParams: SchemaFieldTypeVectorVectorParams
 
             @inlinable
-            public init(algorithm: SchemaFieldsFieldTypeVectorAlgorithm, attrCount: Int, vectorParams: SchemaFieldsFieldTypeVectorVectorParams) {
+            public init(algorithm: SchemaFieldTypeVectorAlgorithm, attrCount: Int, vectorParams: SchemaFieldTypeVectorVectorParams) {
                 self.algorithm = algorithm
                 self.attrCount = attrCount
                 self.vectorParams = vectorParams
@@ -1003,11 +603,11 @@ public enum FT {
                 vectorParams.encode(into: &commandEncoder)
             }
         }
-        public enum SchemaFieldsFieldType: RESPRenderable, Sendable, Hashable {
+        public enum SchemaFieldType: RESPRenderable, Sendable, Hashable {
             case numeric
-            case tag(SchemaFieldsFieldTypeTag)
-            case text(SchemaFieldsFieldTypeText)
-            case vector(SchemaFieldsFieldTypeVector)
+            case tag(SchemaFieldTypeTag)
+            case text(SchemaFieldTypeText)
+            case vector(SchemaFieldTypeVector)
 
             @inlinable
             public var respEntries: Int {
@@ -1029,14 +629,14 @@ public enum FT {
                 }
             }
         }
-        public struct SchemaFields: RESPRenderable, Sendable, Hashable {
+        public struct Schema: RESPRenderable, Sendable, Hashable {
             public var fieldIdentifier: FieldIdentifier
-            public var alias: SchemaFieldsAlias?
-            public var fieldType: SchemaFieldsFieldType
+            public var alias: String?
+            public var fieldType: SchemaFieldType
             public var sortable: Bool
 
             @inlinable
-            public init(fieldIdentifier: FieldIdentifier, alias: SchemaFieldsAlias? = nil, fieldType: SchemaFieldsFieldType, sortable: Bool = false) {
+            public init(fieldIdentifier: FieldIdentifier, alias: String? = nil, fieldType: SchemaFieldType, sortable: Bool = false) {
                 self.fieldIdentifier = fieldIdentifier
                 self.alias = alias
                 self.fieldType = fieldType
@@ -1057,50 +657,31 @@ public enum FT {
                 RESPPureToken("SORTABLE", sortable).encode(into: &commandEncoder)
             }
         }
-        public struct Schema: RESPRenderable, Sendable, Hashable {
-            public var fields: [SchemaFields]
-
-            @inlinable
-            public init(fields: [SchemaFields]) {
-                self.fields = fields
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "SCHEMA".respEntries + fields.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "SCHEMA".encode(into: &commandEncoder)
-                fields.encode(into: &commandEncoder)
-            }
-        }
         @inlinable public static var name: String { "FT.CREATE" }
 
         public var indexName: IndexName
         public var on: On?
         public var prefix: Prefix?
-        public var score: Score?
-        public var language: Language?
+        public var score: String?
+        public var language: String?
         public var skipinitialscan: Bool
-        public var minstemsize: Minstemsize?
+        public var minstemsize: Int?
         public var offsets: Offsets?
         public var stopwords: Stopwords?
-        public var punctuation: Punctuation?
+        public var punctuation: String?
         public var schema: Schema
 
         @inlinable public init(
             indexName: IndexName,
             on: On? = nil,
             prefix: Prefix? = nil,
-            score: Score? = nil,
-            language: Language? = nil,
+            score: String? = nil,
+            language: String? = nil,
             skipinitialscan: Bool = false,
-            minstemsize: Minstemsize? = nil,
+            minstemsize: Int? = nil,
             offsets: Offsets? = nil,
             stopwords: Stopwords? = nil,
-            punctuation: Punctuation? = nil,
+            punctuation: String? = nil,
             schema: Schema
         ) {
             self.indexName = indexName
@@ -1258,25 +839,6 @@ public enum FT {
                 }
             }
         }
-        public struct Dialect: RESPRenderable, Sendable, Hashable {
-            public var dialect: Int
-
-            @inlinable
-            public init(dialect: Int) {
-                self.dialect = dialect
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "DIALECT".respEntries + dialect.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "DIALECT".encode(into: &commandEncoder)
-                dialect.encode(into: &commandEncoder)
-            }
-        }
         public struct Limit: RESPRenderable, Sendable, Hashable {
             public var offset: Int
             public var count: Int
@@ -1342,31 +904,12 @@ public enum FT {
                 parameters.encode(into: &commandEncoder)
             }
         }
-        public struct ReturnFieldsAlias: RESPRenderable, Sendable, Hashable {
-            public var name: String
-
-            @inlinable
-            public init(name: String) {
-                self.name = name
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "AS".respEntries + name.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "AS".encode(into: &commandEncoder)
-                name.encode(into: &commandEncoder)
-            }
-        }
         public struct ReturnFields: RESPRenderable, Sendable, Hashable {
             public var field: String
-            public var alias: ReturnFieldsAlias?
+            public var alias: String?
 
             @inlinable
-            public init(field: String, alias: ReturnFieldsAlias? = nil) {
+            public init(field: String, alias: String? = nil) {
                 self.field = field
                 self.alias = alias
             }
@@ -1402,25 +945,6 @@ public enum FT {
                 "RETURN".encode(into: &commandEncoder)
                 count.encode(into: &commandEncoder)
                 fields.encode(into: &commandEncoder)
-            }
-        }
-        public struct Slop: RESPRenderable, Sendable, Hashable {
-            public var slop: Int
-
-            @inlinable
-            public init(slop: Int) {
-                self.slop = slop
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "SLOP".respEntries + slop.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "SLOP".encode(into: &commandEncoder)
-                slop.encode(into: &commandEncoder)
             }
         }
         public enum SortbyDirection: RESPRenderable, Sendable, Hashable {
@@ -1460,40 +984,21 @@ public enum FT {
                 direction.encode(into: &commandEncoder)
             }
         }
-        public struct Timeout: RESPRenderable, Sendable, Hashable {
-            public var timeoutMs: Int
-
-            @inlinable
-            public init(timeoutMs: Int) {
-                self.timeoutMs = timeoutMs
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "TIMEOUT".respEntries + timeoutMs.respEntries
-            }
-
-            @inlinable
-            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "TIMEOUT".encode(into: &commandEncoder)
-                timeoutMs.encode(into: &commandEncoder)
-            }
-        }
         @inlinable public static var name: String { "FT.SEARCH" }
 
         public var index: ValkeyKey
         public var query: Query
         public var shardPolicy: ShardPolicy?
         public var consistency: Consistency?
-        public var dialect: Dialect?
+        public var dialect: Int?
         public var inorder: Bool
         public var limit: Limit?
         public var nocontent: Bool
         public var params: Params?
         public var `return`: Return?
-        public var slop: Slop?
+        public var slop: Int?
         public var sortby: Sortby?
-        public var timeout: Timeout?
+        public var timeout: Int?
         public var verbatim: Bool
         public var withsortkeys: Bool
 
@@ -1502,15 +1007,15 @@ public enum FT {
             query: Query,
             shardPolicy: ShardPolicy? = nil,
             consistency: Consistency? = nil,
-            dialect: Dialect? = nil,
+            dialect: Int? = nil,
             inorder: Bool = false,
             limit: Limit? = nil,
             nocontent: Bool = false,
             params: Params? = nil,
             `return`: Return? = nil,
-            slop: Slop? = nil,
+            slop: Int? = nil,
             sortby: Sortby? = nil,
-            timeout: Timeout? = nil,
+            timeout: Int? = nil,
             verbatim: Bool = false,
             withsortkeys: Bool = false
         ) {
@@ -1598,15 +1103,15 @@ extension ValkeyClientProtocol {
     public func ftAggregate<Query: RESPStringRenderable>(
         index: ValkeyKey,
         query: Query,
-        dialect: FT.AGGREGATE<Query>.Dialect? = nil,
+        dialect: Int? = nil,
         inorder: Bool = false,
         load: FT.AGGREGATE<Query>.Load? = nil,
         params: FT.AGGREGATE<Query>.Params? = nil,
-        slop: FT.AGGREGATE<Query>.Slop? = nil,
-        timeout: FT.AGGREGATE<Query>.Timeout? = nil,
+        slop: Int? = nil,
+        timeout: Int? = nil,
         verbatim: Bool = false,
         applys: [FT.AGGREGATE<Query>.Apply] = [],
-        filters: [FT.AGGREGATE<Query>.Filter] = [],
+        filters: [String] = [],
         groupbys: [FT.AGGREGATE<Query>.Groupby] = [],
         limits: [FT.AGGREGATE<Query>.Limit] = [],
         sortby: FT.AGGREGATE<Query>.Sortby? = nil
@@ -1641,13 +1146,13 @@ extension ValkeyClientProtocol {
         indexName: IndexName,
         on: FT.CREATE<IndexName, FieldIdentifier>.On? = nil,
         prefix: FT.CREATE<IndexName, FieldIdentifier>.Prefix? = nil,
-        score: FT.CREATE<IndexName, FieldIdentifier>.Score? = nil,
-        language: FT.CREATE<IndexName, FieldIdentifier>.Language? = nil,
+        score: String? = nil,
+        language: String? = nil,
         skipinitialscan: Bool = false,
-        minstemsize: FT.CREATE<IndexName, FieldIdentifier>.Minstemsize? = nil,
+        minstemsize: Int? = nil,
         offsets: FT.CREATE<IndexName, FieldIdentifier>.Offsets? = nil,
         stopwords: FT.CREATE<IndexName, FieldIdentifier>.Stopwords? = nil,
-        punctuation: FT.CREATE<IndexName, FieldIdentifier>.Punctuation? = nil,
+        punctuation: String? = nil,
         schema: FT.CREATE<IndexName, FieldIdentifier>.Schema
     ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(
@@ -1703,15 +1208,15 @@ extension ValkeyClientProtocol {
         query: Query,
         shardPolicy: FT.SEARCH<Query>.ShardPolicy? = nil,
         consistency: FT.SEARCH<Query>.Consistency? = nil,
-        dialect: FT.SEARCH<Query>.Dialect? = nil,
+        dialect: Int? = nil,
         inorder: Bool = false,
         limit: FT.SEARCH<Query>.Limit? = nil,
         nocontent: Bool = false,
         params: FT.SEARCH<Query>.Params? = nil,
         return: FT.SEARCH<Query>.Return? = nil,
-        slop: FT.SEARCH<Query>.Slop? = nil,
+        slop: Int? = nil,
         sortby: FT.SEARCH<Query>.Sortby? = nil,
-        timeout: FT.SEARCH<Query>.Timeout? = nil,
+        timeout: Int? = nil,
         verbatim: Bool = false,
         withsortkeys: Bool = false
     ) async throws(ValkeyClientError) -> RESPToken {
