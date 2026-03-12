@@ -12,8 +12,8 @@ import NIOEmbedded
 import Testing
 import Valkey
 
-/// Valkey Cluster description
-actor Cluster {
+/// Valkey Cluster description for testing
+actor TestCluster {
     enum Role {
         case primary
         case replica
@@ -35,8 +35,8 @@ actor Cluster {
 
         init(
             hashKeyRanges: [ClosedRange<UInt16>],
-            primary: Cluster.Address,
-            replicas: [Cluster.Address]
+            primary: TestCluster.Address,
+            replicas: [TestCluster.Address]
         ) {
             self.hashKeyRanges = hashKeyRanges
             self.primary = .init(address: primary, health: .online)
@@ -195,7 +195,7 @@ actor Cluster {
     }
 
     /// Add Valkey node to mock connections
-    func addNode(to mockConnections: MockServerConnections, address: Cluster.Address, logger: Logger) async {
+    func addNode(to mockConnections: MockServerConnections, address: TestCluster.Address, logger: Logger) async {
         await mockConnections.addValkeyServer(.hostname(address.host, port: address.port)) { command in
             var iterator = command.makeIterator()
             switch iterator.next() {
@@ -245,20 +245,20 @@ actor Cluster {
 
 @Suite("Test ValkeyClusterClient using mock cluster")
 struct ValkeyClusterClientTests {
-    var sixNodeHealthyCluster: Cluster {
+    var sixNodeHealthyCluster: TestCluster {
         get async {
-            await Cluster(shards: [
-                Cluster.Shard(
+            await TestCluster(shards: [
+                TestCluster.Shard(
                     hashKeyRanges: [0...5460],
                     primary: .init(host: "127.0.0.1", port: 16000),
                     replicas: [.init(host: "127.0.0.1", port: 16001)]
                 ),
-                Cluster.Shard(
+                TestCluster.Shard(
                     hashKeyRanges: [5461...10922],
                     primary: .init(host: "127.0.0.1", port: 16002),
                     replicas: [.init(host: "127.0.0.1", port: 16003)]
                 ),
-                Cluster.Shard(
+                TestCluster.Shard(
                     hashKeyRanges: [10923...16383],
                     primary: .init(host: "127.0.0.1", port: 16004),
                     replicas: [.init(host: "127.0.0.1", port: 16005)]
@@ -441,7 +441,7 @@ struct ValkeyClusterClientTests {
 
             let hashSlot = HashSlot(key: "$address{3}".utf8).rawValue
             await cluster.addShard(
-                Cluster.Shard(
+                TestCluster.Shard(
                     hashKeyRanges: [],
                     primary: .init(host: "127.0.0.1", port: 16006),
                     replicas: [.init(host: "127.0.0.1", port: 16007)]

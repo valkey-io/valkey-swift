@@ -1,29 +1,33 @@
-# Subscriptions
+# Subscribing to channels
 
-Implementing Pub/Sub using valkey-swift
+Use the PUBLISH, SUBSCRIBE, and UNSUBSCRIBE commands to implement pub/sub messaging.
 
 ## Overview
 
-Valkey provides publish and subscribe (Pub/Sub) messaging support using the `PUBLISH`, `SUBSCRIBE` and `UNSUBSCRIBE` commands. It has the concept of a channel that a client can both publish to and subscribe to. The server sends any messages published to a channel to clients subscribed to that channel. Valkey channels are not persisted, for instance if a message is published to a channel that has no subscribers, that message is lost. 
+Valkey provides publish and subscribe (pub/sub) messaging support using the `PUBLISH`, `SUBSCRIBE`, and `UNSUBSCRIBE` commands.
+Clients can publish to named channels and subscribe to them.
+The server forwards any message published to a channel to all subscribed clients.
+Valkey doesn't persist channels; if you publish a message to a channel with no subscribers, the message is lost.
 
-### Publishing
+### Publish to a channel
 
-Valkey has one function for publishing to a channel ``ValkeyClientProtocol/publish(channel:message:)``. As a member function of ``ValkeyClientProtocol``, it is available from the types that conform to it which include ``ValkeyConnection``, ``ValkeyClient`` and ``ValkeyClusterClient``.
+Use ``ValkeyClientProtocol/publish(channel:message:)`` to publish to a channel.
+It's available on all types that conform to ``ValkeyClientProtocol``, including ``ValkeyConnection``, ``ValkeyClient``, and ``ValkeyClusterClient``.
 
 ```swift
 try await valkeyClient.publish(channel: "channel1", message: "Hello, World!")
 ```
 
-### Subscribing
+### Subscribe to channels
 
-Use ``ValkeyConnection/subscribe(to:process:)-(String...,_)`` to subscribe to a single or multiple channels and receive every message published to the channel via an AsyncSequence. When you exit the closure provided, the Valkey client sends the relevant `UNSUBSCRIBE` messages.
+Use ``ValkeyConnection/subscribe(to:process:)-(String...,_)`` to subscribe to one or more channels and receive every message published to those channels as an `AsyncSequence`. When you exit the closure, the Valkey client sends the relevant `UNSUBSCRIBE` messages.
 
 ```swift
 try await valkeyClient.withConnection { connection in
     try await connection.subscribe(to: ["channel1", "channel2"]) { subscription in
         for try await item in subscription {
-            // a subscription item includes the channel the message was published on
-            // as well as the message
+            // A subscription item includes the channel the message was published on
+            // as well as the message.
             print(item.channel)
             print(String(item.message))
         }
@@ -31,7 +35,7 @@ try await valkeyClient.withConnection { connection in
 }
 ```
 
-Valkey-swift uses the RESP3 protocol, which allows for commands to be run on the same connection as subsciption. This allows you to call `SET` with the same connection as the subscription, as the next example illustrates: 
+Valkey uses the RESP3 protocol, which lets you run commands on the same connection as the subscription, as the following example shows:
 
 ```swift
 try await connection.subscribe(to: ["channel1"]) { subscription in
@@ -41,12 +45,13 @@ try await connection.subscribe(to: ["channel1"]) { subscription in
 }
 ```
 
-### Patterns
+### Subscribe to channels using patterns
 
-Valkey allows you to use glob style patterns to subscribe to a range of channels. These are available with the function ``ValkeyConnection/psubscribe(to:process:)-([String],_)``. This is formatted in a similar manner to normal subscriptions.
+Valkey lets you use glob-style patterns to subscribe to a range of channels.
+Call ``ValkeyConnection/psubscribe(to:process:)-([String],_)`` to subscribe using patterns; the format is the same as regular subscriptions.
 
 ```swift
-try await connection.subscribe(to: ["channel*"]) { subscription in
+try await connection.psubscribe(to: ["channel*"]) { subscription in
     for try await entry in subscription {
         let channel = "\(entry.channel)/last"
         try await connection.set(channel, value: entry.message)
@@ -54,26 +59,31 @@ try await connection.subscribe(to: ["channel*"]) { subscription in
 }
 ```
 
-The code above receives all messages sent to channels prefixed with the string "channel".
+This example receives all messages sent to channels prefixed with the string "channel".
 
-More can be found out about Valkey pub/sub in the [Valkey documentation](https://valkey.io/topics/pubsub/).
+For more information about Valkey pub/sub, see the [Valkey documentation](https://valkey.io/topics/pubsub/).
 
-### Support for Client Side Caching
+### Implement client-side caching
 
-Client side caching is a way to improve performance of a service using Valkey. Caching the values of specific keys locally avoids putting pressure on your Valkey server unnecessarily. For a client side cache to work, you need to know when to invalidate the local data. Valkey provides two different ways to do this, both using pub/sub:
+Client-side caching improves the performance of services that use Valkey.
+Caching specific key values locally reduces pressure on your Valkey server.
+For a client-side cache to work, you need to know when to invalidate the local data.
+Valkey provides two ways to do this, both using pub/sub:
 
-1) The server remembers the keys a connection has accessed and publishes events to the invalidation channel whenever those keys are modified.
-2) Broadcasting, where the server doesn't keep a record of what keys have been accessed. The client provides a prefix of the keys they are interested in and the server sends events to the invalidation channel whenever any key that matches that prefix is modified.
+1. The server remembers the keys a connection has accessed and publishes events to the invalidation channel whenever another client modifies those keys.
+2. Broadcasting: The server doesn't track which keys clients have accessed. The client provides a key prefix, and the server sends events to the invalidation channel whenever another client modifies a key matching that prefix.
 
-#### Enabling Tracking
+#### Enable tracking
 
-Connections start without invalidation tracking enabled. To enable receiving invalidation events on a connection, call ``ValkeyConnection/clientTracking(status:clientId:prefixes:bcast:optin:optout:noloop:)``. For example:
+Connections start without invalidation tracking enabled.
+To enable receiving invalidation events on a connection, call ``ValkeyConnection/clientTracking(status:clientId:prefixes:bcast:optin:optout:noloop:)``. For example:
 
 ```swift
 try await connection.clientTracking(status: .on)
 ```
 
-This tells the server to use the first invalidation method where it remembers the keys accessed by a connection. If you would like to track changes to all keys with a prefix, use:
+This tells the server to use the first invalidation method, where the server remembers the keys a connection has accessed.
+To track changes to all keys with a specific prefix, use:
 
 ```swift
 try await connection.clientTracking(
@@ -83,9 +93,10 @@ try await connection.clientTracking(
 )
 ```
 
-#### Subscribing to Invalidation Events
+#### Subscribe to invalidation events
 
-Once tracking is enabled you can subscribe to invalidation events using ``ValkeyConnection/subscribeKeyInvalidations(process:)``. The AsyncSequence passed to the `process` closure is a list of keys that have been invalidated.
+Once tracking is enabled, you can subscribe to invalidation events using ``ValkeyConnection/subscribeKeyInvalidations(process:)``.
+The `AsyncSequence` passed to the `process` closure contains the keys that Valkey has invalidated.
 
 ```swift
 try await connection.subscribeKeyInvalidations { keys in
@@ -95,14 +106,16 @@ try await connection.subscribeKeyInvalidations { keys in
 }
 ```
 
-#### Redirecting Invalidation Events
+#### Redirect invalidation events
 
-With RESP3 it is possible to perform data operations and receive the invalidation events on the same connection, but Valkey client tracking also allows you to redirect invalidation events to another connection. Given that the Valkey client uses a persistent connection pool, it is preferable to use a single connection for receiving invalidation messages to implement a system wide cache.
+With RESP3, you can perform data operations and receive invalidation events on the same connection, but Valkey client tracking also lets you redirect invalidation events to another connection.
+Because the Valkey client uses a persistent connection pool, prefer using a single dedicated connection for invalidation messages to implement a system-wide cache.
 
-For this to work you need to know the id of the connection that is subscribed to the key invalidation events. Get the connection id using ``ValkeyConnection/clientId()`` and use it when you set up tracking. 
+For this to work, you need the ID of the connection subscribed to the key invalidation events.
+Get the connection ID using ``ValkeyConnection/clientId()`` and use it when you set up tracking.
 
 ```swift
 try await connection.clientTracking(status: .on, clientId: id)
 ```
 
-More can be found out about Valkey client side caching in the [Valkey documentation](https://valkey.io/topics/client-side-caching/).
+For more information about Valkey client-side caching, see the [Valkey documentation](https://valkey.io/topics/client-side-caching/).

@@ -29,8 +29,13 @@ struct ValkeyClientStateMachine<
     /// Current state
     @usableFromInline
     enum State {
+        @usableFromInline
+        struct HealthyContext {
+            @usableFromInline
+            let nodes: ValkeyNodeIDs<ValkeyServerAddress>
+        }
         case uninitialized
-        case running(ValkeyNodeIDs<ValkeyServerAddress>)
+        case healthy(HealthyContext)
         case shutdown
     }
     /// Topology refresh state
@@ -77,10 +82,10 @@ struct ValkeyClientStateMachine<
 
     @inlinable
     func getNode(_ selection: ValkeyNodeSelection) -> ConnectionPool {
-        guard case .running(let nodes) = self.state else {
+        guard case .healthy(let healthyContext) = self.state else {
             preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
         }
-        let nodeID = selection.select(nodeIDs: nodes)
+        let nodeID = selection.select(nodeIDs: healthyContext.nodes)
         if let pool = self.runningClients[nodeID]?.pool {
             return pool
         } else {
@@ -109,8 +114,8 @@ struct ValkeyClientStateMachine<
         let client: ConnectionPool?
         switch action {
         case .useExistingPool:
-            if case .running(let currentNodes) = self.state {
-                if currentNodes.primary == address {
+            if case .healthy(let healthyContext) = self.state {
+                if healthyContext.nodes.primary == address {
                     return .init()
                 }
             }
@@ -119,7 +124,7 @@ struct ValkeyClientStateMachine<
             client = node
         }
 
-        self.state = .running(nodes)
+        self.state = .healthy(.init(nodes: nodes))
         if self.configuration.findReplicas {
             switch self.topologyRefreshState {
             case .notRefreshing:
@@ -136,6 +141,17 @@ struct ValkeyClientStateMachine<
         }
     }
 
+    func getNodes() -> ValkeyNodeIDs<ValkeyServerAddress>? {
+        switch self.state {
+        case .uninitialized:
+            preconditionFailure("Invalid state: \(self.state)")
+        case .healthy(let healthContext):
+            return healthContext.nodes
+        case .shutdown:
+            return nil
+        }
+    }
+
     enum TimerFiredAction {
         case runRole
         case doNothing
@@ -147,7 +163,7 @@ struct ValkeyClientStateMachine<
             switch self.state {
             case .uninitialized:
                 preconditionFailure("Invalid state: \(self.state)")
-            case .running:
+            case .healthy:
                 break
             case .shutdown:
                 return .doNothing
@@ -175,7 +191,7 @@ struct ValkeyClientStateMachine<
             switch self.state {
             case .shutdown, .uninitialized:
                 return .cancelTimer(token)
-            case .running:
+            case .healthy:
                 break
             }
 
@@ -188,6 +204,28 @@ struct ValkeyClientStateMachine<
                 self.topologyRefreshState = .waitingForNextRefresh(waitingState)
                 return .doNothing
             }
+        }
+    }
+
+    struct NewNodesAction {
+        var clientsToRun: [ConnectionPool] = []
+    }
+
+    mutating func addNewNodesFromRefresh(_ nodes: [ValkeyServerAddress]) -> NewNodesAction {
+        // If we are shutdown ignore
+        guard case .healthy = self.state else {
+            return .init()
+        }
+
+        switch self.topologyRefreshState {
+        case .notRefreshing, .waitingForNextRefresh:
+            preconditionFailure("Invalid state: \(self.topologyRefreshState)")
+
+        case .refreshing:
+            let nodeDescriptions = nodes.map { ValkeyClientNodeDescription(address: $0) }
+            let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: false)
+            precondition(action.poolsToShutdown.isEmpty, "There should be no pools to shutdown.")
+            return .init(clientsToRun: action.poolsToRun.map { $0.0 })
         }
     }
 
@@ -215,7 +253,7 @@ struct ValkeyClientStateMachine<
     /// Depending on what node we are connected to we either get a primary node or a list of replicas
     mutating func topologyRefreshSucceeded(_ topology: TopologyRefreshInput) -> TopologyRefreshAction {
         // If we are shutdown ignore
-        guard case .running(let nodes) = self.state else {
+        guard case .healthy(let healthyContext) = self.state else {
             return .init()
         }
 
@@ -227,13 +265,13 @@ struct ValkeyClientStateMachine<
             switch topology {
             case .primary(let replicas):
                 var nodeDescriptions = [
-                    ValkeyClientNodeDescription(address: nodes.primary)
+                    ValkeyClientNodeDescription(address: healthyContext.nodes.primary)
                 ]
                 nodeDescriptions.append(
                     contentsOf: replicas.lazy.map { ValkeyClientNodeDescription(address: $0) }
                 )
-                let newNodes = ValkeyNodeIDs(primary: nodes.primary, replicas: replicas)
-                self.state = .running(newNodes)
+                let newNodes = ValkeyNodeIDs(primary: healthyContext.nodes.primary, replicas: replicas)
+                self.state = .healthy(.init(nodes: newNodes))
                 let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: true)
                 let refreshTimerID = self.nextTimerID()
                 self.topologyRefreshState = .waitingForNextRefresh(.init(timer: .init(id: refreshTimerID)))
@@ -254,7 +292,7 @@ struct ValkeyClientStateMachine<
                     ValkeyClientNodeDescription(address: primary)
                 ]
                 let newNodes = ValkeyNodeIDs(primary: primary, replicas: [])
-                self.state = .running(newNodes)
+                self.state = .healthy(.init(nodes: newNodes))
                 let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: false)
                 return .init(
                     nextAction: .refreshTopology,
@@ -271,7 +309,7 @@ struct ValkeyClientStateMachine<
 
     mutating func topologyRefreshFailed() -> TopologyRefreshFailedAction {
         // If we are shutdown ignore
-        guard case .running = self.state else {
+        guard case .healthy = self.state else {
             return .init(retryTimer: nil)
         }
         switch self.topologyRefreshState {

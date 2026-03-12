@@ -44,7 +44,7 @@ extension PoolStateMachine {
     }
 
     @usableFromInline
-    /// An connection state machine about the pool's view on the connection.
+    /// A connection state machine about the pool's view on the connection.
     struct ConnectionState: Sendable {
         @usableFromInline
         enum State: Sendable {
