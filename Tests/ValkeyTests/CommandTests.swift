@@ -2160,7 +2160,7 @@ struct CommandTests {
                 (
                     request: .command([
                         "FT.AGGREGATE", "idx:testIndex", "hello",
-                        "SORTBY", "4", "@foo", "ASC", "@bar", "DESC",
+                        "SORTBY", "2", "@foo", "ASC", "@bar", "DESC",
                     ]),
                     response: .array([.number(0)])
                 )
@@ -2196,7 +2196,7 @@ struct CommandTests {
                 (
                     request: .command([
                         "FT.AGGREGATE", "idx:testIndex", "hello",
-                        "SORTBY", "2", "@foo", "DESC",
+                        "SORTBY", "1", "@foo", "DESC",
                         "MAX", "100",
                     ]),
                     response: .array([.number(0)])
@@ -2355,8 +2355,7 @@ struct CommandTests {
                                     function: .sum,
                                     count: 1,
                                     expressions: ["@price"],
-                                    alias: .init(name: "total_revenue")
-
+                                    alias: "total_revenue"
                                 )
                             ]
                         )
@@ -2403,8 +2402,7 @@ struct CommandTests {
                                     function: .countDistinct,
                                     count: 1,
                                     expressions: ["@user"],
-                                    alias: .init(name: "uniq_users")
-
+                                    alias: "uniq_users"
                                 )
                             ]
                         )
@@ -2446,9 +2444,9 @@ struct CommandTests {
                     indexName: "idx:testIndex",
                     on: .init(type: .json),
                     prefix: .init(count: 1, prefixes: ["item:"]),
-                    schema: .init(fields: [
+                    schemas: [
                         .init(fieldIdentifier: "$.name", alias: .init(fieldIdentifier: "name"), fieldType: .text)
-                    ])
+                    ]
                 )
             }
         }
@@ -2471,13 +2469,13 @@ struct CommandTests {
                     indexName: "idx:noOn",
                     on: nil,
                     prefix: nil,
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "age",
                             alias: nil,
                             fieldType: .numeric
                         )
-                    ])
+                    ]
                 )
             }
         }
@@ -2500,7 +2498,7 @@ struct CommandTests {
                     indexName: "idx:tagSepOnly",
                     on: nil,
                     prefix: nil,
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "category",
                             alias: nil,
@@ -2511,7 +2509,7 @@ struct CommandTests {
                                 )
                             )
                         )
-                    ])
+                    ]
                 )
             }
         }
@@ -2534,7 +2532,7 @@ struct CommandTests {
                     indexName: "idx:tagCaseOnly",
                     on: nil,
                     prefix: nil,
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "category",
                             alias: nil,
@@ -2545,7 +2543,7 @@ struct CommandTests {
                                 )
                             )
                         )
-                    ])
+                    ]
                 )
             }
         }
@@ -2569,13 +2567,13 @@ struct CommandTests {
                     indexName: "idx:hashIndex",
                     on: .init(type: .hash),
                     prefix: nil,
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "name",
                             alias: nil,
                             fieldType: .text
                         )
-                    ])
+                    ]
                 )
             }
         }
@@ -2599,7 +2597,7 @@ struct CommandTests {
                     indexName: "idx:tagIndex",
                     on: .init(type: .hash),
                     prefix: nil,
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "category",
                             alias: nil,
@@ -2610,7 +2608,7 @@ struct CommandTests {
                                 )
                             )
                         )
-                    ])
+                    ]
                 )
             }
         }
@@ -2634,7 +2632,7 @@ struct CommandTests {
                     indexName: "idx:tagIndex2",
                     on: .init(type: .hash),
                     prefix: nil,
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "category",
                             alias: nil,
@@ -2645,7 +2643,7 @@ struct CommandTests {
                                 )
                             )
                         )
-                    ])
+                    ]
                 )
             }
         }
@@ -2670,13 +2668,13 @@ struct CommandTests {
                     indexName: "idx:multiPrefix",
                     on: .init(type: .hash),
                     prefix: .init(count: 2, prefixes: ["item:", "product:"]),
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "name",
                             alias: nil,
                             fieldType: .text
                         )
-                    ])
+                    ]
                 )
             }
         }
@@ -2701,7 +2699,7 @@ struct CommandTests {
                     indexName: "idx:multiField",
                     on: .init(type: .hash),
                     prefix: nil,
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "name",
                             alias: nil,
@@ -2712,7 +2710,7 @@ struct CommandTests {
                             alias: nil,
                             fieldType: .numeric
                         ),
-                    ])
+                    ]
                 )
             }
         }
@@ -2743,7 +2741,7 @@ struct CommandTests {
                     indexName: "idx:mixed",
                     on: .init(type: .hash),
                     prefix: .init(count: 2, prefixes: ["item:", "product:"]),
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "name",
                             alias: nil,
@@ -2782,7 +2780,7 @@ struct CommandTests {
                                 )
                             )
                         ),
-                    ])
+                    ]
                 )
             }
         }
@@ -2813,7 +2811,7 @@ struct CommandTests {
                     indexName: "my_index_name",
                     on: nil,
                     prefix: nil,
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "my_hash_field_key",
                             alias: nil,
@@ -2831,7 +2829,7 @@ struct CommandTests {
                                 )
                             )
                         )
-                    ])
+                    ]
                 )
             }
         }
@@ -2860,7 +2858,7 @@ struct CommandTests {
                     indexName: "my_flat_index",
                     on: nil,
                     prefix: nil,
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "embedding",
                             alias: nil,
@@ -2877,7 +2875,7 @@ struct CommandTests {
                                 )
                             )
                         )
-                    ])
+                    ]
                 )
             }
         }
@@ -2906,7 +2904,7 @@ struct CommandTests {
                     indexName: "idx:flatIP",
                     on: nil,
                     prefix: nil,
-                    schema: .init(fields: [
+                    schemas: [
                         .init(
                             fieldIdentifier: "embedding",
                             alias: nil,
@@ -2925,7 +2923,7 @@ struct CommandTests {
                                 )
                             )
                         )
-                    ])
+                    ]
                 )
             }
         }

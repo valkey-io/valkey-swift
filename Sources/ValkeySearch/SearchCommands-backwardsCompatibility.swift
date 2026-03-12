@@ -1369,6 +1369,26 @@ extension FT.INFO {
 
 extension FT.AGGREGATE {
     @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct Dialect: RESPRenderable, Sendable, Hashable {
+        public var dialectVersion: Int
+
+        @inlinable
+        public init(dialectVersion: Int) {
+            self.dialectVersion = dialectVersion
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "DIALECT".respEntries + dialectVersion.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "DIALECT".encode(into: &commandEncoder)
+            dialectVersion.encode(into: &commandEncoder)
+        }
+    }
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
     public struct LoadItemsAlias: RESPRenderable, Sendable, Hashable {
         public var property: String
 
@@ -1452,7 +1472,7 @@ extension FT.AGGREGATE {
 
         @inlinable
         public init(identifier: String) {
-            self.identifier = identifier
+            self.identifier = name
         }
 
         @inlinable
@@ -1516,6 +1536,26 @@ extension FT.AGGREGATE {
         }
     }
     @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct Timeout: RESPRenderable, Sendable, Hashable {
+        public var milliseconds: Int
+
+        @inlinable
+        public init(milliseconds: Int) {
+            self.milliseconds = milliseconds
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "TIMEOUT".respEntries + milliseconds.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "TIMEOUT".encode(into: &commandEncoder)
+            milliseconds.encode(into: &commandEncoder)
+        }
+    }
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
     public struct WithcursorCount: RESPRenderable, Sendable, Hashable {
         public var readSize: Int
 
@@ -1556,6 +1596,26 @@ extension FT.AGGREGATE {
         }
     }
     @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct Filter: RESPRenderable, Sendable, Hashable {
+        public var expr: String
+
+        @inlinable
+        public init(expr: String) {
+            self.expr = expr
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "FILTER".respEntries + expr.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "FILTER".encode(into: &commandEncoder)
+            expr.encode(into: &commandEncoder)
+        }
+    }
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
     public struct Withcursor: RESPRenderable, Sendable, Hashable {
         public var count: WithcursorCount
         public var maxidle: WithcursorMaxidle?
@@ -1578,13 +1638,67 @@ extension FT.AGGREGATE {
             maxidle.encode(into: &commandEncoder)
         }
     }
+    public struct SortbyMax: RESPRenderable, Sendable, Hashable {
+        public var num: Int
+
+        @inlinable
+        public init(num: Int) {
+            self.num = num
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "MAX".respEntries + num.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "MAX".encode(into: &commandEncoder)
+            num.encode(into: &commandEncoder)
+        }
+    }
+
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    @inlinable public init(
+        index: ValkeyKey,
+        query: Query,
+        verbatim: Bool = false,
+        load: Load? = nil,
+        groupbys: [Groupby] = [],
+        reduces: [Reduce] = [],
+        sortby: Sortby? = nil,
+        applys: [Apply] = [],
+        limit: Limit? = nil,
+        filters: [Filter] = [],
+        withcursor: Withcursor? = nil,
+        timeout: Timeout? = nil,
+        params: Params? = nil,
+        scorer: Scorer? = nil,
+        addscores: Bool = false,
+        dialect: Dialect? = nil
+    ) {
+        self.init(
+            index: index,
+            query: query,
+            dialect: dialect?.dialectVersion,
+            load: load,
+            params: params,
+            timeout: timeout?.milliseconds,
+            verbatim: verbatim,
+            applys: applys,
+            filters: filters.map { $0.expr },
+            groupbys: groupbys,
+            limits: limit.map { [$0] } ?? [],
+            sortby: sortby
+        )
+    }
 }
 
 extension FT.AGGREGATE.Load {
     @inlinable
     @available(*, deprecated, renamed: "FT.AGGREGATE.Load.init(count:fields:)")
     public init(nargs: Int, items: [FT.AGGREGATE<Query>.LoadItems]) {
-        self.loadArgs = .fields(.init(count: nargs, fields: items.map { $0.identifier }))
+        self = .fields(.init(count: nargs, fields: items.map { $0.identifier }))
     }
 }
 
@@ -1601,11 +1715,28 @@ extension FT.AGGREGATE.Sortby {
     @inlinable
     @available(*, deprecated, renamed: "FT.AGGREGATE.Sortby.init(count:sortParams:max:)")
     public init(nargs: Int, sortParams: [String], max: FT.AGGREGATE<Query>.SortbyMax? = nil, withcount: Bool = false) {
-        self.count = nargs
+        self.count = nargs / 2
+        /*self.expressions = sortParams.chunks(ofCount: 2).compactMap { values in
+            print(values)
+            guard values.count == 2 else { return nil }
+            guard let direction = FT.AGGREGATE<Query>.SortbyExpressionDirection(rawValue: values[values.startIndex + 1]) else { return nil }
+            return .init(expression: values[values.startIndex], direction: direction)
+        }*/
         self.sortParams = sortParams
-        self.max = max
+        self.max = max?.num
     }
 }
+
+/*extension FT.AGGREGATE.SortbyExpressionDirection {
+    @usableFromInline
+    init?(rawValue: String) {
+        switch rawValue {
+        case "ASC": self = .asc
+        case "DESC": self = .desc
+        default: return nil
+        }
+    }
+}*/
 
 extension FT.AGGREGATE.Apply {
     @inlinable
@@ -1625,24 +1756,33 @@ extension FT.AGGREGATE.Limit {
     }
 }
 
-extension FT.AGGREGATE.Filter {
-    @inlinable
-    @available(*, deprecated, renamed: "FT.AGGREGATE.Filter.init(expression:)")
-    public init(expr: String) {
-        self.expression = expr
-    }
-}
-
 extension FT.AGGREGATE.Groupby {
     @inlinable
+    @available(*, deprecated, renamed: "FT.AGGREGATE.Groupby.init(offset:count:reduces:)")
     public init(nargs: Int, groupFields: [String]) {
-        self.count = nargs
-        self.fields = groupFields
-        self.reduces = []
+        self.init(count: nargs, fields: groupFields)
     }
 }
 
 extension FT.CREATE {
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public enum On_Type: RESPRenderable, Sendable, Hashable {
+        case hash
+        case json
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .hash: "HASH".encode(into: &commandEncoder)
+            case .json: "JSON".encode(into: &commandEncoder)
+            }
+        }
+    }
+
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
     public struct SchemaFieldsFieldTypeVectorVectorParamsBlockSize: RESPRenderable, Sendable, Hashable {
         public var value: Int
 
@@ -1662,24 +1802,211 @@ extension FT.CREATE {
             value.encode(into: &commandEncoder)
         }
     }
+
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct SchemaFieldsFieldTypeTagSeparator: RESPRenderable, Sendable, Hashable {
+        public var sep: String
+
+        @inlinable
+        public init(sep: String) {
+            self.sep = sep
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "SEPARATOR".respEntries + sep.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "SEPARATOR".encode(into: &commandEncoder)
+            sep.encode(into: &commandEncoder)
+        }
+    }
+
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct SchemaFieldsAlias: RESPRenderable, Sendable, Hashable {
+        public var fieldIdentifier: String
+
+        @inlinable
+        public init(fieldIdentifier: String) {
+            self.fieldIdentifier = fieldIdentifier
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "AS".respEntries + RESPRenderableBulkString(fieldIdentifier).respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "AS".encode(into: &commandEncoder)
+            RESPRenderableBulkString(fieldIdentifier).encode(into: &commandEncoder)
+        }
+    }
+
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct SchemaFieldsFieldTypeVectorVectorParamsDim: RESPRenderable, Sendable, Hashable {
+        public var value: Int
+
+        @inlinable
+        public init(value: Int) {
+            self.value = value
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "DIM".respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "DIM".encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
+        }
+    }
+
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public enum SchemaFieldsFieldTypeVectorVectorParamsDistanceMetricMetric: RESPRenderable, Sendable, Hashable {
+        case l2
+        case ip
+        case cosine
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .l2: "L2".encode(into: &commandEncoder)
+            case .ip: "IP".encode(into: &commandEncoder)
+            case .cosine: "COSINE".encode(into: &commandEncoder)
+            }
+        }
+    }
+
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct SchemaFieldsFieldTypeVectorVectorParamsM: RESPRenderable, Sendable, Hashable {
+        public var value: Int
+
+        @inlinable
+        public init(value: Int) {
+            self.value = value
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "M".respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "M".encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
+        }
+    }
+
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct SchemaFieldsFieldTypeVectorVectorParamsEfConstruction: RESPRenderable, Sendable, Hashable {
+        public var value: Int
+
+        @inlinable
+        public init(value: Int) {
+            self.value = value
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "EF_CONSTRUCTION".respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "EF_CONSTRUCTION".encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
+        }
+    }
+
+    @available(*, deprecated, renamed: "FT.CREATE.Schema")
+    public struct SchemaFields: RESPRenderable, Sendable, Hashable {
+        public var fieldIdentifier: FieldIdentifier
+        public var alias: SchemaFieldsAlias?
+        public var fieldType: SchemaFieldsFieldType
+
+        @inlinable
+        public init(fieldIdentifier: FieldIdentifier, alias: SchemaFieldsAlias? = nil, fieldType: SchemaFieldsFieldType) {
+            self.fieldIdentifier = fieldIdentifier
+            self.alias = alias
+            self.fieldType = fieldType
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPRenderableBulkString(fieldIdentifier).respEntries + alias.respEntries + fieldType.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPRenderableBulkString(fieldIdentifier).encode(into: &commandEncoder)
+            alias.encode(into: &commandEncoder)
+            fieldType.encode(into: &commandEncoder)
+        }
+    }
+
+    @available(*, deprecated, renamed: "FT.CREATE.SchemaFieldType")
+    public typealias SchemaFieldsFieldType = SchemaFieldType
+
+    @available(*, deprecated, renamed: "FT.CREATE.SchemaFieldTypeTag")
+    public typealias SchemaFieldsFieldTypeTag = SchemaFieldTypeTag
+
+    @available(*, deprecated, renamed: "FT.CREATE.SchemaFieldTypeVectorVectorParamsDistanceMetric")
+    public typealias SchemaFieldsFieldTypeVectorVectorParamsDistanceMetric = SchemaFieldTypeVectorVectorParamsDistanceMetric
+
+    @available(*, deprecated, renamed: "FT.CREATE.SchemaFieldTypeVectorVectorParams_Type")
+    public typealias SchemaFieldsFieldTypeVectorVectorParams_Type = SchemaFieldTypeVectorVectorParams_Type
+
+    @available(*, deprecated, renamed: "FT.CREATE.SchemaFieldTypeVectorVectorParams")
+    public typealias SchemaFieldsFieldTypeVectorVectorParams = SchemaFieldTypeVectorVectorParams
 }
 
-extension FT.CREATE.SchemaFieldsAlias {
-    @available(*, deprecated, renamed: "FT.CREATE.SchemaFieldsAlias(fieldAlias:)")
-    public init(fieldIdentifier: FieldIdentifier) {
-        var encoder = ValkeyCommandEncoder()
-        fieldIdentifier.encode(into: &encoder)
-        let buffer = encoder.buffer
-        self.fieldAlias = try! String(RESPToken(validated: buffer))
+extension FT.CREATE.On {
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    @inlinable
+    public init(type: FT.CREATE<IndexName, FieldIdentifier>.On_Type) {
+        self =
+            switch type {
+            case .hash: .hash
+            case .json: .json
+            }
     }
 }
 
-extension FT.CREATE.SchemaFieldsFieldType {
+extension FT.CREATE.Schema {
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    @inlinable
+    public init(
+        fieldIdentifier: FieldIdentifier,
+        alias: FT.CREATE<IndexName, FieldIdentifier>.SchemaFieldsAlias? = nil,
+        fieldType: FT.CREATE<IndexName, FieldIdentifier>.SchemaFieldsFieldType
+    ) {
+        self.init(fieldIdentifier: fieldIdentifier, alias: alias?.fieldIdentifier, fieldType: fieldType)
+    }
+}
+
+extension FT.CREATE.SchemaFieldTypeTag {
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    @inlinable
+    public init(separator: FT.CREATE<IndexName, FieldIdentifier>.SchemaFieldsFieldTypeTagSeparator, casesensitive: Bool = false) {
+        self.init(separator: separator.sep, casesensitive: casesensitive)
+    }
+
+}
+extension FT.CREATE.SchemaFieldType {
     @available(*, deprecated, renamed: "FT.CREATE.SchemaFieldsFieldType.text()")
     public static var text: Self { .text(.init()) }
 }
 
-extension FT.CREATE.SchemaFieldsFieldTypeVectorVectorParams {
+extension FT.CREATE.SchemaFieldTypeVectorVectorParams {
     @inlinable
     @available(
         *,
@@ -1694,13 +2021,26 @@ extension FT.CREATE.SchemaFieldsFieldTypeVectorVectorParams {
         efConstruction: FT.CREATE<IndexName, FieldIdentifier>.SchemaFieldsFieldTypeVectorVectorParamsEfConstruction? = nil,
         blockSize: FT.CREATE<IndexName, FieldIdentifier>.SchemaFieldsFieldTypeVectorVectorParamsBlockSize? = nil
     ) {
-        self.type = type
-        self.dim = dim
-        self.distanceMetric = distanceMetric
-        self.initialCap = nil
-        self.m = m
-        self.efConstruction = efConstruction
-        self.efRuntime = nil
+        self.init(type: type, dim: dim.value, distanceMetric: distanceMetric, m: m?.value, efConstruction: efConstruction?.value)
+    }
+}
+
+/*extension FT.CREATE.SchemaFieldTypeVectorVectorParams_Type {
+    @available(*, deprecated, renamed: "FT.CREATE.SchemaFieldsFieldType.float32")
+    public init() {
+        self = .float32
+    }
+}*/
+
+extension FT.CREATE.SchemaFieldTypeVectorVectorParamsDistanceMetric {
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public init(metric: FT.CREATE<IndexName, FieldIdentifier>.SchemaFieldsFieldTypeVectorVectorParamsDistanceMetricMetric) {
+        self =
+            switch metric {
+            case .cosine: .cosine
+            case .ip: .ip
+            case .l2: .l2
+            }
     }
 }
 
@@ -1709,12 +2049,79 @@ extension FT.INFO.Scope {
     public static var global: Self { .primary }
 }
 
+extension FT.SEARCH {
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct Timeout: RESPRenderable, Sendable, Hashable {
+        public var timeoutMs: Int
+
+        @inlinable
+        public init(timeoutMs: Int) {
+            self.timeoutMs = timeoutMs
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "TIMEOUT".respEntries + timeoutMs.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "TIMEOUT".encode(into: &commandEncoder)
+            timeoutMs.encode(into: &commandEncoder)
+        }
+    }
+    @available(*, deprecated, message: "ValkeySearch 1.2 no longer uses this")
+    public struct Dialect: RESPRenderable, Sendable, Hashable {
+        public var dialect: Int
+
+        @inlinable
+        public init(dialect: Int) {
+            self.dialect = dialect
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            "DIALECT".respEntries + dialect.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            "DIALECT".encode(into: &commandEncoder)
+            dialect.encode(into: &commandEncoder)
+        }
+    }
+
+    @available(*, deprecated, renamed: "FT.SEARCH.init(index:query:dialect:limit:nocontent:params:return:timeout:)")
+    @inlinable public init(
+        index: ValkeyKey,
+        query: Query,
+        nocontent: Bool = false,
+        timeout: Timeout? = nil,
+        params: Params? = nil,
+        returnFields: ReturnFields? = nil,
+        limit: Limit? = nil,
+        dialect: Dialect? = nil,
+        localonly: Bool = false
+    ) {
+        self.init(
+            index: index,
+            query: query,
+            dialect: dialect?.dialect,
+            limit: limit,
+            nocontent: nocontent,
+            params: params,
+            return: returnFields.map { .init(count: 1, fields: [$0]) },
+            timeout: timeout?.timeoutMs
+        )
+    }
+}
+
 extension FT.SEARCH.Params {
     @inlinable
     @available(*, deprecated, renamed: "FT.SEARCH.Params(count:parameters:)")
     public init(count: Int, pairs: [String]) {
         self.count = count / 2
-        self.parameters = pairs.evenlyChunked(in: 2).compactMap {
+        self.parameters = pairs.chunks(ofCount: 2).compactMap {
             guard $0.count == 2 else { return nil }
             return .init(name: $0[$0.startIndex], value: $0[$0.startIndex + 1])
         }
@@ -1752,16 +2159,20 @@ extension ValkeyClientProtocol {
             FT.AGGREGATE(
                 index: index,
                 query: query,
-                dialect: dialect,
-                load: load,
-                params: params,
-                timeout: timeout,
                 verbatim: verbatim,
-                applys: applys,
-                filters: filters,
+                load: load,
                 groupbys: groupbys,
-                limits: limit.map { [$0] } ?? [],
-                sortby: sortby
+                reduces: reduces,
+                sortby: sortby,
+                applys: applys,
+                limit: limit,
+                filters: filters,
+                withcursor: withcursor,
+                timeout: timeout,
+                params: params,
+                scorer: scorer,
+                addscores: addscores,
+                dialect: dialect
             )
         )
     }
@@ -1810,12 +2221,13 @@ extension ValkeyClientProtocol {
             FT.SEARCH(
                 index: index,
                 query: query,
-                dialect: dialect,
-                limit: limit,
                 nocontent: nocontent,
+                timeout: timeout,
                 params: params,
-                return: returnFields.map { .init(count: 1, fields: [$0]) },
-                timeout: timeout
+                returnFields: returnFields,
+                limit: limit,
+                dialect: dialect,
+                localonly: localonly
             )
         )
     }

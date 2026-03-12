@@ -84,9 +84,9 @@ struct ValkeyCommand: Decodable {
                     guard !(arguments[1].multiple && $0.multiple) else { return $0 }
                     var argument = arguments[1]
                     argument.name = $0.name
-                    argument.token = arguments[1].token
+                    argument.token = arguments[0].token
                     argument.optional = $0.optional
-                    argument.multiple = $0.multiple
+                    argument.multiple = $0.multiple || argument.multiple
                     argument.multipleToken = $0.multiple
                     return argument
                 }
