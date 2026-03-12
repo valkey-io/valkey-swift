@@ -58,49 +58,55 @@ struct ValkeyCommand: Decodable {
                 token = ""
             }
             self.token = token
-            if self.type == .oneOf {
-                self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
+            if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
+                self.arguments = Self.processArguments(arguments, keySpecs: nil)
             } else {
-                if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
-                    self.arguments = Self.processArguments(arguments, keySpecs: nil)
-                } else {
-                    self.arguments = nil
-                }
+                self.arguments = nil
             }
             self.keySpecIndex = try container.decodeIfPresent(Int.self, forKey: .keySpecIndex)
         }
 
         static func processArguments(_ arguments: [InternalArgument], keySpecs: [KeySpec]?) -> [Argument] {
-            var arguments =
-                arguments
-                .map { Argument(argument: $0, keySpec: $0.keySpecIndex.flatMap { keySpecs?[$0] }) }
-                .map {
-                    guard $0.type == .block else { return $0 }
-                    guard let arguments = $0.arguments else { return $0 }
-                    guard arguments.count == 2 else { return $0 }
-                    guard arguments[0].type == .pureToken else { return $0 }
-                    guard arguments[1].optional == false else { return $0 }
-                    guard arguments[1].token == nil else { return $0 }
-                    guard !(arguments[1].multiple && $0.multiple) else { return $0 }
-                    var argument = arguments[1]
-                    argument.name = $0.name
-                    argument.token = arguments[0].token
-                    argument.optional = $0.optional
-                    argument.multiple = $0.multiple || argument.multiple
-                    argument.multipleToken = $0.multiple
-                    return argument
-                }
-            if keySpecs != nil {
-                // combine argument and keyspec
-                // remove counts for arrays flagged with `combinedWithCount`
+            var arguments = arguments.map { Argument(argument: $0, keySpec: $0.keySpecIndex.flatMap { keySpecs?[$0] }) }
+            /*if arguments.count >= 2 {
                 var index = arguments.startIndex
-                while let arrayIndex = arguments[index...].firstIndex(where: { $0.combinedWithCount == true }) {
-                    let previousIndex = arguments.index(before: arrayIndex)
-                    arguments.remove(at: previousIndex)
-                    index = arrayIndex
+                var prevIndex = index
+                index += 1
+                while index != arguments.endIndex {
+                    if arguments[prevIndex].type == .integer, arguments[prevIndex].name == "count", arguments[index].multiple == true {
+                        arguments[index].combinedWithCount = true
+                    }
+                    index += 1
+                    prevIndex += 1
                 }
+            }*/
+
+            //if keySpecs != nil {
+            // combine argument and keyspec
+            // remove counts for arrays flagged with `combinedWithCount`
+            var index = arguments.startIndex
+            while let arrayIndex = arguments[index...].firstIndex(where: { $0.combinedWithCount == true }) {
+                let previousIndex = arguments.index(before: arrayIndex)
+                arguments.remove(at: previousIndex)
+                index = arrayIndex
             }
-            return arguments
+            //}
+            return arguments.map {
+                guard $0.type == .block else { return $0 }
+                guard let arguments = $0.arguments else { return $0 }
+                guard arguments.count == 2 else { return $0 }
+                guard arguments[0].type == .pureToken else { return $0 }
+                guard arguments[1].optional == false else { return $0 }
+                guard arguments[1].token == nil else { return $0 }
+                guard !(arguments[1].multiple && $0.multiple) else { return $0 }
+                var argument = arguments[1]
+                argument.name = $0.name
+                argument.token = arguments[0].token
+                argument.optional = $0.optional
+                argument.multiple = $0.multiple || argument.multiple
+                argument.multipleToken = $0.multiple
+                return argument
+            }
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -122,7 +128,7 @@ struct ValkeyCommand: Decodable {
         var multipleToken: Bool
         var token: String?
         var arguments: [Argument]?
-        var combinedWithCount: Bool?
+        var combinedWithCount: Bool
 
         init(argument: InternalArgument, keySpec: KeySpec?) {
             self.name = argument.name
@@ -159,14 +165,10 @@ struct ValkeyCommand: Decodable {
                 token = ""
             }
             self.token = token
-            if self.type == .oneOf {
-                self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
+            if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
+                self.arguments = InternalArgument.processArguments(arguments, keySpecs: nil)
             } else {
-                if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
-                    self.arguments = InternalArgument.processArguments(arguments, keySpecs: nil)
-                } else {
-                    self.arguments = nil
-                }
+                self.arguments = nil
             }
             self.combinedWithCount = false
         }

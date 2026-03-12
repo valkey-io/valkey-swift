@@ -351,7 +351,7 @@ extension String {
                     )
                 } else {
                     self.append(
-                        "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false, genericString: false)).respEntries\n"
+                        "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: true, genericString: false)).respEntries\n"
                     )
                 }
             }
@@ -373,7 +373,7 @@ extension String {
                 )
             } else {
                 self.append(
-                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false, genericString: false)).encode(into: &commandEncoder)\n"
+                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: true, genericString: false)).encode(into: &commandEncoder)\n"
                 )
             }
         }
@@ -419,7 +419,7 @@ extension String {
         self.append("\(tab)        public var respEntries: Int {\n")
         self.append("\(tab)            ")
         let entries = arguments.map {
-            "\($0.respRepresentable(isArray: false, genericString: genericStrings)).respEntries"
+            "\($0.respRepresentable(isArray: true, genericString: genericStrings)).respEntries"
         }
         self.append(entries.joined(separator: " + "))
         self.append("\n")
@@ -428,7 +428,7 @@ extension String {
         self.append("\(tab)        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
         for arg in arguments {
             self.append(
-                "\(tab)            \(arg.respRepresentable(isArray: false, genericString: genericStrings)).encode(into: &commandEncoder)\n"
+                "\(tab)            \(arg.respRepresentable(isArray: true, genericString: genericStrings)).encode(into: &commandEncoder)\n"
             )
         }
         self.append("\(tab)        }\n")
@@ -908,18 +908,14 @@ extension ValkeyCommand.Argument {
                     return "RESPWithToken(\"\(token)\", \(variable))"
                 }
             } else if self.multiple, self.combinedWithCount == true {
-                if isArray {
-                    return "RESPArrayWithCount(\(variable))"
-                } else {
-                    return "1, \(variable)"
-                }
+                return "RESPArrayWithCount(\(variable))"
             } else {
                 return variable
             }
         }
     }
 
-    // return if argument can be configurated by parameters
+    // return if argument can be configured by parameters
     func hasParameters() -> Bool {
         switch self.type {
         case .pureToken:

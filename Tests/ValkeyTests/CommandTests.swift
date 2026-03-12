@@ -1717,7 +1717,7 @@ struct CommandTests {
                 let result = try await connection.ftSearch(
                     index: "idx:myIndex",
                     query: "@title:Hello",
-                    timeout: .init(timeoutMs: 100)
+                    timeout: 100
                 )
 
                 guard case .array(let arr1) = result.value else {
@@ -1757,11 +1757,7 @@ struct CommandTests {
                 let result = try await connection.ftSearch(
                     index: "idx:myIndex",
                     query: "@title:$t @tag:{$tag}",
-                    params: .init(
-                        count: 4,
-                        pairs: ["t", "Hello", "tag", "world"]
-                    ),
-                    localonly: true
+                    params: .init(count: 2, parameters: [.init(name: "t", value: "Hello"), .init(name: "tag", value: "world")])
                 )
 
                 guard case .array(let arr1) = result.value else {
@@ -1807,10 +1803,7 @@ struct CommandTests {
                 let result = try await connection.ftSearch(
                     index: "idx:myIndex",
                     query: "@title:Hello",
-                    return: .init(
-                        count: 2,
-                        fields: [.init(field: "title"), .init(field: "body")]
-                    )
+                    return: .init(count: 2, fields: [.init(field: "title"), .init(field: "body")])
                 )
 
                 guard case .array(let arr1) = result.value else {
@@ -1873,9 +1866,9 @@ struct CommandTests {
                 let result = try await connection.ftSearch(
                     index: "idx:myIndex",
                     query: "@title:Hello",
-                    nocontent: true,
+                    dialect: 2,
                     limit: .init(offset: 0, count: 5),
-                    dialect: .init(dialect: 2)
+                    nocontent: true
                 )
 
                 guard case .array(let arr1) = result.value else {
@@ -1993,11 +1986,8 @@ struct CommandTests {
                 let result = try await connection.ftAggregate(
                     index: "idx:testIndex",
                     query: "*",
-                    load: .init(
-                        nargs: 1,
-                        items: [
-                            .init(identifier: "@title", alias: .init(property: "title"))
-                        ]
+                    load: .fields(
+                        .init(count: 1, fields: ["@title"])
                     )
                 )
 
@@ -2032,12 +2022,8 @@ struct CommandTests {
                 let result = try await connection.ftAggregate(
                     index: "idx:testIndex",
                     query: "*",
-                    load: .init(
-                        nargs: 2,
-                        items: [
-                            .init(identifier: "@title", alias: .init(property: "title")),
-                            .init(identifier: "@body"),
-                        ]
+                    load: .fields(
+                        .init(count: 2, fields: ["@title", "@body"])
                     )
                 )
 
@@ -2070,7 +2056,7 @@ struct CommandTests {
                 let result = try await connection.ftAggregate(
                     index: "idx:testIndex",
                     query: "*",
-                    timeout: .init(milliseconds: 100)
+                    timeout: 100
                 )
 
                 guard case .array(let arr) = result.value else {
@@ -2094,7 +2080,7 @@ struct CommandTests {
                 (
                     request: .command([
                         "FT.AGGREGATE", "idx:testIndex", "@loc:[$lon $lat 10 km]",
-                        "PARAMS", "4",
+                        "PARAMS", "2",
                         "lon", "29.69465",
                         "lat", "34.95126",
                     ]),
@@ -2104,7 +2090,7 @@ struct CommandTests {
                 let result = try await connection.ftAggregate(
                     index: "idx:testIndex",
                     query: "@loc:[$lon $lat 10 km]",
-                    params: .init(nargs: 4, parameters: [.init(name: "lon", value: "29.69465"), .init(name: "lat", value: "34.95126")])
+                    params: .init(count: 2, parameters: [.init(name: "lon", value: "29.69465"), .init(name: "lat", value: "34.95126")])
                 )
 
                 guard case .array(let arr) = result.value else {
@@ -2136,7 +2122,7 @@ struct CommandTests {
                 let result = try await connection.ftAggregate(
                     index: "idx:testIndex",
                     query: "*",
-                    dialect: .init(dialectVersion: 2)
+                    dialect: 2
                 )
 
                 guard case .array(let arr) = result.value else {
@@ -2169,9 +2155,8 @@ struct CommandTests {
                     index: "idx:testIndex",
                     query: "hello",
                     sortby: .init(
-                        nargs: 4,
-                        sortParams: ["@foo", "ASC", "@bar", "DESC"],
-                        withcount: true
+                        count: 2,
+                        sortParams: ["@foo", "ASC", "@bar", "DESC"]
                     )
                 )
 
@@ -2206,9 +2191,9 @@ struct CommandTests {
                     index: "idx:testIndex",
                     query: "hello",
                     sortby: .init(
-                        nargs: 2,
+                        count: 1,
                         sortParams: ["@foo", "DESC"],
-                        max: .init(num: 100)
+                        max: 100
                     )
                 )
 
@@ -2243,8 +2228,8 @@ struct CommandTests {
                     index: "idx:testIndex",
                     query: "*",
                     applys: [
-                        .init(expr: "sqrt(@foo)", name: "foo_sqrt"),
-                        .init(expr: "(@bar*2)", name: "bar2"),
+                        .init(expression: "sqrt(@foo)", field: "foo_sqrt"),
+                        .init(expression: "(@bar*2)", field: "bar2"),
                     ]
                 )
 
@@ -2277,7 +2262,7 @@ struct CommandTests {
                 let result = try await connection.ftAggregate(
                     index: "idx:testIndex",
                     query: "*",
-                    limit: .init(offset: 10, num: 20)
+                    limits: [.init(offset: 10, count: 20)]
                 )
 
                 guard case .array(let arr) = result.value else {
@@ -2310,10 +2295,7 @@ struct CommandTests {
                 let result = try await connection.ftAggregate(
                     index: "idx:testIndex",
                     query: "*",
-                    filters: [
-                        .init(expr: "@foo > 10"),
-                        .init(expr: "@bar < 20"),
-                    ]
+                    filters: ["@foo > 10", "@bar < 20"]
                 )
 
                 guard case .array(let arr) = result.value else {
@@ -2442,10 +2424,10 @@ struct CommandTests {
             ) { connection in
                 try await connection.ftCreate(
                     indexName: "idx:testIndex",
-                    on: .init(type: .json),
+                    on: .json,
                     prefix: .init(count: 1, prefixes: ["item:"]),
                     schemas: [
-                        .init(fieldIdentifier: "$.name", alias: .init(fieldIdentifier: "name"), fieldType: .text)
+                        .init(fieldIdentifier: "$.name", alias: "name", fieldType: .text(.init()))
                     ]
                 )
             }
@@ -2468,11 +2450,9 @@ struct CommandTests {
                 try await connection.ftCreate(
                     indexName: "idx:noOn",
                     on: nil,
-                    prefix: nil,
                     schemas: [
                         .init(
                             fieldIdentifier: "age",
-                            alias: nil,
                             fieldType: .numeric
                         )
                     ]
@@ -2496,15 +2476,12 @@ struct CommandTests {
             ) { connection in
                 try await connection.ftCreate(
                     indexName: "idx:tagSepOnly",
-                    on: nil,
-                    prefix: nil,
                     schemas: [
                         .init(
                             fieldIdentifier: "category",
-                            alias: nil,
                             fieldType: .tag(
                                 .init(
-                                    separator: .init(sep: "|"),
+                                    separator: "|",
                                     casesensitive: false
                                 )
                             )
@@ -2530,15 +2507,11 @@ struct CommandTests {
             ) { connection in
                 try await connection.ftCreate(
                     indexName: "idx:tagCaseOnly",
-                    on: nil,
-                    prefix: nil,
                     schemas: [
                         .init(
                             fieldIdentifier: "category",
-                            alias: nil,
                             fieldType: .tag(
                                 .init(
-                                    separator: nil,
                                     casesensitive: true
                                 )
                             )
@@ -2565,13 +2538,11 @@ struct CommandTests {
             ) { connection in
                 try await connection.ftCreate(
                     indexName: "idx:hashIndex",
-                    on: .init(type: .hash),
-                    prefix: nil,
+                    on: .hash,
                     schemas: [
                         .init(
                             fieldIdentifier: "name",
-                            alias: nil,
-                            fieldType: .text
+                            fieldType: .text(.init())
                         )
                     ]
                 )
@@ -2595,15 +2566,12 @@ struct CommandTests {
             ) { connection in
                 try await connection.ftCreate(
                     indexName: "idx:tagIndex",
-                    on: .init(type: .hash),
-                    prefix: nil,
+                    on: .hash,
                     schemas: [
                         .init(
                             fieldIdentifier: "category",
-                            alias: nil,
                             fieldType: .tag(
                                 .init(
-                                    separator: nil,
                                     casesensitive: false
                                 )
                             )
@@ -2630,15 +2598,13 @@ struct CommandTests {
             ) { connection in
                 try await connection.ftCreate(
                     indexName: "idx:tagIndex2",
-                    on: .init(type: .hash),
-                    prefix: nil,
+                    on: .hash,
                     schemas: [
                         .init(
                             fieldIdentifier: "category",
-                            alias: nil,
                             fieldType: .tag(
                                 .init(
-                                    separator: .init(sep: "|"),
+                                    separator: "|",
                                     casesensitive: true
                                 )
                             )
@@ -2666,13 +2632,12 @@ struct CommandTests {
             ) { connection in
                 try await connection.ftCreate(
                     indexName: "idx:multiPrefix",
-                    on: .init(type: .hash),
+                    on: .hash,
                     prefix: .init(count: 2, prefixes: ["item:", "product:"]),
                     schemas: [
                         .init(
                             fieldIdentifier: "name",
-                            alias: nil,
-                            fieldType: .text
+                            fieldType: .text(.init())
                         )
                     ]
                 )
@@ -2697,13 +2662,12 @@ struct CommandTests {
             ) { connection in
                 try await connection.ftCreate(
                     indexName: "idx:multiField",
-                    on: .init(type: .hash),
-                    prefix: nil,
+                    on: .hash,
                     schemas: [
                         .init(
                             fieldIdentifier: "name",
                             alias: nil,
-                            fieldType: .text
+                            fieldType: .text(.init())
                         ),
                         .init(
                             fieldIdentifier: "age",
@@ -2739,13 +2703,13 @@ struct CommandTests {
             ) { connection in
                 try await connection.ftCreate(
                     indexName: "idx:mixed",
-                    on: .init(type: .hash),
+                    on: .hash,
                     prefix: .init(count: 2, prefixes: ["item:", "product:"]),
                     schemas: [
                         .init(
                             fieldIdentifier: "name",
                             alias: nil,
-                            fieldType: .text
+                            fieldType: .text(.init())
                         ),
                         .init(
                             fieldIdentifier: "price",
@@ -2757,7 +2721,7 @@ struct CommandTests {
                             alias: nil,
                             fieldType: .tag(
                                 .init(
-                                    separator: .init(sep: "|"),
+                                    separator: "|",
                                     casesensitive: false
                                 )
                             )
@@ -2771,11 +2735,8 @@ struct CommandTests {
                                     attrCount: 4,
                                     vectorParams: .init(
                                         type: .init(),
-                                        dim: .init(value: 128),
-                                        distanceMetric: .init(metric: .l2),
-                                        m: nil,
-                                        efConstruction: nil,
-                                        blockSize: .init(value: 1024)
+                                        dim: 128,
+                                        distanceMetric: .l2
                                     )
                                 )
                             )
@@ -2810,7 +2771,6 @@ struct CommandTests {
                 try await connection.ftCreate(
                     indexName: "my_index_name",
                     on: nil,
-                    prefix: nil,
                     schemas: [
                         .init(
                             fieldIdentifier: "my_hash_field_key",
@@ -2821,10 +2781,10 @@ struct CommandTests {
                                     attrCount: 10,
                                     vectorParams: .init(
                                         type: .init(),
-                                        dim: .init(value: 20),
-                                        distanceMetric: .init(metric: .cosine),
-                                        m: .init(value: 4),
-                                        efConstruction: .init(value: 100)
+                                        dim: 20,
+                                        distanceMetric: .cosine,
+                                        m: 4,
+                                        efConstruction: 100
                                     )
                                 )
                             )
@@ -2857,7 +2817,6 @@ struct CommandTests {
                 try await connection.ftCreate(
                     indexName: "my_flat_index",
                     on: nil,
-                    prefix: nil,
                     schemas: [
                         .init(
                             fieldIdentifier: "embedding",
@@ -2868,9 +2827,8 @@ struct CommandTests {
                                     attrCount: 4,
                                     vectorParams: .init(
                                         type: .init(),
-                                        dim: .init(value: 128),
-                                        distanceMetric: .init(metric: .l2),
-                                        blockSize: .init(value: 1024)
+                                        dim: 128,
+                                        distanceMetric: .l2
                                     )
                                 )
                             )
@@ -2902,23 +2860,17 @@ struct CommandTests {
             ) { connection in
                 try await connection.ftCreate(
                     indexName: "idx:flatIP",
-                    on: nil,
-                    prefix: nil,
                     schemas: [
                         .init(
                             fieldIdentifier: "embedding",
-                            alias: nil,
                             fieldType: .vector(
                                 .init(
                                     algorithm: .flat,
                                     attrCount: 8,
                                     vectorParams: .init(
                                         type: .init(),
-                                        dim: .init(value: 64),
-                                        distanceMetric: .init(metric: .ip),
-                                        m: nil,
-                                        efConstruction: nil,
-                                        blockSize: nil
+                                        dim: 64,
+                                        distanceMetric: .ip
                                     )
                                 )
                             )
@@ -2937,7 +2889,7 @@ struct CommandTests {
                     response: .simpleString("OK")
                 )
             ) { connection in
-                try await connection.ftDropindex("idx:myIndex")
+                try await connection.ftDropindex(indexName: "idx:myIndex")
             }
         }
 
@@ -2975,9 +2927,9 @@ struct CommandTests {
                     ])
                 )
             ) { connection in
-                _ = try await connection.ftInfo("idx:myIndex")
-                _ = try await connection.ftInfo("idx:myIndex", scope: .local)
-                _ = try await connection.ftInfo("idx:myIndex", scope: .global)
+                _ = try await connection.ftInfo(indexName: "idx:myIndex")
+                _ = try await connection.ftInfo(indexName: "idx:myIndex", scope: .local)
+                _ = try await connection.ftInfo(indexName: "idx:myIndex", scope: .primary)
             }
         }
 
