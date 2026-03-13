@@ -10,8 +10,7 @@ import Testing
 import Valkey
 
 @Suite("Topology Candidate Tests")
-struct ValkeyTopologyCandidateTests {
-
+struct ValkeyClusterTopologyTests {
     @Test("Ensure the same description in different order is considered equal")
     @available(valkeySwift 1.0, *)
     func ensureOrderDoesntMatter() throws {
@@ -101,8 +100,8 @@ struct ValkeyTopologyCandidateTests {
         copy1.shards[0].slots = description.shards[0].slots.reversed()
         copy1.shards[1].slots = description.shards[1].slots.reversed()
 
-        let candidate1 = try ValkeyTopologyCandidate(description)
-        let candidate2 = try ValkeyTopologyCandidate(copy1)
+        let candidate1 = try ValkeyClusterTopology(description).topologyHashValue
+        let candidate2 = try ValkeyClusterTopology(copy1).topologyHashValue
 
         #expect(candidate1 == candidate2)
     }
@@ -151,7 +150,7 @@ struct ValkeyTopologyCandidateTests {
             )
         ])
 
-        #expect(throws: ValkeyClusterError.shardHasMultiplePrimaryNodes) { try ValkeyTopologyCandidate(description) }
+        #expect(throws: ValkeyClusterError.shardHasMultiplePrimaryNodes) { try ValkeyClusterTopology(description) }
     }
 
     @Test("No primary node for a shard throws")
@@ -198,7 +197,7 @@ struct ValkeyTopologyCandidateTests {
             )
         ])
 
-        #expect(throws: ValkeyClusterError.shardIsMissingPrimaryNode) { try ValkeyTopologyCandidate(description) }
+        #expect(throws: ValkeyClusterError.shardIsMissingPrimaryNode) { try ValkeyClusterTopology(description) }
     }
 
     @Test("Failover with one failed and one online primary succeeds")
@@ -245,7 +244,7 @@ struct ValkeyTopologyCandidateTests {
             )
         ])
         // Should not throw - this is a valid failover scenario
-        let candidate = try ValkeyTopologyCandidate(description)
+        let candidate = try ValkeyClusterTopology(description)
 
         // Verify it selected the online primary (node3)
         #expect(candidate.shards.count == 1)

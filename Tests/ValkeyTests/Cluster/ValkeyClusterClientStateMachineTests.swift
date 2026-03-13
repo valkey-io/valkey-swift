@@ -34,7 +34,7 @@ struct ValkeyClusterClientStateMachineTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func runDiscoveryAfterStartup() {
+    func runDiscoveryAfterStartup() throws {
         let factory = MockClientFactory<ValkeyNodeDescription>()
         let clock = MockClock()
         var stateMachine = TestStateMachine(configuration: testConfiguration, poolFactory: factory, clock: clock)
@@ -72,7 +72,7 @@ struct ValkeyClusterClientStateMachineTests {
         #expect(clusterDiscoveredAction.voters.count == 2)
         #expect(clusterDiscoveredAction.clientsToRun.count == 2)
 
-        let discoveredAction = stateMachine.valkeyClusterDiscoverySucceeded(cluster)
+        let discoveredAction = try stateMachine.valkeyClusterDiscoverySucceeded(.init(cluster))
         #expect(discoveredAction.cancelTimer === circuitBreakerCancelToken)
         #expect(discoveredAction.waitersToSucceed.count == 1)
         #expect(discoveredAction.waitersToSucceed.first === successNotifier)

@@ -590,6 +590,16 @@ public final class ValkeyClusterClient: Sendable {
         self.queueAction(.runTimer(circuitBreakerTimer))
         self.queueAction(.runClusterDiscovery(runNodeDiscovery: true))
 
+        #if ServiceLifecycleSupport
+        await cancelWhenGracefulShutdown {
+            await self._withTaskGroup()
+        }
+        #else
+        await self._withTaskGroup()
+        #endif
+    }
+
+    private func _withTaskGroup() async {
         await withTaskCancellationHandler {
             /// Run discarding task group running actions
             await withDiscardingTaskGroup { group in
@@ -603,8 +613,6 @@ public final class ValkeyClusterClient: Sendable {
             _ = self.stateLock.withLock {
                 $0.shutdown()
             }
-
-            // TODO: All the pools shutdown automatically because of task cancellation propagation
         }
     }
 
@@ -1088,7 +1096,7 @@ public final class ValkeyClusterClient: Sendable {
     ///
     /// - Returns: A list of voters that can participate in cluster topology election.
     /// - Throws: Any error encountered during node discovery.
-    private func runNodeDiscovery() async throws -> [ValkeyClusterVoter<ValkeyNodeClient>] {
+    private func runNodeDiscovery() async throws -> [ValkeyTopologyVoter<ValkeyNodeClient>] {
         do {
             self.logger.trace("Running node discovery")
             let nodes = try await self.nodeDiscovery.lookupNodes()
@@ -1124,9 +1132,9 @@ public final class ValkeyClusterClient: Sendable {
     /// on the topology before accepting it.
     ///
     /// - Parameter voters: The list of nodes that can vote on cluster topology.
-    /// - Returns: The agreed-upon cluster description.
+    /// - Returns: The agreed-upon cluster topology.
     /// - Throws: `ValkeyClusterError.clusterIsUnavailable` if consensus cannot be reached.
-    private func runClusterDiscoveryFindingConsensus(voters: [ValkeyClusterVoter<ValkeyNodeClient>]) async throws -> ValkeyClusterDescription {
+    private func runClusterDiscoveryFindingConsensus(voters: [ValkeyTopologyVoter<ValkeyNodeClient>]) async throws -> ValkeyClusterTopology {
         try await withThrowingTaskGroup(of: (ValkeyClusterDescription, ValkeyNodeID).self) { taskGroup in
             for voter in voters {
                 taskGroup.addTask {
@@ -1134,19 +1142,20 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
 
-            var election = ValkeyTopologyElection()
+            var election = ValkeyTopologyElection<ValkeyClusterTopology>()
 
             while let result = await taskGroup.nextResult() {
                 switch result {
                 case .success((let description, let nodeID)):
                     do {
-                        let metrics = try election.voteReceived(for: description, from: nodeID)
+                        let topology = try ValkeyClusterTopology(description)
+                        let metrics = election.voteReceived(for: topology, from: nodeID)
 
                         self.logger.debug(
                             "Vote received",
                             metadata: [
                                 "candidate_count": "\(metrics.candidateCount)",
-                                "candidate": "\(metrics.candidate)",
+                                "candidate": "\(topology)",
                                 "votes_received": "\(metrics.votesReceived)",
                                 "votes_needed": "\(metrics.votesNeeded)",
                             ]

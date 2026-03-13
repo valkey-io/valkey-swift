@@ -98,7 +98,7 @@ where
             @usableFromInline
             /* private */ var circuitBreakerTimer: Timer?
 
-            var lastHealthyState: ValkeyClusterDescription?
+            var lastHealthyState: ValkeyClusterTopology?
 
             var lastError: any Error
         }
@@ -120,14 +120,14 @@ where
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
 
-            var lastHealthyState: ValkeyClusterDescription
+            var lastHealthyState: ValkeyClusterTopology
 
             var lastError: any Error
         }
 
         @usableFromInline
         struct HealthyContext {
-            var clusterDescription: ValkeyClusterDescription
+            var clusterTopology: ValkeyClusterTopology
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
             var consensusStart: Clock.Instant
@@ -215,7 +215,7 @@ where
 
         package var clientsToShutdown: [ConnectionPool]
 
-        package var voters: [ValkeyClusterVoter<ConnectionPool>]
+        package var voters: [ValkeyTopologyVoter<ConnectionPool>]
 
         static func empty() -> Self {
             .init(clientsToRun: [], clientsToShutdown: [], voters: [])
@@ -233,7 +233,7 @@ where
             switch self.clusterState {
             case .unavailable, .degraded, .healthy:
                 let action = self.runningClients.updateNodes(newNodes, removeUnmentionedPools: false)
-                let voters = self.runningClients.clients.map { ValkeyClusterVoter(client: $0.pool, nodeID: $0.nodeID) }
+                let voters = self.runningClients.clients.map { ValkeyTopologyVoter(client: $0.pool, nodeID: $0.nodeID) }
                 return .init(
                     clientsToRun: action.poolsToRun.map(\.0),
                     clientsToShutdown: action.poolsToShutdown,
@@ -246,11 +246,14 @@ where
         }
     }
 
-    package func getInitialVoters() -> [ValkeyClusterVoter<ConnectionPool>] {
-        self.runningClients.clients.map { ValkeyClusterVoter(client: $0.pool, nodeID: $0.nodeID) }
+    package func getInitialVoters() -> [ValkeyTopologyVoter<ConnectionPool>] {
+        self.runningClients.clients.map { ValkeyTopologyVoter(client: $0.pool, nodeID: $0.nodeID) }
     }
 
     package struct ClusterDiscoverySucceededAction {
+        /// A new cluster topology was found, or we moved from another state to healthy
+        package var topologyUpdated: Bool = false
+
         package var createTimer: ValkeyClusterTimer? = nil
 
         package var cancelTimer: TimerCancellationToken? = nil
@@ -263,39 +266,59 @@ where
     }
 
     package mutating func valkeyClusterDiscoverySucceeded(
-        _ description: ValkeyClusterDescription
+        _ topology: ValkeyClusterTopology
     ) -> ClusterDiscoverySucceededAction {
         switch self.refreshState {
         case .notRefreshing, .waitingForRefresh:
             preconditionFailure("Invalid state: \(self.refreshState)")
 
         case .refreshing:
-            let oldCusterState = self.clusterState
-            var map = HashSlotShardMap()
-            let newShards = description.shards.map { $0.allocateNodes { node, _ in node } }
-            map.updateCluster(newShards)
-            self.clusterState = .healthy(.init(clusterDescription: description, hashSlotShardMap: map, consensusStart: self.clock.now))
-
             let refreshTimerID = self.nextTimerID()
             self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: .init(consecutiveFailures: 0))
 
-            let poolUpdate = self.runningClients.updateNodes(
-                newShards.lazy.flatMap {
-                    $0.nodes.lazy.compactMap { $0.health == .online ? ValkeyNodeDescription(description: $0) : nil }
-                },
-                removeUnmentionedPools: true
-            )
+            let oldCusterState = self.clusterState
+            let oldHealthyClusterTopology: ValkeyClusterTopology? =
+                if case .healthy(let healthyState) = self.clusterState {
+                    healthyState.clusterTopology
+                } else {
+                    nil
+                }
+            var result: ClusterDiscoverySucceededAction
+            /// Don't update cluster if description hasnt changed
+            if oldHealthyClusterTopology != topology {
+                var map = HashSlotShardMap()
+                map.updateCluster(topology)
+                self.clusterState = .healthy(.init(clusterTopology: topology, hashSlotShardMap: map, consensusStart: self.clock.now))
 
-            var result = ClusterDiscoverySucceededAction(
-                createTimer: .init(
-                    timerID: refreshTimerID,
-                    useCase: .nextDiscovery,
-                    duration: self.configuration.defaultClusterRefreshInterval
-                ),
-                clientsToShutdown: poolUpdate.poolsToShutdown,
-                clientsToRun: poolUpdate.poolsToRun.map(\.0)
-            )
+                let poolUpdate = self.runningClients.updateNodes(
+                    topology.shards.lazy.flatMap {
+                        $0.nodes.lazy.compactMap { $0.health == .online ? ValkeyNodeDescription(description: $0) : nil }
+                    },
+                    removeUnmentionedPools: true
+                )
 
+                result = ClusterDiscoverySucceededAction(
+                    topologyUpdated: true,
+                    createTimer: .init(
+                        timerID: refreshTimerID,
+                        useCase: .nextDiscovery,
+                        duration: self.configuration.defaultClusterRefreshInterval
+                    ),
+                    clientsToShutdown: poolUpdate.poolsToShutdown,
+                    clientsToRun: poolUpdate.poolsToRun.map(\.0)
+                )
+            } else {
+                result = ClusterDiscoverySucceededAction(
+                    topologyUpdated: false,
+                    createTimer: .init(
+                        timerID: refreshTimerID,
+                        useCase: .nextDiscovery,
+                        duration: self.configuration.defaultClusterRefreshInterval
+                    ),
+                    clientsToShutdown: [],
+                    clientsToRun: []
+                )
+            }
             switch oldCusterState {
             case .healthy:
                 return result
@@ -346,7 +369,7 @@ where
                         pendingSuccessNotifiers: [:],
                         circuitBreakerTimer: .init(id: circuitBreakerTimerID),
                         hashSlotShardMap: healthyContext.hashSlotShardMap,
-                        lastHealthyState: healthyContext.clusterDescription,
+                        lastHealthyState: healthyContext.clusterTopology,
                         lastError: error
                     )
                 )
@@ -650,7 +673,7 @@ where
                     pendingSuccessNotifiers: [:],
                     circuitBreakerTimer: .init(id: circuitBreakerTimerID),
                     hashSlotShardMap: healthyContext.hashSlotShardMap,
-                    lastHealthyState: healthyContext.clusterDescription,
+                    lastHealthyState: healthyContext.clusterTopology,
                     lastError: ValkeyClusterError.clusterIsMissingMovedErrorNode
                 )
             )
@@ -743,7 +766,7 @@ where
                 return .init(
                     clientsToRun: poolActions.poolsToRun.map(\.0),
                     clientsToShutdown: poolActions.poolsToShutdown,
-                    voters: poolActions.poolsToRun.map { ValkeyClusterVoter(client: $0.0, nodeID: $0.1) }
+                    voters: poolActions.poolsToRun.map { ValkeyTopologyVoter(client: $0.0, nodeID: $0.1) }
                 )
             }
 

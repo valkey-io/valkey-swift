@@ -220,12 +220,12 @@ extension ValkeyNodeClient {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    func execute<Commands: Collection & Sendable>(
+    func execute<Commands: Collection>(
         _ commands: Commands
     ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         do {
             return try await self.withConnection { connection in
-                await connection.execute(commands)
+                await connection._execute(commands)
             }
         } catch let error as ValkeyClientError {
             return .init(repeating: .failure(error), count: commands.count)
@@ -270,11 +270,11 @@ extension ValkeyNodeClient {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    func transaction<Commands: Collection & Sendable>(
+    func transaction<Commands: Collection>(
         _ commands: Commands
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         try await self.withConnection { connection in
-            try await connection.transaction(commands)
+            try await connection._transaction(commands)
         }
     }
 

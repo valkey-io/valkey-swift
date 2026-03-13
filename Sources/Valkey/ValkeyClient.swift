@@ -22,13 +22,18 @@ import ServiceLifecycle
 /// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
+    @usableFromInline
+    typealias StateMachine = ValkeyClientStateMachine<ValkeyNodeClient, ValkeyNodeClientFactory, AsyncStream<Void>.Continuation>
+
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
-    let stateMachine: Mutex<ValkeyClientStateMachine<ValkeyNodeClient, ValkeyNodeClientFactory>>
+    let stateMachine: Mutex<StateMachine>
     /// configuration
     @usableFromInline
     var configuration: ValkeyClientConfiguration { self.nodeClientFactory.configuration }
+    @usableFromInline
+    let clock = ContinuousClock()
     /// EventLoopGroup to use
     let eventLoopGroup: any EventLoopGroup
     /// Logger
@@ -38,7 +43,9 @@ public final class ValkeyClient: Sendable {
 
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
+        case runTimer(ValkeyTimer)
         case runRole
+        case verifyReplicas
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -161,6 +168,8 @@ extension ValkeyClient {
     }
 }
 
+// MARK: Actions
+
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
     func queueAction(_ action: RunAction) {
@@ -173,32 +182,136 @@ extension ValkeyClient {
             await nodeClient.run()
 
         case .runRole:
-            var replicas: [ValkeyServerAddress] = []
-            let nodeClient = self.getNode(readOnly: false)
-            if let role = try? await nodeClient.execute(ROLE()) {
-                switch role {
-                case .primary(let primary):
-                    replicas = primary.replicas.map { .hostname($0.ip, port: $0.port) }
-                    self.logger.debug("Found replicas \(replicas)")
+            await runRoleAction()
 
-                case .replica(let replica):
-                    if !self.configuration.connectingToReplica {
-                        // if client is pointing to a replica then redirect to the primary
-                        self.setPrimary(.hostname(replica.primaryIP, port: replica.primaryPort))
+        case .runTimer(let timer):
+            await runTimerAction(timer)
+
+        case .verifyReplicas:
+            break
+        }
+    }
+
+    /// Run ROLE command and update topology based on results
+    private func runRoleAction() async {
+        struct NotReplicaError: Error {}
+        var topology: StateMachine.TopologyRefreshInput
+        let nodeClient = self.getNode(readOnly: false)
+        do {
+            let role = try await nodeClient.execute(ROLE())
+            switch role {
+            case .primary(let primaryState):
+                let replicas = primaryState.replicas.map { ValkeyServerAddress.hostname($0.ip, port: $0.port) }
+                // add nodes primary found
+                let action = self.stateMachine.withLock { $0.addNewNodesFromRefresh(replicas) }
+                for replicaClient in action.clientsToRun {
+                    self.queueAction(.runNodeClient(replicaClient))
+                }
+                // verify all replicas are replicas
+                guard try await self.verifyReplicas(action.clientsToRun) else { throw NotReplicaError() }
+
+                topology = .primary(replicas: replicas)
+                self.logger.debug("Found replicas \(replicas)")
+
+            case .replica(let replica):
+                if !self.configuration.connectingToReplica {
+                    let primary = ValkeyServerAddress.hostname(replica.primaryIP, port: replica.primaryPort)
+                    topology = .replica(primary: primary)
+                    self.logger.debug("Redirect to primary \(primary)")
+                } else {
+                    topology = .primary(replicas: [])
+                }
+                break
+            case .sentinel:
+                preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
+            }
+
+            let action = self.stateMachine.withLock { $0.topologyRefreshSucceeded(topology) }
+            for node in action.clientsToRun {
+                self.queueAction(.runNodeClient(node))
+            }
+            for node in action.clientsToShutdown {
+                node.triggerGracefulShutdown()
+            }
+            switch action.nextAction {
+            case .refreshTopology:
+                self.queueAction(.runRole)
+            case .startTimer(let timer):
+                self.queueAction(.runTimer(timer))
+            case .doNothing:
+                break
+            }
+        } catch {
+            let action = self.stateMachine.withLock { $0.topologyRefreshFailed() }
+            if let timer = action.retryTimer {
+                self.queueAction(.runTimer(timer))
+            }
+        }
+    }
+
+    /// Run timer action
+    ///
+    /// Run timer task that triggers timer after specified time, register timer cancellation token with
+    /// state machine and run second task waiting on cancellation token. Wait for one of these tasks to
+    /// finish and cancel the other
+    private func runTimerAction(_ timer: ValkeyTimer) async {
+        await withTaskGroup(of: Void.self) { taskGroup in
+            taskGroup.addTask {
+                do {
+                    try await self.clock.sleep(for: timer.duration)
+                    // timer has hit
+                    let timerFiredAction = self.stateMachine.withLock {
+                        $0.timerFired(timer)
                     }
-                    break
-                case .sentinel:
-                    preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
-                }
-
-                let action = self.stateMachine.withLock { $0.addReplicas(nodeIDs: replicas) }
-                for node in action.clientsToRun {
-                    self.queueAction(.runNodeClient(node))
-                }
-                for node in action.clientsToShutdown {
-                    node.triggerGracefulShutdown()
+                    self.runTimerFiredAction(timerFiredAction)
+                } catch {
+                    // do nothing
                 }
             }
+
+            let (stream, continuation) = AsyncStream.makeStream(of: Void.self)
+            taskGroup.addTask {
+                var iterator = stream.makeAsyncIterator()
+                await iterator.next()
+            }
+
+            let action = self.stateMachine.withLock {
+                $0.registerTimerCancellationToken(continuation, for: timer)
+            }
+            switch action {
+            case .cancelTimer(let token):
+                token.finish()
+            case .doNothing:
+                break
+            }
+
+            await taskGroup.next()
+            taskGroup.cancelAll()
+        }
+    }
+
+    private func runTimerFiredAction(_ action: StateMachine.TimerFiredAction) {
+        switch action {
+        case .runRole:
+            self.queueAction(.runRole)
+
+        case .doNothing:
+            break
+        }
+    }
+
+    private func verifyReplicas(_ replicas: [ValkeyNodeClient]) async throws -> Bool {
+        try await withThrowingTaskGroup(of: Bool.self) { group in
+            for replica in replicas {
+                group.addTask {
+                    let role = try await replica.execute(ROLE())
+                    guard case .replica = role else {
+                        return false
+                    }
+                    return true
+                }
+            }
+            return try await group.reduce(true) { $0 && $1 }
         }
     }
 }
@@ -263,8 +376,46 @@ extension ValkeyClient {
         for command in repeat each commands {
             readOnly = readOnly && command.isReadOnly
         }
+        #if compiler(<6.2)
         let node = self.getNode(readOnly: readOnly)
         return await node.execute(repeat each commands)
+        #else
+        var attempt = 0
+        var node = self.getNode(readOnly: readOnly)
+        executeCommands: while true {
+            let results = await node.execute(repeat each commands)
+            if Task.isCancelled {
+                return results
+            }
+            for result in repeat each results {
+                if case .failure(let error) = result {
+                    switch self.getRetryAction(from: error) {
+                    case .redirect(let redirectError):
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        self.setPrimary(redirectError.address)
+                        node = self.getNode(readOnly: false)
+                        continue executeCommands
+                    case .tryAgain:
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        node = self.getNode(readOnly: readOnly)
+                        continue executeCommands
+
+                    case .dontRetry:
+                        break
+                    }
+                }
+            }
+            return results
+        }
+        #endif
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -280,7 +431,7 @@ extension ValkeyClient {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    public func execute<Commands: Collection & Sendable>(
+    public func execute<Commands: Collection>(
         _ commands: Commands
     ) async -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         let readOnly =
@@ -289,8 +440,56 @@ extension ValkeyClient {
             } else {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
-        let node = self.getNode(readOnly: readOnly)
-        return await node.execute(commands)
+        // get node client and execute commands
+        var node = self.getNode(readOnly: readOnly)
+        var results = await node.execute(commands)
+
+        var attempt = 0
+        var startIndex = commands.startIndex
+        var resultIndex = results.startIndex
+
+        // Process results, If we find one that needs a retry, then retry command and all the commands that follow
+        while !Task.isCancelled {
+            // loop through results that haven't been checked
+            resultLoop: for result in results[resultIndex...] {
+                if case .failure(let error) = result {
+                    switch self.getRetryAction(from: error) {
+                    case .redirect(let redirectError):
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        self.setPrimary(redirectError.address)
+                        node = self.getNode(readOnly: false)
+                        break resultLoop
+                    case .tryAgain:
+                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                            return results
+                        }
+                        try? await Task.sleep(for: wait)
+                        attempt += 1
+                        node = self.getNode(readOnly: readOnly)
+                        break resultLoop
+
+                    case .dontRetry:
+                        break
+                    }
+                }
+                resultIndex += 1
+                startIndex = commands.index(after: startIndex)
+            }
+            // if no results require a retry break out of loop
+            if resultIndex == results.count {
+                break
+            }
+            // Retry commands that failed and all subsequent commands
+            let newResults = await node.execute(commands[startIndex...])
+            // Replace old results with new results
+            results.removeLast(newResults.count)
+            results.append(contentsOf: newResults)
+        }
+        return results
     }
     /// Pipeline a series of commands as a transaction to Valkey connection
     ///
@@ -365,7 +564,7 @@ extension ValkeyClient {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    public func transaction<Commands: Collection & Sendable>(
+    public func transaction<Commands: Collection>(
         _ commands: Commands
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         let readOnly =
@@ -418,13 +617,12 @@ extension ValkeyClient {
     @usableFromInline
     /* private */ func setPrimary(_ address: ValkeyServerAddress) {
         let action = self.stateMachine.withLock { $0.setPrimary(address) }
-        switch action {
-        case .runNode(let client):
-            self.queueAction(.runNodeClient(client))
-        case .runNodeAndFindReplicas(let client):
-            self.queueAction(.runNodeClient(client))
-            self.queueAction(.runRole)
-        case .findReplicas:
+        if let node = action.nodeToRun {
+            self.queueAction(.runNodeClient(node))
+        }
+        switch action.nextAction {
+        case .refreshTopology(let cancelTimer):
+            cancelTimer?.yield()
             self.queueAction(.runRole)
         case .doNothing:
             break

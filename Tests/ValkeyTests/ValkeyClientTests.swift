@@ -12,8 +12,132 @@ import NIOEmbedded
 import Testing
 import Valkey
 
-@Suite("Test ValkeyClient using mock server array")
+/// Standalone primary replica topology
+actor TestStandaloneTopology {
+    enum Role {
+        case primary
+        case replica
+    }
+    struct Address: Hashable, CustomStringConvertible {
+        let host: String
+        let port: Int
+
+        var description: String { "\(host):\(port)" }
+    }
+    struct Node {
+        var address: Address
+    }
+    var primary: Node
+    var replicas: [Node]
+    private(set) var addressMap: [Address: Role]
+    var keyValueMap: [String: String]
+
+    init(primary: Address, replicas: [Address]) async {
+        self.primary = .init(address: primary)
+        self.replicas = replicas.map { .init(address: $0) }
+        self.addressMap = [:]
+        self.keyValueMap = [:]
+        updateAddressMap()
+    }
+
+    func updateAddressMap() {
+        self.addressMap = [:]
+        self.addressMap[primary.address] = .primary
+        for replica in self.replicas {
+            self.addressMap[replica.address] = .replica
+        }
+    }
+
+    func setKey(_ key: String, value: String) {
+        self.keyValueMap[key] = value
+    }
+
+    func getKey(_ key: String) -> String? {
+        self.keyValueMap[key]
+    }
+
+    /// Create Mock servers for cluster
+    func mock(logger: Logger) async -> MockServerConnections {
+        let mockConnections = MockServerConnections(logger: logger)
+        for address in self.addressMap.keys {
+            await addNode(to: mockConnections, address: address, logger: logger)
+        }
+        return mockConnections
+    }
+
+    /// Add Valkey node to mock connections
+    func addNode(to mockConnections: MockServerConnections, address: TestStandaloneTopology.Address, logger: Logger) async {
+        await mockConnections.addValkeyServer(.hostname(address.host, port: address.port)) { command in
+            var iterator = command.makeIterator()
+            switch iterator.next() {
+            case "GET":
+                guard let key = iterator.next() else { return .bulkError("ERR invalid command") }
+                // Keys with $address prefix are special as they return the address of the node
+                if key.hasPrefix("$address") {
+                    return .bulkString(address.description)
+                }
+                return await self.getKey(key).map { .bulkString($0) } ?? .null
+
+            case "SET":
+                guard let key = iterator.next() else { return .bulkError("ERR invalid command") }
+                guard let value = iterator.next() else { return .bulkError("ERR invalid command") }
+                let addressDetails = await self.addressMap[address]
+                if addressDetails == .replica {
+                    return await .bulkError("REDIRECT \(self.primary.address)")
+                }
+                // Keys with $address prefix are special as they return the address of the node
+                if key.hasPrefix("$address") {
+                    return .bulkString(address.description)
+                }
+                await self.setKey(key, value: value)
+                return .simpleString("OK")
+            case "ROLE":
+                let addressDetails = await self.addressMap[address]
+                if addressDetails == .primary {
+                    return await .array([
+                        .bulkString("master"),
+                        .number(1001),
+                        .array(
+                            self.replicas.map {
+                                RESP3Value.array([
+                                    .bulkString($0.address.host),
+                                    .bulkString("\($0.address.port)"),
+                                    .bulkString("1001"),
+                                ])
+                            }
+                        ),
+                    ])
+                } else {
+                    return await .array([
+                        .bulkString("slave"),
+                        .bulkString(self.primary.address.host),
+                        .number(Int64(self.primary.address.port)),
+                        .bulkString("connected"),
+                        .number(1001),
+                    ])
+                }
+            default:
+                return nil
+            }
+        }
+    }
+
+}
+
+@Suite("Test ValkeyClient using mock server array", .serialized)
 struct ValkeyClientTests {
+    var healthyPrimaryWithTwoReplicas: TestStandaloneTopology {
+        get async {
+            await TestStandaloneTopology(
+                primary: .init(host: "127.0.0.1", port: 9000),
+                replicas: [
+                    .init(host: "127.0.0.1", port: 9001),
+                    .init(host: "127.0.0.1", port: 9002),
+                ]
+            )
+        }
+    }
+
     @available(valkeySwift 1.0, *)
     func withValkeyClient(
         _ address: ValkeyServerAddress,
@@ -59,96 +183,18 @@ struct ValkeyClientTests {
         }
     }
 
-    func getStandaloneMock(logger: Logger) async -> MockServerConnections {
-        let mockConnections = MockServerConnections(logger: logger)
-        await mockConnections.addValkeyServer(.hostname("127.0.0.1", port: 6379)) { command in
-            switch command.first {
-            case "GET":
-                #expect(command[1] == "foo")
-                return .bulkString("primary")
-            case "SET":
-                #expect(command[1] == "foo")
-                #expect(command[2] == "bar")
-                return .simpleString("OK")
-            case "ROLE":
-                return .array([
-                    .bulkString("master"),
-                    .number(10),
-                    .array([
-                        .array([
-                            .bulkString("127.0.0.1"),
-                            .bulkString("6380"),
-                            .bulkString("1"),
-                        ]),
-                        .array([
-                            .bulkString("127.0.0.1"),
-                            .bulkString("6381"),
-                            .bulkString("1"),
-                        ]),
-                    ]),
-                ])
-
-            default:
-                return nil
-            }
-        }
-        await mockConnections.addValkeyServer(.hostname("127.0.0.1", port: 6380)) { command in
-            switch command.first {
-            case "GET":
-                #expect(command[1] == "foo")
-                return .bulkString("replica")
-            case "SET":
-                #expect(command[1] == "foo")
-                #expect(command[2] == "bar")
-                return .bulkError("REDIRECT 127.0.0.1:6379")
-            case "ROLE":
-                return .array([
-                    .bulkString("slave"),
-                    .bulkString("127.0.0.1"),
-                    .number(6379),
-                    .bulkString("connected"),
-                    .number(1),
-                ])
-
-            default:
-                return nil
-            }
-        }
-        await mockConnections.addValkeyServer(.hostname("127.0.0.1", port: 6381)) { command in
-            switch command.first {
-            case "GET":
-                #expect(command[1] == "foo")
-                return .bulkString("replica")
-            case "SET":
-                #expect(command[1] == "foo")
-                #expect(command[2] == "bar")
-                return .bulkError("REDIRECT 127.0.0.1:6379")
-            case "ROLE":
-                return .array([
-                    .bulkString("slave"),
-                    .bulkString("127.0.0.1"),
-                    .number(6379),
-                    .bulkString("connected"),
-                    .number(1),
-                ])
-
-            default:
-                return nil
-            }
-        }
-        return mockConnections
-    }
-
     @Test
     @available(valkeySwift 1.0, *)
     func testClient() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        let mockConnections = await getStandaloneMock(logger: logger)
+        let topology = await self.healthyPrimaryWithTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
-        try await withValkeyClient(.hostname("127.0.0.1"), mockConnections: mockConnections, logger: logger) { client in
+        try await withValkeyClient(.hostname("127.0.0.1", port: 9000), mockConnections: mockConnections, logger: logger) { client in
+            try await client.set("foo", value: "bar")
             let value = try await client.get("foo")
-            #expect(value.map { String($0) } == "primary")
+            #expect(value.map { String($0) } == "bar")
         }
     }
 
@@ -157,19 +203,24 @@ struct ValkeyClientTests {
     func testReadFromReplica() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        let mockConnections = await getStandaloneMock(logger: logger)
+        let topology = await self.healthyPrimaryWithTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
 
         try await withValkeyClient(
-            .hostname("127.0.0.1", port: 6379),
+            .hostname("127.0.0.1", port: 9000),
             mockConnections: mockConnections,
             configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas),
             logger: logger
         ) { client in
             // wait for primary to get replicas
             try await self.waitForReplicas(client)
-            let value = try await client.get("foo")
-            #expect(value.map { String($0) } == "replica")
+            var addresses: Set<String> = []
+            var address = try #require(await client.get("$address").map { String($0) })
+            addresses.insert(String(address))
+            address = try #require(await client.get("$address").map { String($0) })
+            addresses.insert(String(address))
+            #expect(addresses == ["127.0.0.1:9002", "127.0.0.1:9001"])
         }
     }
 
@@ -178,11 +229,12 @@ struct ValkeyClientTests {
     func testRedirectFromReplica() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        let mockConnections = await getStandaloneMock(logger: logger)
+        let topology = await self.healthyPrimaryWithTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
 
         try await withValkeyClient(
-            .hostname("127.0.0.1", port: 6380),
+            .hostname("127.0.0.1", port: 9001),
             mockConnections: mockConnections,
             configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas),
             logger: logger
@@ -191,9 +243,10 @@ struct ValkeyClientTests {
             try await self.waitForReplicas(client)
             // wait for primary to get replicas
             try await self.waitForReplicas(client)
-            try await client.set("foo", value: "bar")
-            let value = try await client.get("foo")
-            #expect(value.map { String($0) } == "replica")
+            let value = try await client.set("$address", value: "bar")
+            #expect(value.map { String($0) } == "127.0.0.1:9000")
+            let address = try #require(await client.get("$address").map { String($0) })
+            #expect(Set(["127.0.0.1:9001", "127.0.0.1:9002"]).contains(String(address)))
         }
     }
 
@@ -202,20 +255,85 @@ struct ValkeyClientTests {
     func testRedirectError() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        let mockConnections = await getStandaloneMock(logger: logger)
+        let topology = await self.healthyPrimaryWithTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
 
         try await withValkeyClient(
-            .hostname("127.0.0.1", port: 6380),
+            .hostname("127.0.0.1", port: 9001),
             mockConnections: mockConnections,
             configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas, connectingToReplica: true),
             logger: logger
         ) { client in
-            try await client.set("foo", value: "bar")
+            let value = try await client.set("$address", value: "bar")
+            #expect(value.map { String($0) } == "127.0.0.1:9000")
             // wait for primary to get replicas
             try await self.waitForReplicas(client)
-            let value = try await client.get("foo")
-            #expect(value.map { String($0) } == "replica")
+            let address = try #require(await client.get("$address").map { String($0) })
+            #expect(Set(["127.0.0.1:9001", "127.0.0.1:9002"]).contains(String(address)))
+        }
+    }
+
+    #if compiler(>=6.2)
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testPipelineRedirectError() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyPrimaryWithTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+
+        try await withValkeyClient(
+            .hostname("127.0.0.1", port: 9001),
+            mockConnections: mockConnections,
+            configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas, connectingToReplica: true),
+            logger: logger
+        ) { client in
+            let results = await client.execute(
+                SET("$address", value: "bar"),
+                SET("foo", value: "bar"),
+                GET("$address"),
+                GET("foo"),
+            )
+            try #expect(results.0.get().map { String($0) } == "127.0.0.1:9000")
+            // runs on primary, because we have mutating commands in pipeline
+            try #expect(results.2.get().map { String($0) } == "127.0.0.1:9000")
+            try #expect(results.3.get().map { String($0) } == "bar")
+        }
+    }
+    #endif
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testPipelineCollectionRedirectError() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyPrimaryWithTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+
+        try await withValkeyClient(
+            .hostname("127.0.0.1", port: 9001),
+            mockConnections: mockConnections,
+            configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas, connectingToReplica: true),
+            logger: logger
+        ) { client in
+            let commands: [any ValkeyCommand] = [
+                GET("$address"),
+                SET("$address", value: "bar"),
+                SET("foo", value: "bar"),
+                GET("$address"),
+                GET("foo"),
+            ]
+            let results = await client.execute(commands)
+            // first GET call runs on replica we first connected to. This command is not retried
+            try #expect(results[0].get().decode(as: String.self) == "127.0.0.1:9001")
+            // Every command after this is retried because this command was mutating and we were connected to a replica
+            try #expect(results[1].get().decode(as: String.self) == "127.0.0.1:9000")
+            // runs on primary, because previous command is mutating
+            try #expect(results[3].get().decode(as: String.self) == "127.0.0.1:9000")
+            try #expect(results[4].get().decode(as: String.self) == "bar")
         }
     }
 }

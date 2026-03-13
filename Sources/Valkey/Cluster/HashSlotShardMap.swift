@@ -22,10 +22,13 @@ package typealias ValkeyShardNodeIDs = ValkeyNodeIDs<ValkeyNodeID>
 package struct HashSlotShardMap: Sendable {
     private static let allSlotsMissing = [OptionalShardID](repeating: .missing, count: HashSlot.count)
 
-    private var slotToShardID: [OptionalShardID] = Self.allSlotsMissing
-    private var shardIDToShard: [ValkeyShardNodeIDs] = []
+    private var slotToShardID: [OptionalShardID]
+    private var shardIDToShard: [ValkeyShardNodeIDs]
 
-    package init() {}
+    package init() {
+        self.slotToShardID = Self.allSlotsMissing
+        self.shardIDToShard = []
+    }
 
     /// Returns the shard node information for the given hash slot, or nil if the slot is unassigned.
     ///
@@ -51,7 +54,7 @@ package struct HashSlotShardMap: Sendable {
     ///           `ValkeyClusterError.keysInCommandRequireMultipleNodes` if slots map to different shards
     @usableFromInline
     package func nodeID(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ValkeyShardNodeIDs {
-        guard let firstSlot = slots.first else {
+        guard let nodeIndex = try self.nodeIndex(for: slots) else {
             if let shardID = self.shardIDToShard.randomElement() {
                 return shardID
             } else {
@@ -59,6 +62,11 @@ package struct HashSlotShardMap: Sendable {
             }
         }
 
+        return self.shardIDToShard[nodeIndex]
+    }
+
+    func nodeIndex(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> Int? {
+        guard let firstSlot = slots.first else { return nil }
         let ogNodeID = self.slotToShardID[Int(firstSlot.rawValue)]
         guard let ogNodeIndex = ogNodeID.value else {
             throw ValkeyClusterError.clusterIsMissingSlotAssignment
@@ -73,8 +81,7 @@ package struct HashSlotShardMap: Sendable {
                 throw ValkeyClusterError.keysRequireMultipleNodes
             }
         }
-
-        return self.shardIDToShard[ogNodeIndex]
+        return ogNodeIndex
     }
 
     /// Updates the cluster mapping with new shard information.
@@ -87,22 +94,18 @@ package struct HashSlotShardMap: Sendable {
     ///    - Creates a `ValkeyShardNodeIDs` object with the primary and its replicas
     ///    - Assigns all slots belonging to this shard in the mapping
     ///
-    /// - Parameter shards: A collection of shard descriptions containing slot assignments and node information
+    /// - Parameter topology: The cluster topology containing slot assignments and node information
     package mutating func updateCluster(
-        _ shards: some Collection<ValkeyClusterDescription.AllocatedShard>
+        _ topology: ValkeyClusterTopology
     ) {
         self.slotToShardID = Self.allSlotsMissing
         self.shardIDToShard.removeAll(keepingCapacity: true)
-        self.shardIDToShard.reserveCapacity(shards.count)
+        self.shardIDToShard.reserveCapacity(topology.shards.count)
 
         var shardID = 0
-        for shard in shards {
-            guard let primary = shard.primary else {
-                continue
-            }
-
+        for shard in topology.shards {
             let nodeIDs = ValkeyShardNodeIDs(
-                primary: primary.nodeID,
+                primary: shard.primary.nodeID,
                 replicas: shard.replicas.map { $0.nodeID }
             )
 
