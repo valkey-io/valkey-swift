@@ -93,10 +93,12 @@ package struct RESPArrayWithCount<Element: RESPRenderable>: RESPRenderable {
     }
     @inlinable
     package var respEntries: Int {
-        self.array.respEntries + 1
+        guard self.array.count > 0 else { return 0 }
+        return self.array.respEntries + 1
     }
     @inlinable
     package func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        guard self.array.count > 0 else { return }
         self.array.count.encode(into: &commandEncoder)
         self.array.encode(into: &commandEncoder)
     }

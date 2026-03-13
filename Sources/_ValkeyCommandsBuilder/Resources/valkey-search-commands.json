@@ -44,10 +44,26 @@
         "type": "string"
       },
       {
-        "name": "verbatim",
+        "name": "DIALECT",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "dialect_token",
+            "type": "pure-token",
+            "token": "DIALECT"
+          },
+          {
+            "name": "dialect_version",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "INORDER",
         "type": "pure-token",
         "optional": true,
-        "token": "VERBATIM"
+        "token": "INORDER"
       },
       {
         "name": "LOAD",
@@ -60,35 +76,142 @@
             "token": "LOAD"
           },
           {
-            "name": "nargs",
-            "type": "integer"
-          },
-          {
-            "name": "items",
-            "type": "block",
-            "multiple": true,
+            "name": "load_args",
+            "type": "oneof",
             "arguments": [
               {
-                "name": "identifier",
-                "type": "string"
+                "name": "all",
+                "type": "pure-token",
+                "token": "*"
               },
               {
-                "name": "alias",
+                "name": "fields",
                 "type": "block",
-                "optional": true,
                 "arguments": [
                   {
-                    "name": "as_token",
-                    "type": "pure-token",
-                    "token": "AS"
+                    "name": "count",
+                    "type": "integer"
                   },
                   {
-                    "name": "property",
-                    "type": "string"
+                    "name": "field",
+                    "type": "string",
+                    "multiple": true
                   }
                 ]
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "PARAMS",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "params_token",
+            "type": "pure-token",
+            "token": "PARAMS"
+          },
+          {
+            "name": "count",
+            "type": "integer"
+          },
+          {
+            "name": "parameters",
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "value",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "SLOP",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "slop_token",
+            "type": "pure-token",
+            "token": "SLOP"
+          },
+          {
+            "name": "slop",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "TIMEOUT",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "timeout_token",
+            "type": "pure-token",
+            "token": "TIMEOUT"
+          },
+          {
+            "name": "milliseconds",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "VERBATIM",
+        "type": "pure-token",
+        "optional": true,
+        "token": "VERBATIM"
+      },
+      {
+        "name": "APPLY",
+        "type": "block",
+        "optional": true,
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "apply_token",
+            "type": "pure-token",
+            "token": "APPLY"
+          },
+          {
+            "name": "expression",
+            "type": "string"
+          },
+          {
+            "name": "as_token",
+            "type": "pure-token",
+            "token": "AS"
+          },
+          {
+            "name": "field",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "FILTER",
+        "type": "block",
+        "optional": true,
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "filter_token",
+            "type": "pure-token",
+            "token": "FILTER"
+          },
+          {
+            "name": "expression",
+            "type": "string"
           }
         ]
       },
@@ -104,117 +227,114 @@
             "token": "GROUPBY"
           },
           {
-            "name": "nargs",
+            "name": "count",
             "type": "integer"
           },
           {
-            "name": "group_fields",
+            "name": "field",
             "type": "string",
             "multiple": true
+          },
+          {
+            "name": "REDUCE",
+            "type": "block",
+            "optional": true,
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "reduce_token",
+                "type": "pure-token",
+                "token": "REDUCE"
+              },
+              {
+                "name": "function",
+                "type": "oneof",
+                "arguments": [
+                  {
+                    "name": "COUNT",
+                    "type": "pure-token",
+                    "token": "COUNT"
+                  },
+                  {
+                    "name": "COUNT_DISTINCT",
+                    "type": "pure-token",
+                    "token": "COUNT_DISTINCT"
+                  },
+                  {
+                    "name": "SUM",
+                    "type": "pure-token",
+                    "token": "SUM"
+                  },
+                  {
+                    "name": "MIN",
+                    "type": "pure-token",
+                    "token": "MIN"
+                  },
+                  {
+                    "name": "MAX",
+                    "type": "pure-token",
+                    "token": "MAX"
+                  },
+                  {
+                    "name": "AVG",
+                    "type": "pure-token",
+                    "token": "AVG"
+                  },
+                  {
+                    "name": "STDDEV",
+                    "type": "pure-token",
+                    "token": "STDDEV"
+                  }
+                ]
+              },
+              {
+                "name": "count",
+                "type": "integer"
+              },
+              {
+                "name": "expression",
+                "type": "string",
+                "multiple": true,
+                "optional": true
+              },
+              {
+                "name": "alias",
+                "type": "block",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "as_token",
+                    "type": "pure-token",
+                    "token": "AS"
+                  },
+                  {
+                    "name": "name",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
       {
-        "name": "REDUCE",
+        "name": "LIMIT",
         "type": "block",
         "optional": true,
         "multiple": true,
         "arguments": [
           {
-            "name": "reduce_token",
+            "name": "limit_token",
             "type": "pure-token",
-            "token": "REDUCE"
+            "token": "LIMIT"
           },
           {
-            "name": "function",
-            "type": "oneof",
-            "arguments": [
-              {
-                "name": "count",
-                "type": "pure-token",
-                "token": "COUNT"
-              },
-              {
-                "name": "count_distinct",
-                "type": "pure-token",
-                "token": "COUNT_DISTINCT"
-              },
-              {
-                "name": "count_distinctish",
-                "type": "pure-token",
-                "token": "COUNT_DISTINCT_ISH"
-              },
-              {
-                "name": "sum",
-                "type": "pure-token",
-                "token": "SUM"
-              },
-              {
-                "name": "min",
-                "type": "pure-token",
-                "token": "MIN"
-              },
-              {
-                "name": "max",
-                "type": "pure-token",
-                "token": "MAX"
-              },
-              {
-                "name": "avg",
-                "type": "pure-token",
-                "token": "AVG"
-              },
-              {
-                "name": "stddev",
-                "type": "pure-token",
-                "token": "STDDEV"
-              },
-              {
-                "name": "quantile",
-                "type": "pure-token",
-                "token": "QUANTILE"
-              },
-              {
-                "name": "tolist",
-                "type": "pure-token",
-                "token": "TOLIST"
-              },
-              {
-                "name": "first_value",
-                "type": "pure-token",
-                "token": "FIRST_VALUE"
-              },
-              {
-                "name": "random_sample",
-                "type": "pure-token",
-                "token": "RANDOM_SAMPLE"
-              }
-            ]
-          },
-          {
-            "name": "nargs",
+            "name": "offset",
             "type": "integer"
           },
           {
-            "name": "identifier",
-            "type": "string",
-            "multiple": true
-          },
-          {
-            "name": "alias",
-            "type": "block",
-            "optional": true,
-            "arguments": [
-              {
-                "name": "as_token",
-                "type": "pure-token",
-                "token": "AS"
-              },
-              {
-                "name": "identifier",
-                "type": "string"
-              }
-            ]
+            "name": "count",
+            "type": "integer"
           }
         ]
       },
@@ -229,7 +349,7 @@
             "token": "SORTBY"
           },
           {
-            "name": "nargs",
+            "name": "count",
             "type": "integer"
           },
           {
@@ -252,203 +372,6 @@
                 "type": "integer"
               }
             ]
-          },
-          {
-            "name": "WITHCOUNT",
-            "type": "pure-token",
-            "optional": true,
-            "token": "WITHCOUNT"
-          }
-        ]
-      },
-      {
-        "name": "APPLY",
-        "type": "block",
-        "optional": true,
-        "multiple": true,
-        "arguments": [
-          {
-            "name": "apply_token",
-            "type": "pure-token",
-            "token": "APPLY"
-          },
-          {
-            "name": "expr",
-            "type": "string"
-          },
-          {
-            "name": "as_token",
-            "type": "pure-token",
-            "token": "AS"
-          },
-          {
-            "name": "name",
-            "type": "string"
-          }
-        ]
-      },
-      {
-        "name": "LIMIT",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "limit_token",
-            "type": "pure-token",
-            "token": "LIMIT"
-          },
-          {
-            "name": "offset",
-            "type": "integer"
-          },
-          {
-            "name": "num",
-            "type": "integer"
-          }
-        ]
-      },
-      {
-        "name": "FILTER",
-        "type": "block",
-        "optional": true,
-        "multiple": true,
-        "arguments": [
-          {
-            "name": "filter_token",
-            "type": "pure-token",
-            "token": "FILTER"
-          },
-          {
-            "name": "expr",
-            "type": "string"
-          }
-        ]
-      },
-      {
-        "name": "WITHCURSOR",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "withcursor_token",
-            "type": "pure-token",
-            "token": "WITHCURSOR"
-          },
-          {
-            "name": "count",
-            "type": "block",
-            "arguments": [
-              {
-                "name": "count_token",
-                "type": "pure-token",
-                "token": "COUNT"
-              },
-              {
-                "name": "read_size",
-                "type": "integer"
-              }
-            ]
-          },
-          {
-            "name": "maxidle",
-            "type": "block",
-            "optional": true,
-            "arguments": [
-              {
-                "name": "maxidle_token",
-                "type": "pure-token",
-                "token": "MAXIDLE"
-              },
-              {
-                "name": "idle_time",
-                "type": "integer"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "TIMEOUT",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "timeout_token",
-            "type": "pure-token",
-            "token": "TIMEOUT"
-          },
-          {
-            "name": "milliseconds",
-            "type": "integer"
-          }
-        ]
-      },
-      {
-        "name": "PARAMS",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "params_token",
-            "type": "pure-token",
-            "token": "PARAMS"
-          },
-          {
-            "name": "nargs",
-            "type": "integer"
-          },
-          {
-            "name": "parameters",
-            "type": "block",
-            "multiple": true,
-            "arguments": [
-              {
-                "name": "name",
-                "type": "string"
-              },
-              {
-                "name": "value",
-                "type": "string"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "SCORER",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "scorer_token",
-            "type": "pure-token",
-            "token": "SCORER"
-          },
-          {
-            "name": "scorer",
-            "type": "string"
-          }
-        ]
-      },
-      {
-        "name": "ADDSCORES",
-        "type": "pure-token",
-        "optional": true,
-        "token": "ADDSCORES"
-      },
-      {
-        "name": "DIALECT",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "dialect_token",
-            "type": "pure-token",
-            "token": "DIALECT"
-          },
-          {
-            "name": "dialect_version",
-            "type": "integer"
           }
         ]
       }
@@ -504,10 +427,9 @@
         "name": "prefix",
         "type": "block",
         "optional": true,
-        "description": "Optional PREFIX clause to restrict indexed keys",
         "arguments": [
           {
-            "name": "PREFIX",
+            "name": "prefix_token",
             "type": "pure-token",
             "token": "PREFIX"
           },
@@ -519,6 +441,125 @@
             "name": "prefix",
             "type": "string",
             "multiple": true
+          }
+        ]
+      },
+      {
+        "name": "SCORE",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "score_token",
+            "type": "pure-token",
+            "token": "SCORE"
+          },
+          {
+            "name": "default_value",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "LANGUAGE",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "language_token",
+            "type": "pure-token",
+            "token": "LANGUAGE"
+          },
+          {
+            "name": "language",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "SKIPINITIALSCAN",
+        "type": "pure-token",
+        "optional": true,
+        "token": "SKIPINITIALSCAN"
+      },
+      {
+        "name": "MINSTEMSIZE",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "minstemsize_token",
+            "type": "pure-token",
+            "token": "MINSTEMSIZE"
+          },
+          {
+            "name": "min_stem_size",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "offsets",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "WITHOFFSETS",
+            "type": "pure-token",
+            "token": "WITHOFFSETS"
+          },
+          {
+            "name": "NOOFFSETS",
+            "type": "pure-token",
+            "token": "NOOFFSETS"
+          }
+        ]
+      },
+      {
+        "name": "stopwords",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "NOSTOPWORDS",
+            "type": "pure-token",
+            "token": "NOSTOPWORDS"
+          },
+          {
+            "name": "stopwords_list",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "stopwords_token",
+                "type": "pure-token",
+                "token": "STOPWORDS"
+              },
+              {
+                "name": "count",
+                "type": "integer"
+              },
+              {
+                "name": "word",
+                "type": "string",
+                "multiple": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "PUNCTUATION",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "punctuation_token",
+            "type": "pure-token",
+            "token": "PUNCTUATION"
+          },
+          {
+            "name": "punctuation",
+            "type": "string"
           }
         ]
       },
@@ -547,12 +588,12 @@
                 "type": "block",
                 "arguments": [
                   {
-                    "name": "AS",
+                    "name": "as_token",
                     "type": "pure-token",
                     "token": "AS"
                   },
                   {
-                    "name": "field-identifier",
+                    "name": "field-alias",
                     "type": "string"
                   }
                 ]
@@ -565,11 +606,6 @@
                     "name": "NUMERIC",
                     "type": "pure-token",
                     "token": "NUMERIC"
-                  },
-                  {
-                    "name": "TEXT",
-                    "type": "pure-token",
-                    "token": "TEXT"
                   },
                   {
                     "name": "TAG",
@@ -597,7 +633,7 @@
                         ]
                       },
                       {
-                        "name": "casesensitive",
+                        "name": "CASESENSITIVE",
                         "optional": true,
                         "type": "pure-token",
                         "token": "CASESENSITIVE"
@@ -605,11 +641,61 @@
                     ]
                   },
                   {
-                    "name": "vector",
+                    "name": "TEXT",
                     "type": "block",
                     "arguments": [
                       {
-                        "name": "vector",
+                        "name": "text_token",
+                        "type": "pure-token",
+                        "token": "TEXT"
+                      },
+                      {
+                        "name": "NOSTEM",
+                        "optional": true,
+                        "type": "pure-token",
+                        "token": "NOSTEM"
+                      },
+                      {
+                        "name": "suffix_trie",
+                        "type": "oneof",
+                        "optional": true,
+                        "arguments": [
+                          {
+                            "name": "WITHSUFFIXTRIE",
+                            "type": "pure-token",
+                            "token": "WITHSUFFIXTRIE"
+                          },
+                          {
+                            "name": "NOSUFFIXTRIE",
+                            "type": "pure-token",
+                            "token": "NOSUFFIXTRIE"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "weight",
+                        "optional": true,
+                        "type": "block",
+                        "arguments": [
+                          {
+                            "name": "weight_token",
+                            "type": "pure-token",
+                            "token": "WEIGHT"
+                          },
+                          {
+                            "name": "weight",
+                            "type": "string"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "VECTOR",
+                    "type": "block",
+                    "arguments": [
+                      {
+                        "name": "vector_token",
                         "type": "pure-token",
                         "token": "VECTOR"
                       },
@@ -636,7 +722,7 @@
                       {
                         "name": "vector-params",
                         "type": "block",
-                        "description": "Vector algorithm parameters (DIM, TYPE, DISTANCE_METRIC, INITIAL_CAP, M, EF_CONSTRUCTION, EF_RUNTIME, BLOCK_SIZE)",
+                        "description": "Vector algorithm parameters (DIM, TYPE, DISTANCE_METRIC, INITIAL_CAP, M, EF_CONSTRUCTION, EF_RUNTIME)",
                         "arguments": [
                           {
                             "name": "type",
@@ -683,21 +769,37 @@
                                 "type": "oneof",
                                 "arguments": [
                                   {
-                                    "name": "l2",
+                                    "name": "L2",
                                     "type": "pure-token",
                                     "token": "L2"
                                   },
                                   {
-                                    "name": "ip",
+                                    "name": "IP",
                                     "type": "pure-token",
                                     "token": "IP"
                                   },
                                   {
-                                    "name": "cosine",
+                                    "name": "COSINE",
                                     "type": "pure-token",
                                     "token": "COSINE"
                                   }
                                 ]
+                              }
+                            ]
+                          },
+                          {
+                            "name": "initial_cap",
+                            "type": "block",
+                            "optional": true,
+                            "arguments": [
+                              {
+                                "name": "ic_token",
+                                "type": "pure-token",
+                                "token": "INITIAL_CAP"
+                              },
+                              {
+                                "name": "value",
+                                "type": "integer"
                               }
                             ]
                           },
@@ -734,14 +836,14 @@
                             ]
                           },
                           {
-                            "name": "block_size",
+                            "name": "ef_runtime",
                             "type": "block",
                             "optional": true,
                             "arguments": [
                               {
-                                "name": "bs_token",
+                                "name": "efr_token",
                                 "type": "pure-token",
-                                "token": "BLOCK_SIZE"
+                                "token": "EF_RUNTIME"
                               },
                               {
                                 "name": "value",
@@ -754,6 +856,12 @@
                     ]
                   }
                 ]
+              },
+              {
+                "name": "SORTABLE",
+                "optional": true,
+                "type": "pure-token",
+                "token": "SORTABLE"
               }
             ]
           }
@@ -774,7 +882,7 @@
     "arguments": [
       {
         "key_spec_index": 0,
-        "name": "key",
+        "name": "index-name",
         "type": "key"
       }
     ],
@@ -793,7 +901,7 @@
     "arguments": [
       {
         "key_spec_index": 0,
-        "name": "key",
+        "name": "index-name",
         "type": "key"
       },
       {
@@ -807,9 +915,48 @@
             "token": "LOCAL"
           },
           {
-            "name": "GLOBAL",
+            "name": "PRIMARY",
             "type": "pure-token",
-            "token": "GLOBAL"
+            "token": "PRIMARY"
+          },
+          {
+            "name": "CLUSTER",
+            "type": "pure-token",
+            "token": "CLUSTER"
+          }
+        ]
+      },
+      {
+        "name": "shard-policy",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "ALLSHARDS",
+            "type": "pure-token",
+            "token": "ALLSHARDS"
+          },
+          {
+            "name": "SOMESHARDS",
+            "type": "pure-token",
+            "token": "SOMESHARDS"
+          }
+        ]
+      },
+      {
+        "name": "consistency",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "CONSISTENT",
+            "type": "pure-token",
+            "token": "CONSISTENT"
+          },
+          {
+            "name": "INCONSISTENT",
+            "type": "pure-token",
+            "token": "INCONSISTENT"
           }
         ]
       }
@@ -838,72 +985,60 @@
         "type": "string"
       },
       {
-        "name": "NOCONTENT",
+        "name": "shard-policy",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "ALLSHARDS",
+            "type": "pure-token",
+            "token": "ALLSHARDS"
+          },
+          {
+            "name": "SOMESHARDS",
+            "type": "pure-token",
+            "token": "SOMESHARDS"
+          }
+        ]
+      },
+      {
+        "name": "consistency",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "CONSISTENT",
+            "type": "pure-token",
+            "token": "CONSISTENT"
+          },
+          {
+            "name": "INCONSISTENT",
+            "type": "pure-token",
+            "token": "INCONSISTENT"
+          }
+        ]
+      },
+      {
+        "name": "DIALECT",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "dialect_token",
+            "type": "pure-token",
+            "token": "DIALECT"
+          },
+          {
+            "name": "dialect",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "INORDER",
         "type": "pure-token",
         "optional": true,
-        "token": "NOCONTENT",
-        "description": "When present, only matching key names are returned (no fields)."
-      },
-      {
-        "name": "TIMEOUT",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "TIMEOUT",
-            "type": "pure-token",
-            "token": "TIMEOUT"
-          },
-          {
-            "name": "timeout_ms",
-            "type": "integer"
-          }
-        ]
-      },
-      {
-        "name": "PARAMS",
-        "type": "block",
-        "optional": true,
-        "description": "Parameter substitution map used by $-placeholders in the query string.",
-        "arguments": [
-          {
-            "name": "PARAMS",
-            "type": "pure-token",
-            "token": "PARAMS"
-          },
-          {
-            "name": "count",
-            "type": "integer"
-          },
-          {
-            "name": "pairs",
-            "type": "string",
-            "multiple": true,
-            "description": "name/value pairs (count must be even)"
-          }
-        ]
-      },
-      {
-        "name": "RETURN_FIELDS",
-        "type": "block",
-        "optional": true,
-        "description": "Specify which fields to return and optional aliases. If count is 0 behaves like NOCONTENT.",
-        "arguments": [
-          {
-            "name": "RETURN_TOKEN",
-            "type": "pure-token",
-            "token": "RETURN"
-          },
-          {
-            "name": "count",
-            "type": "integer"
-          },
-          {
-            "name": "fields",
-            "type": "string",
-            "multiple": true
-          }
-        ]
+        "token": "INORDER"
       },
       {
         "name": "LIMIT",
@@ -911,7 +1046,7 @@
         "optional": true,
         "arguments": [
           {
-            "name": "LIMIT",
+            "name": "limit_token",
             "type": "pure-token",
             "token": "LIMIT"
           },
@@ -926,28 +1061,161 @@
         ]
       },
       {
-        "name": "DIALECT",
+        "name": "NOCONTENT",
+        "type": "pure-token",
+        "optional": true,
+        "token": "NOCONTENT"
+      },
+      {
+        "name": "PARAMS",
         "type": "block",
         "optional": true,
         "arguments": [
           {
-            "name": "DIALECT",
+            "name": "params_token",
             "type": "pure-token",
-            "token": "DIALECT"
+            "token": "PARAMS"
           },
           {
-            "name": "dialect",
+            "name": "count",
             "type": "integer"
+          },
+          {
+            "name": "parameters",
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "value",
+                "type": "string"
+              }
+            ]
           }
-        ],
-        "description": "Specifies the query dialect (supported values validated by server)."
+        ]
       },
       {
-        "name": "LOCALONLY",
+        "name": "RETURN",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "return_token",
+            "type": "pure-token",
+            "token": "RETURN"
+          },
+          {
+            "name": "count",
+            "type": "integer"
+          },
+          {
+            "name": "fields",
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "field",
+                "type": "string"
+              },
+              {
+                "name": "alias",
+                "type": "block",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "as_token",
+                    "type": "pure-token",
+                    "token": "AS"
+                  },
+                  {
+                    "name": "name",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "SLOP",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "slop_token",
+            "type": "pure-token",
+            "token": "SLOP"
+          },
+          {
+            "name": "slop",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "SORTBY",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "sortby_token",
+            "type": "pure-token",
+            "token": "SORTBY"
+          },
+          {
+            "name": "field",
+            "type": "string"
+          },
+          {
+            "name": "direction",
+            "type": "oneof",
+            "optional": true,
+            "arguments": [
+              {
+                "name": "ASC",
+                "type": "pure-token",
+                "token": "ASC"
+              },
+              {
+                "name": "DESC",
+                "type": "pure-token",
+                "token": "DESC"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "TIMEOUT",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "timeout_token",
+            "type": "pure-token",
+            "token": "TIMEOUT"
+          },
+          {
+            "name": "timeout_ms",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "VERBATIM",
         "type": "pure-token",
         "optional": true,
-        "token": "LOCALONLY",
-        "description": "If present, restricts search to local index data only."
+        "token": "VERBATIM"
+      },
+      {
+        "name": "WITHSORTKEYS",
+        "type": "pure-token",
+        "optional": true,
+        "token": "WITHSORTKEYS"
       }
     ],
     "arity": -3,
