@@ -68,7 +68,7 @@ struct ValkeyCommand: Decodable {
 
         static func processArguments(_ arguments: [InternalArgument], keySpecs: [KeySpec]?) -> [Argument] {
             var arguments = arguments.map { Argument(argument: $0, keySpec: $0.keySpecIndex.flatMap { keySpecs?[$0] }) }
-            /*if arguments.count >= 2 {
+            if arguments.count >= 2 {
                 var index = arguments.startIndex
                 var prevIndex = index
                 index += 1
@@ -79,7 +79,7 @@ struct ValkeyCommand: Decodable {
                     index += 1
                     prevIndex += 1
                 }
-            }*/
+            }
 
             //if keySpecs != nil {
             // combine argument and keyspec

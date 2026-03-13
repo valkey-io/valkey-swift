@@ -904,6 +904,8 @@ extension ValkeyCommand.Argument {
             if let token = self.token {
                 if self.multiple, self.multipleToken {
                     return "RESPArrayWithToken(\"\(token)\", \(variable))"
+                } else if self.multiple, self.combinedWithCount {
+                    return "RESPWithToken(\"\(token)\", RESPArrayWithCount(\(variable)))"
                 } else {
                     return "RESPWithToken(\"\(token)\", \(variable))"
                 }

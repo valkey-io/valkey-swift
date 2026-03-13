@@ -132,7 +132,8 @@ extension [CommandPatch] {
                                     .init(name: "DESC", type: .pureToken, token: "DESC"),
                                 ]
                             ),
-                        ]
+                        ],
+                        combinedWithCount: true
                     )
                 )
             ),
