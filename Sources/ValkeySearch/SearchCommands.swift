@@ -244,7 +244,7 @@ public enum FT {
         public var dialect: Int?
         public var inorder: Bool
         public var load: Load?
-        public var paramss: [Params]
+        public var params: [Params]
         public var slop: Int?
         public var timeout: Int?
         public var verbatim: Bool
@@ -260,7 +260,7 @@ public enum FT {
             dialect: Int? = nil,
             inorder: Bool = false,
             load: Load? = nil,
-            paramss: [Params] = [],
+            params: [Params] = [],
             slop: Int? = nil,
             timeout: Int? = nil,
             verbatim: Bool = false,
@@ -275,7 +275,7 @@ public enum FT {
             self.dialect = dialect
             self.inorder = inorder
             self.load = load
-            self.paramss = paramss
+            self.params = params
             self.slop = slop
             self.timeout = timeout
             self.verbatim = verbatim
@@ -296,7 +296,7 @@ public enum FT {
                 RESPWithToken("DIALECT", dialect),
                 RESPPureToken("INORDER", inorder),
                 RESPWithToken("LOAD", load),
-                RESPWithToken("PARAMS", RESPArrayWithCount(paramss)),
+                RESPWithToken("PARAMS", RESPArrayWithCount(params)),
                 RESPWithToken("SLOP", slop),
                 RESPWithToken("TIMEOUT", timeout),
                 RESPPureToken("VERBATIM", verbatim),
@@ -889,7 +889,7 @@ public enum FT {
         public var inorder: Bool
         public var limit: Limit?
         public var nocontent: Bool
-        public var paramss: [Params]
+        public var params: [Params]
         public var returns: [Return]
         public var slop: Int?
         public var sortby: Sortby?
@@ -906,7 +906,7 @@ public enum FT {
             inorder: Bool = false,
             limit: Limit? = nil,
             nocontent: Bool = false,
-            paramss: [Params] = [],
+            params: [Params] = [],
             returns: [Return] = [],
             slop: Int? = nil,
             sortby: Sortby? = nil,
@@ -922,7 +922,7 @@ public enum FT {
             self.inorder = inorder
             self.limit = limit
             self.nocontent = nocontent
-            self.paramss = paramss
+            self.params = params
             self.returns = returns
             self.slop = slop
             self.sortby = sortby
@@ -944,7 +944,7 @@ public enum FT {
                 RESPPureToken("INORDER", inorder),
                 limit,
                 RESPPureToken("NOCONTENT", nocontent),
-                RESPWithToken("PARAMS", RESPArrayWithCount(paramss)),
+                RESPWithToken("PARAMS", RESPArrayWithCount(params)),
                 RESPWithToken("RETURN", RESPArrayWithCount(returns)),
                 RESPWithToken("SLOP", slop),
                 sortby,
@@ -1001,7 +1001,7 @@ extension ValkeyClientProtocol {
         dialect: Int? = nil,
         inorder: Bool = false,
         load: FT.AGGREGATE<Query>.Load? = nil,
-        paramss: [FT.AGGREGATE<Query>.Params] = [],
+        params: [FT.AGGREGATE<Query>.Params] = [],
         slop: Int? = nil,
         timeout: Int? = nil,
         verbatim: Bool = false,
@@ -1018,7 +1018,7 @@ extension ValkeyClientProtocol {
                 dialect: dialect,
                 inorder: inorder,
                 load: load,
-                paramss: paramss,
+                params: params,
                 slop: slop,
                 timeout: timeout,
                 verbatim: verbatim,
@@ -1107,7 +1107,7 @@ extension ValkeyClientProtocol {
         inorder: Bool = false,
         limit: FT.SEARCH<Query>.Limit? = nil,
         nocontent: Bool = false,
-        paramss: [FT.SEARCH<Query>.Params] = [],
+        params: [FT.SEARCH<Query>.Params] = [],
         returns: [FT.SEARCH<Query>.Return] = [],
         slop: Int? = nil,
         sortby: FT.SEARCH<Query>.Sortby? = nil,
@@ -1125,7 +1125,7 @@ extension ValkeyClientProtocol {
                 inorder: inorder,
                 limit: limit,
                 nocontent: nocontent,
-                paramss: paramss,
+                params: params,
                 returns: returns,
                 slop: slop,
                 sortby: sortby,
