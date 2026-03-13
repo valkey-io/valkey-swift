@@ -8,7 +8,7 @@
 import Foundation
 
 final class ValkeyCommands: Decodable {
-    let commands: [String: ValkeyCommand]
+    var commands: [String: ValkeyCommand]
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -36,7 +36,7 @@ struct ValkeyCommand: Decodable {
         let optional: Bool
         let token: String?
         let multipleToken: Bool
-        let arguments: [Argument]?
+        var arguments: [Argument]?
         let keySpecIndex: Int?
 
         init(from decoder: any Decoder) throws {
@@ -138,6 +138,26 @@ struct ValkeyCommand: Decodable {
         }
     }
     struct Argument: Decodable {
+        init(
+            name: String,
+            type: ValkeyCommand.ArgumentType,
+            multiple: Bool = false,
+            optional: Bool = false,
+            multipleToken: Bool = false,
+            token: String? = nil,
+            arguments: [ValkeyCommand.Argument]? = nil,
+            combinedWithCount: Bool = false
+        ) {
+            self.name = name
+            self.type = type
+            self.multiple = multiple
+            self.optional = optional
+            self.multipleToken = multipleToken
+            self.token = token
+            self.arguments = arguments
+            self.combinedWithCount = combinedWithCount
+        }
+
         var name: String
         var type: ArgumentType
         var multiple: Bool
@@ -231,10 +251,10 @@ struct ValkeyCommand: Decodable {
                 case null
                 case unknown
             }
-            let description: String?
-            let type: ResponseType
-            let const: Const?
-            let items: [ReplySchema]?
+            var description: String?
+            var type: ResponseType
+            var const: Const?
+            var items: [ReplySchema]?
 
             init(from decoder: any Decoder) throws {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -372,19 +392,19 @@ struct ValkeyCommand: Decodable {
             case findKeys = "find_keys"
         }
     }
-    let summary: String
-    let since: String?
-    let group: String
-    let complexity: String?
-    let function: String?
-    let history: [[String]]?
-    let deprecatedSince: String?
-    let replacedBy: String?
-    let docFlags: [String]?
-    let commandFlags: [String]?
-    let aclCategories: [String]?
-    let arguments: [Argument]?
-    let replySchema: ReplySchema?
+    var summary: String
+    var since: String?
+    var group: String
+    var complexity: String?
+    var function: String?
+    var history: [[String]]?
+    var deprecatedSince: String?
+    var replacedBy: String?
+    var docFlags: [String]?
+    var commandFlags: [String]?
+    var aclCategories: [String]?
+    var arguments: [Argument]?
+    var replySchema: ReplySchema?
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)

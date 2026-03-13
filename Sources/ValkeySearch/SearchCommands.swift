@@ -228,28 +228,64 @@ public enum FT {
                 count.encode(into: &commandEncoder)
             }
         }
+        public enum SortbyExpressionDirection: RESPRenderable, Sendable, Hashable {
+            case asc
+            case desc
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .asc: "ASC".encode(into: &commandEncoder)
+                case .desc: "DESC".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public struct SortbyExpression: RESPRenderable, Sendable, Hashable {
+            public var expression: String
+            public var direction: SortbyExpressionDirection?
+
+            @inlinable
+            public init(expression: String, direction: SortbyExpressionDirection? = nil) {
+                self.expression = expression
+                self.direction = direction
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                expression.respEntries + direction.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                expression.encode(into: &commandEncoder)
+                direction.encode(into: &commandEncoder)
+            }
+        }
         public struct Sortby: RESPRenderable, Sendable, Hashable {
             public var count: Int
-            public var sortParams: [String]
+            public var expressions: [SortbyExpression]
             public var max: Int?
 
             @inlinable
-            public init(count: Int, sortParams: [String], max: Int? = nil) {
+            public init(count: Int, expressions: [SortbyExpression], max: Int? = nil) {
                 self.count = count
-                self.sortParams = sortParams
+                self.expressions = expressions
                 self.max = max
             }
 
             @inlinable
             public var respEntries: Int {
-                "SORTBY".respEntries + count.respEntries + sortParams.respEntries + RESPWithToken("MAX", max).respEntries
+                "SORTBY".respEntries + count.respEntries + expressions.respEntries + RESPWithToken("MAX", max).respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 "SORTBY".encode(into: &commandEncoder)
                 count.encode(into: &commandEncoder)
-                sortParams.encode(into: &commandEncoder)
+                expressions.encode(into: &commandEncoder)
                 RESPWithToken("MAX", max).encode(into: &commandEncoder)
             }
         }
@@ -500,21 +536,17 @@ public enum FT {
                 }
             }
         }
-        public struct SchemaFieldTypeVectorVectorParams_Type: RESPRenderable, Sendable, Hashable {
+        public enum SchemaFieldTypeVectorVectorParams_Type: RESPRenderable, Sendable, Hashable {
+            case float32
 
             @inlinable
-            public init() {
-            }
-
-            @inlinable
-            public var respEntries: Int {
-                "TYPE".respEntries + "FLOAT32".respEntries
-            }
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                "TYPE".encode(into: &commandEncoder)
-                "FLOAT32".encode(into: &commandEncoder)
+                switch self {
+                case .float32: "FLOAT32".encode(into: &commandEncoder)
+                }
             }
         }
         public enum SchemaFieldTypeVectorVectorParamsDistanceMetric: RESPRenderable, Sendable, Hashable {
@@ -564,14 +596,15 @@ public enum FT {
 
             @inlinable
             public var respEntries: Int {
-                type.respEntries + RESPWithToken("DIM", dim).respEntries + RESPWithToken("DISTANCE_METRIC", distanceMetric).respEntries
-                    + RESPWithToken("INITIAL_CAP", initialCap).respEntries + RESPWithToken("M", m).respEntries
-                    + RESPWithToken("EF_CONSTRUCTION", efConstruction).respEntries + RESPWithToken("EF_RUNTIME", efRuntime).respEntries
+                RESPWithToken("TYPE", type).respEntries + RESPWithToken("DIM", dim).respEntries
+                    + RESPWithToken("DISTANCE_METRIC", distanceMetric).respEntries + RESPWithToken("INITIAL_CAP", initialCap).respEntries
+                    + RESPWithToken("M", m).respEntries + RESPWithToken("EF_CONSTRUCTION", efConstruction).respEntries
+                    + RESPWithToken("EF_RUNTIME", efRuntime).respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                type.encode(into: &commandEncoder)
+                RESPWithToken("TYPE", type).encode(into: &commandEncoder)
                 RESPWithToken("DIM", dim).encode(into: &commandEncoder)
                 RESPWithToken("DISTANCE_METRIC", distanceMetric).encode(into: &commandEncoder)
                 RESPWithToken("INITIAL_CAP", initialCap).encode(into: &commandEncoder)

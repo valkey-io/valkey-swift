@@ -2156,7 +2156,10 @@ struct CommandTests {
                     query: "hello",
                     sortby: .init(
                         count: 2,
-                        sortParams: ["@foo", "ASC", "@bar", "DESC"]
+                        expressions: [
+                            .init(expression: "@foo", direction: .asc),
+                            .init(expression: "@bar", direction: .desc),
+                        ]
                     )
                 )
 
@@ -2192,7 +2195,7 @@ struct CommandTests {
                     query: "hello",
                     sortby: .init(
                         count: 1,
-                        sortParams: ["@foo", "DESC"],
+                        expressions: [.init(expression: "@foo", direction: .desc)],
                         max: 100
                     )
                 )
@@ -2734,7 +2737,7 @@ struct CommandTests {
                                     algorithm: .flat,
                                     attrCount: 4,
                                     vectorParams: .init(
-                                        type: .init(),
+                                        type: .float32,
                                         dim: 128,
                                         distanceMetric: .l2
                                     )
@@ -2780,7 +2783,7 @@ struct CommandTests {
                                     algorithm: .hnsw,
                                     attrCount: 10,
                                     vectorParams: .init(
-                                        type: .init(),
+                                        type: .float32,
                                         dim: 20,
                                         distanceMetric: .cosine,
                                         m: 4,
@@ -2826,7 +2829,7 @@ struct CommandTests {
                                     algorithm: .flat,
                                     attrCount: 4,
                                     vectorParams: .init(
-                                        type: .init(),
+                                        type: .float32,
                                         dim: 128,
                                         distanceMetric: .l2
                                     )
@@ -2868,7 +2871,7 @@ struct CommandTests {
                                     algorithm: .flat,
                                     attrCount: 8,
                                     vectorParams: .init(
-                                        type: .init(),
+                                        type: .float32,
                                         dim: 64,
                                         distanceMetric: .ip
                                     )
