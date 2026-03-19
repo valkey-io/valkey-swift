@@ -992,6 +992,8 @@ extension ValkeyClientProtocol {
     /// Performs a search of the specified index. The keys which match the query expression are subjected to further processing as specified
     ///
     /// - Documentation: [FT.AGGREGATE](https://valkey.io/commands/ft.aggregate)
+    /// - History:
+    ///     * 1.2.0: Added Text Indexing and Search support
     /// - Complexity: O(log N)
     @inlinable
     @discardableResult
@@ -1034,6 +1036,8 @@ extension ValkeyClientProtocol {
     /// Creates an empty search index and initiates the backfill process
     ///
     /// - Documentation: [FT.CREATE](https://valkey.io/commands/ft.create)
+    /// - History:
+    ///     * 1.2.0: Added Text Indexing and Search support
     /// - Complexity: Construction time O(N log N), where N is the number of indexed items
     @inlinable
     @discardableResult
@@ -1080,6 +1084,8 @@ extension ValkeyClientProtocol {
     /// Detailed information about the specified index is returned
     ///
     /// - Documentation: [FT.INFO](https://valkey.io/commands/ft.info)
+    /// - History:
+    ///     * 1.2.0: Added Text Indexing and Search support
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
@@ -1095,6 +1101,8 @@ extension ValkeyClientProtocol {
     /// Performs a search of the specified index. The keys which match the query expression are returned
     ///
     /// - Documentation: [FT.SEARCH](https://valkey.io/commands/ft.search)
+    /// - History:
+    ///     * 1.2.0: Added Text Indexing and Search support
     /// - Complexity: O(log N)
     @inlinable
     @discardableResult
