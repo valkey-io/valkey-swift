@@ -278,6 +278,20 @@ struct CommandTests {
     struct ScriptCommands {
         @Test
         @available(valkeySwift 1.0, *)
+        func eval() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["EVAL", "return ARGV[1]", "0", "hello"]),
+                    response: .bulkString("hello")
+                )
+            ) { connection in
+                let response = try await connection.eval(script: "return ARGV[1]", args: ["hello"])
+                try #expect(response.decode(as: String.self) == "hello")
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func functionList() async throws {
             try await testCommandEncodesDecodes(
                 (

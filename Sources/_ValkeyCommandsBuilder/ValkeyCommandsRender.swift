@@ -586,10 +586,7 @@ extension String {
             )
             self.append("    }\n\n")
         }
-        //_appendFunction(isArray: false)
-        //if arguments.contains(where: \.multiple) {
         _appendFunction(isArray: true)
-        //}
     }
 }
 
@@ -901,24 +898,22 @@ extension ValkeyCommand.Argument {
                     variable = "RESPRenderableBulkString(\(variable))"
                 }
             }
-            let value =
-                if self.multiple {
-                    switch self.combinedWithCount {
-                    case .itemCount: "RESPArrayWithCount(\(variable))"
-                    case .parameterCount: "RESPArrayWithParameterCount(\(variable))"
-                    case .none: variable
-                    }
-                } else {
-                    variable
-                }
             return if let token = self.token {
                 if self.multiple, self.multipleToken {
                     "RESPArrayWithToken(\"\(token)\", \(variable))"
                 } else {
-                    "RESPWithToken(\"\(token)\", \(value))"
+                    switch (self.multiple, self.combinedWithCount) {
+                    case (true, .itemCount): "RESPArrayWithTokenAndCount(\"\(token)\", \(variable))"
+                    case (true, .parameterCount): "RESPArrayWithTokenAndParameterCount(\"\(token)\", \(variable))"
+                    default: "RESPWithToken(\"\(token)\", \(variable))"
+                    }
                 }
             } else {
-                value
+                switch (self.multiple, self.combinedWithCount) {
+                case (true, .itemCount): "RESPArrayWithCount(\(variable))"
+                case (true, .parameterCount): "RESPArrayWithParameterCount(\(variable))"
+                default: variable
+                }
             }
         }
     }

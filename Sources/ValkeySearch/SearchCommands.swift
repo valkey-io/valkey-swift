@@ -296,7 +296,7 @@ public enum FT {
                 RESPWithToken("DIALECT", dialect),
                 RESPPureToken("INORDER", inorder),
                 RESPWithToken("LOAD", load),
-                RESPWithToken("PARAMS", RESPArrayWithParameterCount(params)),
+                RESPArrayWithTokenAndParameterCount("PARAMS", params),
                 RESPWithToken("SLOP", slop),
                 RESPWithToken("TIMEOUT", timeout),
                 RESPPureToken("VERBATIM", verbatim),
@@ -350,7 +350,7 @@ public enum FT {
             public var respEntries: Int {
                 switch self {
                 case .nostopwords: "NOSTOPWORDS".respEntries
-                case .stopwordsLists(let stopwordsLists): RESPWithToken("STOPWORDS", RESPArrayWithCount(stopwordsLists)).respEntries
+                case .stopwordsLists(let stopwordsLists): RESPArrayWithTokenAndCount("STOPWORDS", stopwordsLists).respEntries
                 }
             }
 
@@ -358,7 +358,7 @@ public enum FT {
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .nostopwords: "NOSTOPWORDS".encode(into: &commandEncoder)
-                case .stopwordsLists(let stopwordsLists): RESPWithToken("STOPWORDS", RESPArrayWithCount(stopwordsLists)).encode(into: &commandEncoder)
+                case .stopwordsLists(let stopwordsLists): RESPArrayWithTokenAndCount("STOPWORDS", stopwordsLists).encode(into: &commandEncoder)
                 }
             }
         }
@@ -643,7 +643,7 @@ public enum FT {
                 "FT.CREATE",
                 RESPRenderableBulkString(indexName),
                 RESPWithToken("ON", on),
-                RESPWithToken("PREFIX", RESPArrayWithCount(prefixes)),
+                RESPArrayWithTokenAndCount("PREFIX", prefixes),
                 RESPWithToken("SCORE", score),
                 RESPWithToken("LANGUAGE", language),
                 RESPPureToken("SKIPINITIALSCAN", skipinitialscan),
@@ -944,8 +944,8 @@ public enum FT {
                 RESPPureToken("INORDER", inorder),
                 limit,
                 RESPPureToken("NOCONTENT", nocontent),
-                RESPWithToken("PARAMS", RESPArrayWithParameterCount(params)),
-                RESPWithToken("RETURN", RESPArrayWithCount(returns)),
+                RESPArrayWithTokenAndParameterCount("PARAMS", params),
+                RESPArrayWithTokenAndCount("RETURN", returns),
                 RESPWithToken("SLOP", slop),
                 sortby,
                 RESPWithToken("TIMEOUT", timeout),
