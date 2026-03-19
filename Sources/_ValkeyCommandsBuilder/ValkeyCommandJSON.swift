@@ -74,30 +74,27 @@ struct ValkeyCommand: Decodable {
                 index += 1
                 while index != arguments.endIndex {
                     if arguments[prevIndex].type == .integer, arguments[prevIndex].name == "count", arguments[index].multiple == true {
-                        arguments[index].combinedWithCount = true
+                        arguments[index].combinedWithCount = .itemCount
                     }
                     index += 1
                     prevIndex += 1
                 }
             }
 
-            //if keySpecs != nil {
             // combine argument and keyspec
             // remove counts for arrays flagged with `combinedWithCount`
             var index = arguments.startIndex
-            while let arrayIndex = arguments[index...].firstIndex(where: { $0.combinedWithCount == true }) {
+            while let arrayIndex = arguments[index...].firstIndex(where: { $0.combinedWithCount != .none }) {
                 let previousIndex = arguments.index(before: arrayIndex)
                 arguments.remove(at: previousIndex)
                 index = arrayIndex
             }
-            //}
             return arguments.map { argument in
                 guard argument.type == .block else { return argument }
                 guard let arguments = argument.arguments else { return argument }
                 switch arguments.count {
                 case 1:
                     // Collapse blocks that consist of one argument into that argument
-                    guard arguments.count == 1 else { return argument }
                     guard argument.token == nil || arguments[0].token == nil else { return argument }
                     var newArgument = arguments[0]
                     newArgument.name = argument.name
@@ -138,6 +135,12 @@ struct ValkeyCommand: Decodable {
         }
     }
     struct Argument: Decodable {
+        enum ArrayCount: String, Decodable {
+            case none
+            case parameterCount
+            case itemCount
+        }
+
         init(
             name: String,
             type: ValkeyCommand.ArgumentType,
@@ -146,7 +149,7 @@ struct ValkeyCommand: Decodable {
             multipleToken: Bool = false,
             token: String? = nil,
             arguments: [ValkeyCommand.Argument]? = nil,
-            combinedWithCount: Bool = false
+            combinedWithCount: ArrayCount = .none
         ) {
             self.name = name
             self.type = type
@@ -165,7 +168,7 @@ struct ValkeyCommand: Decodable {
         var multipleToken: Bool
         var token: String?
         var arguments: [Argument]?
-        var combinedWithCount: Bool
+        var combinedWithCount: ArrayCount
 
         init(argument: InternalArgument, keySpec: KeySpec?) {
             self.name = argument.name
@@ -177,9 +180,9 @@ struct ValkeyCommand: Decodable {
             self.arguments = argument.arguments
             self.combinedWithCount =
                 switch keySpec?.findKeys {
-                case .keynum: true
-                case .range, .unknown: false
-                case .none: false
+                case .keynum: .itemCount
+                case .range, .unknown: .none
+                case .none: .none
                 }
         }
 
@@ -207,7 +210,7 @@ struct ValkeyCommand: Decodable {
             } else {
                 self.arguments = nil
             }
-            self.combinedWithCount = false
+            self.combinedWithCount = .none
         }
 
         private enum CodingKeys: String, CodingKey {

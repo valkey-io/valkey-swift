@@ -901,18 +901,24 @@ extension ValkeyCommand.Argument {
                     variable = "RESPRenderableBulkString(\(variable))"
                 }
             }
-            if let token = self.token {
-                if self.multiple, self.multipleToken {
-                    return "RESPArrayWithToken(\"\(token)\", \(variable))"
-                } else if self.multiple, self.combinedWithCount {
-                    return "RESPWithToken(\"\(token)\", RESPArrayWithCount(\(variable)))"
+            let value =
+                if self.multiple {
+                    switch self.combinedWithCount {
+                    case .itemCount: "RESPArrayWithCount(\(variable))"
+                    case .parameterCount: "RESPArrayWithParameterCount(\(variable))"
+                    case .none: variable
+                    }
                 } else {
-                    return "RESPWithToken(\"\(token)\", \(variable))"
+                    variable
                 }
-            } else if self.multiple, self.combinedWithCount == true {
-                return "RESPArrayWithCount(\(variable))"
+            return if let token = self.token {
+                if self.multiple, self.multipleToken {
+                    "RESPArrayWithToken(\"\(token)\", \(variable))"
+                } else {
+                    "RESPWithToken(\"\(token)\", \(value))"
+                }
             } else {
-                return variable
+                value
             }
         }
     }

@@ -227,13 +227,13 @@ public enum FT {
 
             @inlinable
             public var respEntries: Int {
-                "SORTBY".respEntries + RESPArrayWithCount(expressions).respEntries + RESPWithToken("MAX", max).respEntries
+                "SORTBY".respEntries + RESPArrayWithParameterCount(expressions).respEntries + RESPWithToken("MAX", max).respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 "SORTBY".encode(into: &commandEncoder)
-                RESPArrayWithCount(expressions).encode(into: &commandEncoder)
+                RESPArrayWithParameterCount(expressions).encode(into: &commandEncoder)
                 RESPWithToken("MAX", max).encode(into: &commandEncoder)
             }
         }
@@ -296,7 +296,7 @@ public enum FT {
                 RESPWithToken("DIALECT", dialect),
                 RESPPureToken("INORDER", inorder),
                 RESPWithToken("LOAD", load),
-                RESPWithToken("PARAMS", RESPArrayWithCount(params)),
+                RESPWithToken("PARAMS", RESPArrayWithParameterCount(params)),
                 RESPWithToken("SLOP", slop),
                 RESPWithToken("TIMEOUT", timeout),
                 RESPPureToken("VERBATIM", verbatim),
@@ -944,7 +944,7 @@ public enum FT {
                 RESPPureToken("INORDER", inorder),
                 limit,
                 RESPPureToken("NOCONTENT", nocontent),
-                RESPWithToken("PARAMS", RESPArrayWithCount(params)),
+                RESPWithToken("PARAMS", RESPArrayWithParameterCount(params)),
                 RESPWithToken("RETURN", RESPArrayWithCount(returns)),
                 RESPWithToken("SLOP", slop),
                 sortby,

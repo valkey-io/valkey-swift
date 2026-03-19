@@ -47,7 +47,16 @@ extension ArgumentPatch where Self == SetFieldPatch<String> {
 }
 
 extension ArgumentPatch where Self == SetFieldPatch<Bool> {
-    static func set(_ keyPath: WritableKeyPath<ValkeyCommand.Argument, Bool>, value: Bool) -> SetFieldPatch<Bool> {
+    static func set(_ keyPath: WritableKeyPath<ValkeyCommand.Argument, Self>, value: Self) -> SetFieldPatch<Self> {
+        .init(keyPath: keyPath, value: value)
+    }
+}
+
+extension ArgumentPatch where Self == SetFieldPatch<ValkeyCommand.Argument.ArrayCount> {
+    static func set(
+        _ keyPath: WritableKeyPath<ValkeyCommand.Argument, ValkeyCommand.Argument.ArrayCount>,
+        value: ValkeyCommand.Argument.ArrayCount
+    ) -> SetFieldPatch<ValkeyCommand.Argument.ArrayCount> {
         .init(keyPath: keyPath, value: value)
     }
 }
@@ -104,6 +113,7 @@ extension ValkeyCommands {
 
     /// Patch a single command
     func patch(_ command: String, path: [String], patch: some ArgumentPatch) throws {
+        guard self.commands[command] != nil else { throw ValkeyPatchError() }
         try self.commands[command]?.patchArguments(path, patch: patch)
     }
 }
@@ -133,10 +143,14 @@ extension [CommandPatch] {
                                 ]
                             ),
                         ],
-                        combinedWithCount: true
+                        combinedWithCount: .parameterCount
                     )
                 )
             ),
+            // params field and value are counted separately
+            .init("FT.AGGREGATE", path: ["PARAMS"], patch: .set(\.combinedWithCount, value: .parameterCount)),
+            // params field and value are counted separately
+            .init("FT.SEARCH", path: ["PARAMS"], patch: .set(\.combinedWithCount, value: .parameterCount)),
             // FT.CREATE vector type should be an enum of the different kinds even though there
             // is only one type at the moment
             .init(

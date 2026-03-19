@@ -103,3 +103,25 @@ package struct RESPArrayWithCount<Element: RESPRenderable>: RESPRenderable {
         self.array.encode(into: &commandEncoder)
     }
 }
+
+@usableFromInline
+package struct RESPArrayWithParameterCount<Element: RESPRenderable>: RESPRenderable {
+    @usableFromInline
+    let array: [Element]
+
+    @inlinable
+    package init(_ array: [Element]) {
+        self.array = array
+    }
+    @inlinable
+    package var respEntries: Int {
+        guard self.array.count > 0 else { return 0 }
+        return self.array.respEntries + 1
+    }
+    @inlinable
+    package func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        guard self.array.count > 0 else { return }
+        self.array.respEntries.encode(into: &commandEncoder)
+        self.array.encode(into: &commandEncoder)
+    }
+}

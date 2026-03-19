@@ -1738,14 +1738,14 @@ struct CommandTests {
 
         @Test
         @available(valkeySwift 1.0, *)
-        func ftSearch_paramsAndLocalOnly() async throws {
+        func ftSearch_params() async throws {
             try await testCommandEncodesDecodes(
                 (
                     request: .command([
                         "FT.SEARCH",
                         "idx:myIndex",
                         "@title:$t @tag:{$tag}",
-                        "PARAMS", "2",
+                        "PARAMS", "4",
                         "t", "Hello",
                         "tag", "world",
                     ]),
@@ -2080,7 +2080,7 @@ struct CommandTests {
                 (
                     request: .command([
                         "FT.AGGREGATE", "idx:testIndex", "@loc:[$lon $lat 10 km]",
-                        "PARAMS", "2",
+                        "PARAMS", "4",
                         "lon", "29.69465",
                         "lat", "34.95126",
                     ]),
@@ -2146,7 +2146,7 @@ struct CommandTests {
                 (
                     request: .command([
                         "FT.AGGREGATE", "idx:testIndex", "hello",
-                        "SORTBY", "2", "@foo", "ASC", "@bar", "DESC",
+                        "SORTBY", "4", "@foo", "ASC", "@bar", "DESC",
                     ]),
                     response: .array([.number(0)])
                 )
@@ -2183,7 +2183,7 @@ struct CommandTests {
                 (
                     request: .command([
                         "FT.AGGREGATE", "idx:testIndex", "hello",
-                        "SORTBY", "1", "@foo", "DESC",
+                        "SORTBY", "2", "@foo", "DESC",
                         "MAX", "100",
                     ]),
                     response: .array([.number(0)])
