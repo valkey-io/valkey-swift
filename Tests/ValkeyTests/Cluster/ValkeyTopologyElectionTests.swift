@@ -125,7 +125,7 @@ struct ValkeyTopologyElectionTests {
         let multiNodeDescription = Self.createClusterWithReplicas()
 
         let voterID = ValkeyNodeID(endpoint: "voter1.example.com", port: 6380)
-        let metrics = try election.voteReceived(for: ValkeyClusterTopology(multiNodeDescription), from: voterID)
+        let metrics = try election.voteReceived(for: ValkeyClusterTopology(multiNodeDescription, usingTLS: true), from: voterID)
 
         // With 3 nodes in the cluster, we need 2 votes to win (3/2 + 1 = 2)
         #expect(metrics.votesNeeded == 2)
@@ -142,7 +142,7 @@ struct ValkeyTopologyElectionTests {
 
         // Single node cluster only needs 1 vote to win (1/2 + 1 = 1)
         let voterID = ValkeyNodeID(endpoint: "voter1.example.com", port: 6380)
-        let metrics = try election.voteReceived(for: ValkeyClusterTopology(description), from: voterID)
+        let metrics = try election.voteReceived(for: ValkeyClusterTopology(description, usingTLS: true), from: voterID)
 
         #expect(metrics.votesNeeded == 1)
         #expect(metrics.votesReceived == 1)
@@ -158,8 +158,8 @@ struct ValkeyTopologyElectionTests {
         // Create two different cluster descriptions
         let description1 = createSingleShardCluster(endpoint: "node1")
         let description2 = createSingleShardCluster(endpoint: "node2")
-        let topology1 = try ValkeyClusterTopology(description1)
-        let topology2 = try ValkeyClusterTopology(description2)
+        let topology1 = try ValkeyClusterTopology(description1, usingTLS: true)
+        let topology2 = try ValkeyClusterTopology(description2, usingTLS: true)
 
         // Vote for the first configuration
         let voter1 = ValkeyNodeID(endpoint: "voter1.example.com", port: 6380)
@@ -191,7 +191,7 @@ struct ValkeyTopologyElectionTests {
 
         // Create a description that will need 3 votes to win
         let description = Self.createClusterWithReplicas()
-        let topology = try ValkeyClusterTopology(description)
+        let topology = try ValkeyClusterTopology(description, usingTLS: true)
 
         // Cast 3 votes from different voters
         let voter1 = ValkeyNodeID(endpoint: "primary.example.com", port: 6380)
@@ -223,7 +223,7 @@ struct ValkeyTopologyElectionTests {
 
         // Create a description that will need 3 votes to win
         let description1 = Self.createClusterWithReplicas()
-        let topology1 = try ValkeyClusterTopology(description1)
+        let topology1 = try ValkeyClusterTopology(description1, usingTLS: true)
 
         // Cast 3 votes from different voters
         let voter1 = ValkeyNodeID(endpoint: "primary.example.com", port: 6380)
@@ -232,7 +232,7 @@ struct ValkeyTopologyElectionTests {
 
         var description2 = description1
         description2.shards[0].nodes.removeLast()
-        let topology2 = try ValkeyClusterTopology(description2)
+        let topology2 = try ValkeyClusterTopology(description2, usingTLS: true)
 
         let metrics1 = election.voteReceived(for: topology1, from: voter1)
         #expect(metrics1.votesReceived == 1)
@@ -260,8 +260,8 @@ struct ValkeyTopologyElectionTests {
         let description1 = createSingleShardCluster(id: "node1")
         let description2 = createSingleShardCluster(id: "node2")
 
-        let candidate1 = try ValkeyClusterTopology(description1).topologyHashValue
-        let candidate2 = try ValkeyClusterTopology(description2).topologyHashValue
+        let candidate1 = try ValkeyClusterTopology(description1, usingTLS: true).topologyHashValue
+        let candidate2 = try ValkeyClusterTopology(description2, usingTLS: true).topologyHashValue
 
         // The candidates should be considered equal since they have the same structure
         // Note: This assumes ValkeyTopologyCandidate equality is based on structure, not node IDs
@@ -277,8 +277,8 @@ struct ValkeyTopologyElectionTests {
         let description1 = createSingleShardCluster(slots: [0...5000])
         let description2 = createSingleShardCluster(slots: [0...8000])
 
-        let candidate1 = try ValkeyClusterTopology(description1).topologyHashValue
-        let candidate2 = try ValkeyClusterTopology(description2).topologyHashValue
+        let candidate1 = try ValkeyClusterTopology(description1, usingTLS: true).topologyHashValue
+        let candidate2 = try ValkeyClusterTopology(description2, usingTLS: true).topologyHashValue
 
         #expect(
             candidate1 != candidate2,

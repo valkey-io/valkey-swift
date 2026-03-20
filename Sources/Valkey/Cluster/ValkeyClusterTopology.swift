@@ -19,10 +19,10 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStrin
         /// The health of the node
         package var health: ValkeyClusterDescription.Node.Health
 
-        package init(_ description: ValkeyClusterDescription.Node) {
+        package init(_ description: ValkeyClusterDescription.Node, usingTLS: Bool) {
             self.id = description.id
             self.endpoint = description.endpoint
-            self.port = description.tlsPort ?? description.port ?? 6379
+            self.port = (usingTLS ? description.tlsPort : description.port) ?? 6379
             self.health = description.health
         }
 
@@ -42,7 +42,7 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStrin
         package let replicas: ArraySlice<Node>
         package let nodes: [Node]
 
-        init(_ shard: ValkeyClusterDescription.Shard) throws(ValkeyClusterError) {
+        init(_ shard: ValkeyClusterDescription.Shard, usingTLS: Bool) throws(ValkeyClusterError) {
             var primary: Node? = nil
             var isFailedPrimary = false
             var nodes = [Node]()
@@ -57,12 +57,12 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStrin
                             throw ValkeyClusterError.shardHasMultiplePrimaryNodes
                         }
                     case (.some, true), (.none, _):
-                        primary = Node(node)
+                        primary = Node(node, usingTLS: usingTLS)
                         isFailedPrimary = (node.health != .online)
                     }
                 case .replica:
                     if node.health == .online {
-                        nodes.append(Node(node))
+                        nodes.append(Node(node, usingTLS: usingTLS))
                     }
                 }
             }
@@ -105,8 +105,8 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStrin
     /// - Parameter description: ValkeyClusterDescription returned by CLUSTER SHARDS
     /// - Throws: ValkeyClusterError.shardHasMultiplePrimaryNodes if a shard has multiple online primaries.
     ///         ValkeyClusterError.shardIsMissingPrimaryNode if a shard has no primary
-    package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
-        let shards = try description.shards.map { (shard) throws(ValkeyClusterError) in try Shard(shard) }
+    package init(_ description: ValkeyClusterDescription, usingTLS: Bool) throws(ValkeyClusterError) {
+        let shards = try description.shards.map { (shard) throws(ValkeyClusterError) in try Shard(shard, usingTLS: usingTLS) }
         self.shards = shards.sorted { lhs, rhs in
             (lhs.slots.first?.startIndex ?? .pastEnd) < (rhs.slots.first?.startIndex ?? .pastEnd)
         }

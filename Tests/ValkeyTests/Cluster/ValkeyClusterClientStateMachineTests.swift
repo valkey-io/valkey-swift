@@ -28,7 +28,8 @@ struct ValkeyClusterClientStateMachineTests {
     var testConfiguration: ValkeyClusterClientStateMachineConfiguration {
         .init(
             circuitBreakerDuration: .seconds(30),
-            defaultClusterRefreshInterval: .seconds(60)
+            defaultClusterRefreshInterval: .seconds(60),
+            usingTLS: true
         )
     }
 
@@ -48,7 +49,7 @@ struct ValkeyClusterClientStateMachineTests {
         let cluster = ValkeyTopologyElectionTests.createClusterWithReplicas()
 
         let firstNode = cluster.shards.randomElement()!.nodes.randomElement()!
-        let firstNodeDescription = ValkeyNodeDescription(description: firstNode)
+        let firstNodeDescription = ValkeyNodeDescription(description: firstNode, usingTLS: true)
         #expect(stateMachine.getInitialVoters().isEmpty)
 
         let firstNodeDiscoveredAction = stateMachine.updateValkeyServiceNodes([firstNodeDescription])
@@ -72,7 +73,7 @@ struct ValkeyClusterClientStateMachineTests {
         #expect(clusterDiscoveredAction.voters.count == 2)
         #expect(clusterDiscoveredAction.clientsToRun.count == 2)
 
-        let discoveredAction = try stateMachine.valkeyClusterDiscoverySucceeded(.init(cluster))
+        let discoveredAction = try stateMachine.valkeyClusterDiscoverySucceeded(.init(cluster, usingTLS: true))
         #expect(discoveredAction.cancelTimer === circuitBreakerCancelToken)
         #expect(discoveredAction.waitersToSucceed.count == 1)
         #expect(discoveredAction.waitersToSucceed.first === successNotifier)

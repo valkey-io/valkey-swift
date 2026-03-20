@@ -45,6 +45,14 @@ public struct ValkeyClientConfiguration: Sendable {
         public static func enable(_ tlsConfiguration: TLSConfiguration, tlsServerName: String?) throws -> Self {
             .init(base: .enable(tlsConfiguration, tlsServerName))
         }
+
+        /// Is TLS enabled
+        package var isEnabled: Bool {
+            switch self.base {
+            case .disable: false
+            case .enable: true
+            }
+        }
     }
 
     /// Authentication credentials.
