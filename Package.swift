@@ -76,7 +76,9 @@ var package = Package(
         ),
         .target(
             name: "ValkeySearch",
-            dependencies: ["Valkey"],
+            dependencies: [
+                "Valkey"
+            ],
             swiftSettings: defaultSwiftSettings
         ),
         .target(
