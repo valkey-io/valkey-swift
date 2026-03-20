@@ -101,6 +101,7 @@ struct ValkeyCommand: Decodable {
                     newArgument.token = argument.token ?? newArgument.token
                     newArgument.optional = argument.optional || newArgument.optional
                     newArgument.multiple = argument.multiple || newArgument.multiple
+                    newArgument.multipleToken = argument.multipleToken || newArgument.multipleToken
                     return newArgument
                 case 2:
                     // Collapse blocks that consist of a pure token and one other single argument into

@@ -39,7 +39,6 @@ var package = Package(
         .default(enabledTraits: ["ServiceLifecycleSupport", "DistributedTracingSupport"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.4"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.6.3"),
@@ -78,8 +77,7 @@ var package = Package(
         .target(
             name: "ValkeySearch",
             dependencies: [
-                "Valkey",
-                .product(name: "Algorithms", package: "swift-algorithms"),
+                "Valkey"
             ],
             swiftSettings: defaultSwiftSettings
         ),
