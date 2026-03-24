@@ -284,6 +284,49 @@ public struct HGETALL: ValkeyCommand {
     }
 }
 
+/// Returns the values of one or more fields and deletes them from a hash.
+@_documentation(visibility: internal)
+public struct HGETDEL<Field: RESPStringRenderable>: ValkeyCommand {
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        public var numfields: Int
+        public var fields: [Field]
+
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HGETDEL" }
+
+    public var key: ValkeyKey
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+        self.key = key
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HGETDEL", key, RESPWithToken("FIELDS", fields))
+    }
+}
+
 /// Get the value of one or more fields of a given hash key, and optionally set their expiration time or time-to-live (TTL).
 @_documentation(visibility: internal)
 public struct HGETEX<Field: RESPStringRenderable>: ValkeyCommand {
@@ -907,6 +950,21 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
 /// Set the value of one or more fields of a given hash key, and optionally set their expiration time.
 @_documentation(visibility: internal)
 public struct HSETEX<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
+    public enum KeyCondition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            }
+        }
+    }
     public enum FieldsCondition: RESPRenderable, Sendable, Hashable {
         case fnx
         case fxx
@@ -1001,12 +1059,20 @@ public struct HSETEX<Field: RESPStringRenderable, Value: RESPStringRenderable>: 
     @inlinable public static var name: String { "HSETEX" }
 
     public var key: ValkeyKey
+    public var keyCondition: KeyCondition?
     public var fieldsCondition: FieldsCondition?
     public var expiration: Expiration?
     public var fields: Fields
 
-    @inlinable public init(_ key: ValkeyKey, fieldsCondition: FieldsCondition? = nil, expiration: Expiration? = nil, fields: Fields) {
+    @inlinable public init(
+        _ key: ValkeyKey,
+        keyCondition: KeyCondition? = nil,
+        fieldsCondition: FieldsCondition? = nil,
+        expiration: Expiration? = nil,
+        fields: Fields
+    ) {
         self.key = key
+        self.keyCondition = keyCondition
         self.fieldsCondition = fieldsCondition
         self.expiration = expiration
         self.fields = fields
@@ -1015,7 +1081,7 @@ public struct HSETEX<Field: RESPStringRenderable, Value: RESPStringRenderable>: 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HSETEX", key, fieldsCondition, expiration, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray("HSETEX", key, keyCondition, fieldsCondition, expiration, RESPWithToken("FIELDS", fields))
     }
 }
 
@@ -1233,6 +1299,21 @@ extension ValkeyClientProtocol {
     @inlinable
     public func hgetall(_ key: ValkeyKey) async throws(ValkeyClientError) -> RESPToken.Map {
         try await execute(HGETALL(key))
+    }
+
+    /// Returns the values of one or more fields and deletes them from a hash.
+    ///
+    /// - Documentation: [HGETDEL](https://valkey.io/commands/hgetdel)
+    /// - Available: 9.1.0
+    /// - Complexity: O(N) where N is the number of fields to be retrieved and deleted.
+    /// - Returns: List of values associated with the given fields, in the same order as they are requested. Returns nil for fields that do not exist.
+    @inlinable
+    @discardableResult
+    public func hgetdel<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        fields: HGETDEL<Field>.Fields
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(HGETDEL(key, fields: fields))
     }
 
     /// Get the value of one or more fields of a given hash key, and optionally set their expiration time or time-to-live (TTL).
@@ -1460,11 +1541,12 @@ extension ValkeyClientProtocol {
     @discardableResult
     public func hsetex<Field: RESPStringRenderable, Value: RESPStringRenderable>(
         _ key: ValkeyKey,
+        keyCondition: HSETEX<Field, Value>.KeyCondition? = nil,
         fieldsCondition: HSETEX<Field, Value>.FieldsCondition? = nil,
         expiration: HSETEX<Field, Value>.Expiration? = nil,
         fields: HSETEX<Field, Value>.Fields
     ) async throws(ValkeyClientError) -> Int {
-        try await execute(HSETEX(key, fieldsCondition: fieldsCondition, expiration: expiration, fields: fields))
+        try await execute(HSETEX(key, keyCondition: keyCondition, fieldsCondition: fieldsCondition, expiration: expiration, fields: fields))
     }
 
     /// Sets the value of a field in a hash only when the field doesn't exist.

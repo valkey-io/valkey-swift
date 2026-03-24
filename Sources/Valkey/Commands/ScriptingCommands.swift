@@ -238,15 +238,17 @@ public enum SCRIPT {
         @inlinable public static var name: String { "SCRIPT DEBUG" }
 
         public var mode: Mode
+        public var engine: String?
 
-        @inlinable public init(mode: Mode) {
+        @inlinable public init(mode: Mode, engine: String? = nil) {
             self.mode = mode
+            self.engine = engine
         }
 
         public var keysAffected: [ValkeyKey] { [] }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SCRIPT", "DEBUG", mode)
+            commandEncoder.encodeArray("SCRIPT", "DEBUG", mode, engine)
         }
     }
 
@@ -720,8 +722,8 @@ extension ValkeyClientProtocol {
     /// - Available: 3.2.0
     /// - Complexity: O(1)
     @inlinable
-    public func scriptDebug(mode: SCRIPT.DEBUG.Mode) async throws(ValkeyClientError) {
-        _ = try await execute(SCRIPT.DEBUG(mode: mode))
+    public func scriptDebug(mode: SCRIPT.DEBUG.Mode, engine: String? = nil) async throws(ValkeyClientError) {
+        _ = try await execute(SCRIPT.DEBUG(mode: mode, engine: engine))
     }
 
     /// Determines whether server-side Lua scripts exist in the script cache.
