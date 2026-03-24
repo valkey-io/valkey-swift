@@ -1735,6 +1735,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added Pub/Sub channel patterns.
     ///     * 7.0.0: Added selectors and changed the format of key and channel patterns from a list to their rule representation.
+    ///     * 9.1.0: Added database permission rules.
     /// - Complexity: O(N). Where N is the number of password, command and pattern rules that the user has.
     /// - Returns: One of the following
     ///     * A set of ACL rule definitions for the user.
@@ -1812,6 +1813,7 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 6.2.0: Added Pub/Sub channel patterns.
     ///     * 7.0.0: Added selectors and key based permissions.
+    ///     * 9.1.0: Added database permission rules.
     /// - Complexity: O(N). Where N is the number of rules provided.
     @inlinable
     public func aclSetuser<Username: RESPStringRenderable>(username: Username, rules: [String] = []) async throws(ValkeyClientError) {

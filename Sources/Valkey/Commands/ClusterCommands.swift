@@ -874,6 +874,43 @@ public struct ASKING: ValkeyCommand {
     }
 }
 
+/// Iterates over the keys in the cluster.
+@_documentation(visibility: internal)
+public struct CLUSTERSCAN<Cursor: RESPStringRenderable>: ValkeyCommand {
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "CLUSTERSCAN" }
+
+    public var cursor: Cursor
+    public var matchPattern: String?
+    public var count: Int?
+    public var type: String?
+    public var slot: Int?
+
+    @inlinable public init(cursor: Cursor, matchPattern: String? = nil, count: Int? = nil, type: String? = nil, slot: Int? = nil) {
+        self.cursor = cursor
+        self.matchPattern = matchPattern
+        self.count = count
+        self.type = type
+        self.slot = slot
+    }
+
+    public var keysAffected: [ValkeyKey] { [] }
+
+    public var isReadOnly: Bool { true }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray(
+            "CLUSTERSCAN",
+            RESPRenderableBulkString(cursor),
+            RESPWithToken("MATCH", matchPattern),
+            RESPWithToken("COUNT", count),
+            RESPWithToken("TYPE", type),
+            RESPWithToken("SLOT", slot)
+        )
+    }
+}
+
 /// Enables read-only queries for a connection to a Valkey replica node.
 @_documentation(visibility: internal)
 public struct READONLY: ValkeyCommand {
@@ -1248,6 +1285,8 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [CLUSTER SHARDS](https://valkey.io/commands/cluster-shards)
     /// - Available: 7.0.0
+    /// - History:
+    ///     * 9.1.0: Added shard level `id` field and node level `availability-zone` field.
     /// - Complexity: O(N) where N is the total number of cluster nodes
     /// - Returns: A nested list of a map of hash ranges and shard nodes describing individual shards.
     @inlinable
@@ -1275,12 +1314,30 @@ extension ValkeyClientProtocol {
     /// - History:
     ///     * 4.0.0: Added node IDs.
     ///     * 7.0.0: Added additional networking metadata field.
+    ///     * 9.1.0: Added `availability-zone` field inside the networking metadata.
     /// - Complexity: O(N) where N is the total number of Cluster nodes
     /// - Returns: Nested list of slot ranges with networking information.
     @inlinable
     @discardableResult
     public func clusterSlots() async throws(ValkeyClientError) -> CLUSTER.SLOTS.Response {
         try await execute(CLUSTER.SLOTS())
+    }
+
+    /// Iterates over the keys in the cluster.
+    ///
+    /// - Documentation: [CLUSTERSCAN](https://valkey.io/commands/clusterscan)
+    /// - Available: 9.1.0
+    /// - Complexity: O(N) where N is the number of elements returned.
+    /// - Returns: Cursor and clusterscan response in array form.
+    @inlinable
+    public func clusterscan<Cursor: RESPStringRenderable>(
+        cursor: Cursor,
+        matchPattern: String? = nil,
+        count: Int? = nil,
+        type: String? = nil,
+        slot: Int? = nil
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(CLUSTERSCAN(cursor: cursor, matchPattern: matchPattern, count: count, type: type, slot: slot))
     }
 
     /// Enables read-only queries for a connection to a Valkey replica node.

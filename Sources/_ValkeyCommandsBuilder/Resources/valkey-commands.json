@@ -37,6 +37,9 @@
         "type": "string",
         "optional": true
       }
+    ],
+    "acl_categories": [
+      "SLOW"
     ]
   },
   "ACL DELUSER": {
@@ -68,6 +71,11 @@
         "type": "string",
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "ACL DRYRUN": {
@@ -112,6 +120,11 @@
         "optional": true,
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "ACL GENPASS": {
@@ -138,6 +151,9 @@
         "type": "integer",
         "optional": true
       }
+    ],
+    "acl_categories": [
+      "SLOW"
     ]
   },
   "ACL GETUSER": {
@@ -156,6 +172,10 @@
       [
         "7.0.0",
         "Added selectors and changed the format of key and channel patterns from a list to their rule representation."
+      ],
+      [
+        "9.1.0",
+        "Added database permission rules."
       ]
     ],
     "command_flags": [
@@ -202,6 +222,10 @@
               "description": "Root selector's channels.",
               "type": "string"
             },
+            "databases": {
+              "description": "Root selector's databases.",
+              "type": "string"
+            },
             "selectors": {
               "type": "array",
               "items": {
@@ -216,6 +240,9 @@
                   },
                   "channels": {
                     "type": "string"
+                  },
+                  "databases": {
+                    "type": "string"
                   }
                 }
               }
@@ -227,7 +254,12 @@
           "type": "null"
         }
       ]
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "ACL HELP": {
     "summary": "Returns helpful text about the different subcommands.",
@@ -248,7 +280,10 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "ACL LIST": {
     "summary": "Dumps the effective rules in ACL file format.",
@@ -271,7 +306,12 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "ACL LOAD": {
     "summary": "Reloads the rules from the configured ACL file.",
@@ -290,7 +330,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "ACL LOG": {
     "summary": "Lists recent security events generated due to ACL rules.",
@@ -378,6 +423,11 @@
           }
         ]
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "ACL SAVE": {
@@ -401,7 +451,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "ACL SETUSER": {
     "summary": "Creates and modifies an ACL user and its rules.",
@@ -419,6 +474,10 @@
       [
         "7.0.0",
         "Added selectors and key based permissions."
+      ],
+      [
+        "9.1.0",
+        "Added database permission rules."
       ]
     ],
     "command_flags": [
@@ -446,6 +505,11 @@
         "optional": true,
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "ACL USERS": {
@@ -469,7 +533,12 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "ACL WHOAMI": {
     "summary": "Returns the authenticated username of the current connection.",
@@ -488,7 +557,10 @@
     "reply_schema": {
       "type": "string",
       "description": "The username of the current connection."
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "ACL": {
     "summary": "A container for Access List Control commands.",
@@ -498,6 +570,9 @@
     "arity": -2,
     "command_flags": [
       "SENTINEL"
+    ],
+    "acl_categories": [
+      "SLOW"
     ]
   },
   "APPEND": {
@@ -513,7 +588,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -562,7 +639,8 @@
       "FAST"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "FAST"
     ],
     "reply_schema": {
       "const": "OK"
@@ -591,7 +669,8 @@
       "ALLOW_BUSY"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "FAST"
     ],
     "reply_schema": {
       "const": "OK"
@@ -624,7 +703,12 @@
     "reply_schema": {
       "description": "A simple string reply indicating that the rewriting started or is about to start ASAP",
       "type": "string"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "BGSAVE": {
     "summary": "Asynchronously saves the database(s) to disk.",
@@ -684,7 +768,12 @@
           "const": "Scheduled background saving cancelled"
         }
       ]
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "BITCOUNT": {
     "summary": "Counts the number of set bits (population counting) in a string.",
@@ -707,7 +796,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "BITMAP"
+      "BITMAP",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -794,7 +885,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "BITMAP"
+      "BITMAP",
+      "FAST",
+      "READ"
     ],
     "key_specs": [
       {
@@ -862,7 +955,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "BITMAP"
+      "BITMAP",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -1018,7 +1113,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "BITMAP"
+      "BITMAP",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -1120,7 +1217,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "BITMAP"
+      "BITMAP",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -1220,7 +1319,10 @@
       "BLOCKING"
     ],
     "acl_categories": [
-      "LIST"
+      "BLOCKING",
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -1335,7 +1437,10 @@
       "BLOCKING"
     ],
     "acl_categories": [
-      "LIST"
+      "BLOCKING",
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -1443,7 +1548,10 @@
       "BLOCKING"
     ],
     "acl_categories": [
-      "LIST"
+      "BLOCKING",
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -1521,7 +1629,10 @@
       "BLOCKING"
     ],
     "acl_categories": [
-      "LIST"
+      "BLOCKING",
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -1581,7 +1692,7 @@
     }
   },
   "BRPOPLPUSH": {
-    "summary": "Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was popped.",
+    "summary": "Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.",
     "complexity": "O(1)",
     "group": "list",
     "since": "2.2.0",
@@ -1599,7 +1710,10 @@
       "BLOCKING"
     ],
     "acl_categories": [
-      "LIST"
+      "BLOCKING",
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -1682,7 +1796,10 @@
       "BLOCKING"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "BLOCKING",
+      "SLOW",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -1785,7 +1902,7 @@
     ]
   },
   "BZPOPMAX": {
-    "summary": "Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member is available otherwise.  Deletes the sorted set if the last element was popped.",
+    "summary": "Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.",
     "complexity": "O(log(N)) with N being the number of elements in the sorted set.",
     "group": "sorted_set",
     "since": "5.0.0",
@@ -1803,7 +1920,10 @@
       "BLOCKING"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "BLOCKING",
+      "FAST",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -1886,7 +2006,10 @@
       "BLOCKING"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "BLOCKING",
+      "FAST",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -1959,13 +2082,15 @@
     "container": "CLIENT",
     "function": "clientCachingCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "NOSCRIPT",
       "LOADING",
       "STALE",
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "const": "OK"
@@ -1998,12 +2123,14 @@
     "container": "CLIENT",
     "function": "clientCapaCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "NOSCRIPT",
       "LOADING",
       "STALE"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "const": "OK"
@@ -2025,13 +2152,15 @@
     "container": "CLIENT",
     "function": "clientGetNameCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "NOSCRIPT",
       "LOADING",
       "STALE",
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "oneOf": [
@@ -2055,13 +2184,15 @@
     "container": "CLIENT",
     "function": "clientGetredirCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "NOSCRIPT",
       "LOADING",
       "STALE",
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "oneOf": [
@@ -2095,7 +2226,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "type": "array",
@@ -2114,13 +2246,15 @@
     "container": "CLIENT",
     "function": "clientIDCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "NOSCRIPT",
       "LOADING",
       "STALE",
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "type": "integer",
@@ -2141,7 +2275,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "const": "OK"
@@ -2180,7 +2315,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -2244,7 +2380,10 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "ADMIN",
+      "CONNECTION",
+      "DANGEROUS",
+      "SLOW"
     ],
     "arguments": [
       {
@@ -2606,7 +2745,10 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "ADMIN",
+      "CONNECTION",
+      "DANGEROUS",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -2878,6 +3020,7 @@
     "container": "CLIENT",
     "function": "clientNoEvictCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "ADMIN",
       "NOSCRIPT",
       "LOADING",
@@ -2885,7 +3028,10 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "ADMIN",
+      "CONNECTION",
+      "DANGEROUS",
+      "SLOW"
     ],
     "arguments": [
       {
@@ -2918,12 +3064,14 @@
     "container": "CLIENT",
     "function": "clientNoTouchCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "NOSCRIPT",
       "LOADING",
       "STALE"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "const": "OK"
@@ -2969,7 +3117,10 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "ADMIN",
+      "CONNECTION",
+      "DANGEROUS",
+      "SLOW"
     ],
     "arguments": [
       {
@@ -3008,6 +3159,7 @@
     "container": "CLIENT",
     "function": "clientReplyCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "NOSCRIPT",
       "NO_MULTI",
       "LOADING",
@@ -3015,7 +3167,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "const": "OK",
@@ -3054,6 +3207,7 @@
     "container": "CLIENT",
     "function": "clientSetinfoCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "NOSCRIPT",
       "LOADING",
       "STALE",
@@ -3064,7 +3218,8 @@
       "RESPONSE_POLICY:ALL_SUCCEEDED"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "const": "OK"
@@ -3097,6 +3252,7 @@
     "container": "CLIENT",
     "function": "clientSetNameCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "NOSCRIPT",
       "LOADING",
       "STALE",
@@ -3107,7 +3263,8 @@
       "RESPONSE_POLICY:ALL_SUCCEEDED"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "arguments": [
       {
@@ -3134,7 +3291,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "arguments": [
       {
@@ -3212,7 +3370,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "type": "object",
@@ -3291,7 +3450,10 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "ADMIN",
+      "CONNECTION",
+      "DANGEROUS",
+      "SLOW"
     ],
     "reply_schema": {
       "oneOf": [
@@ -3345,7 +3507,10 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "ADMIN",
+      "CONNECTION",
+      "DANGEROUS",
+      "SLOW"
     ],
     "reply_schema": {
       "const": "OK"
@@ -3360,6 +3525,9 @@
     "arity": -2,
     "command_flags": [
       "SENTINEL"
+    ],
+    "acl_categories": [
+      "SLOW"
     ]
   },
   "CLUSTER ADDSLOTS": {
@@ -3384,7 +3552,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER ADDSLOTSRANGE": {
     "summary": "Assigns new hash slot ranges to a node.",
@@ -3418,7 +3591,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER BUMPEPOCH": {
     "summary": "Advances the cluster config epoch.",
@@ -3449,7 +3627,12 @@
           "pattern": "^STILL [0-9]*$"
         }
       ]
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER CANCELSLOTMIGRATIONS": {
     "summary": "Cancel all current ongoing slot migration operations.",
@@ -3462,11 +3645,17 @@
     "command_flags": [
       "NO_ASYNC_LOADING",
       "ADMIN",
-      "STALE"
+      "STALE",
+      "ALL_DBS"
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER COUNT-FAILURE-REPORTS": {
     "summary": "Returns the number of active failure reports for a node. No new reports are created once the node is marked as failed.",
@@ -3499,7 +3688,12 @@
       "description": "The number of active failure reports for the node.",
       "type": "integer",
       "minimum": 0
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER COUNTKEYSINSLOT": {
     "summary": "Returns the number of keys in a hash slot.",
@@ -3522,7 +3716,10 @@
       "description": "The number of keys in the specified hash slot.",
       "type": "integer",
       "minimum": 0
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER DELSLOTS": {
     "summary": "Sets hash slots as unbound for a node.",
@@ -3546,7 +3743,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER DELSLOTSRANGE": {
     "summary": "Sets hash slot ranges as unbound for a node.",
@@ -3580,7 +3782,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER FAILOVER": {
     "summary": "Forces a replica to perform a manual failover of its primary.",
@@ -3616,7 +3823,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER FLUSHSLOT": {
     "summary": "Remove all keys from the target slot.",
@@ -3632,7 +3844,11 @@
       "ADMIN"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "ADMIN",
+      "DANGEROUS",
+      "KEYSPACE",
+      "SLOW",
+      "WRITE"
     ],
     "reply_schema": {
       "const": "OK"
@@ -3676,7 +3892,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER FORGET": {
     "summary": "Removes a node from the nodes table.",
@@ -3699,7 +3920,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER GETKEYSINSLOT": {
     "summary": "Returns the key names in a hash slot.",
@@ -3732,7 +3958,10 @@
         "description": "Key name.",
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER GETSLOTMIGRATIONS": {
     "summary": "Get the status of ongoing and recently finished slot import and export operations.",
@@ -3810,7 +4039,12 @@
           }
         }
       }
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER HELP": {
     "summary": "Returns helpful text about the different subcommands.",
@@ -3830,7 +4064,10 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER INFO": {
     "summary": "Returns information about the state of a node.",
@@ -3850,7 +4087,10 @@
     "reply_schema": {
       "description": "A map between named fields and values in the form of <field>:<value> lines separated by newlines composed by the two bytes CRLF",
       "type": "string"
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER KEYSLOT": {
     "summary": "Returns the hash slot for a key.",
@@ -3859,7 +4099,7 @@
     "since": "3.0.0",
     "arity": 3,
     "container": "CLUSTER",
-    "function": "clusterCommand",
+    "function": "clusterKeySlotCommand",
     "command_flags": [
       "STALE"
     ],
@@ -3873,7 +4113,10 @@
       "description": "The hash slot number for the specified key",
       "type": "integer",
       "minimum": 0
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER LINKS": {
     "summary": "Returns a list of all TCP links to and from peer nodes.",
@@ -3931,7 +4174,10 @@
         },
         "additionalProperties": false
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER MEET": {
     "summary": "Forces a node to handshake with another node.",
@@ -3970,7 +4216,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER MIGRATESLOTS": {
     "summary": "Migrate the given slots from this node to the specified nodes.",
@@ -3983,7 +4234,8 @@
     "command_flags": [
       "NO_ASYNC_LOADING",
       "ADMIN",
-      "STALE"
+      "STALE",
+      "ALL_DBS"
     ],
     "arguments": [
       {
@@ -4029,7 +4281,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER MYID": {
     "summary": "Returns the ID of a node.",
@@ -4046,7 +4303,10 @@
     "reply_schema": {
       "description": "The node id.",
       "type": "string"
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER MYSHARDID": {
     "summary": "Returns the shard ID of a node.",
@@ -4066,7 +4326,10 @@
     "reply_schema": {
       "description": "The node's shard id.",
       "type": "string"
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER NODES": {
     "summary": "Returns the cluster configuration for a node.",
@@ -4086,7 +4349,10 @@
     "reply_schema": {
       "description": "The serialized cluster configuration.",
       "type": "string"
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER REPLICAS": {
     "summary": "Lists the replica nodes of a primary node.",
@@ -4116,7 +4382,12 @@
         "type": "string",
         "description": "The serialized cluster configuration."
       }
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER REPLICATE": {
     "summary": "Configure a node as replica of a primary node or detach a replica from its primary.",
@@ -4168,7 +4439,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER RESET": {
     "summary": "Resets a node.",
@@ -4204,7 +4480,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER SAVECONFIG": {
     "summary": "Forces a node to save the cluster configuration to disk.",
@@ -4221,7 +4502,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER SET-CONFIG-EPOCH": {
     "summary": "Sets the configuration epoch for a new node.",
@@ -4244,7 +4530,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER SETSLOT": {
     "summary": "Binds a hash slot to a node.",
@@ -4311,7 +4602,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER SHARDS": {
     "summary": "Returns the mapping of cluster slots to shards.",
@@ -4321,6 +4617,12 @@
     "arity": 2,
     "container": "CLUSTER",
     "function": "clusterCommand",
+    "history": [
+      [
+        "9.1.0",
+        "Added shard level `id` field and node level `availability-zone` field."
+      ]
+    ],
     "command_flags": [
       "LOADING",
       "STALE"
@@ -4392,13 +4694,23 @@
                       "const": "online"
                     }
                   ]
+                },
+                "availability-zone": {
+                  "type": "string"
                 }
               }
             }
+          },
+          "id": {
+            "description": "A unique shard identifier.",
+            "type": "string"
           }
         }
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER SLAVES": {
     "summary": "Lists the replica nodes of a primary node.",
@@ -4433,7 +4745,12 @@
         "type": "string",
         "description": "The serialized cluster configuration."
       }
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CLUSTER SLOT-STATS": {
     "summary": "Return an array of slot usage statistics for slots assigned to the current node.",
@@ -4542,6 +4859,9 @@
           }
         ]
       }
+    ],
+    "acl_categories": [
+      "SLOW"
     ]
   },
   "CLUSTER SLOTS": {
@@ -4560,6 +4880,10 @@
       [
         "7.0.0",
         "Added additional networking metadata field."
+      ],
+      [
+        "9.1.0",
+        "Added `availability-zone` field inside the networking metadata."
       ]
     ],
     "command_flags": [
@@ -4613,7 +4937,7 @@
                 "type": "string"
               },
               {
-                "description": "Array of node descriptions.",
+                "description": "Map of additional networking metadata fields.",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
@@ -4621,6 +4945,9 @@
                     "type": "string"
                   },
                   "ip": {
+                    "type": "string"
+                  },
+                  "availability-zone": {
                     "type": "string"
                   }
                 }
@@ -4656,7 +4983,7 @@
               "type": "string"
             },
             {
-              "description": "Array of node descriptions.",
+              "description": "Map of additional networking metadata fields.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -4665,13 +4992,19 @@
                 },
                 "ip": {
                   "type": "string"
+                },
+                "availability-zone": {
+                  "type": "string"
                 }
               }
             }
           ]
         }
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CLUSTER SYNCSLOTS": {
     "summary": "A container for internal slot migration commands.",
@@ -4689,6 +5022,11 @@
       "ADMIN",
       "STALE",
       "MAY_REPLICATE"
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "CLUSTER": {
@@ -4696,7 +5034,100 @@
     "complexity": "Depends on subcommand.",
     "group": "cluster",
     "since": "3.0.0",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
+  },
+  "CLUSTERSCAN": {
+    "summary": "Iterates over the keys in the cluster.",
+    "complexity": "O(N) where N is the number of elements returned.",
+    "group": "cluster",
+    "since": "9.1.0",
+    "arity": -2,
+    "function": "clusterscanCommand",
+    "command_flags": [
+      "READONLY",
+      "TOUCHES_ARBITRARY_KEYS"
+    ],
+    "acl_categories": [
+      "KEYSPACE",
+      "READ",
+      "SLOW"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "NOT_KEY"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "command_tips": [
+      "NONDETERMINISTIC_OUTPUT",
+      "REQUEST_POLICY:SPECIAL",
+      "RESPONSE_POLICY:SPECIAL"
+    ],
+    "arguments": [
+      {
+        "name": "cursor",
+        "type": "string"
+      },
+      {
+        "token": "MATCH",
+        "name": "match-pattern",
+        "type": "pattern",
+        "optional": true
+      },
+      {
+        "token": "COUNT",
+        "name": "count",
+        "type": "integer",
+        "optional": true
+      },
+      {
+        "token": "TYPE",
+        "name": "type",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "token": "SLOT",
+        "name": "slot",
+        "type": "integer",
+        "optional": true
+      }
+    ],
+    "reply_schema": {
+      "description": "Cursor and clusterscan response in array form.",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "description": "Cursor.",
+          "type": "string"
+        },
+        {
+          "description": "List of keys.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    }
   },
   "COMMAND COUNT": {
     "summary": "Returns a count of commands.",
@@ -4712,7 +5143,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "description": "Number of total commands in this server.",
@@ -4733,7 +5165,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -4942,7 +5375,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "description": "List of keys from the given command.",
@@ -4979,7 +5413,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "description": "List of keys from the given command and their usage flags.",
@@ -5032,7 +5467,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "reply_schema": {
       "type": "array",
@@ -5062,7 +5498,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -5267,7 +5704,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -5319,7 +5757,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -5409,6 +5848,11 @@
           }
         ]
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "COMMANDLOG HELP": {
@@ -5429,7 +5873,10 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "COMMANDLOG LEN": {
     "summary": "Returns the number of entries in the specified type of command log.",
@@ -5476,6 +5923,11 @@
           }
         ]
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "COMMANDLOG RESET": {
@@ -5520,6 +5972,11 @@
           }
         ]
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "COMMANDLOG": {
@@ -5527,7 +5984,10 @@
     "complexity": "Depends on subcommand.",
     "group": "server",
     "since": "8.1.0",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CONFIG GET": {
     "summary": "Returns the effective values of configuration parameters.",
@@ -5561,6 +6021,11 @@
         "type": "string",
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "CONFIG HELP": {
@@ -5581,7 +6046,10 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "CONFIG RESETSTAT": {
     "summary": "Resets the server's statistics.",
@@ -5603,7 +6071,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CONFIG REWRITE": {
     "summary": "Persists the effective configuration to file.",
@@ -5625,7 +6098,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "CONFIG SET": {
     "summary": "Sets configuration parameters in-flight.",
@@ -5670,6 +6148,11 @@
           }
         ]
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "CONFIG": {
@@ -5677,7 +6160,10 @@
     "complexity": "Depends on subcommand.",
     "group": "server",
     "since": "2.0.0",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "COPY": {
     "summary": "Copies the value of a key to a new key.",
@@ -5691,8 +6177,11 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "SLOW",
+      "WRITE"
     ],
+    "get_dbid_args": "copyDbIdArgs",
     "key_specs": [
       {
         "flags": [
@@ -5780,7 +6269,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "READ"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -5807,6 +6298,11 @@
       "LOADING",
       "STALE",
       "PROTECTED"
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "DECR": {
@@ -5822,7 +6318,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -5870,7 +6368,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -5920,7 +6420,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "SLOW",
+      "WRITE"
     ],
     "command_tips": [
       "REQUEST_POLICY:MULTI_SHARD",
@@ -5972,7 +6474,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -6033,6 +6537,7 @@
       "ALLOW_BUSY"
     ],
     "acl_categories": [
+      "FAST",
       "TRANSACTION"
     ],
     "reply_schema": {
@@ -6050,7 +6555,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -6108,7 +6615,8 @@
       "FAST"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "FAST"
     ],
     "reply_schema": {
       "description": "The given string",
@@ -6137,7 +6645,8 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -6203,7 +6712,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -6270,7 +6780,8 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -6335,7 +6846,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -6399,6 +6911,7 @@
       "SKIP_COMMANDLOG"
     ],
     "acl_categories": [
+      "SLOW",
       "TRANSACTION"
     ],
     "reply_schema": {
@@ -6432,7 +6945,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "READ"
     ],
     "command_tips": [
       "REQUEST_POLICY:MULTI_SHARD",
@@ -6488,7 +7003,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -6580,7 +7097,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -6666,7 +7185,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "READ"
     ],
     "key_specs": [
       {
@@ -6763,6 +7284,11 @@
         "type": "integer",
         "optional": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "FCALL_RO": {
@@ -6781,7 +7307,8 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -6847,7 +7374,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -6916,11 +7444,14 @@
       ]
     ],
     "command_flags": [
-      "WRITE"
+      "WRITE",
+      "ALL_DBS"
     ],
     "acl_categories": [
+      "DANGEROUS",
       "KEYSPACE",
-      "DANGEROUS"
+      "SLOW",
+      "WRITE"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -6972,8 +7503,10 @@
       "WRITE"
     ],
     "acl_categories": [
+      "DANGEROUS",
       "KEYSPACE",
-      "DANGEROUS"
+      "SLOW",
+      "WRITE"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -7017,7 +7550,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW",
+      "WRITE"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -7045,7 +7580,8 @@
       "NOSCRIPT"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "reply_schema": {
       "description": "The serialized payload.",
@@ -7065,7 +7601,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW",
+      "WRITE"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -7107,7 +7645,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "reply_schema": {
       "type": "array",
@@ -7130,7 +7669,8 @@
       "ALLOW_BUSY"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -7155,7 +7695,8 @@
       "NONDETERMINISTIC_OUTPUT_ORDER"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "reply_schema": {
       "type": "array",
@@ -7239,7 +7780,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW",
+      "WRITE"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -7276,7 +7819,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW",
+      "WRITE"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -7327,7 +7872,8 @@
       "ALLOW_BUSY"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT",
@@ -7398,7 +7944,10 @@
     "complexity": "Depends on subcommand.",
     "group": "scripting",
     "since": "7.0.0",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "GEOADD": {
     "summary": "Adds one or more members to a geospatial index. The key is created if it doesn't exist.",
@@ -7418,7 +7967,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "GEO"
+      "GEO",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -7507,7 +8058,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "GEO"
+      "GEO",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -7596,7 +8149,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "GEO"
+      "GEO",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -7650,7 +8205,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "GEO"
+      "GEO",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -7734,7 +8291,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "GEO"
+      "GEO",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -7934,7 +8493,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "GEO"
+      "GEO",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -8195,7 +8756,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "GEO"
+      "GEO",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -8390,7 +8953,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "GEO"
+      "GEO",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -8646,7 +9211,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "GEO"
+      "GEO",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -8944,7 +9511,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "GEO"
+      "GEO",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -9192,6 +9761,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "STRING"
     ],
     "key_specs": [
@@ -9246,7 +9817,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "BITMAP"
+      "BITMAP",
+      "FAST",
+      "READ"
     ],
     "key_specs": [
       {
@@ -9303,7 +9876,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -9358,7 +9933,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -9445,6 +10022,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "STRING"
     ],
     "key_specs": [
@@ -9500,7 +10079,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -9565,7 +10146,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -9631,7 +10214,8 @@
       "ALLOW_BUSY"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "FAST"
     ],
     "reply_schema": {
       "type": "object",
@@ -9678,6 +10262,9 @@
               }
             }
           }
+        },
+        "availability_zone": {
+          "type": "string"
         }
       }
     },
@@ -9729,7 +10316,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "READ"
     ],
     "key_specs": [
       {
@@ -9786,7 +10375,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -9902,7 +10493,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -10020,7 +10613,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "READ"
     ],
     "key_specs": [
       {
@@ -10103,7 +10698,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "READ"
     ],
     "key_specs": [
       {
@@ -10160,7 +10757,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "HASH"
+      "HASH",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -10200,6 +10799,85 @@
       }
     ]
   },
+  "HGETDEL": {
+    "summary": "Returns the values of one or more fields and deletes them from a hash.",
+    "complexity": "O(N) where N is the number of fields to be retrieved and deleted.",
+    "group": "hash",
+    "since": "9.1.0",
+    "arity": -5,
+    "function": "hgetdelCommand",
+    "command_flags": [
+      "WRITE",
+      "FAST"
+    ],
+    "acl_categories": [
+      "FAST",
+      "HASH",
+      "WRITE"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "ACCESS",
+          "DELETE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of values associated with the given fields, in the same order as they are requested. Returns nil for fields that do not exist.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ]
+  },
   "HGETEX": {
     "summary": "Get the value of one or more fields of a given hash key, and optionally set their expiration time or time-to-live (TTL).",
     "complexity": "O(N) where N is the number of specified fields.",
@@ -10212,7 +10890,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -10321,7 +11001,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -10377,7 +11059,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -10431,7 +11115,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "HASH"
+      "HASH",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -10484,7 +11170,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "READ"
     ],
     "key_specs": [
       {
@@ -10529,7 +11217,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "READ"
     ],
     "key_specs": [
       {
@@ -10592,7 +11282,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -10652,7 +11344,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -10734,7 +11428,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -10852,7 +11548,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -10970,7 +11668,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "READ"
     ],
     "key_specs": [
       {
@@ -11053,7 +11753,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "READ"
     ],
     "key_specs": [
       {
@@ -11135,7 +11837,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "HASH"
+      "HASH",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -11234,7 +11938,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "HASH"
+      "HASH",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -11327,7 +12033,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -11389,7 +12097,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -11428,6 +12138,23 @@
         "name": "key",
         "type": "key",
         "key_spec_index": 0
+      },
+      {
+        "name": "key-condition",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "nx",
+            "type": "pure-token",
+            "token": "NX"
+          },
+          {
+            "name": "xx",
+            "type": "pure-token",
+            "token": "XX"
+          }
+        ]
       },
       {
         "name": "fields-condition",
@@ -11522,7 +12249,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -11584,7 +12313,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "READ"
     ],
     "key_specs": [
       {
@@ -11634,7 +12365,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HASH"
+      "FAST",
+      "HASH",
+      "READ"
     ],
     "key_specs": [
       {
@@ -11716,7 +12449,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "HASH"
+      "HASH",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -11769,7 +12504,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -11817,7 +12554,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -11869,7 +12608,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -11927,7 +12668,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "DANGEROUS"
+      "DANGEROUS",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT",
@@ -11958,8 +12700,10 @@
       "READONLY"
     ],
     "acl_categories": [
+      "DANGEROUS",
       "KEYSPACE",
-      "DANGEROUS"
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -11996,7 +12740,8 @@
     ],
     "acl_categories": [
       "ADMIN",
-      "DANGEROUS"
+      "DANGEROUS",
+      "FAST"
     ],
     "reply_schema": {
       "type": "integer",
@@ -12025,7 +12770,12 @@
     "reply_schema": {
       "type": "string",
       "description": "A human readable latency analysis report."
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "LATENCY GRAPH": {
     "summary": "Returns a latency graph for an event.",
@@ -12055,7 +12805,12 @@
     "reply_schema": {
       "type": "string",
       "description": "Latency graph"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "LATENCY HELP": {
     "summary": "Returns helpful text about the different subcommands.",
@@ -12075,7 +12830,10 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "LATENCY HISTOGRAM": {
     "summary": "Returns the cumulative distribution of latencies of a subset or all commands.",
@@ -12127,6 +12885,11 @@
         "optional": true,
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "LATENCY HISTORY": {
@@ -12174,6 +12937,11 @@
         "name": "event",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "LATENCY LATEST": {
@@ -12229,7 +12997,12 @@
           }
         ]
       }
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "LATENCY RESET": {
     "summary": "Resets the latency data for one or more events.",
@@ -12260,6 +13033,11 @@
         "optional": true,
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "LATENCY": {
@@ -12267,7 +13045,10 @@
     "complexity": "Depends on subcommand.",
     "group": "server",
     "since": "2.8.13",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "LCS": {
     "summary": "Finds the longest common substring.",
@@ -12280,6 +13061,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "STRING"
     ],
     "key_specs": [
@@ -12405,7 +13188,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "LIST"
+      "LIST",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -12463,7 +13248,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "LIST"
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -12546,7 +13333,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "LIST"
+      "FAST",
+      "LIST",
+      "READ"
     ],
     "key_specs": [
       {
@@ -12592,7 +13381,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "LIST"
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -12702,7 +13493,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "LIST"
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -12809,6 +13602,10 @@
         "type": "integer",
         "optional": true
       }
+    ],
+    "acl_categories": [
+      "FAST",
+      "READ"
     ]
   },
   "LPOP": {
@@ -12829,7 +13626,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "LIST"
+      "FAST",
+      "LIST",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -12896,7 +13695,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "LIST"
+      "LIST",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -12987,7 +13788,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "LIST"
+      "FAST",
+      "LIST",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -13045,7 +13848,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "LIST"
+      "FAST",
+      "LIST",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -13096,7 +13901,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "LIST"
+      "LIST",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -13152,7 +13959,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "LIST"
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -13207,7 +14016,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "LIST"
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -13259,7 +14070,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "LIST"
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -13316,7 +14129,10 @@
     "reply_schema": {
       "description": "Memory problems report.",
       "type": "string"
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "MEMORY HELP": {
     "summary": "Returns helpful text about the different subcommands.",
@@ -13336,7 +14152,10 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "MEMORY MALLOC-STATS": {
     "summary": "Returns the allocator statistics.",
@@ -13357,7 +14176,10 @@
     "reply_schema": {
       "type": "string",
       "description": "The memory allocator's internal statistics report."
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "MEMORY PURGE": {
     "summary": "Asks the allocator to release memory.",
@@ -13376,7 +14198,10 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "MEMORY STATS": {
     "summary": "Returns details about memory usage.",
@@ -13406,6 +14231,9 @@
           "type": "integer"
         },
         "replication.backlog": {
+          "type": "integer"
+        },
+        "replicas.repl.buffer": {
           "type": "integer"
         },
         "clients.slaves": {
@@ -13510,7 +14338,10 @@
           "additionalProperties": false
         }
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "MEMORY USAGE": {
     "summary": "Estimates the memory usage of a key.",
@@ -13566,6 +14397,10 @@
         "type": "integer",
         "optional": true
       }
+    ],
+    "acl_categories": [
+      "READ",
+      "SLOW"
     ]
   },
   "MEMORY": {
@@ -13573,7 +14408,10 @@
     "complexity": "Depends on subcommand.",
     "group": "server",
     "since": "4.0.0",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "MGET": {
     "summary": "Atomically returns the string values of one or more keys.",
@@ -13587,6 +14425,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "STRING"
     ],
     "command_tips": [
@@ -13666,8 +14506,10 @@
       "WRITE"
     ],
     "acl_categories": [
+      "DANGEROUS",
       "KEYSPACE",
-      "DANGEROUS"
+      "SLOW",
+      "WRITE"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -13833,7 +14675,10 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "MODULE LIST": {
     "summary": "Returns all loaded modules.",
@@ -13878,7 +14723,12 @@
           }
         }
       }
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "MODULE LOAD": {
     "summary": "Loads a module.",
@@ -13908,6 +14758,11 @@
         "optional": true,
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "MODULE LOADEX": {
@@ -13957,6 +14812,11 @@
         "multiple": true,
         "optional": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "MODULE UNLOAD": {
@@ -13981,6 +14841,11 @@
         "name": "name",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "MODULE": {
@@ -13988,7 +14853,10 @@
     "complexity": "Depends on subcommand.",
     "group": "server",
     "since": "4.0.0",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "MONITOR": {
     "summary": "Listens for all requests received by the server in real-time.",
@@ -14001,6 +14869,11 @@
       "NOSCRIPT",
       "LOADING",
       "STALE"
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "MOVE": {
@@ -14015,8 +14888,11 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "WRITE"
     ],
+    "get_dbid_args": "moveDbIdArgs",
     "key_specs": [
       {
         "flags": [
@@ -14074,7 +14950,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "STRING"
+      "SLOW",
+      "STRING",
+      "WRITE"
     ],
     "command_tips": [
       "REQUEST_POLICY:MULTI_SHARD",
@@ -14122,6 +15000,130 @@
       }
     ]
   },
+  "MSETEX": {
+    "summary": "Atomically creates or modifies the string values of one or more keys, and optionally set their expiration.",
+    "complexity": "O(N) where N is the number of keys to set.",
+    "group": "string",
+    "since": "9.1.0",
+    "arity": -4,
+    "function": "msetexCommand",
+    "command_flags": [
+      "WRITE",
+      "DENYOOM"
+    ],
+    "acl_categories": [
+      "STRING",
+      "WRITE",
+      "SLOW"
+    ],
+    "command_tips": [
+      "REQUEST_POLICY:MULTI_SHARD",
+      "RESPONSE_POLICY:ALL_SUCCEEDED"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "OW",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "keynum": {
+            "keynumidx": 0,
+            "firstkey": 1,
+            "step": 2
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "oneOf": [
+        {
+          "description": "No key was set.",
+          "const": 0
+        },
+        {
+          "description": "All the keys were set.",
+          "const": 1
+        }
+      ]
+    },
+    "arguments": [
+      {
+        "name": "numkeys",
+        "type": "integer"
+      },
+      {
+        "name": "data",
+        "type": "block",
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "key",
+            "type": "key",
+            "key_spec_index": 0
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "condition",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "nx",
+            "type": "pure-token",
+            "token": "NX"
+          },
+          {
+            "name": "xx",
+            "type": "pure-token",
+            "token": "XX"
+          }
+        ]
+      },
+      {
+        "name": "expiration",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "seconds",
+            "type": "integer",
+            "token": "EX"
+          },
+          {
+            "name": "milliseconds",
+            "type": "integer",
+            "token": "PX"
+          },
+          {
+            "name": "unix-time-seconds",
+            "type": "unix-time",
+            "token": "EXAT"
+          },
+          {
+            "name": "unix-time-milliseconds",
+            "type": "unix-time",
+            "token": "PXAT"
+          },
+          {
+            "name": "keepttl",
+            "type": "pure-token",
+            "token": "KEEPTTL"
+          }
+        ]
+      }
+    ]
+  },
   "MSETNX": {
     "summary": "Atomically modifies the string values of one or more keys only when all keys don't exist.",
     "complexity": "O(N) where N is the number of keys to set.",
@@ -14134,7 +15136,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "STRING"
+      "SLOW",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -14203,6 +15207,7 @@
       "ALLOW_BUSY"
     ],
     "acl_categories": [
+      "FAST",
       "TRANSACTION"
     ],
     "reply_schema": {
@@ -14221,7 +15226,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -14277,7 +15284,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -14326,7 +15335,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "SLOW"
     ],
     "reply_schema": {
       "type": "array",
@@ -14348,7 +15358,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -14396,7 +15408,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -14437,7 +15451,10 @@
     "complexity": "Depends on subcommand.",
     "group": "generic",
     "since": "2.2.3",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "PERSIST": {
     "summary": "Removes the expiration time of a key.",
@@ -14451,7 +15468,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -14511,7 +15530,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -14603,7 +15624,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -14689,7 +15712,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "READ"
     ],
     "key_specs": [
       {
@@ -14749,7 +15774,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "HYPERLOGLOG"
+      "FAST",
+      "HYPERLOGLOG",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -14809,7 +15836,9 @@
       "MAY_REPLICATE"
     ],
     "acl_categories": [
-      "HYPERLOGLOG"
+      "HYPERLOGLOG",
+      "READ",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -14861,7 +15890,11 @@
       "ADMIN"
     ],
     "acl_categories": [
-      "HYPERLOGLOG"
+      "ADMIN",
+      "DANGEROUS",
+      "HYPERLOGLOG",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -14907,7 +15940,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "HYPERLOGLOG"
+      "HYPERLOGLOG",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -14980,7 +16015,10 @@
       "ADMIN"
     ],
     "acl_categories": [
-      "HYPERLOGLOG"
+      "ADMIN",
+      "DANGEROUS",
+      "HYPERLOGLOG",
+      "SLOW"
     ],
     "reply_schema": {
       "const": "OK"
@@ -14998,7 +16036,8 @@
       "SENTINEL"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "FAST"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -15036,7 +16075,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "STRING"
+      "SLOW",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -15097,6 +16138,10 @@
         "type": "pattern",
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
     ]
   },
   "PSYNC": {
@@ -15120,6 +16165,11 @@
         "name": "offset",
         "type": "integer"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "PTTL": {
@@ -15140,7 +16190,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "READ"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -15219,7 +16271,11 @@
       "description": "The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.",
       "type": "integer",
       "minimum": 0
-    }
+    },
+    "acl_categories": [
+      "FAST",
+      "PUBSUB"
+    ]
   },
   "PUBSUB CHANNELS": {
     "summary": "Returns the active channels.",
@@ -15248,7 +16304,11 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
+    ]
   },
   "PUBSUB HELP": {
     "summary": "Returns helpful text about the different subcommands.",
@@ -15268,7 +16328,10 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "PUBSUB NUMPAT": {
     "summary": "Returns a count of unique pattern subscriptions.",
@@ -15287,7 +16350,11 @@
       "description": "The number of patterns all the clients are subscribed to.",
       "type": "integer",
       "minimum": 0
-    }
+    },
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
+    ]
   },
   "PUBSUB NUMSUB": {
     "summary": "Returns a count of subscribers to channels.",
@@ -15313,7 +16380,11 @@
     "reply_schema": {
       "description": "The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.",
       "type": "array"
-    }
+    },
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
+    ]
   },
   "PUBSUB SHARDCHANNELS": {
     "summary": "Returns the active shard channels.",
@@ -15342,7 +16413,11 @@
         "type": "string"
       },
       "uniqueItems": true
-    }
+    },
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
+    ]
   },
   "PUBSUB SHARDNUMSUB": {
     "summary": "Returns the count of subscribers of shard channels.",
@@ -15368,14 +16443,21 @@
     "reply_schema": {
       "description": "The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.",
       "type": "array"
-    }
+    },
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
+    ]
   },
   "PUBSUB": {
     "summary": "A container for Pub/Sub commands.",
     "complexity": "Depends on subcommand.",
     "group": "pubsub",
     "since": "2.8.0",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "PUNSUBSCRIBE": {
     "summary": "Stops listening to messages published to channels that match one or more patterns.",
@@ -15398,6 +16480,10 @@
         "optional": true,
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
     ]
   },
   "QUIT": {
@@ -15416,7 +16502,8 @@
       "NO_AUTH"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "FAST"
     ],
     "reply_schema": {
       "const": "OK"
@@ -15434,7 +16521,9 @@
       "TOUCHES_ARBITRARY_KEYS"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -15467,7 +16556,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "FAST"
     ],
     "reply_schema": {
       "const": "OK"
@@ -15486,7 +16576,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "FAST"
     ],
     "reply_schema": {
       "const": "OK"
@@ -15503,7 +16594,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -15578,7 +16671,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -15663,7 +16758,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "REPLICAOF": {
     "summary": "Configures a server as replica of another, or promotes it to a primary.",
@@ -15720,7 +16820,12 @@
       "description": "ReplicaOf status.",
       "type": "string",
       "pattern": "OK*"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "RESET": {
     "summary": "Resets the connection.",
@@ -15738,7 +16843,8 @@
       "ALLOW_BUSY"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "FAST"
     ],
     "reply_schema": {
       "const": "RESET"
@@ -15774,8 +16880,10 @@
       "ASKING"
     ],
     "acl_categories": [
+      "DANGEROUS",
       "KEYSPACE",
-      "DANGEROUS"
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -15870,8 +16978,10 @@
       "DENYOOM"
     ],
     "acl_categories": [
+      "DANGEROUS",
       "KEYSPACE",
-      "DANGEROUS"
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -15956,7 +17066,8 @@
     ],
     "acl_categories": [
       "ADMIN",
-      "DANGEROUS"
+      "DANGEROUS",
+      "FAST"
     ],
     "reply_schema": {
       "oneOf": [
@@ -16090,7 +17201,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "LIST"
+      "FAST",
+      "LIST",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -16158,7 +17271,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "LIST"
+      "LIST",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -16243,7 +17358,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "LIST"
+      "FAST",
+      "LIST",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -16302,7 +17419,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "LIST"
+      "FAST",
+      "LIST",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -16361,7 +17480,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "SET"
+      "FAST",
+      "SET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -16415,7 +17536,12 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "SCAN": {
     "summary": "Iterates over the key names in the database.",
@@ -16435,7 +17561,9 @@
       "TOUCHES_ARBITRARY_KEYS"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "KEYSPACE",
+      "READ",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT",
@@ -16499,6 +17627,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "SET"
     ],
     "key_specs": [
@@ -16538,14 +17668,15 @@
     "complexity": "O(1)",
     "group": "scripting",
     "since": "3.2.0",
-    "arity": 3,
+    "arity": -3,
     "container": "SCRIPT",
     "function": "scriptCommand",
     "command_flags": [
       "NOSCRIPT"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "arguments": [
       {
@@ -16568,6 +17699,12 @@
             "token": "NO"
           }
         ]
+      },
+      {
+        "name": "engine",
+        "type": "string",
+        "optional": true,
+        "since": "9.1.0"
       }
     ],
     "reply_schema": {
@@ -16587,7 +17724,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -16636,7 +17774,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_NODES",
@@ -16679,7 +17818,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "reply_schema": {
       "type": "array",
@@ -16702,7 +17842,8 @@
       "ALLOW_BUSY"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -16725,7 +17866,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_NODES",
@@ -16755,7 +17897,8 @@
       "STALE"
     ],
     "acl_categories": [
-      "SCRIPTING"
+      "SCRIPTING",
+      "SLOW"
     ],
     "arguments": [
       {
@@ -16773,7 +17916,10 @@
     "complexity": "Depends on subcommand.",
     "group": "scripting",
     "since": "2.6.0",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "SDIFF": {
     "summary": "Returns the difference of multiple sets.",
@@ -16786,7 +17932,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SET"
+      "READ",
+      "SET",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -16840,7 +17988,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "SET"
+      "SET",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -16907,13 +18057,16 @@
     "arity": 2,
     "function": "selectCommand",
     "command_flags": [
+      "ALLOW_BUSY",
       "LOADING",
       "STALE",
       "FAST"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "CONNECTION",
+      "FAST"
     ],
+    "get_dbid_args": "selectDbIdArgs",
     "reply_schema": {
       "const": "OK"
     },
@@ -16946,6 +18099,11 @@
         "name": "primary-name",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL CONFIG": {
@@ -17065,6 +18223,11 @@
           }
         ]
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL DEBUG": {
@@ -17112,6 +18275,11 @@
           }
         ]
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL FAILOVER": {
@@ -17148,6 +18316,11 @@
         "optional": true,
         "since": "9.0.0"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL FLUSHCONFIG": {
@@ -17166,7 +18339,12 @@
     "reply_schema": {
       "const": "OK",
       "description": "Force Sentinel to rewrite its configuration on disk, including the current Sentinel state."
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "SENTINEL GET-MASTER-ADDR-BY-NAME": {
     "summary": "Returns the port and address of a primary instance.",
@@ -17207,6 +18385,11 @@
         "name": "primary-name",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL GET-PRIMARY-ADDR-BY-NAME": {
@@ -17243,6 +18426,11 @@
         "name": "primary-name",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL HELP": {
@@ -17265,7 +18453,10 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "SENTINEL INFO-CACHE": {
     "summary": "Returns the cached `INFO` replies from the deployment's instances.",
@@ -17327,6 +18518,11 @@
         "type": "string",
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL IS-MASTER-DOWN-BY-ADDR": {
@@ -17391,6 +18587,11 @@
         "name": "runid",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL IS-PRIMARY-DOWN-BY-ADDR": {
@@ -17450,6 +18651,11 @@
         "name": "runid",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL MASTER": {
@@ -17482,6 +18688,11 @@
         "name": "primary-name",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL MASTERS": {
@@ -17511,7 +18722,12 @@
           "type": "string"
         }
       }
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "SENTINEL MONITOR": {
     "summary": "Starts monitoring.",
@@ -17546,6 +18762,11 @@
         "name": "quorum",
         "type": "integer"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL MYID": {
@@ -17564,7 +18785,12 @@
     "reply_schema": {
       "description": "Node ID of the sentinel instance.",
       "type": "string"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "SENTINEL PENDING-SCRIPTS": {
     "summary": "Returns information about pending scripts for Sentinel.",
@@ -17614,7 +18840,12 @@
           }
         }
       }
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "SENTINEL PRIMARIES": {
     "summary": "Returns a list of monitored primaries.",
@@ -17638,7 +18869,12 @@
           "type": "string"
         }
       }
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "SENTINEL PRIMARY": {
     "summary": "Returns the state of a primary instance.",
@@ -17665,6 +18901,11 @@
         "name": "primary-name",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL REMOVE": {
@@ -17688,6 +18929,11 @@
         "name": "primary-name",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL REPLICAS": {
@@ -17718,6 +18964,11 @@
         "name": "primary-name",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL RESET": {
@@ -17742,6 +18993,11 @@
         "name": "pattern",
         "type": "pattern"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL SENTINELS": {
@@ -17772,6 +19028,11 @@
         "name": "primary-name",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL SET": {
@@ -17810,6 +19071,11 @@
           }
         ]
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL SIMULATE-FAILURE": {
@@ -17860,6 +19126,11 @@
           }
         ]
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL SLAVES": {
@@ -17895,6 +19166,11 @@
         "name": "primary-name",
         "type": "string"
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SENTINEL": {
@@ -17907,6 +19183,11 @@
       "ADMIN",
       "SENTINEL",
       "ONLY_SENTINEL"
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SET": {
@@ -17944,7 +19225,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "STRING"
+      "SLOW",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -18083,7 +19366,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "BITMAP"
+      "BITMAP",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -18145,7 +19430,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "STRING"
+      "SLOW",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -18199,7 +19486,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STRING"
+      "FAST",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -18257,7 +19546,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "STRING"
+      "SLOW",
+      "STRING",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -18395,7 +19686,12 @@
     "reply_schema": {
       "description": "OK if ABORT was specified and shutdown was aborted. On successful shutdown, nothing is returned since the server quits and the connection is closed. On failure, an error is returned.",
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "SINTER": {
     "summary": "Returns the intersect of multiple sets.",
@@ -18408,7 +19704,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SET"
+      "READ",
+      "SET",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -18462,7 +19760,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SET"
+      "READ",
+      "SET",
+      "SLOW"
     ],
     "key_specs": [
       {
@@ -18520,7 +19820,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "SET"
+      "SET",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -18591,6 +19893,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "SET"
     ],
     "key_specs": [
@@ -18696,7 +20000,12 @@
       "description": "SlaveOf status.",
       "type": "string",
       "pattern": "OK*"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "SLOWLOG GET": {
     "summary": "Returns the slow log's entries.",
@@ -18768,6 +20077,11 @@
         "type": "integer",
         "optional": true
       }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "SLOWLOG HELP": {
@@ -18788,7 +20102,10 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "SLOWLOG LEN": {
     "summary": "Returns the number of entries in the slow log.",
@@ -18812,7 +20129,12 @@
       "type": "integer",
       "description": "Number of entries in the slow log.",
       "minimum": 0
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "SLOWLOG RESET": {
     "summary": "Clears all entries from the slow log.",
@@ -18833,14 +20155,22 @@
     ],
     "reply_schema": {
       "const": "OK"
-    }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
   },
   "SLOWLOG": {
     "summary": "A container for slow log commands.",
     "complexity": "Depends on subcommand.",
     "group": "server",
     "since": "2.2.12",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "SMEMBERS": {
     "summary": "Returns all members of a set.",
@@ -18853,7 +20183,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SET"
+      "READ",
+      "SET",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -18906,6 +20238,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "SET"
     ],
     "key_specs": [
@@ -18970,7 +20304,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "SET"
+      "FAST",
+      "SET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -19052,10 +20388,12 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SET",
-      "SORTEDSET",
+      "DANGEROUS",
       "LIST",
-      "DANGEROUS"
+      "READ",
+      "SET",
+      "SLOW",
+      "SORTEDSET"
     ],
     "key_specs": [
       {
@@ -19183,10 +20521,12 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "SET",
-      "SORTEDSET",
+      "DANGEROUS",
       "LIST",
-      "DANGEROUS"
+      "SET",
+      "SLOW",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -19348,7 +20688,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "SET"
+      "FAST",
+      "SET",
+      "WRITE"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -19455,7 +20797,11 @@
       "description": "The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.",
       "type": "integer",
       "minimum": 0
-    }
+    },
+    "acl_categories": [
+      "FAST",
+      "PUBSUB"
+    ]
   },
   "SRANDMEMBER": {
     "summary": "Get one or multiple random members from a set",
@@ -19474,7 +20820,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SET"
+      "READ",
+      "SET",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -19556,7 +20904,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "SET"
+      "FAST",
+      "SET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -19607,7 +20957,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SET"
+      "READ",
+      "SET",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -19713,6 +21065,10 @@
           }
         }
       }
+    ],
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
     ]
   },
   "STRLEN": {
@@ -19727,6 +21083,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "STRING"
     ],
     "key_specs": [
@@ -19781,6 +21139,10 @@
         "type": "string",
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
     ]
   },
   "SUBSTR": {
@@ -19794,6 +21156,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "STRING"
     ],
     "key_specs": [
@@ -19847,7 +21211,9 @@
       "READONLY"
     ],
     "acl_categories": [
-      "SET"
+      "READ",
+      "SET",
+      "SLOW"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT_ORDER"
@@ -19901,7 +21267,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "SET"
+      "SET",
+      "SLOW",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -19999,6 +21367,10 @@
           }
         }
       }
+    ],
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
     ]
   },
   "SWAPDB": {
@@ -20013,9 +21385,12 @@
       "FAST"
     ],
     "acl_categories": [
+      "DANGEROUS",
+      "FAST",
       "KEYSPACE",
-      "DANGEROUS"
+      "WRITE"
     ],
+    "get_dbid_args": "swapdbDbIdArgs",
     "arguments": [
       {
         "name": "index1",
@@ -20041,6 +21416,11 @@
       "ADMIN",
       "NO_MULTI",
       "NOSCRIPT"
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
     ]
   },
   "TIME": {
@@ -20067,7 +21447,10 @@
         "type": "string",
         "pattern": "[0-9]+"
       }
-    }
+    },
+    "acl_categories": [
+      "FAST"
+    ]
   },
   "TOUCH": {
     "summary": "Returns the number of existing keys out of those specified after updating the time they were last accessed.",
@@ -20081,7 +21464,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "READ"
     ],
     "command_tips": [
       "REQUEST_POLICY:MULTI_SHARD",
@@ -20138,7 +21523,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "READ"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -20200,7 +21587,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "READ"
     ],
     "key_specs": [
       {
@@ -20253,7 +21642,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "KEYSPACE"
+      "FAST",
+      "KEYSPACE",
+      "WRITE"
     ],
     "command_tips": [
       "REQUEST_POLICY:MULTI_SHARD",
@@ -20314,6 +21705,10 @@
         "optional": true,
         "multiple": true
       }
+    ],
+    "acl_categories": [
+      "PUBSUB",
+      "SLOW"
     ]
   },
   "UNWATCH": {
@@ -20331,6 +21726,7 @@
       "ALLOW_BUSY"
     ],
     "acl_categories": [
+      "FAST",
       "TRANSACTION"
     ],
     "reply_schema": {
@@ -20348,7 +21744,9 @@
       "BLOCKING"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "BLOCKING",
+      "CONNECTION",
+      "SLOW"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -20381,7 +21779,9 @@
       "BLOCKING"
     ],
     "acl_categories": [
-      "CONNECTION"
+      "BLOCKING",
+      "CONNECTION",
+      "SLOW"
     ],
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
@@ -20436,6 +21836,7 @@
       "ALLOW_BUSY"
     ],
     "acl_categories": [
+      "FAST",
       "TRANSACTION"
     ],
     "key_specs": [
@@ -20481,7 +21882,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STREAM"
+      "FAST",
+      "STREAM",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -20548,7 +21951,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STREAM"
+      "FAST",
+      "STREAM",
+      "WRITE"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -20702,7 +22107,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STREAM"
+      "FAST",
+      "STREAM",
+      "WRITE"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -20852,7 +22259,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STREAM"
+      "FAST",
+      "STREAM",
+      "WRITE"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -20988,7 +22397,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STREAM"
+      "FAST",
+      "STREAM",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -21047,7 +22458,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "STREAM"
+      "SLOW",
+      "STREAM",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -21125,7 +22538,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "STREAM"
+      "SLOW",
+      "STREAM",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -21186,7 +22601,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "STREAM"
+      "SLOW",
+      "STREAM",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -21241,7 +22658,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "STREAM"
+      "SLOW",
+      "STREAM",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -21299,6 +22718,7 @@
       "STALE"
     ],
     "acl_categories": [
+      "SLOW",
       "STREAM"
     ],
     "reply_schema": {
@@ -21327,7 +22747,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "STREAM"
+      "SLOW",
+      "STREAM",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -21391,7 +22813,10 @@
     "complexity": "Depends on subcommand.",
     "group": "stream",
     "since": "5.0.0",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "XINFO CONSUMERS": {
     "summary": "Returns a list of the consumers in a consumer group.",
@@ -21411,6 +22836,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "STREAM"
     ],
     "command_tips": [
@@ -21489,6 +22916,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "STREAM"
     ],
     "key_specs": [
@@ -21574,6 +23003,7 @@
       "STALE"
     ],
     "acl_categories": [
+      "SLOW",
       "STREAM"
     ],
     "reply_schema": {
@@ -21610,6 +23040,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "STREAM"
     ],
     "key_specs": [
@@ -21949,7 +23381,10 @@
     "complexity": "Depends on subcommand.",
     "group": "stream",
     "since": "5.0.0",
-    "arity": -2
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
+    ]
   },
   "XLEN": {
     "summary": "Return the number of messages in a stream.",
@@ -21963,6 +23398,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "STREAM"
     ],
     "key_specs": [
@@ -22014,6 +23451,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "STREAM"
     ],
     "command_tips": [
@@ -22172,6 +23611,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "STREAM"
     ],
     "key_specs": [
@@ -22252,6 +23693,9 @@
       "READONLY"
     ],
     "acl_categories": [
+      "BLOCKING",
+      "READ",
+      "SLOW",
       "STREAM"
     ],
     "key_specs": [
@@ -22358,7 +23802,10 @@
       "WRITE"
     ],
     "acl_categories": [
-      "STREAM"
+      "BLOCKING",
+      "SLOW",
+      "STREAM",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -22494,6 +23941,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "STREAM"
     ],
     "key_specs": [
@@ -22580,7 +24029,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "STREAM"
+      "FAST",
+      "STREAM",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -22648,7 +24099,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "STREAM"
+      "SLOW",
+      "STREAM",
+      "WRITE"
     ],
     "command_tips": [
       "NONDETERMINISTIC_OUTPUT"
@@ -22764,7 +24217,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "FAST",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -22891,6 +24346,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -22936,6 +24393,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -22990,6 +24449,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -23074,7 +24535,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "SLOW",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -23149,7 +24612,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "FAST",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -23204,6 +24669,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -23317,6 +24784,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -23376,7 +24845,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "SLOW",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -23481,6 +24952,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -23536,7 +25009,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "SLOW",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -23645,6 +25120,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -23708,7 +25185,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "FAST",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -23795,7 +25274,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "FAST",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -23881,6 +25362,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "command_tips": [
@@ -23986,6 +25469,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -24115,6 +25600,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -24194,6 +25681,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -24301,7 +25790,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "SLOW",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -24423,6 +25914,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -24507,7 +26000,9 @@
       "FAST"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "FAST",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -24558,7 +26053,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "SLOW",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -24611,7 +26108,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "SLOW",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -24664,7 +26163,9 @@
       "WRITE"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "SLOW",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
@@ -24717,6 +26218,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -24804,6 +26307,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -24883,6 +26388,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -24995,6 +26502,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -25078,6 +26587,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "command_tips": [
@@ -25164,6 +26675,8 @@
       "FAST"
     ],
     "acl_categories": [
+      "FAST",
+      "READ",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -25222,6 +26735,8 @@
       "READONLY"
     ],
     "acl_categories": [
+      "READ",
+      "SLOW",
       "SORTEDSET"
     ],
     "key_specs": [
@@ -25336,7 +26851,9 @@
       "DENYOOM"
     ],
     "acl_categories": [
-      "SORTEDSET"
+      "SLOW",
+      "SORTEDSET",
+      "WRITE"
     ],
     "key_specs": [
       {
