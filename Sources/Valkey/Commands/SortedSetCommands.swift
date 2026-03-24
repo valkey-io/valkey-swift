@@ -56,7 +56,7 @@ public struct BZMPOP: ValkeyCommand {
     }
 }
 
-/// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member is available otherwise.  Deletes the sorted set if the last element was popped.
+/// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
 @_documentation(visibility: internal)
 public struct BZPOPMAX: ValkeyCommand {
     @inlinable public static var name: String { "BZPOPMAX" }
@@ -1314,7 +1314,7 @@ extension ValkeyClientProtocol {
         try await execute(BZMPOP(timeout: timeout, keys: keys, where: `where`, count: count))
     }
 
-    /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member is available otherwise.  Deletes the sorted set if the last element was popped.
+    /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
     ///
     /// - Documentation: [BZPOPMAX](https://valkey.io/commands/bzpopmax)
     /// - Available: 5.0.0

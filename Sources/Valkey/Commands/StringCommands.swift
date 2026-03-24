@@ -415,6 +415,100 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
+/// Atomically creates or modifies the string values of one or more keys, and optionally set their expiration.
+@_documentation(visibility: internal)
+public struct MSETEX<Value: RESPStringRenderable>: ValkeyCommand {
+    public struct Data: RESPRenderable, Sendable, Hashable {
+        public var key: ValkeyKey
+        public var value: Value
+
+        @inlinable
+        public init(key: ValkeyKey, value: Value) {
+            self.key = key
+            self.value = value
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            key.respEntries + RESPRenderableBulkString(value).respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            key.encode(into: &commandEncoder)
+            RESPRenderableBulkString(value).encode(into: &commandEncoder)
+        }
+    }
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public enum Expiration: RESPRenderable, Sendable, Hashable {
+        case seconds(Int)
+        case milliseconds(Int)
+        case unixTimeSeconds(Date)
+        case unixTimeMilliseconds(Date)
+        case keepttl
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries
+            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).respEntries
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).respEntries
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
+            case .keepttl: "KEEPTTL".respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
+            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds):
+                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .keepttl: "KEEPTTL".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public typealias Response = Int
+
+    @inlinable public static var name: String { "MSETEX" }
+
+    public var numkeys: Int
+    public var data: [Data]
+    public var condition: Condition?
+    public var expiration: Expiration?
+
+    @inlinable public init(numkeys: Int, data: [Data], condition: Condition? = nil, expiration: Expiration? = nil) {
+        self.numkeys = numkeys
+        self.data = data
+        self.condition = condition
+        self.expiration = expiration
+    }
+
+    public var keysAffected: [ValkeyKey] { data.map { $0.key } }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("MSETEX", numkeys, data, condition, expiration)
+    }
+}
+
 /// Atomically modifies the string values of one or more keys only when all keys don't exist.
 @_documentation(visibility: internal)
 public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
@@ -871,6 +965,25 @@ extension ValkeyClientProtocol {
     @inlinable
     public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws(ValkeyClientError) {
         _ = try await execute(MSET(data: data))
+    }
+
+    /// Atomically creates or modifies the string values of one or more keys, and optionally set their expiration.
+    ///
+    /// - Documentation: [MSETEX](https://valkey.io/commands/msetex)
+    /// - Available: 9.1.0
+    /// - Complexity: O(N) where N is the number of keys to set.
+    /// - Returns: One of the following
+    ///     * 0: No key was set.
+    ///     * 1: All the keys were set.
+    @inlinable
+    @discardableResult
+    public func msetex<Value: RESPStringRenderable>(
+        numkeys: Int,
+        data: [MSETEX<Value>.Data],
+        condition: MSETEX<Value>.Condition? = nil,
+        expiration: MSETEX<Value>.Expiration? = nil
+    ) async throws(ValkeyClientError) -> Int {
+        try await execute(MSETEX(numkeys: numkeys, data: data, condition: condition, expiration: expiration))
     }
 
     /// Atomically modifies the string values of one or more keys only when all keys don't exist.
