@@ -1,3 +1,4 @@
+# prebuild-gc
 # This runs a valkey server with both non-TLS and TLS endpoints.
 # You need to run the script .dev/generate-test-certs.sh to generate the certificates needed for TLS
 
