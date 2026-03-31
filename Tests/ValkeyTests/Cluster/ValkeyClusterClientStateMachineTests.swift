@@ -49,7 +49,7 @@ struct ValkeyClusterClientStateMachineTests {
         let cluster = ValkeyTopologyElectionTests.createClusterWithReplicas()
 
         let firstNode = cluster.shards.randomElement()!.nodes.randomElement()!
-        let firstNodeDescription = ValkeyNodeDescription(description: firstNode, usingTLS: true)
+        let firstNodeDescription = try #require(ValkeyNodeDescription(description: firstNode, usingTLS: true))
         #expect(stateMachine.getInitialVoters().isEmpty)
 
         let firstNodeDiscoveredAction = stateMachine.updateValkeyServiceNodes([firstNodeDescription])

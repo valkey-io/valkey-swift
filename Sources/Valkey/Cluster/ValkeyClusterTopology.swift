@@ -19,10 +19,11 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStrin
         /// The health of the node
         package var health: ValkeyClusterDescription.Node.Health
 
-        package init(_ description: ValkeyClusterDescription.Node, usingTLS: Bool) {
+        package init(_ description: ValkeyClusterDescription.Node, usingTLS: Bool) throws(ValkeyClusterError) {
+            guard let port = (usingTLS ? description.tlsPort : description.port) else { throw .tlsUsageInconsistencyInClusterDescription }
             self.id = description.id
             self.endpoint = description.endpoint
-            self.port = (usingTLS ? description.tlsPort : description.port) ?? 6379
+            self.port = port
             self.health = description.health
         }
 
@@ -57,12 +58,12 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStrin
                             throw ValkeyClusterError.shardHasMultiplePrimaryNodes
                         }
                     case (.some, true), (.none, _):
-                        primary = Node(node, usingTLS: usingTLS)
+                        primary = try Node(node, usingTLS: usingTLS)
                         isFailedPrimary = (node.health != .online)
                     }
                 case .replica:
                     if node.health == .online {
-                        nodes.append(Node(node, usingTLS: usingTLS))
+                        nodes.append(try Node(node, usingTLS: usingTLS))
                     }
                 }
             }

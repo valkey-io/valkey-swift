@@ -729,18 +729,9 @@ struct HashSlotShardMapTests {
             ]
         )
 
-        try map.updateCluster(ValkeyClusterTopology(ValkeyClusterDescription([shard]), usingTLS: true))
-
-        // Verify the mapping correctly handles nil ports
-        let expectedPrimary = ValkeyNodeID(endpoint: "primary1.example.com", port: 6)
-        let expectedReplica1 = ValkeyNodeID(endpoint: "replica1.example.com", port: 8)
-        let expectedReplica2 = ValkeyNodeID(endpoint: "replica2.example.com", port: 6379)  // Should default to 6379
-
-        let shardNodes = map[50]!
-        #expect(shardNodes.primary == expectedPrimary)
-        #expect(shardNodes.replicas.count == 2)
-        #expect(shardNodes.replicas.contains(expectedReplica1))
-        #expect(shardNodes.replicas.contains(expectedReplica2))
+        #expect(throws: ValkeyClusterError.tlsUsageInconsistencyInClusterDescription) {
+            try map.updateCluster(ValkeyClusterTopology(ValkeyClusterDescription([shard]), usingTLS: true))
+        }
     }
 
     func makeExampleCusterWithNShardsAndMReplicasPerShard(shards: Int, replicas: Int) -> ValkeyClusterDescription {

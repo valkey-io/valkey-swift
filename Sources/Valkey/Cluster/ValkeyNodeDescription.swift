@@ -70,9 +70,10 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     /// - Parameter description: A `ValkeyClusterDescription.Node` instance.
     /// - Note: If both TLS and regular ports are available, the TLS port takes precedence.
     ///         If no port is specified, the default Valkey port (6379) is used.
-    package init(description: ValkeyClusterDescription.Node, usingTLS: Bool) {
+    package init?(description: ValkeyClusterDescription.Node, usingTLS: Bool) {
+        guard let port = (usingTLS ? description.tlsPort : description.port) else { return nil }
         self.endpoint = description.endpoint
-        self.port = (usingTLS ? description.tlsPort : description.port) ?? 6379
+        self.port = port
     }
 
     /// Creates a node description from a redirection error.
