@@ -38,6 +38,13 @@ struct App {
         )
         async let _ = valkeyClient.run()
 
+        // check we can connect to the valkey database
+        do {
+            try await valkeyClient.ping()
+        } catch {
+            print("Failed to connect.")
+            return
+        }
         while true {
             print("> ", terminator: "")
             guard let input = readLine() else {
