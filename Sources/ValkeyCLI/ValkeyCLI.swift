@@ -43,6 +43,7 @@ struct App {
             try await valkeyClient.ping()
         } catch {
             print("Failed to connect.")
+            print("\(error)")
             return
         }
         while true {
