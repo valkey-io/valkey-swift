@@ -46,9 +46,13 @@ package struct ValkeyClusterClientStateMachineConfiguration {
     /// The default duration between starts of cluster refreshes, if the previous refresh was successful
     package var defaultClusterRefreshInterval: Duration
 
-    package init(circuitBreakerDuration: Duration, defaultClusterRefreshInterval: Duration) {
+    /// Are we using TLS ports
+    package var usingTLS: Bool
+
+    package init(circuitBreakerDuration: Duration, defaultClusterRefreshInterval: Duration, usingTLS: Bool) {
         self.circuitBreakerDuration = circuitBreakerDuration
         self.defaultClusterRefreshInterval = defaultClusterRefreshInterval
+        self.usingTLS = usingTLS
     }
 }
 
@@ -755,10 +759,11 @@ where
 
             case .refreshing:
                 let newShards = description.shards
+                let usingTLS = self.configuration.usingTLS
                 let poolActions = self.runningClients.updateNodes(
                     newShards.lazy.flatMap {
                         $0.nodes.lazy.compactMap {
-                            if $0.health != .fail { ValkeyNodeDescription(description: $0) } else { nil }
+                            if $0.health != .fail { ValkeyNodeDescription(description: $0, usingTLS: usingTLS) } else { nil }
                         }
                     },
                     removeUnmentionedPools: false

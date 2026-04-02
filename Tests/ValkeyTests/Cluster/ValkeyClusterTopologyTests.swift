@@ -100,8 +100,8 @@ struct ValkeyClusterTopologyTests {
         copy1.shards[0].slots = description.shards[0].slots.reversed()
         copy1.shards[1].slots = description.shards[1].slots.reversed()
 
-        let candidate1 = try ValkeyClusterTopology(description).topologyHashValue
-        let candidate2 = try ValkeyClusterTopology(copy1).topologyHashValue
+        let candidate1 = try ValkeyClusterTopology(description, usingTLS: true).topologyHashValue
+        let candidate2 = try ValkeyClusterTopology(copy1, usingTLS: true).topologyHashValue
 
         #expect(candidate1 == candidate2)
     }
@@ -150,7 +150,7 @@ struct ValkeyClusterTopologyTests {
             )
         ])
 
-        #expect(throws: ValkeyClusterError.shardHasMultiplePrimaryNodes) { try ValkeyClusterTopology(description) }
+        #expect(throws: ValkeyClusterError.shardHasMultiplePrimaryNodes) { try ValkeyClusterTopology(description, usingTLS: true) }
     }
 
     @Test("No primary node for a shard throws")
@@ -197,7 +197,7 @@ struct ValkeyClusterTopologyTests {
             )
         ])
 
-        #expect(throws: ValkeyClusterError.shardIsMissingPrimaryNode) { try ValkeyClusterTopology(description) }
+        #expect(throws: ValkeyClusterError.shardIsMissingPrimaryNode) { try ValkeyClusterTopology(description, usingTLS: true) }
     }
 
     @Test("Failover with one failed and one online primary succeeds")
@@ -244,7 +244,7 @@ struct ValkeyClusterTopologyTests {
             )
         ])
         // Should not throw - this is a valid failover scenario
-        let candidate = try ValkeyClusterTopology(description)
+        let candidate = try ValkeyClusterTopology(description, usingTLS: true)
 
         // Verify it selected the online primary (node3)
         #expect(candidate.shards.count == 1)

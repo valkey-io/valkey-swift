@@ -126,7 +126,8 @@ public final class ValkeyClusterClient: Sendable {
         let stateMachine = StateMachine(
             configuration: .init(
                 circuitBreakerDuration: configuration.clusterConsensusCircuitBreaker,
-                defaultClusterRefreshInterval: configuration.clusterRefreshInterval
+                defaultClusterRefreshInterval: configuration.clusterRefreshInterval,
+                usingTLS: self.configuration.client.tls.isEnabled
             ),
             poolFactory: factory,
             clock: self.clock
@@ -1148,7 +1149,7 @@ public final class ValkeyClusterClient: Sendable {
                 switch result {
                 case .success((let description, let nodeID)):
                     do {
-                        let topology = try ValkeyClusterTopology(description)
+                        let topology = try ValkeyClusterTopology(description, usingTLS: self.configuration.client.tls.isEnabled)
                         let metrics = election.voteReceived(for: topology, from: nodeID)
 
                         self.logger.debug(

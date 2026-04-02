@@ -220,7 +220,7 @@ struct ValkeyClientTests {
             addresses.insert(String(address))
             address = try #require(await client.get("$address").map { String($0) })
             addresses.insert(String(address))
-            #expect(addresses == ["127.0.0.1:9002", "127.0.0.1:9001"])
+            #expect(addresses == Set(["127.0.0.1:9002", "127.0.0.1:9001"]))
         }
     }
 
