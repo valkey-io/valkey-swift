@@ -67,7 +67,9 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     /// This initializer converts a `ValkeyClusterDescription.Node` to a `ValkeyNodeDescription`,
     /// handling the appropriate mapping of fields and setting default values when necessary.
     ///
-    /// - Parameter description: A `ValkeyClusterDescription.Node` instance.
+    /// - Parameters
+    ///   - description: A `ValkeyClusterDescription.Node` instance.
+    ///   - useTLS: Should we use the tls or non-tls port from the description
     /// - Note: If both TLS and regular ports are available, the TLS port takes precedence.
     ///         If no port is specified, the default Valkey port (6379) is used.
     package init?(description: ValkeyClusterDescription.Node, usingTLS: Bool) {

@@ -103,7 +103,9 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStrin
     ///
     /// Filters out unused data, sorts shards by slot start and sorts replicas in a shard by address
     ///
-    /// - Parameter description: ValkeyClusterDescription returned by CLUSTER SHARDS
+    /// - Parameters
+    ///   - description: ValkeyClusterDescription returned by CLUSTER SHARDS
+    ///   - useTLS: Should we use the tls or non-tls port from the description
     /// - Throws: ValkeyClusterError.shardHasMultiplePrimaryNodes if a shard has multiple online primaries.
     ///         ValkeyClusterError.shardIsMissingPrimaryNode if a shard has no primary
     package init(_ description: ValkeyClusterDescription, usingTLS: Bool) throws(ValkeyClusterError) {
