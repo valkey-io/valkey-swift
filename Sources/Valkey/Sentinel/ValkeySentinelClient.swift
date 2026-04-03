@@ -338,8 +338,8 @@ extension ValkeySentinelClient {
 }
 
 /// Sentinel instance
-struct SentinelInstance: RESPTokenDecodable {
-    enum Flag: Substring {
+package struct SentinelInstance: RESPTokenDecodable {
+    package enum Flag: Substring {
         case primary = "master"
         case replica = "slave"
         case sentinel
@@ -352,7 +352,7 @@ struct SentinelInstance: RESPTokenDecodable {
     let port: Int
     let flags: Set<Flag>
 
-    init(_ token: RESPToken) throws(RESPDecodeError) {
+    package init(_ token: RESPToken) throws(RESPDecodeError) {
         let flags: String
         (self.endpoint, self.port, flags) = try token.decodeMapValues("ip", "port", "flags", as: (String, Int, String).self)
         let splitFlags = flags.splitSequence(separator: ",")
