@@ -137,7 +137,7 @@ package final class ValkeySentinelClient: Sendable {
     }
 
     // get sentinel clients from statemachine
-    private func getSentinelClients() async throws -> [ValkeyNodeClient] {
+    package func getSentinelClients() async throws -> [ValkeyNodeClient] {
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
             switch self.stateMachine.withLock({ $0.waitForDiscovery(cont) }) {
             case .complete:

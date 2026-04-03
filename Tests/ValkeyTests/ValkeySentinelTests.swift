@@ -19,15 +19,6 @@ actor TestSentinelTopology {
         case replica
         case sentinel
     }
-    enum Flag: Substring {
-        case primary = "master"
-        case replica = "slave"
-        case sentinel
-        case disconnected
-        case s_down
-        // case o_down
-        case master_down
-    }
     struct Address: Hashable, CustomStringConvertible {
         let host: String
         let port: Int
@@ -36,7 +27,7 @@ actor TestSentinelTopology {
     }
     struct Node {
         var flags: Set<SentinelInstance.Flag>
-        var address: Address
+        let address: Address
 
         var respValue: RESP3Value {
             .map([
@@ -51,12 +42,28 @@ actor TestSentinelTopology {
         var primary: Node
         var replicas: [Node]
         var keyValueMap: [String: String]
+
+        mutating func editNode(address: Address, operation: (inout Node) -> Void) {
+            for index in self.sentinels.indices {
+                if self.sentinels[index].address == address {
+                    operation(&self.sentinels[index])
+                }
+            }
+            if self.primary.address == address {
+                operation(&self.primary)
+            }
+            for index in self.replicas.indices {
+                if self.replicas[index].address == address {
+                    operation(&self.replicas[index])
+                }
+            }
+        }
     }
 
     var namedPrimaries: [String: Topology]
-    private(set) var addressMap: [Address: (role: Role, name: String)]
+    private(set) var addressMap: [Address: (role: Role, name: String, flags: Set<SentinelInstance.Flag>)]
 
-    init(primaries: [String: (sentinels: [Address], primary: Address, replicas: [Address])]) async {
+    init(_ primaries: [String: (sentinels: [Address], primary: Address, replicas: [Address])]) async {
         self.namedPrimaries = primaries.mapValues {
             .init(
                 sentinels: $0.sentinels.map { .init(flags: [.sentinel], address: $0) },
@@ -73,13 +80,21 @@ actor TestSentinelTopology {
         self.addressMap = [:]
         for (key, value) in namedPrimaries {
             for sentinel in value.sentinels {
-                self.addressMap[sentinel.address] = (role: .sentinel, name: key)
+                self.addressMap[sentinel.address] = (role: .sentinel, name: key, flags: sentinel.flags)
             }
-            self.addressMap[value.primary.address] = (role: .primary, name: key)
+            self.addressMap[value.primary.address] = (role: .primary, name: key, flags: value.primary.flags)
             for replica in value.replicas {
-                self.addressMap[replica.address] = (role: .replica, name: key)
+                self.addressMap[replica.address] = (role: .replica, name: key, flags: replica.flags)
             }
         }
+    }
+
+    func shutdownNode(address: Address) {
+        guard let details = self.addressMap[address] else { return }
+        self.namedPrimaries[details.name]?.editNode(address: address) { node in
+            node.flags.insert(.disconnected)
+        }
+        self.updateAddressMap()
     }
 
     func setKey(primary: String, key: String, value: String) {
@@ -102,6 +117,7 @@ actor TestSentinelTopology {
     /// Add Valkey node to mock connections
     func addNode(to mockConnections: MockServerConnections, address: Address, logger: Logger) async {
         guard let addressDetails = self.addressMap[address] else { return }
+        guard addressDetails.flags.intersection([.disconnected, .s_down]).isEmpty else { return }
 
         switch addressDetails.role {
         case .primary:
@@ -216,7 +232,7 @@ struct ValkeySentinelTests {
     var healthyThreeSentinelOnePrimaryTwoReplicas: TestSentinelTopology {
         get async {
             await .init(
-                primaries: [
+                [
                     "TestPrimary": (
                         sentinels: [
                             .init(host: "127.0.0.1", port: 16000),
@@ -225,7 +241,16 @@ struct ValkeySentinelTests {
                         ],
                         primary: .init(host: "127.0.0.1", port: 9000),
                         replicas: [.init(host: "127.0.0.1", port: 9001), .init(host: "127.0.0.1", port: 9002)]
-                    )
+                    ),
+                    "TestPrimary2": (
+                        sentinels: [
+                            .init(host: "127.0.0.1", port: 16010),
+                            .init(host: "127.0.0.1", port: 16011),
+                            .init(host: "127.0.0.1", port: 16012),
+                        ],
+                        primary: .init(host: "127.0.0.1", port: 9100),
+                        replicas: [.init(host: "127.0.0.1", port: 9101), .init(host: "127.0.0.1", port: 9102)]
+                    ),
                 ]
             )
         }
@@ -278,6 +303,16 @@ struct ValkeySentinelTests {
             #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
             #expect(nodes.replicas == [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9002)])
         }
+        try await withValkeySentinelClient(
+            primaryName: "TestPrimary2",
+            address: .hostname("127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            let nodes = try await client.getNodes()
+            #expect(nodes.primary == .hostname("127.0.0.1", port: 9100))
+            #expect(nodes.replicas == [.hostname("127.0.0.1", port: 9101), .hostname("127.0.0.1", port: 9102)])
+        }
     }
 
     @Test
@@ -297,6 +332,102 @@ struct ValkeySentinelTests {
             await #expect(throws: ValkeySentinelError.sentinelUnknownPrimary) {
                 _ = try await client.getNodes()
             }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testTwoSentinels() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await TestSentinelTopology([
+            "TwoSentinels": (
+                sentinels: [.init(host: "127.0.0.1", port: 16000), .init(host: "127.0.0.1", port: 16001)],
+                primary: .init(host: "127.0.0.1", port: 9000),
+                replicas: []
+            )
+        ])
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeySentinelClient(
+            primaryName: "TwoSentinels",
+            address: .hostname("127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            let nodes = try await client.getNodes()
+            #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
+            #expect(nodes.replicas == [])
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testOneSentinel() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await TestSentinelTopology([
+            "OneSentinel": (
+                sentinels: [.init(host: "127.0.0.1", port: 16000)],
+                primary: .init(host: "127.0.0.1", port: 9000),
+                replicas: []
+            )
+        ])
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeySentinelClient(
+            primaryName: "OneSentinel",
+            address: .hostname("127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            let nodes = try await client.getNodes()
+            #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
+            #expect(nodes.replicas == [])
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testShutdownSentinel() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyThreeSentinelOnePrimaryTwoReplicas
+        await topology.shutdownNode(address: .init(host: "127.0.0.1", port: 16001))
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeySentinelClient(
+            primaryName: "TestPrimary",
+            address: .hostname("127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            let nodes = try await client.getNodes()
+            #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
+            #expect(nodes.replicas == [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9002)])
+            let sentinels = try await client.getSentinelClients()
+            #expect(Set(sentinels.map { $0.serverAddress }) == Set([.hostname("127.0.0.1", port: 16000), .hostname("127.0.0.1", port: 16002)]))
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testShutdownReplica() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyThreeSentinelOnePrimaryTwoReplicas
+        await topology.shutdownNode(address: .init(host: "127.0.0.1", port: 9001))
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeySentinelClient(
+            primaryName: "TestPrimary",
+            address: .hostname("127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            let nodes = try await client.getNodes()
+            #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
+            #expect(nodes.replicas == [.hostname("127.0.0.1", port: 9002)])
         }
     }
 }
