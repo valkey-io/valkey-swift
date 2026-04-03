@@ -32,9 +32,3 @@ package struct ValkeyNodeID: Hashable, Sendable {
         self.port = port
     }
 }
-
-extension ValkeyClusterDescription.Node {
-    var nodeID: ValkeyNodeID {
-        ValkeyNodeID(endpoint: self.endpoint, port: self.tlsPort ?? self.port ?? 6379)
-    }
-}

@@ -67,12 +67,15 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     /// This initializer converts a `ValkeyClusterDescription.Node` to a `ValkeyNodeDescription`,
     /// handling the appropriate mapping of fields and setting default values when necessary.
     ///
-    /// - Parameter description: A `ValkeyClusterDescription.Node` instance.
+    /// - Parameters
+    ///   - description: A `ValkeyClusterDescription.Node` instance.
+    ///   - useTLS: Should we use the tls or non-tls port from the description
     /// - Note: If both TLS and regular ports are available, the TLS port takes precedence.
     ///         If no port is specified, the default Valkey port (6379) is used.
-    package init(description: ValkeyClusterDescription.Node) {
+    package init?(description: ValkeyClusterDescription.Node, usingTLS: Bool) {
+        guard let port = (usingTLS ? description.tlsPort : description.port) else { return nil }
         self.endpoint = description.endpoint
-        self.port = description.tlsPort ?? description.port ?? 6379
+        self.port = port
     }
 
     /// Creates a node description from a redirection error.
@@ -83,17 +86,5 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     package init(redirectionError: ValkeyClusterRedirectionError) {
         self.endpoint = redirectionError.endpoint
         self.port = redirectionError.port
-    }
-
-    /// Determines whether this node description matches a given cluster node description.
-    ///
-    /// This method compares the essential connection properties of this node with
-    /// another node description to determine if they refer to the same logical node.
-    ///
-    /// - Parameter other: The `ValkeyClusterDescription.Node` to compare against.
-    /// - Returns: `true` if the nodes match (refer to the same logical node), otherwise `false`.
-    func matches(_ other: ValkeyClusterDescription.Node) -> Bool {
-        self.endpoint == other.endpoint
-            && self.port == other.tlsPort ?? other.port ?? 6379
     }
 }

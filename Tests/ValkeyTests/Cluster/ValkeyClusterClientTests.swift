@@ -27,7 +27,14 @@ actor TestCluster {
     struct Shard {
         struct Node {
             var address: Address
+            var tlsEnabled: Bool
             var health: ValkeyClusterDescription.Node.Health
+
+            init(address: TestCluster.Address, tlsEnabled: Bool = false, health: ValkeyClusterDescription.Node.Health = .online) {
+                self.address = address
+                self.tlsEnabled = tlsEnabled
+                self.health = health
+            }
         }
         var hashKeyRanges: [ClosedRange<UInt16>]
         var primary: Node
@@ -39,8 +46,18 @@ actor TestCluster {
             replicas: [TestCluster.Address]
         ) {
             self.hashKeyRanges = hashKeyRanges
-            self.primary = .init(address: primary, health: .online)
-            self.replicas = replicas.map { .init(address: $0, health: .online) }
+            self.primary = .init(address: primary, tlsEnabled: false, health: .online)
+            self.replicas = replicas.map { .init(address: $0, tlsEnabled: false, health: .online) }
+        }
+
+        init(
+            hashKeyRanges: [ClosedRange<UInt16>],
+            primary: Node,
+            replicas: [Node]
+        ) {
+            self.hashKeyRanges = hashKeyRanges
+            self.primary = primary
+            self.replicas = replicas
         }
 
         mutating func failover() {
@@ -86,7 +103,8 @@ actor TestCluster {
             var nodes: [RESP3Value] = [
                 .map([
                     .bulkString("id"): .bulkString(String(primary.address.hashValue)),
-                    .bulkString("port"): .number(Int64(primary.address.port)),
+                    .bulkString("port"): primary.tlsEnabled ? .null : .number(Int64(primary.address.port)),
+                    .bulkString("tls-port"): primary.tlsEnabled ? .number(Int64(primary.address.port)) : .null,
                     .bulkString("ip"): .bulkString(primary.address.host),
                     .bulkString("endpoint"): .bulkString(primary.address.host),
                     .bulkString("role"): .bulkString("master"),
@@ -98,7 +116,8 @@ actor TestCluster {
                 nodes.append(
                     .map([
                         .bulkString("id"): .bulkString(String(replica.address.hashValue)),
-                        .bulkString("port"): .number(Int64(replica.address.port)),
+                        .bulkString("port"): replica.tlsEnabled ? .null : .number(Int64(replica.address.port)),
+                        .bulkString("tls-port"): replica.tlsEnabled ? .number(Int64(replica.address.port)) : .null,
                         .bulkString("ip"): .bulkString(replica.address.host),
                         .bulkString("endpoint"): .bulkString(replica.address.host),
                         .bulkString("role"): .bulkString("replica"),
@@ -316,6 +335,45 @@ struct ValkeyClusterClientTests {
             #expect(value.map { String($0) } == "127.0.0.1:16005")
             value = try await client.set("$address{4}", value: "test")
             #expect(value.map { String($0) } == "127.0.0.1:16004")
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testTLSConnectionThrowsError() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await TestCluster(shards: [
+            TestCluster.Shard(
+                hashKeyRanges: [0...5460],
+                primary: .init(host: "127.0.0.1", port: 16000),
+                replicas: [.init(host: "127.0.0.1", port: 16001)]
+            ),
+            TestCluster.Shard(
+                hashKeyRanges: [5461...10922],
+                primary: .init(host: "127.0.0.1", port: 16002),
+                replicas: [.init(host: "127.0.0.1", port: 16003)]
+            ),
+            TestCluster.Shard(
+                hashKeyRanges: [10923...16383],
+                primary: .init(address: .init(host: "127.0.0.1", port: 16004), tlsEnabled: true),
+                replicas: [.init(address: .init(host: "127.0.0.1", port: 16005))]
+            ),
+        ])
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            configuration: .init(clusterConsensusCircuitBreaker: .seconds(2)),
+            logger: logger
+        ) { client in
+            let error = await #expect(throws: ValkeyClientError.self) {
+                _ = try await client.get("$address{1}")
+            }
+            let clusterError = try #require(error?.underlyingError as? ValkeyClusterError)
+            // would be good to return the inconsistent TLS error, but that will require some additional work
+            #expect(clusterError == .clusterIsUnavailable)
         }
     }
 

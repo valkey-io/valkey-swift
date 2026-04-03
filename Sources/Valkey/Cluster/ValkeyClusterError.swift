@@ -25,6 +25,7 @@ public struct ValkeyClusterError: Error, Equatable {
         case clientRequestCancelled
         case waitedForDiscoveryAfterMovedErrorThreeTimes
         case pipelinedResultNotReturned
+        case tlsUsageInconsistencyInClusterDescription
     }
     private let value: Internal
     private init(_ value: Internal) {
@@ -61,5 +62,10 @@ public struct ValkeyClusterError: Error, Equatable {
     static public var waitedForDiscoveryAfterMovedErrorThreeTimes: Self { .init(.waitedForDiscoveryAfterMovedErrorThreeTimes) }
     /// Pipelined result not returned. If you receive this, it is an internal error and should be reported as a bug
     static public var _pipelinedResultNotReturned: Self { .init(.pipelinedResultNotReturned) }
+    /// CLUSTER SHARD command reports TLS usage inconsistent with client
+    static public var tlsUsageInconsistencyInClusterDescription: Self { .init(.tlsUsageInconsistencyInClusterDescription) }
+}
 
+extension ValkeyClusterError: CustomStringConvertible {
+    public var description: String { "ValkeyClusterError(\(self.value))" }
 }
