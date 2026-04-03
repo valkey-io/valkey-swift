@@ -57,7 +57,7 @@ package final class ValkeySentinelClient: Sendable {
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
     }
 
-    /// Run ValkeyClient connection pool
+    /// Run ValkeySentinelClient connection pool, and other supporting processes
     package func run() async {
         self.queueAction(.runSentinelDiscovery(runNodeDiscover: true))
 
@@ -71,9 +71,13 @@ package final class ValkeySentinelClient: Sendable {
         }
     }
 
+    /// Get primary and replica nodes from sentinel
     package func getNodes() async throws -> ValkeyNodeIDs<ValkeyServerAddress> {
+        // get list of sentinel clients
         let sentinels = try await self.getSentinelClients()
         return try await withThrowingTaskGroup(of: (index: Int, address: ValkeyNodeIDs<ValkeyServerAddress>).self) { group in
+            // For each sentinel add a task to get primary and replica nodes. The first node that returns
+            // values will be accepted
             for index in 0..<sentinels.count {
                 group.addTask {
                     let (primaryResult, replicaResults) = await sentinels[index].execute(
@@ -93,6 +97,7 @@ package final class ValkeySentinelClient: Sendable {
                     return (index, .init(primary: .hostname(primaryHost, port: primaryPort), replicas: replicas))
                 }
             }
+            // Add a timeout task
             group.addTask {
                 try await Task.sleep(for: .milliseconds(500))
                 throw CancellationError()
@@ -115,6 +120,7 @@ package final class ValkeySentinelClient: Sendable {
         }
     }
 
+    /// Subscribe to sentinel events
     package func subscribeEvents(command: some ValkeySubscribeCommand, _ operation: (ValkeyClientSubscription) async throws -> Void) async throws {
         try await withSubscriptionConnection { connection in
             try await connection._subscribe(command: command) { subscription in
@@ -123,6 +129,7 @@ package final class ValkeySentinelClient: Sendable {
         }
     }
 
+    // get sentinel clients from statemachine
     private func getSentinelClients() async throws -> [ValkeyNodeClient] {
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
             switch self.stateMachine.withLock({ $0.waitForDiscovery(cont) }) {
@@ -292,16 +299,19 @@ extension ValkeySentinelClient {
         }
     }
 
+    /// Get sentinel list returned by this sentinel
     private func getSentinelList(_ node: ValkeyNodeClient, nodeID: ValkeyNodeID) async throws -> ValkeySentinelNodeList {
         var sentinels = try await node.execute(SENTINEL.SENTINELS(primaryName: self.primaryName))
             .decode(as: [SentinelInstance].self)
             .compactMap {
+                // filter out disconnected or nodes flagged as `s_down`.
                 if !$0.flags.contains(.disconnected) && !$0.flags.contains(.s_down) {
                     ValkeyNodeDescription(endpoint: $0.endpoint, port: $0.port)
                 } else {
                     nil
                 }
             }
+        // include itself in the list
         sentinels.append(.init(endpoint: nodeID.endpoint, port: nodeID.port))
         return .init(sentinels)
     }

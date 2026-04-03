@@ -50,6 +50,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         self.runningClients = .init(poolFactory: poolFactory)
     }
 
+    /// Get initial list of voters for election process
     func getInitialVoters() -> [ValkeyTopologyVoter<ConnectionPool>] {
         switch self.state {
         case .unavailable, .shutdown:
@@ -65,6 +66,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         }
     }
 
+    /// Get list of all sentinel clients
     func getSentinelClients() -> [ConnectionPool] {
         switch self.state {
         case .unavailable, .shutdown:
@@ -85,6 +87,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         let clientsToShutdown: [ConnectionPool]
         let voters: [ValkeyTopologyVoter<ConnectionPool>]
     }
+    /// Update list of sentinels during election process
     mutating func updateSentinelNodes(_ nodes: ValkeySentinelNodeList) -> UpdateNodesAction {
         let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: false)
         return .init(
@@ -99,6 +102,8 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         let clientsToRun: [ConnectionPool]
         let clientsToShutdown: [ConnectionPool]
     }
+
+    /// Topology successfully discovered, update state
     mutating func topologyDiscoverySucceeded(_ nodes: ValkeySentinelNodeList) -> DiscoverySucceededAction {
         switch self.state {
         case .unavailable(let unavailableState):
@@ -136,6 +141,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         let waitersToFail: [WaiterToken]
     }
 
+    /// Topology discovery failed, update state and return waiters to fail
     mutating func topologyDiscoveryFailed(error: any Error) -> DiscoveryFailedAction {
         switch self.state {
         case .unavailable(let unavailableState):
