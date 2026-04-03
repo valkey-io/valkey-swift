@@ -36,6 +36,7 @@ package final class ValkeySentinelClient: Sendable {
     package init(
         primaryName: String,
         nodeDiscovery: any ValkeyNodeDiscovery,
+        customHandler: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil,
         configuration: ValkeySentinelClientConfiguration,
         eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger
@@ -46,7 +47,7 @@ package final class ValkeySentinelClient: Sendable {
             configuration: connectionFactory.configuration,
             connectionFactory: ValkeyConnectionFactory(
                 configuration: connectionFactory.configuration,
-                customHandler: nil
+                customHandler: customHandler
             ),
             eventLoopGroup: eventLoopGroup
         )
@@ -102,6 +103,7 @@ package final class ValkeySentinelClient: Sendable {
                 try await Task.sleep(for: .milliseconds(500))
                 throw CancellationError()
             }
+            var count = sentinels.count
             while let result = await group.nextResult() {
                 switch result {
                 case .success(let successfulResult):
@@ -111,6 +113,11 @@ package final class ValkeySentinelClient: Sendable {
                     case is CancellationError:
                         throw ValkeyClientError(.timeout)
                     default:
+                        count -= 1
+                        self.logger.debug("Sentinel get primary address failed", metadata: ["error": .string("\(error)")])
+                        if count == 0 {
+                            throw ValkeySentinelError.sentinelIsUnavailable
+                        }
                         break
                     }
                     break

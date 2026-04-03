@@ -9,4 +9,8 @@
 @available(valkeySwift 1.0, *)
 package struct ValkeySentinelClientConfiguration: Sendable {
     let clientConfiguration: ValkeyClientConfiguration
+
+    package init(clientConfiguration: ValkeyClientConfiguration) {
+        self.clientConfiguration = clientConfiguration
+    }
 }
