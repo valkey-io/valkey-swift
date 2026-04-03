@@ -32,6 +32,7 @@ var package = Package(
         .library(name: "ValkeyBloom", targets: ["ValkeyBloom"]),
         .library(name: "ValkeyJSON", targets: ["ValkeyJSON"]),
         .library(name: "ValkeySearch", targets: ["ValkeySearch"]),
+        .executable(name: "ValkeyCLI", targets: ["ValkeyCLI"]),
     ],
     traits: [
         .trait(name: "ServiceLifecycleSupport"),

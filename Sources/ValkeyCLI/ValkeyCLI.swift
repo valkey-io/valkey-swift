@@ -31,9 +31,21 @@ struct App {
     static func main() async throws {
         let (host, port) = getHostAndPort()
         print("Connecting to \(host):\(port)")
-        let valkeyClient = ValkeyClient(.hostname(host, port: port), logger: Logger(label: "ValkeyCLI"))
+        let valkeyClient = ValkeyClient(
+            .hostname(host, port: port),
+            configuration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(5))),
+            logger: Logger(label: "ValkeyCLI")
+        )
         async let _ = valkeyClient.run()
 
+        // check we can connect to the valkey database
+        do {
+            try await valkeyClient.ping()
+        } catch {
+            print("Failed to connect.")
+            print("\(error)")
+            return
+        }
         while true {
             print("> ", terminator: "")
             guard let input = readLine() else {
@@ -41,7 +53,6 @@ struct App {
                 return
             }
             let split = input.splitWithSpeechMarks(separator: " ")
-            print(split)
             guard let commandName = split.first else { continue }
             let command = ValkeyRawCommand(String(commandName), parameters: split.dropFirst().map { String($0) })
             do {
@@ -51,7 +62,8 @@ struct App {
                 if error.errorCode == .commandError {
                     print(error.message ?? "Unknown Error")
                 } else {
-                    throw error
+                    print("\(error.errorCode)\(error.message.map { ": \($0)" } ?? "")")
+                    return
                 }
             }
         }
