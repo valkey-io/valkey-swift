@@ -25,6 +25,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
             case respParsingError
             case respDecodeError
             case clusterError
+            case sentinelError
             case unrecognisedError
         }
 
@@ -59,11 +60,13 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
         public static var connectionCreationCircuitBreakerTripped: Self { .init(.connectionCreationCircuitBreakerTripped) }
         /// Found error while trying to parse RESP returned from server
         public static var respParsingError: Self { .init(.respParsingError) }
-        /// RESPToken decode error
+        /// RESPToken decode error, check the underlying error for more information
         public static var respDecodeError: Self { .init(.respDecodeError) }
-        /// Cluster error
+        /// Cluster error, check the underlying error for more information
         public static var clusterError: Self { .init(.clusterError) }
-        /// Unrecognised error
+        /// Sentinel error, check the underlying error for more information
+        public static var sentinelError: Self { .init(.sentinelError) }
+        /// Unrecognised error, check the underlying error for more information
         public static var unrecognisedError: Self { .init(.unrecognisedError) }
 
         /// The string representation of the error.
@@ -83,6 +86,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
             case .respParsingError: "Found error while trying to parse RESP returned from server."
             case .respDecodeError: "Error thrown while decoding a RESPToken."
             case .clusterError: "Cluster reported an error."
+            case .sentinelError: "Sentinel reported an error."
             case .unrecognisedError: "Unrecognised error."
             }
         }
