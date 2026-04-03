@@ -14,8 +14,8 @@
 /// results in the original key order.
 ///
 /// Conforming types must implement two requirements:
-/// - ``subCommand(for:)`` — produce a sub-command scoped to a subset of keys.
-/// - ``assemble(originalKeyCount:slotResults:)`` — merge per-slot results back
+/// - ``createSubCommand(for:)`` — produce a sub-command scoped to a subset of keys.
+/// - ``combineResults(originalKeyCount:slotResults:)`` — merge per-slot results back
 ///   into the full command response.
 @available(valkeySwift 1.0, *)
 public protocol ValkeyClusterMultiKeyCommand: ValkeyCommand {
@@ -25,18 +25,22 @@ public protocol ValkeyClusterMultiKeyCommand: ValkeyCommand {
     /// - Parameter indices: Positions into this command's full key list that
     ///   belong to a single hash slot.
     /// - Returns: A new command of the same type scoped to those keys.
-    func subCommand(for indices: [Int]) -> Self
+    func createSubCommand(for indices: [Int]) -> Self
 
-    /// Assembles per-slot sub-results into the final command response.
+    /// Combines per-slot raw RESP results into the final command response.
+    ///
+    /// Conforming types receive the raw ``RESPToken`` from each sub-command,
+    /// avoiding an intermediate conversion to the typed `Response`. This lets
+    /// implementations parse RESP directly and reduce allocations.
     ///
     /// - Parameters:
     ///   - originalKeyCount: Total number of keys in the original command.
     ///   - slotResults: One entry per slot, each containing the original key
-    ///     indices for that slot and the sub-command result.
-    /// - Returns: The fully assembled response in original key order.
+    ///     indices for that slot and the raw RESP result.
+    /// - Returns: The fully combined response in original key order.
     /// - Throws: ``ValkeyClientError`` if any sub-result is a failure.
-    static func assemble(
+    static func combineResults(
         originalKeyCount: Int,
-        slotResults: [(indices: [Int], result: Result<Self.Response, ValkeyClientError>)]
+        slotResults: [(indices: [Int], result: Result<RESPToken, ValkeyClientError>)]
     ) throws(ValkeyClientError) -> Self.Response
 }

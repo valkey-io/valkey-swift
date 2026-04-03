@@ -27,26 +27,33 @@ extension ValkeyClusterClient {
         let keys = command.keysAffected
         let partitions = partitionBySlot(keys: keys)
 
+        // Single-slot fast path: all keys hash to the same slot, so execute
+        // the original command directly via the standard code path.
+        // This avoids sub-command creation and result recombination.
+        if partitions.count <= 1 {
+            return try await executeSingleCommand(command)
+        }
+
         // Build one sub-command per slot, cast to the type-erased protocol.
-        let subCommands: [any ValkeyCommand] = partitions.map { command.subCommand(for: $0.indices) }
+        let subCommands: [any ValkeyCommand] = partitions.map { command.createSubCommand(for: $0.indices) }
 
         // Dispatch in parallel using the existing cross-node pipelining path.
         // Each sub-command contains only same-slot keys, so hashSlot() never
         // throws keysInCommandRequireMultipleHashSlots for sub-commands.
         let rawResults = await self.execute(subCommands)
 
-        // Map each raw Result<RESPToken, ValkeyClientError> to the typed Response.
+        // Pair each raw result with its original key indices for combineResults.
         let slotResults = partitions.enumerated().map { i, partition in
-            (indices: partition.indices, result: rawResults[i].convertFromRESP(to: Command.Response.self))
+            (indices: partition.indices, result: rawResults[i])
         }
 
-        return try Command.assemble(originalKeyCount: keys.count, slotResults: slotResults)
+        return try Command.combineResults(originalKeyCount: keys.count, slotResults: slotResults)
     }
 
-    // MARK: - Concrete mget / mset (shadow ValkeyClientProtocol extension methods)
+    // MARK: - Concrete mget (shadow ValkeyClientProtocol extension method)
     //
-    // These concrete methods are preferred over the protocol-extension defaults
-    // for static dispatch on ValkeyClusterClient. They call execute(_:) which
+    // This concrete method is preferred over the protocol-extension default
+    // for static dispatch on ValkeyClusterClient. It calls execute(_:) which
     // resolves — via static dispatch — to the constrained
     // execute<Command: ValkeyClusterMultiKeyCommand> overload above, enabling
     // transparent cross-slot scatter/gather.
@@ -65,44 +72,35 @@ extension ValkeyClusterClient {
         try await execute(MGET(keys: keys))
     }
 
-    /// Sets the string values of one or more keys, transparently routing
-    /// sub-commands across cluster nodes for keys in different hash slots.
-    ///
-    /// - Documentation: [MSET](https://valkey.io/commands/mset)
-    /// - Complexity: O(N) where N is the number of keys to set.
-    /// - Important: Cross-slot `MSET` is **not atomic**. Keys on different nodes
-    ///   may be written at different times. Use hash tags to co-locate keys that
-    ///   need to be set atomically.
-    /// - Parameter data: Key-value pairs to set.
-    /// - Throws: ``ValkeyClientError`` if any node fails. Keys already written
-    ///   to other nodes are **not** rolled back.
-    @inlinable
-    public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws(ValkeyClientError) {
-        _ = try await execute(MSET(data: data))
-    }
-
     // MARK: - Internal helpers
 
-    /// Groups key indices by hash slot, preserving insertion order of first occurrence.
+    /// Executes a single command via the standard ``ValkeyCommand`` code path.
     ///
-    /// - Returns: An array of `(indices, slot)` pairs, one per unique slot, in the
-    ///   order the slots were first encountered while iterating `keys`.
+    /// This trampoline exists because `execute<C: ValkeyClusterMultiKeyCommand>`
+    /// would otherwise recursively call itself — Swift overload resolution prefers
+    /// the more constrained overload. Inside this helper the compiler only sees
+    /// `Command: ValkeyCommand`, so it resolves to the base `execute` overload.
+    @usableFromInline
+    /* private */ func executeSingleCommand<Command: ValkeyCommand>(
+        _ command: Command
+    ) async throws(ValkeyClientError) -> Command.Response {
+        try await self.execute(command)
+    }
+
+    /// Groups key indices by hash slot.
+    ///
+    /// - Returns: An array of `(slot, indices)` pairs, one per unique slot.
     @usableFromInline
     /* private */ func partitionBySlot(
         keys: some Collection<ValkeyKey>
-    ) -> [(indices: [Int], slot: HashSlot)] {
-        var slotOrder: [HashSlot] = []
+    ) -> [(slot: HashSlot, indices: [Int])] {
         var slotIndices: [HashSlot: [Int]] = [:]
 
         for (i, key) in keys.enumerated() {
             let slot = HashSlot(key: key)
-            if slotIndices[slot] == nil {
-                slotOrder.append(slot)
-                slotIndices[slot] = []
-            }
-            slotIndices[slot]!.append(i)
+            slotIndices[slot, default: []].append(i)
         }
 
-        return slotOrder.map { (indices: slotIndices[$0]!, slot: $0) }
+        return slotIndices.map { (slot: $0.key, indices: $0.value) }
     }
 }

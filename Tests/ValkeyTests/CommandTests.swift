@@ -2977,6 +2977,58 @@ struct CommandTests {
             }
         }
     }
+
+    // MARK: - Multi-key cluster commands
+
+    struct MultiKeyCommands {
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func mgetScatterGather() throws {
+            // Simulate MGET with 4 keys split across 2 slots: [0, 2] and [1, 3].
+            let command = MGET(keys: ["a", "b", "c", "d"])
+
+            // createSubCommand picks the right keys for each slot.
+            let sub1 = command.createSubCommand(for: [0, 2])
+            #expect(sub1.keys == [ValkeyKey("a"), ValkeyKey("c")])
+            let sub2 = command.createSubCommand(for: [1, 3])
+            #expect(sub2.keys == [ValkeyKey("b"), ValkeyKey("d")])
+
+            // Simulate per-slot RESP responses (values match key names).
+            let slot1Response = RESPToken(.array([.bulkString("a"), .bulkString("c")]))
+            let slot2Response = RESPToken(.array([.null, .bulkString("d")]))
+
+            // combineResults reassembles in original key order.
+            let combined = try MGET.combineResults(
+                originalKeyCount: 4,
+                slotResults: [
+                    (indices: [0, 2], result: .success(slot1Response)),
+                    (indices: [1, 3], result: .success(slot2Response)),
+                ]
+            )
+            let values = Array(combined)
+            #expect(values.count == 4)
+            #expect(values[0].value == .bulkString(ByteBuffer(string: "a")))
+            #expect(values[1].value == .null)
+            #expect(values[2].value == .bulkString(ByteBuffer(string: "c")))
+            #expect(values[3].value == .bulkString(ByteBuffer(string: "d")))
+
+            // combineResults propagates errors from any slot.
+            #expect(throws: ValkeyClientError.self) {
+                try MGET.combineResults(
+                    originalKeyCount: 2,
+                    slotResults: [
+                        (indices: [0], result: .success(slot1Response)),
+                        (indices: [1], result: .failure(ValkeyClientError(.cancelled))),
+                    ]
+                )
+            }
+
+            // Empty keys produces empty result.
+            let empty = try MGET.combineResults(originalKeyCount: 0, slotResults: [])
+            #expect(empty.count == 0)
+        }
+    }
 }
 
 @available(valkeySwift 1.0, *)

@@ -746,58 +746,6 @@ struct ValkeyClusterClientTests {
             #expect(try String(tokens[1]) == "beta")
         }
     }
-
-    // MARK: - MSET cross-slot tests
-
-    @available(valkeySwift 1.0, *)
-    @Test
-    func testMSETCrossSlot() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
-        let cluster = await self.sixNodeHealthyCluster
-        let mockConnections = await cluster.mock(logger: logger)
-        async let _ = mockConnections.run()
-        try await withValkeyClusterClient(
-            (host: "127.0.0.1", port: 16000),
-            mockConnections: mockConnections,
-            logger: logger
-        ) { client in
-            // Set keys across three shards in one call
-            try await client.mset(data: [
-                .init(key: "mset{3}", value: "v3"),
-                .init(key: "mset{1}", value: "v1"),
-                .init(key: "mset{4}", value: "v4"),
-            ])
-
-            // Verify each key landed on its correct node via single-key GET
-            #expect(try await client.get("mset{3}").map { String($0) } == "v3")
-            #expect(try await client.get("mset{1}").map { String($0) } == "v1")
-            #expect(try await client.get("mset{4}").map { String($0) } == "v4")
-        }
-    }
-
-    @available(valkeySwift 1.0, *)
-    @Test
-    func testMSETSameSlot() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
-        let cluster = await self.sixNodeHealthyCluster
-        let mockConnections = await cluster.mock(logger: logger)
-        async let _ = mockConnections.run()
-        try await withValkeyClusterClient(
-            (host: "127.0.0.1", port: 16000),
-            mockConnections: mockConnections,
-            logger: logger
-        ) { client in
-            try await client.mset(data: [
-                .init(key: "a{1}", value: "alpha"),
-                .init(key: "b{1}", value: "beta"),
-            ])
-
-            #expect(try await client.get("a{1}").map { String($0) } == "alpha")
-            #expect(try await client.get("b{1}").map { String($0) } == "beta")
-        }
-    }
 }
 
 extension ClosedRange<UInt16> {
