@@ -11,13 +11,13 @@ Follow these steps to migrate an existing project from RediStack to Valkey Swift
 Valkey Swift offers several advantages over RediStack:
 
 - **Async/await** — All APIs use structured concurrency instead of `EventLoopFuture`.
-- **Connection pooling** — Built-in persistent connection pool with automatic management.
-- **Cluster support** — Native cluster mode with automatic routing, MOVED/ASK redirection, and topology refresh.
-- **RESP3 protocol** — Full RESP3 support, enabling features like client-side caching and multiple subscriptions on a single connection.
+- **Connection pooling** — A built-in connection pool provides persistent connections with automatic management.
+- **Cluster support** — The client natively supports cluster mode with automatic routing, MOVED/ASK redirection, and topology refresh.
+- **RESP3 protocol** — The client fully supports RESP3, enabling features like client-side caching and multiple subscriptions on a single connection.
 - **Typed commands** — Each command is a dedicated type with compile-time response type checking.
 - **Service lifecycle** — Both ``ValkeyClient`` and ``ValkeyClusterClient`` conform to `Service` from swift-service-lifecycle.
 
-## Update your package dependency
+## Update package dependencies
 
 Start by replacing the RediStack dependency in your `Package.swift`:
 
@@ -219,13 +219,13 @@ if let result = try getResult.get() {
 }
 ```
 
-For more details, see <doc:Pipelining>.
+See <doc:Pipelining>.
 
 ## Migrate transactions
 
 If your code uses transactions, replace raw `MULTI`/`EXEC` commands with the typed transaction API.
-RediStack has no typed transaction API.
-Valkey Swift provides a dedicated transaction API with typed results.
+RediStack has no equivalent.
+Valkey Swift provides dedicated transaction support with typed results.
 
 ```swift
 // Before (RediStack) — raw commands on a leased connection
@@ -249,7 +249,7 @@ try await client.withConnection { connection in
 }
 ```
 
-Valkey Swift also supports WATCH for check-and-set operations; for more information, see <doc:Transactions>.
+Valkey Swift also supports WATCH for check-and-set operations. See <doc:Transactions>.
 
 ## Migrate pub/sub
 
@@ -303,7 +303,7 @@ try await client.withConnection { connection in
 
 With RESP3, Valkey Swift supports running commands on the same connection as an active subscription.
 A single connection can also handle multiple subscriptions.
-For more details, see <doc:Pubsub>.
+See <doc:Pubsub>.
 
 ## Migrate error handling
 
@@ -394,7 +394,7 @@ let clusterClient = ValkeyClusterClient(
 )
 ```
 
-## Verify your migration
+## Verify the migration
 
 Use this checklist to track your migration progress:
 
