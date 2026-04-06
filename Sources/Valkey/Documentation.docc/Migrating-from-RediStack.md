@@ -176,7 +176,7 @@ let value: RESPBulkString? = try await client.get(key: "mykey")
 ### Handle typed return values
 
 RediStack returns `RESPValue`, an enum you destructure manually.
-Valkey Swift commands declare typed ``ValkeyCommand/Response`` types, so results decode automatically.
+Valkey Swift commands declare typed ``ValkeyCommand/Response`` types, so you get typed results without manual decoding.
 
 ```swift
 // Before (RediStack) — manual RESPValue handling
@@ -348,7 +348,7 @@ do {
 
 Finally, if you connect to a Redis or Valkey cluster, take advantage of native cluster support.
 RediStack doesn't support cluster mode.
-If you currently connect to a single node in a cluster or use an external discovery mechanism, replace that approach with ``ValkeyClusterClient``, which provides native cluster support:
+If you connect to a single node in a cluster or use an external discovery mechanism, replace that approach with ``ValkeyClusterClient``:
 
 ```swift
 let clusterClient = ValkeyClusterClient(
@@ -370,10 +370,10 @@ try await serviceGroup.run()
 
 ``ValkeyClusterClient`` automatically handles:
 
-- Hash slot routing — commands route to the correct node based on the key's hash slot.
-- MOVED/ASK redirection — the client follows redirects transparently.
-- Topology refresh — the client periodically discovers cluster changes.
-- Connection pooling per node — each node gets its own connection pool.
+- Hash slot routing — Commands route to the correct node based on the key's hash slot.
+- MOVED/ASK redirection — The client follows redirects transparently.
+- Topology refresh — The client periodically discovers cluster changes.
+- Connection pooling per node — Each node gets its own connection pool.
 
 ### Implement custom node discovery
 
