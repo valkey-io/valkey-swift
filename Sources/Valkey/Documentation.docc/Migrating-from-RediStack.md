@@ -162,16 +162,16 @@ let value: RESPBulkString? = try await client.get(key: "mykey")
 ### Review command signature differences
 
 | Operation | RediStack | Valkey Swift |
-|-----------|-----------|-------------|
-| SET | `client.set("key", to: value)` | `client.set(key: "key", value: value)` |
-| GET | `client.get("key", as: String.self)` | `client.get(key: "key")` |
-| DEL | `client.delete("key1", "key2")` | `client.del(keys: ["key1", "key2"])` |
-| EXISTS | `client.exists("key")` | `client.exists(keys: ["key"])` |
-| EXPIRE | `client.expire("key", after: .seconds(60))` | `client.expire(key: "key", seconds: 60)` |
-| LPUSH | `client.lpush(values, into: "list")` | `client.lpush("list", elements: values)` |
-| ZADD | `client.zadd([(element: "a", score: 1.0)], to: "set")` | `client.zadd("set", members: [.init(score: 1.0, member: "a")])` |
-| INCR | `client.increment("counter")` | `client.incr(key: "counter")` |
-| PUBLISH | `client.publish(msg, to: "chan")` | `client.publish(channel: "chan", message: msg)` |
+|-----------|-----------|--------------|
+| SET     | `client.set("key", to: value)`       | `client.set(key: "key", value: value)` |
+| GET     | `client.get("key", as: String.self)` | `client.get(key: "key")` |
+| DEL     | `client.delete("key1", "key2")`      | `client.del(keys: ["key1", "key2"])` |
+| EXISTS  | `client.exists("key")`               | `client.exists(keys: ["key"])` |
+| EXPIRE  | `client.expire("key", after: .seconds(60))` | `client.expire(key: "key", seconds: 60)` |
+| LPUSH   | `client.lpush(values, into: "list")` | `client.lpush("list", elements: values)` |
+| ZADD    | `client.zadd([(element: "a", score: 1.0)], to: "set")` | `client.zadd("set", members: [.init(score: 1.0, member: "a")])` |
+| INCR    | `client.increment("counter")`        | `client.incr(key: "counter")` |
+| PUBLISH | `client.publish(msg, to: "chan")`    | `client.publish(channel: "chan", message: msg)` |
 
 ### Handle typed return values
 
@@ -310,7 +310,7 @@ See <doc:Pubsub>.
 RediStack and Valkey Swift use different error types, so update your error-handling code.
 
 | RediStack | Valkey Swift | Notes |
-|-----------|-------------|-------|
+|-----------|--------------|-------|
 | `RedisError` | ``ValkeyClientError`` | Server-returned errors |
 | `RedisClientError.connectionClosed` | ``ValkeyClientError`` with `.connectionClosed` | Connection state errors |
 | `RedisConnectionPoolError.timedOutWaitingForConnection` | ``ValkeyClientError`` with `.timeout` | Pool timeout |
