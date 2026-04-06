@@ -20,26 +20,22 @@ extension ValkeyClusterClient {
     /// - Parameter command: A command conforming to ``ValkeyClusterMultiKeyCommand``.
     /// - Returns: The assembled command response in original key order.
     /// - Throws: ``ValkeyClientError`` if execution on any node fails.
-    @inlinable
-    public func execute<Command: ValkeyClusterMultiKeyCommand>(
+    package func execute<Command: ValkeyClusterMultiKeyCommand>(
         _ command: Command
     ) async throws(ValkeyClientError) -> Command.Response {
         let keys = command.keysAffected
+
         let partitions = partitionBySlot(keys: keys)
 
-        // Single-slot fast path: all keys hash to the same slot, so execute
-        // the original command directly via the standard code path.
-        // This avoids sub-command creation and result recombination.
+        // Single-slot fast path
         if partitions.count <= 1 {
             return try await executeSingleCommand(command)
         }
 
-        // Build one sub-command per slot, cast to the type-erased protocol.
+        // Build one sub-command per slot
         let subCommands: [any ValkeyCommand] = partitions.map { command.createSubCommand(for: $0.indices) }
 
         // Dispatch in parallel using the existing cross-node pipelining path.
-        // Each sub-command contains only same-slot keys, so hashSlot() never
-        // throws keysInCommandRequireMultipleHashSlots for sub-commands.
         let rawResults = await self.execute(subCommands)
 
         // Pair each raw result with its original key indices for combineResults.
@@ -67,7 +63,6 @@ extension ValkeyClusterClient {
     /// - Returns: A ``RESPToken/Array`` with values in the same order as `keys`.
     ///   Null tokens represent absent keys.
     /// - Throws: ``ValkeyClientError`` if any node fails.
-    @inlinable
     public func mget(keys: [ValkeyKey]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(MGET(keys: keys))
     }
@@ -80,8 +75,7 @@ extension ValkeyClusterClient {
     /// would otherwise recursively call itself — Swift overload resolution prefers
     /// the more constrained overload. Inside this helper the compiler only sees
     /// `Command: ValkeyCommand`, so it resolves to the base `execute` overload.
-    @usableFromInline
-    /* private */ func executeSingleCommand<Command: ValkeyCommand>(
+    private func executeSingleCommand<Command: ValkeyCommand>(
         _ command: Command
     ) async throws(ValkeyClientError) -> Command.Response {
         try await self.execute(command)
@@ -90,8 +84,7 @@ extension ValkeyClusterClient {
     /// Groups key indices by hash slot.
     ///
     /// - Returns: An array of `(slot, indices)` pairs, one per unique slot.
-    @usableFromInline
-    /* private */ func partitionBySlot(
+    private func partitionBySlot(
         keys: some Collection<ValkeyKey>
     ) -> [(slot: HashSlot, indices: [Int])] {
         var slotIndices: [HashSlot: [Int]] = [:]

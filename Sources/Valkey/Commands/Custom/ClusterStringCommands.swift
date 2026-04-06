@@ -13,7 +13,7 @@ import NIOCore
 @available(valkeySwift 1.0, *)
 extension MGET: ValkeyClusterMultiKeyCommand {
 
-    public func createSubCommand(for indices: [Int]) -> MGET {
+    package func createSubCommand(for indices: [Int]) -> MGET {
         MGET(keys: indices.map { self.keys[$0] })
     }
 
@@ -21,7 +21,7 @@ extension MGET: ValkeyClusterMultiKeyCommand {
     ///
     /// Each element in the returned array corresponds to the key at the same
     /// position in the original `MGET`. Null tokens represent absent keys.
-    public static func combineResults(
+    package static func combineResults(
         originalKeyCount: Int,
         slotResults: [(indices: [Int], result: Result<RESPToken, ValkeyClientError>)]
     ) throws(ValkeyClientError) -> RESPToken.Array {

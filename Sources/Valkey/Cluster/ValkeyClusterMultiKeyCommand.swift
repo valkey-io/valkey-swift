@@ -18,7 +18,7 @@
 /// - ``combineResults(originalKeyCount:slotResults:)`` — merge per-slot results back
 ///   into the full command response.
 @available(valkeySwift 1.0, *)
-public protocol ValkeyClusterMultiKeyCommand: ValkeyCommand {
+package protocol ValkeyClusterMultiKeyCommand: ValkeyCommand {
 
     /// Returns a sub-command containing only the keys at the given indices.
     ///
