@@ -5,8 +5,8 @@ Migrate your project from RediStack to Valkey Swift.
 ## Overview
 
 RediStack is deprecated.
-Valkey Swift replaces RediStack for all Redis and Valkey workloads in the Swift Server ecosystem.
-Follow the steps below to migrate an existing project from RediStack to Valkey Swift.
+Valkey Swift replaces RediStack for all Redis and Valkey workloads in the Swift server ecosystem.
+Follow these steps to migrate an existing project from RediStack to Valkey Swift.
 
 Valkey Swift offers several advantages over RediStack:
 
@@ -64,7 +64,7 @@ import Valkey
 
 ## Migrate connection setup
 
-After updating your dependencies, update how you create and manage connections.
+After updating your dependencies, replace your connection creation and management code.
 RediStack requires manual connection lifecycle management with `EventLoop` binding.
 Valkey Swift uses a connection pool that runs as a background task.
 
@@ -307,8 +307,7 @@ For more details, see <doc:Pubsub>.
 
 ## Migrate error handling
 
-Update your error handling to use the new error types.
-RediStack and Valkey Swift use different error types.
+RediStack and Valkey Swift use different error types, so update your error-handling code.
 
 | RediStack | Valkey Swift | Notes |
 |-----------|-------------|-------|
@@ -348,8 +347,8 @@ do {
 ## Migrate to cluster mode
 
 Finally, if you connect to a Redis or Valkey cluster, take advantage of native cluster support.
-RediStack does not support cluster mode.
-If you use an external cluster discovery mechanism or connect to a single node in a cluster, Valkey Swift provides native cluster support with ``ValkeyClusterClient``:
+RediStack doesn't support cluster mode.
+If you currently connect to a single node in a cluster or use an external discovery mechanism, replace that approach with ``ValkeyClusterClient``, which provides native cluster support:
 
 ```swift
 let clusterClient = ValkeyClusterClient(
