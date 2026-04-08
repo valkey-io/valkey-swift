@@ -31,7 +31,7 @@ dependencies: [
 // After (Valkey Swift)
 dependencies: [
     .package(url: "https://github.com/valkey-io/valkey-swift",
-             from: "1.0.0"),
+             from: "1.2.0"),
 ]
 ```
 
