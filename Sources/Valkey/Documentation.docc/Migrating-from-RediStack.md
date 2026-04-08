@@ -163,7 +163,7 @@ let value: RESPBulkString? = try await client.get(key: "mykey")
 
 | Operation | RediStack | Valkey Swift |
 |-----------|-----------|--------------|
-| SET     | `client.set("key", to: value)`       | `client.set(key: "key", value: value)` |
+| SET     | `client.set("key", to: value)`       | `client.set("key", value: value)` |
 | GET     | `client.get("key", as: String.self)` | `client.get("key")` |
 | DEL     | `client.delete("key1", "key2")`      | `client.del(keys: ["key1", "key2"])` |
 | EXISTS  | `client.exists("key")`               | `client.exists(keys: ["key"])` |
