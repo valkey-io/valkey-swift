@@ -167,7 +167,7 @@ let value: RESPBulkString? = try await client.get(key: "mykey")
 | GET     | `client.get("key", as: String.self)` | `client.get("key")` |
 | DEL     | `client.delete("key1", "key2")`      | `client.del(keys: ["key1", "key2"])` |
 | EXISTS  | `client.exists("key")`               | `client.exists(keys: ["key"])` |
-| EXPIRE  | `client.expire("key", after: .seconds(60))` | `client.expire(key: "key", seconds: 60)` |
+| EXPIRE  | `client.expire("key", after: .seconds(60))` | `client.expire("key", seconds: 60)` |
 | LPUSH   | `client.lpush(values, into: "list")` | `client.lpush("list", elements: values)` |
 | ZADD    | `client.zadd([(element: "a", score: 1.0)], to: "set")` | `client.zadd("set", members: [.init(score: 1.0, member: "a")])` |
 | INCR    | `client.increment("counter")`        | `client.incr(key: "counter")` |
