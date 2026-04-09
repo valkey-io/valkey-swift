@@ -490,13 +490,11 @@ public struct MSETEX<Value: RESPStringRenderable>: ValkeyCommand {
 
     @inlinable public static var name: String { "MSETEX" }
 
-    public var numkeys: Int
     public var data: [Data]
     public var condition: Condition?
     public var expiration: Expiration?
 
-    @inlinable public init(numkeys: Int, data: [Data], condition: Condition? = nil, expiration: Expiration? = nil) {
-        self.numkeys = numkeys
+    @inlinable public init(data: [Data], condition: Condition? = nil, expiration: Expiration? = nil) {
         self.data = data
         self.condition = condition
         self.expiration = expiration
@@ -505,7 +503,7 @@ public struct MSETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: [ValkeyKey] { data.map { $0.key } }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("MSETEX", numkeys, data, condition, expiration)
+        commandEncoder.encodeArray("MSETEX", RESPArrayWithCount(data), condition, expiration)
     }
 }
 
@@ -978,12 +976,11 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func msetex<Value: RESPStringRenderable>(
-        numkeys: Int,
         data: [MSETEX<Value>.Data],
         condition: MSETEX<Value>.Condition? = nil,
         expiration: MSETEX<Value>.Expiration? = nil
     ) async throws(ValkeyClientError) -> Int {
-        try await execute(MSETEX(numkeys: numkeys, data: data, condition: condition, expiration: expiration))
+        try await execute(MSETEX(data: data, condition: condition, expiration: expiration))
     }
 
     /// Atomically modifies the string values of one or more keys only when all keys don't exist.

@@ -215,6 +215,23 @@ extension [CommandPatch] {
                     )
                 )
             ),
+            // MSETEX group count with values to edit
+            .init("MSETEX", path: ["numkeys"], patch: .remove()),
+            .init("MSETEX", path: ["data"], patch: .set(\.combinedWithCount, value: .itemCount)),
+            // HGETDEL group field count with fields
+            .init(
+                "HGETDEL",
+                path: ["fields"],
+                patch: .replace(
+                    .init(
+                        name: "fields",
+                        type: .string,
+                        multiple: true,
+                        token: "FIELDS",
+                        combinedWithCount: .itemCount
+                    )
+                )
+            ),
             // HTTL group field count with fields
             .init(
                 "HTTL",
