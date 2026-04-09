@@ -286,36 +286,15 @@ public struct HGETALL: ValkeyCommand {
 
 /// Returns the values of one or more fields and deletes them from a hash.
 @_documentation(visibility: internal)
-public struct HGETDEL<Field: RESPStringRenderable>: ValkeyCommand {
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
+public struct HGETDEL<Fields: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HGETDEL" }
 
     public var key: ValkeyKey
-    public var fields: Fields
+    public var fields: [Fields]
 
-    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, fields: [Fields]) {
         self.key = key
         self.fields = fields
     }
@@ -323,7 +302,7 @@ public struct HGETDEL<Field: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HGETDEL", key, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray("HGETDEL", key, RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) }))
     }
 }
 
@@ -1309,10 +1288,7 @@ extension ValkeyClientProtocol {
     /// - Returns: List of values associated with the given fields, in the same order as they are requested. Returns nil for fields that do not exist.
     @inlinable
     @discardableResult
-    public func hgetdel<Field: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        fields: HGETDEL<Field>.Fields
-    ) async throws(ValkeyClientError) -> RESPToken.Array {
+    public func hgetdel<Fields: RESPStringRenderable>(_ key: ValkeyKey, fields: [Fields]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HGETDEL(key, fields: fields))
     }
 

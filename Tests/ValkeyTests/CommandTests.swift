@@ -719,6 +719,17 @@ struct CommandTests {
                 #expect(matches.matches[1].second == 0...1)
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func msetex() async throws {
+            try await testCommandEncodesDecodes(
+                (request: .command(["MSETEX", "2", "key1", "value1", "key2", "value2"]), response: .number(2)),
+            ) { connection in
+                let result = try await connection.msetex(data: [.init(key: "key1", value: "value1"), .init(key: "key2", value: "value2")])
+                #expect(result == 2)
+            }
+        }
     }
 
     struct ListCommands {
@@ -1602,6 +1613,19 @@ struct CommandTests {
                 #expect(members.count == 2)
                 #expect(String(members[0]) == "field3")
                 #expect(String(members[1]) == "field4")
+            }
+        }
+        @Test
+        @available(valkeySwift 1.0, *)
+        func hgetdel() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["HGETDEL", "myhash", "FIELDS", "4", "f1", "f2", "f3", "non-exist"]),
+                    response: .array([.number(-1), .number(8), .number(8), .number(-2)])
+                ),
+            ) { connection in
+                let result = try await connection.hgetdel("myhash", fields: ["f1", "f2", "f3", "non-exist"]).decode(as: [Int].self)
+                #expect(result == [-1, 8, 8, -2])
             }
         }
     }

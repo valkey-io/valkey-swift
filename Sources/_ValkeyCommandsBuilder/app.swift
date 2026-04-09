@@ -20,6 +20,7 @@ struct App {
         if #available(valkeySwift 1.0, *) {
             let resourceFolder = Bundle.module.resourceURL!
             let commands = try load(fileURL: resourceFolder.appending(path: "valkey-commands.json"), as: ValkeyCommands.self)
+            try commands.patch(.standardCommandPatches)
             try writeValkeyCommands(toFolder: "Sources/Valkey/Commands/", commands: commands, module: false)
             let bloomCommands = try load(fileURL: resourceFolder.appending(path: "valkey-bloom-commands.json"), as: ValkeyCommands.self)
             try writeValkeyCommands(toFolder: "Sources/ValkeyBloom/", commands: bloomCommands, module: true)
