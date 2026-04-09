@@ -83,27 +83,6 @@ public struct HEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HEXPIRE" }
@@ -111,9 +90,9 @@ public struct HEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var seconds: Int
     public var condition: Condition?
-    public var fields: Fields
+    public var fields: [Field]
 
-    @inlinable public init(_ key: ValkeyKey, seconds: Int, condition: Condition? = nil, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, seconds: Int, condition: Condition? = nil, fields: [Field]) {
         self.key = key
         self.seconds = seconds
         self.condition = condition
@@ -123,7 +102,13 @@ public struct HEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HEXPIRE", key, seconds, condition, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray(
+            "HEXPIRE",
+            key,
+            seconds,
+            condition,
+            RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) })
+        )
     }
 }
 
@@ -149,27 +134,6 @@ public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HEXPIREAT" }
@@ -177,9 +141,9 @@ public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var unixTimeSeconds: Int
     public var condition: Condition?
-    public var fields: Fields
+    public var fields: [Field]
 
-    @inlinable public init(_ key: ValkeyKey, unixTimeSeconds: Int, condition: Condition? = nil, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, unixTimeSeconds: Int, condition: Condition? = nil, fields: [Field]) {
         self.key = key
         self.unixTimeSeconds = unixTimeSeconds
         self.condition = condition
@@ -189,7 +153,13 @@ public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HEXPIREAT", key, unixTimeSeconds, condition, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray(
+            "HEXPIREAT",
+            key,
+            unixTimeSeconds,
+            condition,
+            RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) })
+        )
     }
 }
 
@@ -1175,7 +1145,7 @@ extension ValkeyClientProtocol {
         _ key: ValkeyKey,
         seconds: Int,
         condition: HEXPIRE<Field>.Condition? = nil,
-        fields: HEXPIRE<Field>.Fields
+        fields: [Field]
     ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HEXPIRE(key, seconds: seconds, condition: condition, fields: fields))
     }
@@ -1192,7 +1162,7 @@ extension ValkeyClientProtocol {
         _ key: ValkeyKey,
         unixTimeSeconds: Int,
         condition: HEXPIREAT<Field>.Condition? = nil,
-        fields: HEXPIREAT<Field>.Fields
+        fields: [Field]
     ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HEXPIREAT(key, unixTimeSeconds: unixTimeSeconds, condition: condition, fields: fields))
     }

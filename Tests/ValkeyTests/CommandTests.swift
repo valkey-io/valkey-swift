@@ -1541,6 +1541,39 @@ struct CommandTests {
     struct HashCommands {
         @Test
         @available(valkeySwift 1.0, *)
+        func hexpire() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["HEXPIRE", "myhash", "10000", "NX", "FIELDS", "2", "f2", "f3"]),
+                    response: .array([.number(1), .number(1)])
+                ),
+            ) { connection in
+                let result = try await connection.hexpire("myhash", seconds: 10000, condition: .nx, fields: ["f2", "f3"]).decode(as: [Int].self)
+                #expect(result == [1, 1])
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func hsetex() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["HSETEX", "myhash", "FNX", "EX", "10", "FIELDS", "2", "f2", "v2", "f3", "v3"]),
+                    response: .number(1)
+                ),
+            ) { connection in
+                let result = try await connection.hsetex(
+                    "myhash",
+                    fieldsCondition: .fnx,
+                    expiration: .seconds(10),
+                    fields: [.init(field: "f2", value: "v2"), .init(field: "f3", value: "v3")]
+                )
+                #expect(result == 1)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func hscan() async throws {
             try await testCommandEncodesDecodes(
                 (

@@ -7,6 +7,8 @@
 //
 import NIOCore
 
+// MARK: Custom responses
+
 /// Sorted set entry
 @_documentation(visibility: internal)
 public struct HashEntry: RESPTokenDecodable, Sendable {
@@ -125,5 +127,162 @@ extension HRANDFIELD {
                 throw RESPDecodeError.tokenMismatch(expected: [.null, .array], token: token)
             }
         }
+    }
+}
+
+// MARK: Additional API
+
+extension HEXPIRETIME.Fields: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Field...) {
+        self.numfields = elements.count
+        self.fields = elements
+    }
+}
+
+extension HGETEX.Fields: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Field...) {
+        self.numfields = elements.count
+        self.fields = elements
+    }
+}
+
+extension HPERSIST.Fields: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Field...) {
+        self.numfields = elements.count
+        self.fields = elements
+    }
+}
+
+extension HPEXPIRE.Fields: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Field...) {
+        self.numfields = elements.count
+        self.fields = elements
+    }
+}
+
+extension HPEXPIREAT.Fields: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Field...) {
+        self.numfields = elements.count
+        self.fields = elements
+    }
+}
+
+extension HPEXPIRETIME.Fields: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Field...) {
+        self.numfields = elements.count
+        self.fields = elements
+    }
+}
+
+extension HPTTL.Fields: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Field...) {
+        self.numfields = elements.count
+        self.fields = elements
+    }
+}
+
+extension HSETEX.Fields: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: HSETEX.FieldsData...) {
+        self.numfields = elements.count
+        self.data = elements
+    }
+}
+
+extension HTTL.Fields: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Field...) {
+        self.numfields = elements.count
+        self.fields = elements
+    }
+}
+
+// MARK: Backwards compatibility
+
+@available(*, deprecated, message: "Use alternative APIs that take [Field]")
+public struct HashFields<Field: RESPStringRenderable>: RESPRenderable, Sendable, Hashable {
+    public var numfields: Int
+    public var fields: [Field]
+
+    @inlinable
+    public init(numfields: Int, fields: [Field]) {
+        self.numfields = numfields
+        self.fields = fields
+    }
+
+    @inlinable
+    public var respEntries: Int {
+        numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
+    }
+
+    @inlinable
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        numfields.encode(into: &commandEncoder)
+        fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
+    }
+}
+
+extension HEXPIRE {
+    @available(*, deprecated, message: "Fields has been deprecated in favor of Array<Field>")
+    public typealias Fields = HashFields<Field>
+    @available(*, deprecated, message: "Use init with `field: [Field]` parameter")
+    @inlinable public init(_ key: ValkeyKey, seconds: Int, condition: Condition? = nil, fields: Fields) {
+        self.key = key
+        self.seconds = seconds
+        self.condition = condition
+        self.fields = fields.fields
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyClientProtocol {
+    /// Set expiry time on hash fields.
+    ///
+    /// - Documentation: [HEXPIRE](https://valkey.io/commands/hexpire)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N) where N is the number of specified fields.
+    /// - Returns: List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.
+    @inlinable
+    @discardableResult
+    @available(*, deprecated, message: "Use version with `field: [Field]` parameter")
+    public func hexpire<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        seconds: Int,
+        condition: HEXPIRE<Field>.Condition? = nil,
+        fields: HEXPIRE<Field>.Fields
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(HEXPIRE(key, seconds: seconds, condition: condition, fields: fields))
+    }
+}
+
+extension HEXPIREAT {
+    @available(*, deprecated, message: "Fields has been deprecated in favor of Array<Field>")
+    public typealias Fields = HashFields<Field>
+    @inlinable
+    @available(*, deprecated, message: "Use init with `field: [Field]` parameter")
+    public init(_ key: ValkeyKey, unixTimeSeconds: Int, condition: Condition? = nil, fields: Fields) {
+        self.key = key
+        self.unixTimeSeconds = unixTimeSeconds
+        self.condition = condition
+        self.fields = fields.fields
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyClientProtocol {
+    /// Set expiry time on hash fields.
+    ///
+    /// - Documentation: [HEXPIREAT](https://valkey.io/commands/hexpireat)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N) where N is the number of specified fields.
+    /// - Returns: List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.
+    @inlinable
+    @discardableResult
+    @available(*, deprecated, message: "Use version with `field: [Field]` parameter")
+    public func hexpireat<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        unixTimeSeconds: Int,
+        condition: HEXPIREAT<Field>.Condition? = nil,
+        fields: HEXPIREAT<Field>.Fields
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(HEXPIREAT(key, unixTimeSeconds: unixTimeSeconds, condition: condition, fields: fields))
     }
 }

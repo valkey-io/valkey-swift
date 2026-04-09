@@ -10,14 +10,14 @@ struct ValkeyPatchError: Error {}
 
 /// Patch to apply to argument
 protocol ArgumentPatch {
-    func apply(to: ValkeyCommand.Argument) -> ValkeyCommand.Argument
+    func apply(to: ValkeyCommand.Argument) -> ValkeyCommand.Argument?
 }
 
 /// Patch that replaces argument
 struct ReplaceArgumentPatch: ArgumentPatch {
     let replacement: ValkeyCommand.Argument
 
-    func apply(to: ValkeyCommand.Argument) -> ValkeyCommand.Argument {
+    func apply(to: ValkeyCommand.Argument) -> ValkeyCommand.Argument? {
         replacement
     }
 }
@@ -28,12 +28,25 @@ extension ArgumentPatch where Self == ReplaceArgumentPatch {
     }
 }
 
+/// Patch that replaces argument
+struct RemoveArgumentPatch: ArgumentPatch {
+    func apply(to: ValkeyCommand.Argument) -> ValkeyCommand.Argument? {
+        nil
+    }
+}
+
+extension ArgumentPatch where Self == RemoveArgumentPatch {
+    static func remove() -> RemoveArgumentPatch {
+        .init()
+    }
+}
+
 /// Patch that sets a single field in the parameter
 struct SetFieldPatch<Value>: ArgumentPatch {
     let keyPath: WritableKeyPath<ValkeyCommand.Argument, Value>
     let value: Value
 
-    func apply(to original: ValkeyCommand.Argument) -> ValkeyCommand.Argument {
+    func apply(to original: ValkeyCommand.Argument) -> ValkeyCommand.Argument? {
         var argument = original
         argument[keyPath: keyPath] = value
         return argument
@@ -83,7 +96,11 @@ extension ValkeyCommand {
         guard let arguments = self.arguments else { throw ValkeyPatchError() }
         guard let index = self.arguments?.firstIndex(where: { $0.name == path.first }) else { throw ValkeyPatchError() }
         if path.count == 1 {
-            self.arguments?[index] = patch.apply(to: arguments[index])
+            if let patchedArgument = patch.apply(to: arguments[index]) {
+                self.arguments?[index] = patchedArgument
+            } else {
+                self.arguments?.remove(at: index)
+            }
         } else {
             try self.arguments?[index].patch(path.dropFirst(), patch: patch)
         }
@@ -96,7 +113,11 @@ extension ValkeyCommand.Argument {
         guard let arguments = self.arguments else { throw ValkeyPatchError() }
         guard let index = self.arguments?.firstIndex(where: { $0.name == path.first }) else { throw ValkeyPatchError() }
         if path.count == 1 {
-            self.arguments?[index] = patch.apply(to: arguments[index])
+            if let patchedArgument = patch.apply(to: arguments[index]) {
+                self.arguments?[index] = patchedArgument
+            } else {
+                self.arguments?.remove(at: index)
+            }
         } else {
             try self.arguments?[index].patch(path.dropFirst(), patch: patch)
         }
@@ -119,8 +140,52 @@ extension ValkeyCommands {
 }
 
 extension [CommandPatch] {
+    /// Patches applied to standard commands
+    static var standardCommandPatches: [CommandPatch] {
+        [
+            // HEXPIRE group field count with fields
+            .init(
+                "HEXPIRE",
+                path: ["fields"],
+                patch: .replace(
+                    .init(
+                        name: "field",
+                        type: .string,
+                        multiple: true,
+                        token: "FIELDS",
+                        combinedWithCount: .itemCount
+                    )
+                )
+            ),
+            // HEXPIREAT group field count with fields
+            .init(
+                "HEXPIREAT",
+                path: ["fields"],
+                patch: .replace(
+                    .init(
+                        name: "field",
+                        type: .string,
+                        multiple: true,
+                        token: "FIELDS",
+                        combinedWithCount: .itemCount
+                    )
+                )
+            ),
+        ]
+    }
+
+    /// Patches applied to ValkeyBloom module
+    static var bloomCommandPatches: [CommandPatch] {
+        []
+    }
+
+    /// Patches applied to ValkeyJson module
+    static var jsonCommandPatches: [CommandPatch] {
+        []
+    }
+
     /// Patches applied to ValkeySearch module
-    static var searchPatches: [CommandPatch] {
+    static var searchCommandPatches: [CommandPatch] {
         [
             // FT.AGGREGATE sort parameters are not grouped into expression and direction
             .init(
