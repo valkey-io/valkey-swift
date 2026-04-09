@@ -197,7 +197,8 @@ extension HTTL.Fields: ExpressibleByArrayLiteral {
 
 // MARK: Backwards compatibility
 
-@available(*, deprecated, message: "Use alternative APIs that take [Field]")
+@available(*, deprecated, message: "Fields has been deprecated in favor of Array<Field>")
+@_documentation(visibility: internal)
 public struct HashFields<Field: RESPStringRenderable>: RESPRenderable, Sendable, Hashable {
     public var numfields: Int
     public var fields: [Field]
