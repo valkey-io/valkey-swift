@@ -876,18 +876,16 @@ public struct ASKING: ValkeyCommand {
 
 /// Iterates over the keys in the cluster.
 @_documentation(visibility: internal)
-public struct CLUSTERSCAN<Cursor: RESPStringRenderable>: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
+public struct CLUSTERSCAN: ValkeyCommand {
     @inlinable public static var name: String { "CLUSTERSCAN" }
 
-    public var cursor: Cursor
+    public var cursor: String
     public var matchPattern: String?
     public var count: Int?
     public var type: String?
     public var slot: Int?
 
-    @inlinable public init(cursor: Cursor, matchPattern: String? = nil, count: Int? = nil, type: String? = nil, slot: Int? = nil) {
+    @inlinable public init(cursor: String, matchPattern: String? = nil, count: Int? = nil, type: String? = nil, slot: Int? = nil) {
         self.cursor = cursor
         self.matchPattern = matchPattern
         self.count = count
@@ -902,7 +900,7 @@ public struct CLUSTERSCAN<Cursor: RESPStringRenderable>: ValkeyCommand {
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray(
             "CLUSTERSCAN",
-            RESPRenderableBulkString(cursor),
+            cursor,
             RESPWithToken("MATCH", matchPattern),
             RESPWithToken("COUNT", count),
             RESPWithToken("TYPE", type),
@@ -1330,13 +1328,13 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of elements returned.
     /// - Returns: Cursor and clusterscan response in array form.
     @inlinable
-    public func clusterscan<Cursor: RESPStringRenderable>(
-        cursor: Cursor,
+    public func clusterscan(
+        cursor: String,
         matchPattern: String? = nil,
         count: Int? = nil,
         type: String? = nil,
         slot: Int? = nil
-    ) async throws(ValkeyClientError) -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> CLUSTERSCAN.Response {
         try await execute(CLUSTERSCAN(cursor: cursor, matchPattern: matchPattern, count: count, type: type, slot: slot))
     }
 

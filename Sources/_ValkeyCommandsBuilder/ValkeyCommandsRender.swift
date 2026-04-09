@@ -28,6 +28,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "CLUSTER SHARDS",
     "CLUSTER NODES",
     "CLUSTER REPLICAS",
+    "CLUSTERSCAN",
     "COMMAND GETKEYSANDFLAGS",
     "FUNCTION LIST",
     "FUNCTION LOAD",
@@ -123,6 +124,18 @@ let commandCustomResponseTypes: [String: String] = [
     "XRANGE": "[XMessage]",
     "XREVRANGE": "[XMessage]",
     "XINFO CONSUMERS": "[XINFO.Consumer]",
+]
+
+/// Don't include generic strings for these commands
+/// WARNING: Adding a command to this list is a breaking change
+let disableGenericStrings: Set<String> = [
+    "CLUSTERSCAN",
+    "SUBSCRIBE",
+    "PSUBSCRIBE",
+    "SSUBSCRIBE",
+    "UNSUBSCRIBE",
+    "PUNSUBSCRIBE",
+    "SUNSUBSCRIBE",
 ]
 
 func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: ValkeyCommands, module: Bool) -> String {
@@ -451,7 +464,7 @@ extension String {
             typeName = name.commandTypeName
         }
         let conformance = "ValkeyCommand"
-        let enableGenericParameters = !subscribeFunctions.contains(name)
+        let enableGenericParameters = !disableGenericStrings.contains(name)
         let genericTypeParameters = enableGenericParameters ? genericTypeParameters(command.arguments) : ""
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, tab: tab)
@@ -464,7 +477,7 @@ extension String {
             if case .oneOf = arg.type {
                 self.appendOneOfEnum(argument: arg, names: [], tab: tab)
             } else if case .block = arg.type {
-                self.appendBlock(argument: arg, names: [], tab: tab, genericStrings: !arg.optional)
+                self.appendBlock(argument: arg, names: [], tab: tab, genericStrings: !arg.optional && enableGenericParameters)
             }
         }
         var returnType =
@@ -489,7 +502,7 @@ extension String {
                 ["\"\(commandName)\"", "\"\(subCommand)\""]
                     + arguments.map { $0.respRepresentable(isArray: true, genericString: enableGenericParameters) }
             } else {
-                ["\"\(commandName)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: true) }
+                ["\"\(commandName)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: enableGenericParameters) }
             }
         let commandArgumentsString = commandArguments.joined(separator: ", ")
         if returnType != "RESPToken" {
@@ -530,8 +543,9 @@ extension String {
 
     mutating func appendFunction(command: ValkeyCommand, name: String, disableResponseCalculation: Bool) {
         let arguments = (command.arguments ?? [])
-        let genericTypeParameters = genericTypeParameters(command.arguments)
-        let genericParameters = genericParameters(command.arguments)
+        let enableGenericParameters = !disableGenericStrings.contains(name)
+        let genericTypeParameters = enableGenericParameters ? genericTypeParameters(command.arguments) : ""
+        let genericParameters = enableGenericParameters ? genericParameters(command.arguments) : ""
 
         let calculatedResponseType = getResponseType(command: command)
         let returnType: String
@@ -561,7 +575,7 @@ extension String {
             var parametersString =
                 arguments
                 .map {
-                    "\($0.swiftArgument): \(parameterType($0, names: [], scope: "\(name.commandTypeName)\(genericParameters)", isArray: isArray, genericStrings: true))"
+                    "\($0.swiftArgument): \(parameterType($0, names: [], scope: "\(name.commandTypeName)\(genericParameters)", isArray: isArray, genericStrings: enableGenericParameters))"
                 }
                 .joined(separator: ", ")
             if arguments.first?.shouldRemoveArgumentLabel == true {
