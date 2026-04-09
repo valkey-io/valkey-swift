@@ -1,5 +1,6 @@
 // To verify these examples against a running Valkey instance:
-//   container run -d --name valkey-test -p 6379:6379 docker.io/valkey/valkey:latest
+//   container run -d --name valkey-test \
+//     -p 6379:6379 docker.io/valkey/valkey:latest
 //   swift run MigratingFromRediStack
 //   container stop valkey-test && container rm valkey-test
 
@@ -17,7 +18,12 @@ func connectStandaloneExample() async throws {
     // snippet.connectStandalone
     let client = ValkeyClient(
         .hostname("localhost", port: 6379),
-        configuration: .init(authentication: .init(username: "default", password: "secret")),
+        configuration: .init(
+            authentication: .init(
+                username: "default",
+                password: "secret"
+            )
+        ),
         logger: logger
     )
 
@@ -39,8 +45,15 @@ func connectionPoolExample() async {
     let client = ValkeyClient(
         .hostname("localhost", port: 6379),
         configuration: .init(
-            authentication: .init(username: "default", password: "secret"),
-            connectionPool: .init(minimumConnectionCount: 1, maximumConnectionSoftLimit: 8, maximumConnectionHardLimit: 16)
+            authentication: .init(
+                username: "default",
+                password: "secret"
+            ),
+            connectionPool: .init(
+                minimumConnectionCount: 1,
+                maximumConnectionSoftLimit: 8,
+                maximumConnectionHardLimit: 16
+            )
         ),
         logger: logger
     )
@@ -61,7 +74,10 @@ func serviceLifecycleExample() async throws {
     // snippet.show
 
     // snippet.serviceLifecycle
-    let client = ValkeyClient(.hostname("localhost", port: 6379), logger: logger)
+    let client = ValkeyClient(
+        .hostname("localhost", port: 6379),
+        logger: logger
+    )
     let serviceGroup = ServiceGroup(
         services: [client, webserver],
         gracefulShutdownSignals: [.sigint, .sigterm],
@@ -151,7 +167,7 @@ func errorHandlingExample(_ client: ValkeyClient) async throws {
             // handle closed connection
             break
         case .connectionCreationCircuitBreakerTripped:
-            // pool unable to connect after multiple attempts
+            // pool unable to connect
             break
         case .timeout:
             // command execution timed out
@@ -175,7 +191,12 @@ func clusterExamples() async throws {
             .init(endpoint: "node1.example.com", port: 6379)
         ]),
         configuration: .init(
-            client: .init(authentication: .init(username: "default", password: "secret")),
+            client: .init(
+                authentication: .init(
+                    username: "default",
+                    password: "secret"
+                )
+            ),
             clusterRefreshInterval: .seconds(30)
         ),
         logger: logger
@@ -213,7 +234,14 @@ func customDiscoveryExample() async throws {
     // snippet.show
     let clusterClient = ValkeyClusterClient(
         nodeDiscovery: MyCloudDiscovery(),
-        configuration: .init(client: .init(authentication: .init(username: "default", password: "secret"))),
+        configuration: .init(
+            client: .init(
+                authentication: .init(
+                    username: "default",
+                    password: "secret"
+                )
+            )
+        ),
         logger: logger
     )
     //snippet.end
@@ -223,15 +251,20 @@ func customDiscoveryExample() async throws {
 }
 
 // Run the command examples against a local Valkey instance.
-// Requires: container run -d --name valkey-test -p 6379:6379 docker.io/valkey/valkey:latest
+// Requires:
+//   container run -d --name valkey-test \
+//     -p 6379:6379 docker.io/valkey/valkey:latest
 if #available(macOS 15.0, *) {
-    let client = ValkeyClient(.hostname("localhost", port: 6379), logger: logger)
+    let client = ValkeyClient(
+        .hostname("localhost", port: 6379),
+        logger: logger
+    )
     try await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask { await client.run() }
 
         try await commandExamples(client)
         try await errorHandlingExample(client)
-        print("All migration examples completed successfully.")
+        print("All migration examples completed.")
 
         group.cancelAll()
     }

@@ -1,6 +1,6 @@
-# Valkey-Swift 1.0 Release Scope
+# Valkey Swift 1.0 Release Scope
 
-This page outlines the complete scope, feature requirements, and readiness checklist for the **Valkey-Swift 1.0** release.
+This page outlines the complete scope, feature requirements, and readiness checklist for the **Valkey Swift 1.0** release.
 
 ---
 
@@ -23,7 +23,7 @@ This page outlines the complete scope, feature requirements, and readiness check
 # Commands
 
 ## Command Coverage
-Valkey-Swift uses a code generator based on JSON definitions from the Valkey server repository.
+Valkey Swift uses a code generator based on JSON definitions from the Valkey server repository.
 
 - Full support for all standard commands  
 - Support for JSON and Bloom module commands  

@@ -51,11 +51,15 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
         public static var cancelled: Self { .init(.cancelled) }
         /// Connection closed because another command was cancelled.
         public static var connectionClosedDueToCancellation: Self { .init(.connectionClosedDueToCancellation) }
-        /// Connection closed because it timed out.
+        /// A command timed out waiting for a response.
         public static var timeout: Self { .init(.timeout) }
         /// Client is shutdown.
         public static var clientIsShutDown: Self { .init(.clientIsShutDown) }
-        /// Connection pool connection creation circuit breaker triggered
+        /// Connection pool circuit breaker tripped after repeated connection failures.
+        ///
+        /// This generally means the target Valkey instance is unavailable,
+        /// as the connection manager will have tried to connect multiple times
+        /// before tripping the circuit breaker.
         public static var connectionCreationCircuitBreakerTripped: Self { .init(.connectionCreationCircuitBreakerTripped) }
         /// Found error while trying to parse RESP returned from server
         public static var respParsingError: Self { .init(.respParsingError) }

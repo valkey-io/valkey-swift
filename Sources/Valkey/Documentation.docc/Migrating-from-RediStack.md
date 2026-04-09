@@ -19,39 +19,51 @@ Valkey Swift offers several advantages over RediStack:
 
 ## Update package dependencies
 
-Start by replacing the RediStack dependency in your `Package.swift`:
+Start by replacing the RediStack dependency in your `Package.swift`.
+
+RediStack uses the [`swift-server/RediStack`](https://github.com/swift-server/RediStack) package:
 
 ```swift
-// Before (RediStack)
 dependencies: [
-    .package(url: "https://github.com/swift-server/RediStack.git",
-             from: "1.6.0"),
-]
-
-// After (Valkey Swift)
-dependencies: [
-    .package(url: "https://github.com/valkey-io/valkey-swift",
-             from: "1.2.0"),
+    .package(
+        url: "https://github.com/swift-server/RediStack.git",
+        from: "1.6.0"
+    ),
 ]
 ```
 
-Update target dependencies:
+Replace it with the Valkey Swift package:
 
 ```swift
-// Before
-.product(name: "RediStack", package: "RediStack"),
+dependencies: [
+    .package(
+        url: "https://github.com/valkey-io/valkey-swift",
+        from: "1.2.0"
+    ),
+]
+```
 
-// After
+Update the target dependency from the RediStack product:
+
+```swift
+.product(name: "RediStack", package: "RediStack"),
+```
+
+Replace it with the Valkey product:
+
+```swift
 .product(name: "Valkey", package: "valkey-swift"),
 ```
 
-Replace your imports:
+Replace your RediStack import:
 
 ```swift
-// Before
 import RediStack
+```
 
-// After
+With the Valkey import:
+
+```swift
 import Valkey
 ```
 
@@ -70,35 +82,34 @@ Valkey Swift uses a connection pool that runs as a background task.
 
 ### Connect to a standalone server
 
+RediStack uses the `RedisConnection.make` factory method:
+
 ```swift
-// Before (RediStack) — EventLoopFuture-based
 let connection = try RedisConnection.make(
-    configuration: .init(hostname: "localhost", port: 6379, password: "secret"),
+    configuration: .init(
+        hostname: "localhost",
+        port: 6379,
+        password: "secret"
+    ),
     boundEventLoop: eventLoop
 ).wait()
 defer { try? connection.close().wait() }
-
-// After (Valkey Swift) — async/await with background task
-let client = ValkeyClient(
-    .hostname("localhost", port: 6379),
-    configuration: .init(authentication: .init(password: "secret")),
-    logger: logger
-)
-
-try await withThrowingTaskGroup(of: Void.self) { group in
-    group.addTask { await client.run() }
-    // Use client here
-    group.cancelAll()
-}
 ```
+
+Valkey Swift uses async/await with a background task:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "connectStandalone")
 
 ### Configure a connection pool
 
+RediStack requires manual pool activation and teardown:
+
 ```swift
-// Before (RediStack) — manual activate/close
 let pool = RedisConnectionPool(
     configuration: .init(
-        initialServerConnectionAddresses: [try .makeAddressResolvingHost("localhost", port: 6379)],
+        initialServerConnectionAddresses: [
+            try .makeAddressResolvingHost("localhost", port: 6379)
+        ],
         maximumConnectionCount: .maximumActiveConnections(8),
         connectionFactoryConfiguration: .init(connectionPassword: "secret")
     ),
@@ -107,39 +118,25 @@ let pool = RedisConnectionPool(
 pool.activate()
 // Use pool...
 pool.close()
-
-// After (Valkey Swift) — automatic pool management
-let client = ValkeyClient(
-    .hostname("localhost", port: 6379),
-    configuration: .init(
-        authentication: .init(password: "secret"),
-        connectionPool: .init(minimumConnectionCount: 1, softConnectionLimit: 8, hardConnectionLimit: 16)
-    ),
-    logger: logger
-)
-// Pool starts when you call client.run() and stops on cancellation
 ```
+
+Valkey Swift manages the pool automatically:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "connectionPool")
 
 ### Integrate with service lifecycle
 
-RediStack has no built-in service lifecycle support.
-Valkey Swift clients conform to `Service`:
+RediStack has no built-in service lifecycle support:
 
 ```swift
-// Before (RediStack) — manual lifecycle
 let pool = RedisConnectionPool(/* ... */)
 pool.activate()
 // ... manual cleanup on shutdown
-
-// After (Valkey Swift)
-let client = ValkeyClient(.hostname("localhost", port: 6379), logger: logger)
-let serviceGroup = ServiceGroup(
-    services: [client, webserver],
-    gracefulShutdownSignals: [.sigint, .sigterm],
-    logger: logger
-)
-try await serviceGroup.run()
 ```
+
+Valkey Swift clients conform to `Service`:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "serviceLifecycle")
 
 ## Migrate commands
 
@@ -149,15 +146,17 @@ Valkey Swift provides async methods and typed command objects.
 
 ### Convert string commands
 
-```swift
-// Before (RediStack)
-let future: EventLoopFuture<Void> = client.set("mykey", to: "myvalue")
-let getFuture: EventLoopFuture<String?> = client.get("mykey", as: String.self)
+RediStack returns futures for string operations:
 
-// After (Valkey Swift)
-try await client.set(key: "mykey", value: "myvalue")
-let value: RESPBulkString? = try await client.get(key: "mykey")
+```swift
+let future: EventLoopFuture<Void> = client.set("mykey", to: "myvalue")
+let getFuture: EventLoopFuture<String?> =
+    client.get("mykey", as: String.self)
 ```
+
+Valkey Swift uses async/await:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "stringCommands")
 
 ### Review command signature differences
 
@@ -178,46 +177,43 @@ let value: RESPBulkString? = try await client.get(key: "mykey")
 RediStack returns `RESPValue`, an enum you destructure manually.
 Valkey Swift commands declare typed ``ValkeyCommand/Response`` types, so you get typed results without manual decoding.
 
+RediStack requires manual `RESPValue` handling:
+
 ```swift
-// Before (RediStack) — manual RESPValue handling
 let resp: RESPValue = try await client.get("mykey").get()
 switch resp {
 case .bulkString(let buffer):
-    let value = buffer.map { String(buffer: $0) }
+    let value = buffer.map {
+        String(buffer: $0)
+    }
 default:
     break
 }
-
-// After (Valkey Swift) — typed responses
-let value: RESPBulkString? = try await client.get(key: "mykey")
-if let value {
-    print(String(value))
-}
 ```
+
+Valkey Swift provides typed responses directly:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "typedReturnValues")
 
 ### Use explicit pipelining
 
 RediStack has no dedicated pipelining API.
-Valkey Swift provides typed pipelining with parameter packs:
+Valkey Swift provides typed pipelining with parameter packs.
+
+RediStack pipelines implicitly through concurrent futures:
 
 ```swift
-// Before (RediStack) — implicit pipelining through concurrent futures
 let setFuture = client.set("foo", to: "100")
 let incrFuture = client.increment("foo")
 let getFuture = client.get("foo")
-try setFuture.wait(); try incrFuture.wait()
+try setFuture.wait()
+try incrFuture.wait()
 let result = try getFuture.wait()
-
-// After (Valkey Swift) — explicit pipeline
-let (_, _, getResult) = await client.execute(
-    SET(key: "foo", value: "100"),
-    INCR(key: "foo"),
-    GET(key: "foo")
-)
-if let result = try getResult.get() {
-    print(String(result))
-}
 ```
+
+Valkey Swift pipelines explicitly:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "pipelining")
 
 See <doc:Pipelining>.
 
@@ -227,27 +223,36 @@ If your code uses transactions, replace raw `MULTI`/`EXEC` commands with the typ
 RediStack has no equivalent.
 Valkey Swift provides dedicated transaction support with typed results.
 
+RediStack requires raw commands on a leased connection:
+
 ```swift
-// Before (RediStack) — raw commands on a leased connection
 try await pool.leaseConnection { connection in
-    connection.send(command: "MULTI").flatMap { _ in
-        connection.send(command: "SET", with: ["foo".convertedToRESPValue(), "100".convertedToRESPValue()])
+    connection.send(command: "MULTI")
+    .flatMap { _ in
+        connection.send(
+            command: "SET",
+            with: [
+                "foo".convertedToRESPValue(),
+                "100".convertedToRESPValue()
+            ]
+        )
     }.flatMap { _ in
-        connection.send(command: "LPUSH", with: ["queue".convertedToRESPValue(), "foo".convertedToRESPValue()])
+        connection.send(
+            command: "LPUSH",
+            with: [
+                "queue".convertedToRESPValue(),
+                "foo".convertedToRESPValue()
+            ]
+        )
     }.flatMap { _ in
         connection.send(command: "EXEC")
     }
 }
-
-// After (Valkey Swift)
-try await client.withConnection { connection in
-    let results = try await connection.transaction(
-        SET("foo", value: "100"),
-        LPUSH("queue", elements: ["foo"])
-    )
-    let lpushResponse = try results.1.get()
-}
 ```
+
+Valkey Swift provides a typed transaction API:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "transactions")
 
 Valkey Swift also supports WATCH for check-and-set operations. See <doc:Transactions>.
 
@@ -257,49 +262,45 @@ Next, update any publish/subscribe code.
 RediStack uses callback-based pub/sub.
 Valkey Swift uses `AsyncSequence`.
 
+RediStack uses callbacks for subscriptions:
+
 ```swift
-// Before (RediStack) — callback-based
 client.subscribe(
     to: [RedisChannelName("updates")],
-    messageReceiver: { channel, message in
-        print("Received on \(channel): \(message)")
+    messageReceiver: {
+        channel, message in
+        print("Received: \(message)")
     },
     onSubscribe: nil,
     onUnsubscribe: nil
 ).whenComplete { result in
     // handle subscription result
 }
-
-// After (Valkey Swift) — AsyncSequence-based
-try await client.withConnection { connection in
-    try await connection.subscribe(to: ["updates"]) { subscription in
-        for try await item in subscription {
-            print("Received on \(item.channel): \(String(item.message))")
-        }
-    }
-}
 ```
+
+Valkey Swift uses `AsyncSequence`:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "subscribe")
 
 ### Subscribe to pattern channels
 
+RediStack uses `psubscribe` with callbacks:
+
 ```swift
-// Before (RediStack)
 client.psubscribe(
     to: ["user.*"],
-    messageReceiver: { channel, message in /* ... */ },
+    messageReceiver: {
+        channel, message in
+        // process messages
+    },
     onSubscribe: nil,
     onUnsubscribe: nil
 )
-
-// After (Valkey Swift)
-try await client.withConnection { connection in
-    try await connection.psubscribe(to: ["user.*"]) { subscription in
-        for try await item in subscription {
-            // process messages
-        }
-    }
-}
 ```
+
+Valkey Swift uses `psubscribe` with `AsyncSequence`:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "psubscribe")
 
 With RESP3, Valkey Swift supports running commands on the same connection as an active subscription.
 A single connection can also handle multiple subscriptions.
@@ -313,36 +314,28 @@ RediStack and Valkey Swift use different error types, so update your error-handl
 |-----------|--------------|-------|
 | `RedisError` | ``ValkeyClientError`` | Server-returned errors |
 | `RedisClientError.connectionClosed` | ``ValkeyClientError`` with `.connectionClosed` | Connection state errors |
-| `RedisConnectionPoolError.timedOutWaitingForConnection` | ``ValkeyClientError`` with `.timeout` | Pool timeout |
+| `RedisConnectionPoolError.timedOutWaitingForConnection` | ``ValkeyClientError`` with `.connectionCreationCircuitBreakerTripped` | Connection pool unable to connect after multiple attempts |
+| (no equivalent) | ``ValkeyClientError`` with `.timeout` | Command execution timeout |
 | (no equivalent) | ``ValkeyClusterError`` | Cluster-specific errors |
 | (no equivalent) | ``ValkeyTransactionError`` | Transaction-specific errors |
 
+RediStack uses `RedisError` and `RedisClientError`:
+
 ```swift
-// Before (RediStack)
 do {
     try await client.get("key").get()
 } catch let error as RedisClientError {
-    if case .connectionClosed = error { /* ... */ }
+    if case .connectionClosed = error {
+        // handle closed connection
+    }
 } catch let error as RedisError {
     print(error.message)
 }
-
-// After (Valkey Swift)
-do {
-    let _: RESPBulkString? = try await client.get(key: "key")
-} catch let error as ValkeyClientError {
-    switch error.errorCode {
-    case .connectionClosed:
-        // handle closed connection
-        break
-    case .timeout:
-        // handle timeout
-        break
-    default:
-        break
-    }
-}
 ```
+
+Valkey Swift uses ``ValkeyClientError``:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "errorHandling")
 
 ## Migrate to cluster mode
 
@@ -350,23 +343,7 @@ Finally, if you connect to a Redis or Valkey cluster, take advantage of native c
 RediStack doesn't support cluster mode.
 If you connect to a single node in a cluster or use an external discovery mechanism, replace that approach with ``ValkeyClusterClient``:
 
-```swift
-let clusterClient = ValkeyClusterClient(
-    .hostname("node1.example.com", port: 6379),
-    configuration: .init(
-        client: .init(authentication: .init(password: "secret")),
-        clusterRefreshInterval: .seconds(30)
-    ),
-    logger: logger
-)
-
-let serviceGroup = ServiceGroup(
-    services: [clusterClient],
-    gracefulShutdownSignals: [.sigint, .sigterm],
-    logger: logger
-)
-try await serviceGroup.run()
-```
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "clusterSetup")
 
 ``ValkeyClusterClient`` automatically handles:
 
@@ -379,20 +356,7 @@ try await serviceGroup.run()
 
 For environments with custom service discovery (such as cloud provider discovery endpoints), implement the ``ValkeyNodeDiscovery`` protocol:
 
-```swift
-struct MyCloudDiscovery: ValkeyNodeDiscovery {
-    func discoverNodes() async throws -> [any ValkeyNodeDescriptionProtocol] {
-        // Query your discovery endpoint
-        // Return node descriptions
-    }
-}
-
-let clusterClient = ValkeyClusterClient(
-    clientConfiguration: .init(authentication: .init(password: "secret")),
-    nodeDiscovery: MyCloudDiscovery(),
-    logger: logger
-)
-```
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "customDiscovery")
 
 ## Verify the migration
 
