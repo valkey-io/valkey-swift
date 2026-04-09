@@ -39,6 +39,17 @@ extension CLUSTER.NODES {
     public typealias Response = ValkeyClusterNodes
 }
 
+extension CLUSTERSCAN {
+    public struct Response: RESPTokenDecodable, Sendable {
+        public let cursor: String
+        public let keys: RESPToken.Array
+
+        public init(_ token: RESPToken) throws(RESPDecodeError) {
+            (self.cursor, self.keys) = try token.decodeArrayElements(as: (String, RESPToken.Array).self)
+        }
+    }
+}
+
 /// Response type for cluster node listing commands.
 ///
 /// Contains an array of cluster nodes from CLUSTER NODES, CLUSTER REPLICAS responses.

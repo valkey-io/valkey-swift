@@ -228,6 +228,28 @@ struct CommandTests {
                 }
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func scan() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["CLUSTERSCAN", "0", "MATCH", "test*", "COUNT", "2"]),
+                    response: .array([
+                        .bulkString("8"),
+                        .array([
+                            .bulkString("entry1"),
+                            .bulkString("entry2"),
+                        ]),
+                    ])
+                ),
+            ) { connection in
+                let result = try await connection.clusterscan(cursor: "0", matchPattern: "test*", count: 2)
+                #expect(result.cursor == "8")
+                #expect(try result.keys.decode(as: [String].self) == ["entry1", "entry2"])
+            }
+        }
+
     }
 
     struct GenericCommands {
