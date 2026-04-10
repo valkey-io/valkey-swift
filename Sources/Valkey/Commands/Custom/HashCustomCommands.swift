@@ -284,7 +284,14 @@ extension HSETEX {
             data.encode(into: &commandEncoder)
         }
     }
-    @available(*, deprecated, message: "Use init with `fields: [Field]` parameter")
+
+    @available(*, deprecated, renamed: "fieldsData")
+    var fields: Fields {
+        get { .init(numfields: self.fieldsData.count, data: self.fieldsData) }
+        set { self.fieldsData = newValue.data }
+    }
+
+    @available(*, deprecated, renamed: "hsetex(_:fieldsCondition:expiration:fieldsData:)")
     @inlinable
     public init(_ key: ValkeyKey, fieldsCondition: FieldsCondition? = nil, expiration: Expiration? = nil, fields: Fields) {
         self.key = key
@@ -463,7 +470,7 @@ extension ValkeyClientProtocol {
     ///     * 1: All the fields value and or expiration time was set.
     @inlinable
     @discardableResult
-    @available(*, deprecated, message: "Use version with `fields: [Field]` parameter")
+    @available(*, deprecated, renamed: "hsetex(_:fieldsCondition:expiration:fieldsData:)")
     public func hsetex<Field: RESPStringRenderable, Value: RESPStringRenderable>(
         _ key: ValkeyKey,
         fieldsCondition: HSETEX<Field, Value>.FieldsCondition? = nil,
