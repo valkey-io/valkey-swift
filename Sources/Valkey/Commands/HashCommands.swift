@@ -166,35 +166,14 @@ public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
 /// Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire
 @_documentation(visibility: internal)
 public struct HEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HEXPIRETIME" }
 
     public var key: ValkeyKey
-    public var fields: Fields
+    public var fields: [Field]
 
-    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, fields: [Field]) {
         self.key = key
         self.fields = fields
     }
@@ -204,7 +183,7 @@ public struct HEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HEXPIRETIME", key, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray("HEXPIRETIME", key, RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) }))
     }
 }
 
@@ -289,36 +268,15 @@ public struct HGETEX<Field: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HGETEX" }
 
     public var key: ValkeyKey
     public var expiration: Expiration?
-    public var fields: Fields
+    public var fields: [Field]
 
-    @inlinable public init(_ key: ValkeyKey, expiration: Expiration? = nil, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, expiration: Expiration? = nil, fields: [Field]) {
         self.key = key
         self.expiration = expiration
         self.fields = fields
@@ -327,7 +285,7 @@ public struct HGETEX<Field: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HGETEX", key, expiration, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray("HGETEX", key, expiration, RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) }))
     }
 }
 
@@ -491,35 +449,14 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
 /// Remove the existing expiration on a hash key's field(s).
 @_documentation(visibility: internal)
 public struct HPERSIST<Field: RESPStringRenderable>: ValkeyCommand {
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HPERSIST" }
 
     public var key: ValkeyKey
-    public var fields: Fields
+    public var fields: [Field]
 
-    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, fields: [Field]) {
         self.key = key
         self.fields = fields
     }
@@ -527,7 +464,7 @@ public struct HPERSIST<Field: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HPERSIST", key, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray("HPERSIST", key, RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) }))
     }
 }
 
@@ -553,27 +490,6 @@ public struct HPEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HPEXPIRE" }
@@ -581,9 +497,9 @@ public struct HPEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var milliseconds: Int
     public var condition: Condition?
-    public var fields: Fields
+    public var fields: [Field]
 
-    @inlinable public init(_ key: ValkeyKey, milliseconds: Int, condition: Condition? = nil, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, milliseconds: Int, condition: Condition? = nil, fields: [Field]) {
         self.key = key
         self.milliseconds = milliseconds
         self.condition = condition
@@ -593,7 +509,13 @@ public struct HPEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HPEXPIRE", key, milliseconds, condition, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray(
+            "HPEXPIRE",
+            key,
+            milliseconds,
+            condition,
+            RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) })
+        )
     }
 }
 
@@ -619,27 +541,6 @@ public struct HPEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HPEXPIREAT" }
@@ -647,9 +548,9 @@ public struct HPEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var unixTimeMilliseconds: Int
     public var condition: Condition?
-    public var fields: Fields
+    public var fields: [Field]
 
-    @inlinable public init(_ key: ValkeyKey, unixTimeMilliseconds: Int, condition: Condition? = nil, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, unixTimeMilliseconds: Int, condition: Condition? = nil, fields: [Field]) {
         self.key = key
         self.unixTimeMilliseconds = unixTimeMilliseconds
         self.condition = condition
@@ -659,42 +560,27 @@ public struct HPEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HPEXPIREAT", key, unixTimeMilliseconds, condition, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray(
+            "HPEXPIREAT",
+            key,
+            unixTimeMilliseconds,
+            condition,
+            RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) })
+        )
     }
 }
 
 /// Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire
 @_documentation(visibility: internal)
 public struct HPEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HPEXPIRETIME" }
 
     public var key: ValkeyKey
-    public var fields: Fields
+    public var fields: [Field]
 
-    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, fields: [Field]) {
         self.key = key
         self.fields = fields
     }
@@ -704,42 +590,21 @@ public struct HPEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HPEXPIRETIME", key, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray("HPEXPIRETIME", key, RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) }))
     }
 }
 
 /// Returns the remaining time to live in milliseconds of a hash key's field(s) that have an associated expiration.
 @_documentation(visibility: internal)
 public struct HPTTL<Field: RESPStringRenderable>: ValkeyCommand {
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HPTTL" }
 
     public var key: ValkeyKey
-    public var fields: Fields
+    public var fields: [Field]
 
-    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, fields: [Field]) {
         self.key = key
         self.fields = fields
     }
@@ -749,7 +614,7 @@ public struct HPTTL<Field: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HPTTL", key, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray("HPTTL", key, RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) }))
     }
 }
 
@@ -945,27 +810,6 @@ public struct HSETEX<Field: RESPStringRenderable, Value: RESPStringRenderable>: 
             RESPRenderableBulkString(value).encode(into: &commandEncoder)
         }
     }
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var data: [FieldsData]
-
-        @inlinable
-        public init(numfields: Int, data: [FieldsData]) {
-            self.numfields = numfields
-            self.data = data
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + data.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            data.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = Int
 
     @inlinable public static var name: String { "HSETEX" }
@@ -973,19 +817,19 @@ public struct HSETEX<Field: RESPStringRenderable, Value: RESPStringRenderable>: 
     public var key: ValkeyKey
     public var fieldsCondition: FieldsCondition?
     public var expiration: Expiration?
-    public var fields: Fields
+    public var fieldsData: [FieldsData]
 
-    @inlinable public init(_ key: ValkeyKey, fieldsCondition: FieldsCondition? = nil, expiration: Expiration? = nil, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, fieldsCondition: FieldsCondition? = nil, expiration: Expiration? = nil, fieldsData: [FieldsData]) {
         self.key = key
         self.fieldsCondition = fieldsCondition
         self.expiration = expiration
-        self.fields = fields
+        self.fieldsData = fieldsData
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HSETEX", key, fieldsCondition, expiration, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray("HSETEX", key, fieldsCondition, expiration, RESPArrayWithTokenAndCount("FIELDS", fieldsData))
     }
 }
 
@@ -1040,35 +884,14 @@ public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
 /// Returns the remaining time to live (in seconds) of a hash key's field(s) that have an associated expiration.
 @_documentation(visibility: internal)
 public struct HTTL<Field: RESPStringRenderable>: ValkeyCommand {
-    public struct Fields: RESPRenderable, Sendable, Hashable {
-        public var numfields: Int
-        public var fields: [Field]
-
-        @inlinable
-        public init(numfields: Int, fields: [Field]) {
-            self.numfields = numfields
-            self.fields = fields
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            numfields.respEntries + fields.map { RESPRenderableBulkString($0) }.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            numfields.encode(into: &commandEncoder)
-            fields.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
-        }
-    }
     public typealias Response = RESPToken.Array
 
     @inlinable public static var name: String { "HTTL" }
 
     public var key: ValkeyKey
-    public var fields: Fields
+    public var fields: [Field]
 
-    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+    @inlinable public init(_ key: ValkeyKey, fields: [Field]) {
         self.key = key
         self.fields = fields
     }
@@ -1078,7 +901,7 @@ public struct HTTL<Field: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HTTL", key, RESPWithToken("FIELDS", fields))
+        commandEncoder.encodeArray("HTTL", key, RESPArrayWithTokenAndCount("FIELDS", fields.map { RESPRenderableBulkString($0) }))
     }
 }
 
@@ -1174,10 +997,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of specified fields.
     /// - Returns: List of values associated with the result of getting the absolute expiry timestamp of the specific fields, in the same order as they are requested.
     @inlinable
-    public func hexpiretime<Field: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        fields: HEXPIRETIME<Field>.Fields
-    ) async throws(ValkeyClientError) -> RESPToken.Array {
+    public func hexpiretime<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HEXPIRETIME(key, fields: fields))
     }
 
@@ -1216,7 +1036,7 @@ extension ValkeyClientProtocol {
     public func hgetex<Field: RESPStringRenderable>(
         _ key: ValkeyKey,
         expiration: HGETEX<Field>.Expiration? = nil,
-        fields: HGETEX<Field>.Fields
+        fields: [Field]
     ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HGETEX(key, expiration: expiration, fields: fields))
     }
@@ -1303,10 +1123,7 @@ extension ValkeyClientProtocol {
     /// - Returns: List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.
     @inlinable
     @discardableResult
-    public func hpersist<Field: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        fields: HPERSIST<Field>.Fields
-    ) async throws(ValkeyClientError) -> RESPToken.Array {
+    public func hpersist<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HPERSIST(key, fields: fields))
     }
 
@@ -1322,7 +1139,7 @@ extension ValkeyClientProtocol {
         _ key: ValkeyKey,
         milliseconds: Int,
         condition: HPEXPIRE<Field>.Condition? = nil,
-        fields: HPEXPIRE<Field>.Fields
+        fields: [Field]
     ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HPEXPIRE(key, milliseconds: milliseconds, condition: condition, fields: fields))
     }
@@ -1339,7 +1156,7 @@ extension ValkeyClientProtocol {
         _ key: ValkeyKey,
         unixTimeMilliseconds: Int,
         condition: HPEXPIREAT<Field>.Condition? = nil,
-        fields: HPEXPIREAT<Field>.Fields
+        fields: [Field]
     ) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HPEXPIREAT(key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition, fields: fields))
     }
@@ -1351,10 +1168,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of specified fields.
     /// - Returns: List of values associated with the result of getting the absolute expiry timestamp of the specific fields, in the same order as they are requested.
     @inlinable
-    public func hpexpiretime<Field: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        fields: HPEXPIRETIME<Field>.Fields
-    ) async throws(ValkeyClientError) -> RESPToken.Array {
+    public func hpexpiretime<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HPEXPIRETIME(key, fields: fields))
     }
 
@@ -1365,7 +1179,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of specified fields.
     /// - Returns: List of values associated with the result of getting the remaining time-to-live of the specific fields, in the same order as they are requested.
     @inlinable
-    public func hpttl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HPTTL<Field>.Fields) async throws(ValkeyClientError) -> RESPToken.Array {
+    public func hpttl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HPTTL(key, fields: fields))
     }
 
@@ -1432,9 +1246,9 @@ extension ValkeyClientProtocol {
         _ key: ValkeyKey,
         fieldsCondition: HSETEX<Field, Value>.FieldsCondition? = nil,
         expiration: HSETEX<Field, Value>.Expiration? = nil,
-        fields: HSETEX<Field, Value>.Fields
+        fieldsData: [HSETEX<Field, Value>.FieldsData]
     ) async throws(ValkeyClientError) -> Int {
-        try await execute(HSETEX(key, fieldsCondition: fieldsCondition, expiration: expiration, fields: fields))
+        try await execute(HSETEX(key, fieldsCondition: fieldsCondition, expiration: expiration, fieldsData: fieldsData))
     }
 
     /// Sets the value of a field in a hash only when the field doesn't exist.
@@ -1473,7 +1287,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of specified fields.
     /// - Returns: List of values associated with the result of getting the remaining time-to-live of the specific fields, in the same order as they are requested.
     @inlinable
-    public func httl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HTTL<Field>.Fields) async throws(ValkeyClientError) -> RESPToken.Array {
+    public func httl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await execute(HTTL(key, fields: fields))
     }
 

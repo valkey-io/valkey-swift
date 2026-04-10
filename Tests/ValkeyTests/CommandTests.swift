@@ -1555,6 +1555,21 @@ struct CommandTests {
 
         @Test
         @available(valkeySwift 1.0, *)
+        func hgetex() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["HGETEX", "myhash", "EX", "0", "FIELDS", "3", "f1", "f2", "f3"]),
+                    response: .array([.bulkError("v1"), .bulkString("v2"), .bulkString("v3")])
+                ),
+            ) { connection in
+                let result = try await connection.hgetex("myhash", expiration: .seconds(0), fields: ["f1", "f2", "f3"])
+                let strings = try result.decode(as: [String].self)
+                #expect(strings == ["v1", "v2", "v3"])
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func hsetex() async throws {
             try await testCommandEncodesDecodes(
                 (
@@ -1566,7 +1581,7 @@ struct CommandTests {
                     "myhash",
                     fieldsCondition: .fnx,
                     expiration: .seconds(10),
-                    fields: [.init(field: "f2", value: "v2"), .init(field: "f3", value: "v3")]
+                    fieldsData: [.init(field: "f2", value: "v2"), .init(field: "f3", value: "v3")]
                 )
                 #expect(result == 1)
             }

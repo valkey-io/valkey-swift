@@ -147,29 +147,79 @@ extension [CommandPatch] {
             .init(
                 "HEXPIRE",
                 path: ["fields"],
-                patch: .replace(
-                    .init(
-                        name: "field",
-                        type: .string,
-                        multiple: true,
-                        token: "FIELDS",
-                        combinedWithCount: .itemCount
-                    )
-                )
+                patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
             ),
             // HEXPIREAT group field count with fields
             .init(
                 "HEXPIREAT",
                 path: ["fields"],
+                patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
+            ),
+            // HEXPIRETIME group field count with fields
+            .init(
+                "HEXPIRETIME",
+                path: ["fields"],
+                patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
+            ),
+            // HGETEX group field count with fields
+            .init(
+                "HGETEX",
+                path: ["fields"],
+                patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
+            ),
+            // HPERSIST group field count with fields
+            .init(
+                "HPERSIST",
+                path: ["fields"],
+                patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
+            ),
+            // HPEXPIRE group field count with fields
+            .init(
+                "HPEXPIRE",
+                path: ["fields"],
+                patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
+            ),
+            // HPEXPIREAT group field count with fields
+            .init(
+                "HPEXPIREAT",
+                path: ["fields"],
+                patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
+            ),
+            // HPEXPIRETIME group field count with fields
+            .init(
+                "HPEXPIRETIME",
+                path: ["fields"],
+                patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
+            ),
+            // HPTTL group field count with fields
+            .init(
+                "HPTTL",
+                path: ["fields"],
+                patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
+            ),
+            // HSETEX group field count with fields
+            .init(
+                "HSETEX",
+                path: ["fields"],
                 patch: .replace(
                     .init(
-                        name: "field",
-                        type: .string,
+                        name: "fields_data",
+                        type: .block,
                         multiple: true,
                         token: "FIELDS",
+                        arguments: [
+                            .init(name: "field", type: .string),
+                            .init(name: "value", type: .string),
+                        ],
                         combinedWithCount: .itemCount
                     )
                 )
+            ),
+            // HTTL group field count with fields
+            .init(
+                "HTTL",
+                path: ["fields"],
+                patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
             ),
         ]
     }
