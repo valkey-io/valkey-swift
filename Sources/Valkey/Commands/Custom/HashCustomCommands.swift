@@ -286,7 +286,7 @@ extension HSETEX {
     }
 
     @available(*, deprecated, renamed: "fieldsData")
-    var fields: Fields {
+    public var fields: Fields {
         get { .init(numfields: self.fieldsData.count, data: self.fieldsData) }
         set { self.fieldsData = newValue.data }
     }
