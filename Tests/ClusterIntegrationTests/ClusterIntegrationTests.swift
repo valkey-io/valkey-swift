@@ -1002,7 +1002,7 @@ struct ClusterIntegrationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func testCusterWideMGET() async throws {
+    func testClusterWideMGET() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!

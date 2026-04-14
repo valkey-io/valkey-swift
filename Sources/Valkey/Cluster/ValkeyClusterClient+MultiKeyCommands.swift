@@ -25,7 +25,7 @@ extension ValkeyClusterClient {
     ) async throws(ValkeyClientError) -> Command.Response {
         let keys = command.keysAffected
 
-        // Single-slot fast path
+        // Fast path for single slot or when there are no keys
         guard let partitions = partitionBySlot(keys: keys) else {
             return try await execute(command)
         }
@@ -33,10 +33,10 @@ extension ValkeyClusterClient {
         // Build one sub-command per slot
         let subCommands: [any ValkeyCommand] = partitions.map { command.createSubCommand(for: $0.indices) }
 
-        // Dispatch in parallel using the existing cross-node pipelining path.
+        // Dispatch in parallel using the existing cross-node pipelining path
         let rawResults = await self.execute(subCommands)
 
-        // Unwrap results and pair with original key indices for combineResults.
+        // Unwrap results and pair with original key indices for combineResults
         var slotResults: [(indices: [Int], result: RESPToken)] = []
         slotResults.reserveCapacity(partitions.count)
         for (i, partition) in partitions.enumerated() {
