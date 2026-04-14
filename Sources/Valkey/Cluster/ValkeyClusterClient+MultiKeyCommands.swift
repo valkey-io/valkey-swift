@@ -15,7 +15,7 @@ extension ValkeyClusterClient {
     ///
     /// Keys are partitioned by hash slot. One sub-command is dispatched per slot,
     /// all slots are executed in parallel, and results are reassembled in the
-    /// original key order via ``ValkeyClusterMultiKeyCommand/assemble(originalKeyCount:slotResults:)``.
+    /// original key order via ``ValkeyClusterMultiKeyCommand/combineResults(originalKeyCount:slotResults:)``.
     ///
     /// - Parameter command: A command conforming to ``ValkeyClusterMultiKeyCommand``.
     /// - Returns: The assembled command response in original key order.

@@ -64,7 +64,7 @@ extension MGET: ValkeyClusterMultiKeyCommand {
 @available(valkeySwift 1.0, *)
 extension ValkeyClusterClient {
 
-    /// Atomically returns the string values of one or more keys, transparently
+    /// Returns the string values of one or more keys, transparently
     /// routing sub-commands across cluster nodes for keys in different hash slots.
     ///
     /// - Documentation: [MGET](https://valkey.io/commands/mget)
