@@ -36,11 +36,11 @@ package protocol ValkeyClusterMultiKeyCommand: ValkeyCommand {
     /// - Parameters:
     ///   - originalKeyCount: Total number of keys in the original command.
     ///   - slotResults: One entry per slot, each containing the original key
-    ///     indices for that slot and the raw RESP result.
+    ///     indices for that slot and the successful RESP token.
     /// - Returns: The fully combined response in original key order.
-    /// - Throws: ``ValkeyClientError`` if any sub-result is a failure.
+    /// - Throws: ``RESPDecodeError`` if any sub-result cannot be decoded.
     static func combineResults(
         originalKeyCount: Int,
-        slotResults: [(indices: [Int], result: Result<RESPToken, ValkeyClientError>)]
-    ) throws(ValkeyClientError) -> Self.Response
+        slotResults: [(indices: [Int], result: RESPToken)]
+    ) throws(RESPDecodeError) -> Self.Response
 }

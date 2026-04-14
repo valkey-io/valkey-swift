@@ -20,16 +20,14 @@ extension ValkeyClusterClient {
     /// - Parameter command: A command conforming to ``ValkeyClusterMultiKeyCommand``.
     /// - Returns: The assembled command response in original key order.
     /// - Throws: ``ValkeyClientError`` if execution on any node fails.
-    package func execute<Command: ValkeyClusterMultiKeyCommand>(
+    package func executeMultiKeyCommand<Command: ValkeyClusterMultiKeyCommand>(
         _ command: Command
     ) async throws(ValkeyClientError) -> Command.Response {
         let keys = command.keysAffected
 
-        let partitions = partitionBySlot(keys: keys)
-
         // Single-slot fast path
-        if partitions.count <= 1 {
-            return try await executeSingleCommand(command)
+        guard let partitions = partitionBySlot(keys: keys) else {
+            return try await execute(command)
         }
 
         // Build one sub-command per slot
@@ -38,62 +36,46 @@ extension ValkeyClusterClient {
         // Dispatch in parallel using the existing cross-node pipelining path.
         let rawResults = await self.execute(subCommands)
 
-        // Pair each raw result with its original key indices for combineResults.
-        let slotResults = partitions.enumerated().map { i, partition in
-            (indices: partition.indices, result: rawResults[i])
+        // Unwrap results and pair with original key indices for combineResults.
+        var slotResults: [(indices: [Int], result: RESPToken)] = []
+        slotResults.reserveCapacity(partitions.count)
+        for (i, partition) in partitions.enumerated() {
+            let token = try rawResults[i].get()
+            slotResults.append((indices: partition.indices, result: token))
         }
 
-        return try Command.combineResults(originalKeyCount: keys.count, slotResults: slotResults)
-    }
-
-    // MARK: - Concrete mget (shadow ValkeyClientProtocol extension method)
-    //
-    // This concrete method is preferred over the protocol-extension default
-    // for static dispatch on ValkeyClusterClient. It calls execute(_:) which
-    // resolves — via static dispatch — to the constrained
-    // execute<Command: ValkeyClusterMultiKeyCommand> overload above, enabling
-    // transparent cross-slot scatter/gather.
-
-    /// Atomically returns the string values of one or more keys, transparently
-    /// routing sub-commands across cluster nodes for keys in different hash slots.
-    ///
-    /// - Documentation: [MGET](https://valkey.io/commands/mget)
-    /// - Complexity: O(N) where N is the number of keys to retrieve.
-    /// - Parameter keys: The keys whose values to retrieve.
-    /// - Returns: A ``RESPToken/Array`` with values in the same order as `keys`.
-    ///   Null tokens represent absent keys.
-    /// - Throws: ``ValkeyClientError`` if any node fails.
-    public func mget(keys: [ValkeyKey]) async throws(ValkeyClientError) -> RESPToken.Array {
-        try await execute(MGET(keys: keys))
-    }
-
-    // MARK: - Internal helpers
-
-    /// Executes a single command via the standard ``ValkeyCommand`` code path.
-    ///
-    /// This trampoline exists because `execute<C: ValkeyClusterMultiKeyCommand>`
-    /// would otherwise recursively call itself — Swift overload resolution prefers
-    /// the more constrained overload. Inside this helper the compiler only sees
-    /// `Command: ValkeyCommand`, so it resolves to the base `execute` overload.
-    private func executeSingleCommand<Command: ValkeyCommand>(
-        _ command: Command
-    ) async throws(ValkeyClientError) -> Command.Response {
-        try await self.execute(command)
+        do {
+            return try Command.combineResults(originalKeyCount: keys.count, slotResults: slotResults)
+        } catch {
+            throw ValkeyClientError(.respDecodeError, error: error)
+        }
     }
 
     /// Groups key indices by hash slot.
     ///
-    /// - Returns: An array of `(slot, indices)` pairs, one per unique slot.
+    /// Returns `nil` when all keys belong to a single slot (or there are no keys),
+    /// otherwise returns an array containing slot and indices for keys belonging to the slot.
+    ///
+    /// - Returns: An array of `(slot, indices)` pairs when keys span multiple slots, or `nil`.
     private func partitionBySlot(
         keys: some Collection<ValkeyKey>
-    ) -> [(slot: HashSlot, indices: [Int])] {
-        var slotIndices: [HashSlot: [Int]] = [:]
+    ) -> [(slot: HashSlot, indices: [Int])]? {
+        guard let firstKey = keys.first else { return nil }
+
+        let firstSlot = HashSlot(key: firstKey)
+        var slotIndices: [HashSlot: [Int]]?
 
         for (i, key) in keys.enumerated() {
             let slot = HashSlot(key: key)
-            slotIndices[slot, default: []].append(i)
+            if slotIndices != nil {
+                slotIndices![slot, default: []].append(i)
+            } else if slot != firstSlot {
+                // Second distinct slot found — backfill indices for firstSlot
+                slotIndices = [firstSlot: Array(0..<i), slot: [i]]
+            }
         }
 
+        guard let slotIndices else { return nil }
         return slotIndices.map { (slot: $0.key, indices: $0.value) }
     }
 }

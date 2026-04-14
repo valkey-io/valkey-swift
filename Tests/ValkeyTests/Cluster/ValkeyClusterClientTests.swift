@@ -247,22 +247,34 @@ actor TestCluster {
                 }
                 await self.setKey(key, value: value)
                 return .simpleString("OK")
+
             case "MGET":
                 var keys: [String] = []
+                var slot: HashSlot?
+
+                // Verify all keys belong to the same slot
                 while let key = iterator.next() {
+                    let keySlot = HashSlot(key: ValkeyKey(key))
+                    if let existingSlot = slot, existingSlot != keySlot {
+                        return .bulkError("CROSSSLOT Keys in request don't hash to the same slot")
+                    } else {
+                        slot = keySlot
+                    }
                     keys.append(key)
+                }
+
+                guard let hashSlot = slot else {
+                    return .bulkError("ERR wrong number of arguments for 'mget' command")
+                }
+                guard let shard = await self.getShard(hashSlot) else {
+                    return .array(keys.map { _ in .null })
+                }
+                let addressDetails = await self.addressMap[address]
+                if shard.index != addressDetails?.shardIndex {
+                    return .bulkError("MOVED \(hashSlot.rawValue) \(shard.shard.primary.address)")
                 }
                 var values: [RESP3Value] = []
                 for key in keys {
-                    let hashSlot = HashSlot(key: key.utf8)
-                    guard let shard = await self.getShard(hashSlot) else {
-                        values.append(.null)
-                        continue
-                    }
-                    let addressDetails = await self.addressMap[address]
-                    if shard.index != addressDetails?.shardIndex {
-                        return .bulkError("MOVED \(hashSlot.rawValue) \(shard.shard.primary.address)")
-                    }
                     if key.hasPrefix("$address") {
                         values.append(.bulkString(address.description))
                     } else {
