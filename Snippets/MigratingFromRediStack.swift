@@ -6,6 +6,7 @@
 
 // snippet.hide
 import Logging
+import NIOSSL
 import ServiceLifecycle
 import Valkey
 
@@ -58,6 +59,26 @@ func connectionPoolExample() async {
         logger: logger
     )
     // Pool starts when you call client.run() and stops on cancellation
+    async let _ = client.run()
+    // Use client here
+    //snippet.end
+
+    // snippet.hide
+}
+
+@available(macOS 15.0, *)
+func tlsConfigurationExample() async throws {
+    // snippet.show
+
+    // snippet.tlsConfiguration
+    let tlsConfiguration = TLSConfiguration.makeClientConfiguration()
+    let client = ValkeyClient(
+        .hostname("valkey.example.com", port: 6380),
+        configuration: try .init(
+            tls: .enable(tlsConfiguration, tlsServerName: "valkey.example.com")
+        ),
+        logger: logger
+    )
     //snippet.end
 
     // snippet.hide
@@ -93,15 +114,11 @@ func serviceLifecycleExample() async throws {
 func commandExamples(_ client: ValkeyClient) async throws {
     // snippet.show
 
-    // snippet.stringCommands
+    // snippet.stringCommandsAndTypes
     try await client.set("mykey", value: "myvalue")
     let value: RESPBulkString? = try await client.get("mykey")
-    //snippet.end
-
-    // snippet.typedReturnValues
-    let typedValue: RESPBulkString? = try await client.get("mykey")
-    if let typedValue {
-        print(String(typedValue))
+    if let value {
+        print(String(value))
     }
     //snippet.end
 

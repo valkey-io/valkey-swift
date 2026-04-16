@@ -14,6 +14,7 @@ Valkey Swift offers several advantages over RediStack:
 - **Connection pooling** — A built-in connection pool provides persistent connections with automatic management.
 - **Cluster support** — The client natively supports cluster mode with automatic routing, MOVED/ASK redirection, and topology refresh.
 - **RESP3 protocol** — The client fully supports RESP3, enabling features like client-side caching and multiple subscriptions on a single connection.
+- **Built-in TLS** — Enable TLS with a single configuration option instead of manually wiring NIO SSL handlers into the channel pipeline.
 - **Typed commands** — Each command is a dedicated type with compile-time response type checking.
 - **Service lifecycle** — Both ``ValkeyClient`` and ``ValkeyClusterClient`` conform to `Service` from swift-service-lifecycle.
 
@@ -124,6 +125,16 @@ Valkey Swift manages the pool automatically:
 
 @Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "connectionPool")
 
+### Configure TLS
+
+RediStack has no built-in TLS support.
+Enabling TLS requires manually creating an `NIOSSLContext` and injecting an `NIOSSLClientHandler` into the channel pipeline through a custom connection factory.
+The Vapor Redis integration, for example, needed to explicitly build a channel pipeline with the SSL handler before adding Redis protocol handlers.
+
+Valkey Swift integrates TLS directly into the client configuration:
+
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "tlsConfiguration")
+
 ### Integrate with service lifecycle
 
 RediStack has no built-in service lifecycle support:
@@ -156,7 +167,7 @@ let getFuture: EventLoopFuture<String?> =
 
 Valkey Swift uses async/await:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "stringCommands")
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "stringCommandsAndTypes")
 
 ### Review command signature differences
 
@@ -193,25 +204,12 @@ default:
 
 Valkey Swift provides typed responses directly:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "typedReturnValues")
+@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "stringCommandsAndTypes")
 
 ### Use explicit pipelining
 
 RediStack has no dedicated pipelining API.
-Valkey Swift provides typed pipelining with parameter packs.
-
-RediStack pipelines implicitly through concurrent futures:
-
-```swift
-let setFuture = client.set("foo", to: "100")
-let incrFuture = client.increment("foo")
-let getFuture = client.get("foo")
-try setFuture.wait()
-try incrFuture.wait()
-let result = try getFuture.wait()
-```
-
-Valkey Swift pipelines explicitly:
+Valkey Swift provides typed pipelining with parameter packs:
 
 @Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "pipelining")
 
@@ -309,6 +307,8 @@ See <doc:Pubsub>.
 ## Migrate error handling
 
 RediStack and Valkey Swift use different error types, so update your error-handling code.
+Valkey Swift uses typed throws, with most functions throwing ``ValkeyClientError`` directly.
+Use `catch let error as ValkeyClientError` to catch errors, which removes runtime type-checking overhead.
 
 | RediStack | Valkey Swift | Notes |
 |-----------|--------------|-------|
@@ -369,9 +369,10 @@ Use this checklist to track your migration progress:
 - [ ] Update command call sites to the new method signatures
 - [ ] Replace `EventLoopFuture` chains with `async`/`await`
 - [ ] Replace `RESPValue` handling with typed response decoding
+- [ ] Adopt explicit pipelining where you need batched command execution
 - [ ] Migrate raw `MULTI`/`EXEC` to the typed transaction API
 - [ ] Replace callback-based pub/sub with `AsyncSequence`-based subscriptions
-- [ ] Update error handling to use ``ValkeyClientError`` and ``ValkeyClusterError``
+- [ ] Update error handling to use ``ValkeyClientError``, ``ValkeyClusterError``, and ``ValkeyTransactionError``
 - [ ] If applicable, migrate from single-node workarounds to ``ValkeyClusterClient``
 - [ ] Remove any `EventLoop` references no longer needed
 - [ ] Run tests and verify behavior
