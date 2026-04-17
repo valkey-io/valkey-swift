@@ -1000,6 +1000,31 @@ struct ClusterIntegrationTests {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClusterWideMGET() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
+            // Use different hash tags to ensure keys land in different slots.
+            try await Self.withKeys(connection: client, suffixes: ["{1}", "{2}", "{3}", "-missing{4}"]) { keys in
+                try await client.set(keys[0], value: "val1", expiration: .seconds(60))
+                try await client.set(keys[1], value: "val2", expiration: .seconds(60))
+                try await client.set(keys[2], value: "val3", expiration: .seconds(60))
+
+                let result = try await client.mget(keys: keys)
+                let values = Array(result)
+                #expect(values.count == 4)
+                #expect(values[0].value == .bulkString(ByteBuffer(string: "val1")))
+                #expect(values[1].value == .bulkString(ByteBuffer(string: "val2")))
+                #expect(values[2].value == .bulkString(ByteBuffer(string: "val3")))
+                #expect(values[3].value == .null)
+            }
+        }
+    }
+
     @available(valkeySwift 1.0, *)
     static func withKey<Value>(
         connection: some ValkeyClientProtocol,
@@ -1014,6 +1039,26 @@ struct ClusterIntegrationTests {
             result = .failure(error)
         }
         try await connection.del(keys: [key])
+        return try result.get()
+    }
+
+    @available(valkeySwift 1.0, *)
+    static func withKeys<Value>(
+        connection: some ValkeyClientProtocol,
+        suffixes: [String],
+        _ operation: ([ValkeyKey]) async throws -> Value
+    ) async throws -> Value {
+        let prefix = UUID().uuidString
+        let keys = suffixes.map { ValkeyKey(prefix + $0) }
+        let result: Result<Value, any Error>
+        do {
+            result = try await .success(operation(keys))
+        } catch {
+            result = .failure(error)
+        }
+        for key in keys {
+            try await connection.del(keys: [key])
+        }
         return try result.get()
     }
 
