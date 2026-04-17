@@ -6,7 +6,7 @@ Add Valkey to your project, manage connections, and send commands.
 
 ### Add Valkey as a dependency
 
-Add Valkey-Swift as a dependency to your project and targets that use it.
+Add Valkey Swift as a dependency to your project and targets that use it.
 
 You can use the `add-dependency` command:
 
