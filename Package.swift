@@ -129,6 +129,13 @@ var package = Package(
             ],
             swiftSettings: defaultSwiftSettings
         ),
+        .testTarget(
+            name: "ConnectionPoolTests",
+            dependencies: [
+                "_ValkeyConnectionPool"
+            ],
+            swiftSettings: defaultSwiftSettings
+        ),
     ]
 )
 
