@@ -12,6 +12,7 @@ It supports all the Valkey commands, pipelining, transactions, subscriptions, an
 ### Articles
 
 - <doc:getting-started>
+- <doc:Migrating-from-RediStack>
 - <doc:Pipelining>
 - <doc:RESPToken-Decoding>
 - <doc:Pubsub>
