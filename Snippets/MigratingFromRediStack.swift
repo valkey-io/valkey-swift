@@ -178,7 +178,7 @@ func errorHandlingExample(_ client: ValkeyClient) async throws {
     // snippet.errorHandling
     do {
         let _: RESPBulkString? = try await client.get("key")
-    } catch let error as ValkeyClientError {
+    } catch {
         switch error.errorCode {
         case .connectionClosed:
             // handle closed connection
@@ -232,6 +232,7 @@ func clusterExamples() async throws {
 // snippet.show
 
 // snippet.customDiscovery
+@available(macOS 15.0, *)
 struct MyCloudDiscovery: ValkeyNodeDiscovery {
     struct NodeDescription: ValkeyNodeDescriptionProtocol {
         var endpoint: String
