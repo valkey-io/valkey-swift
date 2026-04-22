@@ -748,21 +748,21 @@ struct ValkeyClusterClientTests {
             // and every per-node +OK is consumed without error.
             try await client.mset(
                 data: [
-                    MSET<String>.Data(key: "key{3}", value: "value3"),
                     MSET<String>.Data(key: "key{1}", value: "value1"),
-                    MSET<String>.Data(key: "key{4}", value: "value4"),
+                    MSET<String>.Data(key: "key{2}", value: "value2"),
+                    MSET<String>.Data(key: "key{3}", value: "value3"),
                 ]
             )
 
-            var expected: [(key: ValkeyKey, value: String)] = [
-                (ValkeyKey("key{3}"), "value3"),
+            let expectedMultiSlotResponse: [(key: ValkeyKey, value: String)] = [
                 (ValkeyKey("key{1}"), "value1"),
-                (ValkeyKey("key{4}"), "value4"),
+                (ValkeyKey("key{2}"), "value2"),
+                (ValkeyKey("key{3}"), "value3"),
             ]
 
-            for (key, expectedValue) in expected {
+            for (key, expectedValue) in expectedMultiSlotResponse {
                 let response = try #require(await client.get(key))
-                #expect(try String(response) == expectedValue)
+                #expect(String(response) == expectedValue)
             }
 
             // Same-slot fast path: all keys share the same hash tag,
@@ -774,14 +774,14 @@ struct ValkeyClusterClientTests {
                 ]
             )
 
-            expected = [
+            let expectedSingleSlotResponse = [
                 (ValkeyKey("a{1}"), "alpha"),
                 (ValkeyKey("b{1}"), "beta"),
             ]
 
-            for (key, expectedValue) in expected {
+            for (key, expectedValue) in expectedSingleSlotResponse {
                 let response = try #require(await client.get(key))
-                #expect(try String(response) == expectedValue)
+                #expect(String(response) == expectedValue)
             }
         }
     }

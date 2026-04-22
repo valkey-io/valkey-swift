@@ -69,9 +69,9 @@ extension MSET: ValkeyClusterMultiKeyCommand {
         MSET(data: indices.map { self.data[$0] })
     }
 
-    /// Combines per-slot MSET sub-results into a single `+OK` token.
+    /// Combines per-slot MSET sub-results into a single `OK` token.
     ///
-    /// Every sub-result must be the simple string `+OK`; any other response
+    /// Every sub-result must be the simple string `OK`. Any other response
     /// causes a ``RESPDecodeError`` to be thrown.
     package static func combineResults(
         originalKeyCount: Int,
@@ -82,7 +82,7 @@ extension MSET: ValkeyClusterMultiKeyCommand {
                 throw RESPDecodeError(
                     .unexpectedToken,
                     token: result,
-                    message: "Expected '+OK' simple string from MSET sub-command"
+                    message: "Expected 'OK' response from MSET sub-command"
                 )
             }
         }
