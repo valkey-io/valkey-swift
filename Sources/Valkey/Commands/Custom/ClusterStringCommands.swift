@@ -59,7 +59,38 @@ extension MGET: ValkeyClusterMultiKeyCommand {
     }
 }
 
-// MARK: - ValkeyClusterClient + MGET
+// MARK: - MSET
+
+private let okResponseBytes = ByteBuffer(string: "+OK\r\n")
+
+@available(valkeySwift 1.0, *)
+extension MSET: ValkeyClusterMultiKeyCommand {
+    package func createSubCommand(for indices: [Int]) -> MSET {
+        MSET(data: indices.map { self.data[$0] })
+    }
+
+    /// Combines per-slot MSET sub-results into a single `+OK` token.
+    ///
+    /// Every sub-result must be the simple string `+OK`; any other response
+    /// causes a ``RESPDecodeError`` to be thrown.
+    package static func combineResults(
+        originalKeyCount: Int,
+        slotResults: [(indices: [Int], result: RESPToken)]
+    ) throws(RESPDecodeError) -> RESPToken {
+        for (_, result) in slotResults {
+            guard result.base == okResponseBytes else {
+                throw RESPDecodeError(
+                    .unexpectedToken,
+                    token: result,
+                    message: "Expected '+OK' simple string from MSET sub-command"
+                )
+            }
+        }
+        return RESPToken(validated: okResponseBytes)
+    }
+}
+
+// MARK: - ValkeyClusterClient + MGET/MSET
 
 @available(valkeySwift 1.0, *)
 extension ValkeyClusterClient {
@@ -75,5 +106,20 @@ extension ValkeyClusterClient {
     /// - Throws: ``ValkeyClientError`` if any node fails.
     public func mget(keys: [ValkeyKey]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await executeMultiKeyCommand(MGET(keys: keys))
+    }
+
+    /// Sets the values of one or more keys, transparently routing
+    /// sub-commands across cluster nodes for keys in different hash slots.
+    ///
+    /// > Warning: Unlike single-node `MSET`, this is **not atomic**. Sub-commands
+    /// > run in parallel against multiple nodes, so partial failures — where some
+    /// > keys are written and others are not — are observable.
+    ///
+    /// - Documentation: [MSET](https://valkey.io/commands/mset)
+    /// - Complexity: O(N) where N is the number of keys to set.
+    /// - Parameter data: The key-value pairs to set.
+    /// - Throws: ``ValkeyClientError`` if any node fails or returns a non-OK response.
+    public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws(ValkeyClientError) {
+        _ = try await executeMultiKeyCommand(MSET(data: data))
     }
 }
