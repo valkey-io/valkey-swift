@@ -28,7 +28,7 @@ func connectStandaloneExample() async throws {
         logger: logger
     )
 
-    try await withThrowingTaskGroup(of: Void.self) { group in
+    await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask { await client.run() }
         // Use client here
         group.cancelAll()
@@ -155,7 +155,7 @@ func subscribeExamples(_ client: ValkeyClient) async throws {
     // snippet.subscribe
     try await client.subscribe(to: "updates") { subscription in
         for try await item in subscription {
-            print("Received on \(item.channel): \(String(item.message))")
+            print("Received \(String(item.message))")
         }
     }
     //snippet.end
@@ -163,7 +163,7 @@ func subscribeExamples(_ client: ValkeyClient) async throws {
     // snippet.psubscribe
     try await client.psubscribe(to: "user.*") { subscription in
         for try await item in subscription {
-            // process messages
+            print("Received on \(item.channel): \(String(item.message))")
         }
     }
     //snippet.end
