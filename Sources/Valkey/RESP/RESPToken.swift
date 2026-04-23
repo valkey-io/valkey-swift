@@ -594,7 +594,7 @@ extension ByteBuffer {
 
 extension RESPToken {
     /// OK token
-    static package var ok: Self { RESPToken(validated: ByteBuffer(string: "+OK\r\n")) }
+    static package let ok: Self = RESPToken(validated: ByteBuffer(string: "+OK\r\n"))
 }
 
 extension UInt16 {
