@@ -28,7 +28,7 @@ func connectStandaloneExample() async throws {
         logger: logger
     )
 
-    await withThrowingTaskGroup(of: Void.self) { group in
+    await withTaskGroup(of: Void.self) { group in
         group.addTask { await client.run() }
         // Use client here
         group.cancelAll()
