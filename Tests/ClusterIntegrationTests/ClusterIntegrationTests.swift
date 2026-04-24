@@ -1025,6 +1025,38 @@ struct ClusterIntegrationTests {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClusterWideMSET() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
+            // Use different hash tags to ensure keys land in different slots.
+            try await Self.withKeys(connection: client, suffixes: ["{1}", "{2}", "{3}"]) { keys in
+                try await client.mset(
+                    data: [
+                        MSET<String>.Data(key: keys[0], value: "value1"),
+                        MSET<String>.Data(key: keys[1], value: "value2"),
+                        MSET<String>.Data(key: keys[2], value: "value3"),
+                    ]
+                )
+
+                let expected: [(key: ValkeyKey, value: String)] = [
+                    (keys[0], "value1"),
+                    (keys[1], "value2"),
+                    (keys[2], "value3"),
+                ]
+
+                for (key, expectedValue) in expected {
+                    let response = try #require(await client.get(key))
+                    #expect(String(response) == expectedValue)
+                }
+            }
+        }
+    }
+
     @available(valkeySwift 1.0, *)
     static func withKey<Value>(
         connection: some ValkeyClientProtocol,

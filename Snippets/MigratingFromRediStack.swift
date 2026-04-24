@@ -28,7 +28,7 @@ func connectStandaloneExample() async throws {
         logger: logger
     )
 
-    try await withThrowingTaskGroup(of: Void.self) { group in
+    await withTaskGroup(of: Void.self) { group in
         group.addTask { await client.run() }
         // Use client here
         group.cancelAll()
@@ -155,7 +155,7 @@ func subscribeExamples(_ client: ValkeyClient) async throws {
     // snippet.subscribe
     try await client.subscribe(to: "updates") { subscription in
         for try await item in subscription {
-            print("Received on \(item.channel): \(String(item.message))")
+            print("Received \(String(item.message))")
         }
     }
     //snippet.end
@@ -163,7 +163,7 @@ func subscribeExamples(_ client: ValkeyClient) async throws {
     // snippet.psubscribe
     try await client.psubscribe(to: "user.*") { subscription in
         for try await item in subscription {
-            // process messages
+            print("Received on \(item.channel): \(String(item.message))")
         }
     }
     //snippet.end
@@ -178,7 +178,7 @@ func errorHandlingExample(_ client: ValkeyClient) async throws {
     // snippet.errorHandling
     do {
         let _: RESPBulkString? = try await client.get("key")
-    } catch let error as ValkeyClientError {
+    } catch {
         switch error.errorCode {
         case .connectionClosed:
             // handle closed connection
@@ -232,6 +232,7 @@ func clusterExamples() async throws {
 // snippet.show
 
 // snippet.customDiscovery
+@available(macOS 15.0, *)
 struct MyCloudDiscovery: ValkeyNodeDiscovery {
     struct NodeDescription: ValkeyNodeDescriptionProtocol {
         var endpoint: String
