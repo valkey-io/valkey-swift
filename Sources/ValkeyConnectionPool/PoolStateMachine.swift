@@ -11,13 +11,13 @@ import Musl
 struct PoolConfiguration: Sendable {
     /// The minimum number of connections to preserve in the pool.
     ///
-    /// If the pool is mostly idle and the remote servers closes idle connections,
+    /// If the pool is mostly idle and the remote server closes idle connections,
     /// the `ConnectionPool` will initiate new outbound connections proactively
     /// to avoid the number of available connections dropping below this number.
     @usableFromInline
     var minimumConnectionCount: Int = 0
 
-    /// The maximum number of connections to for this pool, to be preserved.
+    /// The maximum number of connections for this pool to be preserved.
     @usableFromInline
     var maximumConnectionSoftLimit: Int = 10
 
@@ -235,17 +235,17 @@ where
     @usableFromInline let generator: ConnectionIDGenerator
 
     @usableFromInline
-    private(set) var connections: ConnectionGroup
+    /*private*/ var connections: ConnectionGroup
     @usableFromInline
-    private(set) var requestQueue: RequestQueue
+    /*private*/ var requestQueue: RequestQueue
     @usableFromInline
-    private(set) var poolState: PoolState = .running
+    /*private*/ var poolState: PoolState = .running
     @usableFromInline
-    private(set) var gracefulShutdownTriggered: Bool = false
+    /*private*/ var gracefulShutdownTriggered: Bool = false
     @usableFromInline
     let clock: Clock
     @usableFromInline
-    private(set) var cacheNoMoreConnectionsAllowed: Bool = false
+    /*private*/ var cacheNoMoreConnectionsAllowed: Bool = false
 
     @inlinable
     init(
@@ -355,10 +355,15 @@ where
 
     @inlinable
     mutating func releaseConnection(_ connection: Connection, streams: UInt16) -> Action {
-        guard let (index, context) = self.connections.releaseConnection(connection.id, streams: streams) else {
+        switch self.connections.releaseConnection(connection.id, streams: streams) {
+        case .available(let index, let context):
+            return self.handleAvailableConnection(index: index, availableContext: context)
+        case .closeConnection(let closeAction):
+            self.cacheNoMoreConnectionsAllowed = false
+            return .init(request: .none, connection: .closeConnection(closeAction.connection, closeAction.timersToCancel))
+        case .none:
             return .none()
         }
-        return self.handleAvailableConnection(index: index, availableContext: context)
     }
 
     mutating func cancelRequest(id: RequestID) -> Action {
@@ -584,10 +589,15 @@ where
     @inlinable
     mutating func connectionKeepAliveDone(_ connection: Connection) -> Action {
         precondition(self.configuration.keepAliveDuration != nil)
-        guard let (index, context) = self.connections.keepAliveSucceeded(connection.id) else {
+        switch self.connections.keepAliveSucceeded(connection.id) {
+        case .available(let index, let context):
+            return self.handleAvailableConnection(index: index, availableContext: context)
+        case .closeConnection(let closeAction):
+            self.cacheNoMoreConnectionsAllowed = false
+            return .init(request: .none, connection: .closeConnection(closeAction.connection, closeAction.timersToCancel))
+        case .none:
             return .none()
         }
-        return self.handleAvailableConnection(index: index, availableContext: context)
     }
 
     @inlinable
@@ -597,6 +607,17 @@ where
         }
 
         return .init(request: .none, connection: .closeConnection(closeAction.connection, closeAction.timersToCancel))
+    }
+
+    @inlinable
+    mutating func connectionWillClose(_ connectionID: ConnectionID) -> Action {
+        self.cacheNoMoreConnectionsAllowed = false
+        switch self.connections.connectionWillClose(connectionID) {
+        case .closeConnection(let closeAction):
+            return .init(request: .none, connection: .closeConnection(closeAction.connection, closeAction.timersToCancel))
+        case .none:
+            return .none()
+        }
     }
 
     @inlinable
@@ -611,8 +632,26 @@ where
             // might pickup the lease request (which would cancel the idle timeout) or the lease request might
             // already be handled by another (currently busy connection), in which case the idle timeout can
             // trigger eventually.
-            let timer = self.connections.rescheduleIdleTimer(connectionID)
-            return .init(request: .none, connection: .scheduleTimers(timer.map { [self.mapTimers($0)] } ?? []))
+            guard let (newTimer, oldCancellationToken) = self.connections.rescheduleIdleTimer(connectionID) else {
+                return .none()
+            }
+            let scheduledTimers = Max2Sequence(self.mapTimers(newTimer))
+            // We must propagate the old idle timer's cancellation continuation so that the
+            // `ConnectionPool.runTimer` child task that stored it can be resumed. Dropping it here
+            // produces a "SWIFT TASK CONTINUATION MISUSE: runTimer(_:in:) leaked its continuation
+            // without resuming it" runtime warning (the stored `CheckedContinuation` is never
+            // resumed and eventually deallocated).
+            if let oldCancellationToken {
+                return .init(
+                    request: .none,
+                    connection: .makeConnectionsCancelAndScheduleTimers(
+                        .init(),
+                        .init(element: oldCancellationToken),
+                        scheduledTimers
+                    )
+                )
+            }
+            return .init(request: .none, connection: .scheduleTimers(scheduledTimers))
         }
 
         guard let closeAction = self.connections.closeConnectionIfIdle(connectionID) else {
@@ -834,7 +873,7 @@ where
 extension PoolStateMachine {
     /// Calculates the delay for the next connection attempt after the given number of failed `attempts`.
     ///
-    /// Our backoff formula is: 100ms * 1.25^(attempts - 1) with 3% jitter that is capped of at 1 minute.
+    /// Our backoff formula is: 100ms * 1.25^(attempts - 1) with 3% jitter that is capped off at 1 minute.
     /// This means for:
     ///   -  1 failed attempt :  100ms
     ///   -  5 failed attempts: ~300ms
@@ -845,10 +884,10 @@ extension PoolStateMachine {
     ///   - 29 failed attempts: ~60s (max out)
     ///
     /// - Parameter attempts: number of failed attempts in a row
-    /// - Returns: time to wait until trying to establishing a new connection
+    /// - Returns: time to wait until trying to establish a new connection
     @usableFromInline
     static func calculateBackoff(failedAttempt attempts: Int) -> Duration {
-        // Our backoff formula is: 100ms * 1.25^(attempts - 1) that is capped of at 1minute
+        // Our backoff formula is: 100ms * 1.25^(attempts - 1) that is capped off at 1 minute
         // This means for:
         //   -  1 failed attempt :  100ms
         //   -  5 failed attempts: ~300ms
