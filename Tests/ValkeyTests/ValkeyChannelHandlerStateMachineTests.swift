@@ -250,12 +250,12 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .respond(let command, let deadlineAction):
             #expect(command.requestID == 2344)
             #expect(deadlineAction == .cancel)
-            command.promise.succeed(RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
+            command.promise.succeed(.ok)
         case .closeWithError, .respondAndClose:
             Issue.record("Invalid receivedResponse action")
         }
         expect(stateMachine.state == .active(.init(context: "testReceivedResponse", pendingCommands: [])))
-        await #expect(try promise.futureResult.get() == RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
+        await #expect(try promise.futureResult.get() == .ok)
     }
 
     @Test
@@ -543,7 +543,7 @@ extension ValkeyChannelHandler.StateMachine {
         case .respond(let command, let deadlineAction):
             #expect(command.requestID == 0)
             #expect(deadlineAction == .cancel)
-            command.promise.succeed(RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
+            command.promise.succeed(.ok)
         case .closeWithError, .respondAndClose:
             Issue.record("Invalid receivedResponse action")
         }

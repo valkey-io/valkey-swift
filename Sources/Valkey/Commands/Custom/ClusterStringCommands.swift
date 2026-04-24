@@ -61,8 +61,6 @@ extension MGET: ValkeyClusterMultiKeyCommand {
 
 // MARK: - MSET
 
-private let okResponseBytes = ByteBuffer(string: "+OK\r\n")
-
 @available(valkeySwift 1.0, *)
 extension MSET: ValkeyClusterMultiKeyCommand {
     package func createSubCommand(for indices: [Int]) -> MSET {
@@ -78,7 +76,7 @@ extension MSET: ValkeyClusterMultiKeyCommand {
         slotResults: [(indices: [Int], result: RESPToken)]
     ) throws(RESPDecodeError) -> RESPToken {
         for (_, result) in slotResults {
-            guard result.base == okResponseBytes else {
+            guard result == .ok else {
                 throw RESPDecodeError(
                     .unexpectedToken,
                     token: result,
@@ -86,7 +84,7 @@ extension MSET: ValkeyClusterMultiKeyCommand {
                 )
             }
         }
-        return RESPToken(validated: okResponseBytes)
+        return .ok
     }
 }
 

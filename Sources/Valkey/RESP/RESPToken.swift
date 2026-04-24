@@ -592,6 +592,11 @@ extension ByteBuffer {
     }
 }
 
+extension RESPToken {
+    /// OK token
+    static package let ok: Self = RESPToken(validated: ByteBuffer(string: "+OK\r\n"))
+}
+
 extension UInt16 {
     fileprivate static let crlf: UInt16 = {
         var value: UInt16 = 0
