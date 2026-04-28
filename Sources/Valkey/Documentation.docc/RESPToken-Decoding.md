@@ -23,17 +23,13 @@ Valkey defines a protocol ``RESPTokenDecodable`` for types that can be decoded f
 Many Swift standard library types conform to `RESPTokenDecodable`.
 You can decode a `RESPToken` in two ways. Call ``RESPTokenDecodable/init(_:)``:
 
-```swift
-let string = String(respToken)
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "decode-string")
 
 Alternatively, call the `RESPToken` method ``RESPToken/decode(as:)``.
 This method chains onto the end of a command call.
 For example, `RPOP` can return a single value or an array of values, so the function returns a `RESPToken` and you decode the result based on whether you requested one or more values to be popped.
 
-```swift
-let string = try await valkeyClient.rpop("myList")?.decode(as: String.self)
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "rpop")
 
 ### Decode an array of response tokens
 
@@ -42,27 +38,17 @@ This avoids the additional memory allocation of creating a Swift `Array`; it can
 `RESPToken.Array` conforms to `Sequence` and its element type is a `RESPToken`.
 You can iterate over its contents and decode each element as follows:
 
-```swift
-let values = try await valkeyClient.smembers("mySet")
-for value in values {
-    let string = try value.decode(as: String.self)
-    print(string)
-}
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "decode-array")
 
 Alternatively, if you don't mind the additional allocation, you can decode as a Swift `Array`.
 
-```swift
-let values = try await valkeyClient.smembers("mySet").decode(as: [String].self)
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "decode-array2")
 
 Values in the same array can represent different types.
 Use either the `RESPToken.Array` method ``RESPToken/Array/decodeElements(as:)`` or the `RESPToken` method ``RESPToken/decodeArrayElements(as:)`` to decode different types from an array.
 The following code decodes the first element of an array as a `String` and the second as an `Int`.
 
-```swift
-let (member, score) = respToken.decodeArrayElements(as: (String, Int).self)
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "decode-array-elements")
 
 ### Decode a map of response tokens
 
@@ -71,29 +57,17 @@ This avoids the additional memory allocation of creating a Swift `Dictionary`; i
 `RESPToken.Map` conforms to `Sequence` and its element type is a key-value pair of `RESPToken` values.
 You can iterate over its contents and decode its elements as follows:
 
-```swift
-let values = try await client.hgetall("hashKey")
-for (keyToken, valueToken) in values {
-    let key = try keyToken.decode(as: String.self)
-    let value = try valueToken.decode(as: String.self)
-    ...
-}
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "decode-map")
 
 Alternatively, if you don't mind the additional allocation, you can decode as a Swift `Dictionary`.
 
-```swift
-let values = try await client.hgetall("hashKey")
-    .decode(as: [String: String].self)
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "decode-map2")
 
 Values in the same map can represent different types.
 Use either the `RESPToken.Map` method ``RESPToken/Map/decodeValues(_:as:)`` or the `RESPToken` method ``RESPToken/decodeMapValues(_:as:)`` to decode specific fields from a map.
 The following code extracts two values with keys `"member"` and `"score"`:
 
-```swift
-let (member, score) = respToken.decodeMapValues("member", "score", as: (String, Int).self)
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "decode-map-elements")
 
 Accessing a value by key name is an O(n) operation, where *n* is the number of entries in the map.
 
@@ -103,26 +77,12 @@ When a command response is a RESP bulk string — for example, `GET` — the com
 RESP bulk strings can be either UTF-8 strings or binary blobs.
 Valkey provides initializers for both `String` and `ByteBuffer` to access the content as a UTF-8 string or binary data.
 
-```swift
-// Get value as a String
-let value = try await client.get("key").map { String($0) }
-// Get value as a ByteBuffer
-let value = try await client.get("key").map { ByteBuffer($0) }
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "bulk-string")
 
 `RESPBulkString` conforms to protocol `RandomAccessCollection` where `Element == UInt8`, so you can access its raw bytes using any `RandomAccessCollection` method.
 
-```swift
-if let response = try await connection.get("key") {
-    print("\(response[0]), \(response[1])")
-}
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "random-access")
 
 `RESPBulkString` also provides high-performance, read-only access to its raw bytes using ``RESPBulkString/bytes`` and ``RESPBulkString/span``, which return a `RawSpan` and `Span<UInt8>` respectively.
 
-```swift
-if let response = try await connection.get("key") {
-    let span = response.span
-    print("\(span[0]), \(span[1])")
-}
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/RESPTokenDecoding", slice: "span")

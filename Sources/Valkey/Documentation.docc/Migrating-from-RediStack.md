@@ -99,7 +99,7 @@ defer { try? connection.close().wait() }
 
 Valkey Swift uses async/await with a background task:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "connectStandalone")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "connectStandalone")
 
 ### Configure a connection pool
 
@@ -123,7 +123,7 @@ pool.close()
 
 Valkey Swift manages the pool automatically:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "connectionPool")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "connectionPool")
 
 ### Configure TLS
 
@@ -133,7 +133,7 @@ The Vapor Redis integration, for example, needed to explicitly build a channel p
 
 Valkey Swift integrates TLS directly into the client configuration:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "tlsConfiguration")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "tlsConfiguration")
 
 ### Integrate with service lifecycle
 
@@ -147,7 +147,7 @@ pool.activate()
 
 Valkey Swift clients conform to `Service`:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "serviceLifecycle")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "serviceLifecycle")
 
 ## Migrate commands
 
@@ -167,7 +167,7 @@ let getFuture: EventLoopFuture<String?> =
 
 Valkey Swift uses async/await:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "stringCommandsAndTypes")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "stringCommandsAndTypes")
 
 ### Review command signature differences
 
@@ -204,14 +204,14 @@ default:
 
 Valkey Swift provides typed responses directly:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "stringCommandsAndTypes")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "stringCommandsAndTypes")
 
 ### Use explicit pipelining
 
 RediStack has no dedicated pipelining API.
 Valkey Swift provides typed pipelining with parameter packs:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "pipelining")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "pipelining")
 
 See <doc:Pipelining>.
 
@@ -250,7 +250,7 @@ try await pool.leaseConnection { connection in
 
 Valkey Swift provides a typed transaction API:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "transactions")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "transactions")
 
 Valkey Swift also supports WATCH for check-and-set operations. See <doc:Transactions>.
 
@@ -278,7 +278,7 @@ client.subscribe(
 
 Valkey Swift uses `AsyncSequence`:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "subscribe")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "subscribe")
 
 ### Subscribe to pattern channels
 
@@ -298,7 +298,7 @@ client.psubscribe(
 
 Valkey Swift uses `psubscribe` with `AsyncSequence`:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "psubscribe")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "psubscribe")
 
 With RESP3, Valkey Swift supports running commands on the same connection as an active subscription.
 A single connection can also handle multiple subscriptions.
@@ -335,7 +335,7 @@ do {
 
 Valkey Swift uses ``ValkeyClientError``:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "errorHandling")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "errorHandling")
 
 ## Migrate to cluster mode
 
@@ -343,7 +343,7 @@ Finally, if you connect to a Redis or Valkey cluster, take advantage of native c
 RediStack doesn't support cluster mode.
 If you connect to a single node in a cluster or use an external discovery mechanism, replace that approach with ``ValkeyClusterClient``:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "clusterSetup")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "clusterSetup")
 
 ``ValkeyClusterClient`` automatically handles:
 
@@ -356,7 +356,7 @@ If you connect to a single node in a cluster or use an external discovery mechan
 
 For environments with custom service discovery (such as cloud provider discovery endpoints), implement the ``ValkeyNodeDiscovery`` protocol:
 
-@Snippet(path: "valkey-swift/Snippets/MigratingFromRediStack", slice: "customDiscovery")
+@Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "customDiscovery")
 
 ## Verify the migration
 
