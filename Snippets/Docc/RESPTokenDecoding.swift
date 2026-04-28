@@ -101,7 +101,7 @@ func respTokenDecodingExamples(_ valkeyClient: ValkeyClient) async throws {
         }
         // snippet.hide
     }
-
+    #if compiler(>=6.2)
     do {
         // snippet.show
         // snippet.span
@@ -111,6 +111,7 @@ func respTokenDecodingExamples(_ valkeyClient: ValkeyClient) async throws {
         }
         // snippet.hide
     }
+    #endif
 }
 
 // Run the command examples against a local Valkey instance.
