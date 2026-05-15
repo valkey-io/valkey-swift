@@ -20,13 +20,16 @@ struct App {
         if #available(valkeySwift 1.0, *) {
             let resourceFolder = Bundle.module.resourceURL!
             let commands = try load(fileURL: resourceFolder.appending(path: "valkey-commands.json"), as: ValkeyCommands.self)
+            try commands.patch(.standardCommandPatches)
             try writeValkeyCommands(toFolder: "Sources/Valkey/Commands/", commands: commands, module: false)
             let bloomCommands = try load(fileURL: resourceFolder.appending(path: "valkey-bloom-commands.json"), as: ValkeyCommands.self)
+            try bloomCommands.patch(.bloomCommandPatches)
             try writeValkeyCommands(toFolder: "Sources/ValkeyBloom/", commands: bloomCommands, module: true)
             let jsonCommands = try load(fileURL: resourceFolder.appending(path: "valkey-json-commands.json"), as: ValkeyCommands.self)
+            try jsonCommands.patch(.jsonCommandPatches)
             try writeValkeyCommands(toFolder: "Sources/ValkeyJSON/", commands: jsonCommands, module: true)
             let searchCommands = try load(fileURL: resourceFolder.appending(path: "valkey-search-commands.json"), as: ValkeyCommands.self)
-            try searchCommands.patch(.searchPatches)
+            try searchCommands.patch(.searchCommandPatches)
             try writeValkeyCommands(toFolder: "Sources/ValkeySearch/", commands: searchCommands, module: true)
         }
     }

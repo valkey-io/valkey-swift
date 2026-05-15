@@ -247,6 +247,76 @@ actor TestCluster {
                 }
                 await self.setKey(key, value: value)
                 return .simpleString("OK")
+
+            case "MGET":
+                var keys: [String] = []
+                var slot: HashSlot?
+
+                // Verify all keys belong to the same slot
+                while let key = iterator.next() {
+                    let keySlot = HashSlot(key: ValkeyKey(key))
+                    if let existingSlot = slot, existingSlot != keySlot {
+                        return .bulkError("CROSSSLOT Keys in request don't hash to the same slot")
+                    } else {
+                        slot = keySlot
+                    }
+                    keys.append(key)
+                }
+
+                guard let hashSlot = slot else {
+                    return .bulkError("ERR wrong number of arguments for 'mget' command")
+                }
+                guard let shard = await self.getShard(hashSlot) else {
+                    return .array(keys.map { _ in .null })
+                }
+                let addressDetails = await self.addressMap[address]
+                if shard.index != addressDetails?.shardIndex {
+                    return .bulkError("MOVED \(hashSlot.rawValue) \(shard.shard.primary.address)")
+                }
+                var values: [RESP3Value] = []
+                for key in keys {
+                    if key.hasPrefix("$address") {
+                        values.append(.bulkString(address.description))
+                    } else {
+                        values.append(await self.getKey(key).map { .bulkString($0) } ?? .null)
+                    }
+                }
+                return .array(values)
+
+            case "MSET":
+                var pairs: [(key: String, value: String)] = []
+                var slot: HashSlot?
+
+                // Parse alternating key/value pairs and verify all keys share a slot
+                while let key = iterator.next() {
+                    guard let value = iterator.next() else {
+                        return .bulkError("ERR wrong number of arguments for 'mset' command")
+                    }
+                    let keySlot = HashSlot(key: ValkeyKey(key))
+                    if let existingSlot = slot, existingSlot != keySlot {
+                        return .bulkError("CROSSSLOT Keys in request don't hash to the same slot")
+                    } else {
+                        slot = keySlot
+                    }
+                    pairs.append((key: key, value: value))
+                }
+
+                guard let hashSlot = slot else {
+                    return .bulkError("ERR wrong number of arguments for 'mset' command")
+                }
+                guard let shard = await self.getShard(hashSlot) else {
+                    return .bulkError("CLUSTERDOWN Hash slot not served")
+                }
+
+                let addressDetails = await self.addressMap[address]
+                if shard.index != addressDetails?.shardIndex || addressDetails?.role == .replica {
+                    return .bulkError("MOVED \(hashSlot.rawValue) \(shard.shard.primary.address)")
+                }
+                for pair in pairs {
+                    await self.setKey(pair.key, value: pair.value)
+                }
+                return .simpleString("OK")
+
             case "CLUSTER":
                 switch iterator.next() {
                 case "SHARDS":
@@ -613,6 +683,106 @@ struct ValkeyClusterClientTests {
             }
             let clusterError = try #require(error?.underlyingError as? ValkeyClusterError)
             #expect(clusterError == .clusterIsMissingNode)
+        }
+    }
+
+    // MARK: - MGET cross-slot tests
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testMGETCrossSlot() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            // Populate keys across three shards
+            _ = try await client.set("key{3}", value: "value3")
+            _ = try await client.set("key{1}", value: "value1")
+            _ = try await client.set("key{4}", value: "value4")
+
+            // Verifies scatter-gather dispatches sub-commands and reassembles
+            // results in original key order with null for absent keys.
+            let result = try await client.mget(keys: ["key{3}", "key{1}", "key{2}", "key{4}"])
+            let tokens = Array(result)
+
+            #expect(try String(tokens[0]) == "value3")
+            #expect(try String(tokens[1]) == "value1")
+            #expect(tokens[2].value == .null)
+            #expect(try String(tokens[3]) == "value4")
+
+            // Same-slot fast path: all keys share the same hash tag,
+            // so the command goes through the standard execute path.
+            _ = try await client.set("a{1}", value: "alpha")
+            _ = try await client.set("b{1}", value: "beta")
+
+            let sameSlotResult = try await client.mget(keys: ["a{1}", "b{1}"])
+            let sameSlotTokens = Array(sameSlotResult)
+
+            #expect(try String(sameSlotTokens[0]) == "alpha")
+            #expect(try String(sameSlotTokens[1]) == "beta")
+        }
+    }
+
+    // MARK: - MSET cross-slot tests
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testMSETCrossSlot() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.sixNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            // Verifies scatter-gather dispatches MSET sub-commands across shards
+            // and every per-node +OK is consumed without error.
+            try await client.mset(
+                data: [
+                    MSET<String>.Data(key: "key{1}", value: "value1"),
+                    MSET<String>.Data(key: "key{2}", value: "value2"),
+                    MSET<String>.Data(key: "key{3}", value: "value3"),
+                ]
+            )
+
+            let expectedMultiSlotResponse: [(key: ValkeyKey, value: String)] = [
+                (ValkeyKey("key{1}"), "value1"),
+                (ValkeyKey("key{2}"), "value2"),
+                (ValkeyKey("key{3}"), "value3"),
+            ]
+
+            for (key, expectedValue) in expectedMultiSlotResponse {
+                let response = try #require(await client.get(key))
+                #expect(String(response) == expectedValue)
+            }
+
+            // Same-slot fast path: all keys share the same hash tag,
+            // so the command goes through the standard execute path.
+            try await client.mset(
+                data: [
+                    MSET<String>.Data(key: "a{1}", value: "alpha"),
+                    MSET<String>.Data(key: "b{1}", value: "beta"),
+                ]
+            )
+
+            let expectedSingleSlotResponse = [
+                (ValkeyKey("a{1}"), "alpha"),
+                (ValkeyKey("b{1}"), "beta"),
+            ]
+
+            for (key, expectedValue) in expectedSingleSlotResponse {
+                let response = try #require(await client.get(key))
+                #expect(String(response) == expectedValue)
+            }
         }
     }
 }

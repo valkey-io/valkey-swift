@@ -100,7 +100,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     typealias InboundIn = ByteBuffer
 
-    static let simpleOk = RESPToken(validated: ByteBuffer(string: "+OK\r\n"))
     @usableFromInline
     /*private*/ let eventLoop: any EventLoop
     @usableFromInline
@@ -428,9 +427,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                     switch self.stateMachine.receivedResponse(token: token) {
                     case .respond(let command, let deadlineAction):
                         self.processDeadlineCallbackAction(action: deadlineAction)
-                        command.promise.succeed(Self.simpleOk)
+                        command.promise.succeed(.ok)
                     case .respondAndClose(let command, let error):
-                        command.promise.succeed(Self.simpleOk)
+                        command.promise.succeed(.ok)
                         self.closeSubscriptionsAndConnection(context: context, error: error)
                     case .closeWithError(let error):
                         self.closeSubscriptionsAndConnection(context: context, error: error)

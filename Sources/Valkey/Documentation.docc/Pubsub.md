@@ -14,50 +14,24 @@ Valkey doesn't persist channels; if you publish a message to a channel with no s
 Use ``ValkeyClientProtocol/publish(channel:message:)`` to publish to a channel.
 It's available on all types that conform to ``ValkeyClientProtocol``, including ``ValkeyConnection``, ``ValkeyClient``, and ``ValkeyClusterClient``.
 
-```swift
-try await valkeyClient.publish(channel: "channel1", message: "Hello, World!")
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "publish")
 
 ### Subscribe to channels
 
 Use ``ValkeyConnection/subscribe(to:process:)-(String...,_)`` to subscribe to one or more channels and receive every message published to those channels as an `AsyncSequence`. When you exit the closure, the Valkey client sends the relevant `UNSUBSCRIBE` messages.
 
-```swift
-try await valkeyClient.withConnection { connection in
-    try await connection.subscribe(to: ["channel1", "channel2"]) { subscription in
-        for try await item in subscription {
-            // A subscription item includes the channel the message was published on
-            // as well as the message.
-            print(item.channel)
-            print(String(item.message))
-        }
-    }
-}
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "subscribe")
 
 Valkey uses the RESP3 protocol, which lets you run commands on the same connection as the subscription, as the following example shows:
 
-```swift
-try await connection.subscribe(to: ["channel1"]) { subscription in
-    for try await entry in subscription {
-        try await connection.set("channel1/last", value: entry.message)
-    }
-}
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "resp3")
 
 ### Subscribe to channels using patterns
 
 Valkey lets you use glob-style patterns to subscribe to a range of channels.
 Call ``ValkeyConnection/psubscribe(to:process:)-([String],_)`` to subscribe using patterns; the format is the same as regular subscriptions.
 
-```swift
-try await connection.psubscribe(to: ["channel*"]) { subscription in
-    for try await entry in subscription {
-        let channel = "\(entry.channel)/last"
-        try await connection.set(channel, value: entry.message)
-    }
-}
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "psubscribe")
 
 This example receives all messages sent to channels prefixed with the string "channel".
 
@@ -78,33 +52,19 @@ Valkey provides two ways to do this, both using pub/sub:
 Connections start without invalidation tracking enabled.
 To enable receiving invalidation events on a connection, call ``ValkeyConnection/clientTracking(status:clientId:prefixes:bcast:optin:optout:noloop:)``. For example:
 
-```swift
-try await connection.clientTracking(status: .on)
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "client-tracking")
 
 This tells the server to use the first invalidation method, where the server remembers the keys a connection has accessed.
 To track changes to all keys with a specific prefix, use:
 
-```swift
-try await connection.clientTracking(
-    status: .on,
-    prefixes: ["object:"],
-    bcast: true
-)
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "client-tracking-prefix")
 
 #### Subscribe to invalidation events
 
 Once tracking is enabled, you can subscribe to invalidation events using ``ValkeyConnection/subscribeKeyInvalidations(process:)``.
 The `AsyncSequence` passed to the `process` closure contains the keys that Valkey has invalidated.
 
-```swift
-try await connection.subscribeKeyInvalidations { keys in
-    for try await key in keys {
-        myCache.invalidate(key)
-    }
-}
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "subscribe-invalidations")
 
 #### Redirect invalidation events
 
@@ -114,8 +74,6 @@ Because the Valkey client uses a persistent connection pool, prefer using a sing
 For this to work, you need the ID of the connection subscribed to the key invalidation events.
 Get the connection ID using ``ValkeyConnection/clientId()`` and use it when you set up tracking.
 
-```swift
-try await connection.clientTracking(status: .on, clientId: id)
-```
+@Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "client-tracking-redirect")
 
 For more information about Valkey client-side caching, see the [Valkey documentation](https://valkey.io/topics/client-side-caching/).

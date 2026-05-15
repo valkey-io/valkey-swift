@@ -216,11 +216,14 @@ struct ValkeyClientTests {
             // wait for primary to get replicas
             try await self.waitForReplicas(client)
             var addresses: Set<String> = []
-            var address = try #require(await client.get("$address").map { String($0) })
-            addresses.insert(String(address))
-            address = try #require(await client.get("$address").map { String($0) })
-            addresses.insert(String(address))
+            // run get multiple times to ensure we get both addresses. Since rotating is done
+            // based on global value and tests are running in parallel
+            for _ in 0..<8 {
+                let address = try #require(await client.get("$address").map { String($0) })
+                addresses.insert(String(address))
+            }
             #expect(addresses == Set(["127.0.0.1:9002", "127.0.0.1:9001"]))
+
         }
     }
 

@@ -1541,6 +1541,54 @@ struct CommandTests {
     struct HashCommands {
         @Test
         @available(valkeySwift 1.0, *)
+        func hexpire() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["HEXPIRE", "myhash", "10000", "NX", "FIELDS", "2", "f2", "f3"]),
+                    response: .array([.number(1), .number(1)])
+                ),
+            ) { connection in
+                let result = try await connection.hexpire("myhash", seconds: 10000, condition: .nx, fields: ["f2", "f3"]).decode(as: [Int].self)
+                #expect(result == [1, 1])
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func hgetex() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["HGETEX", "myhash", "EX", "0", "FIELDS", "3", "f1", "f2", "f3"]),
+                    response: .array([.bulkError("v1"), .bulkString("v2"), .bulkString("v3")])
+                ),
+            ) { connection in
+                let result = try await connection.hgetex("myhash", expiration: .seconds(0), fields: ["f1", "f2", "f3"])
+                let strings = try result.decode(as: [String].self)
+                #expect(strings == ["v1", "v2", "v3"])
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func hsetex() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["HSETEX", "myhash", "FNX", "EX", "10", "FIELDS", "2", "f2", "v2", "f3", "v3"]),
+                    response: .number(1)
+                ),
+            ) { connection in
+                let result = try await connection.hsetex(
+                    "myhash",
+                    fieldsCondition: .fnx,
+                    expiration: .seconds(10),
+                    fieldsData: [.init(field: "f2", value: "v2"), .init(field: "f3", value: "v3")]
+                )
+                #expect(result == 1)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func hscan() async throws {
             try await testCommandEncodesDecodes(
                 (
