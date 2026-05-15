@@ -462,7 +462,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
     }
 }
 
-/// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
+/// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to a consumer group member.
 @_documentation(visibility: internal)
 public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Start: RESPStringRenderable>:
     ValkeyCommand
@@ -511,7 +511,7 @@ public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRender
     }
 }
 
-/// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
+/// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered to a consumer group member.
 @_documentation(visibility: internal)
 public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>:
     ValkeyCommand
@@ -598,7 +598,7 @@ public struct XDEL<Id: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Return the number of messages in a stream.
+/// Returns the number of messages in a stream.
 @_documentation(visibility: internal)
 public struct XLEN: ValkeyCommand {
     public typealias Response = Int
@@ -1009,7 +1009,7 @@ extension ValkeyClientProtocol {
         try await execute(XADD(key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 
-    /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
+    /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to a consumer group member.
     ///
     /// - Documentation: [XAUTOCLAIM](https://valkey.io/commands/xautoclaim)
     /// - Available: 6.2.0
@@ -1038,7 +1038,7 @@ extension ValkeyClientProtocol {
         try await execute(XAUTOCLAIM(key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
     }
 
-    /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
+    /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered to a consumer group member.
     ///
     /// - Documentation: [XCLAIM](https://valkey.io/commands/xclaim)
     /// - Available: 5.0.0
@@ -1233,7 +1233,7 @@ extension ValkeyClientProtocol {
         try await execute(XINFO.STREAM(key, fullBlock: fullBlock))
     }
 
-    /// Return the number of messages in a stream.
+    /// Returns the number of messages in a stream.
     ///
     /// - Documentation: [XLEN](https://valkey.io/commands/xlen)
     /// - Available: 5.0.0

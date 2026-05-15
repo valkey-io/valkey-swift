@@ -61,7 +61,7 @@ public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Set expiry time on hash fields.
+/// Sets expiry time on hash fields.
 @_documentation(visibility: internal)
 public struct HEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable, Hashable {
@@ -112,7 +112,7 @@ public struct HEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Set expiry time on hash fields.
+/// Sets expiry time on hash fields.
 @_documentation(visibility: internal)
 public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable, Hashable {
@@ -163,7 +163,7 @@ public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire
+/// Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire.
 @_documentation(visibility: internal)
 public struct HEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.Array
@@ -255,7 +255,7 @@ public struct HGETDEL<Fields: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Get the value of one or more fields of a given hash key, and optionally set their expiration time or time-to-live (TTL).
+/// Gets the value of one or more fields of a given hash key, and optionally sets their expiration time or time-to-live (TTL).
 @_documentation(visibility: internal)
 public struct HGETEX<Field: RESPStringRenderable>: ValkeyCommand {
     public enum Expiration: RESPRenderable, Sendable, Hashable {
@@ -490,7 +490,7 @@ public struct HPERSIST<Field: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Set expiry time on hash object.
+/// Sets expiry time on hash object.
 @_documentation(visibility: internal)
 public struct HPEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable, Hashable {
@@ -541,7 +541,7 @@ public struct HPEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Set expiration time on hash field.
+/// Sets expiration time on hash field.
 @_documentation(visibility: internal)
 public struct HPEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable, Hashable {
@@ -592,7 +592,7 @@ public struct HPEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire
+/// Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire.
 @_documentation(visibility: internal)
 public struct HPEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.Array
@@ -761,7 +761,7 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
     }
 }
 
-/// Set the value of one or more fields of a given hash key, and optionally set their expiration time.
+/// Sets the value of one or more fields of a given hash key, and optionally sets their expiration time.
 @_documentation(visibility: internal)
 public struct HSETEX<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
     public enum KeyCondition: RESPRenderable, Sendable, Hashable {
@@ -1001,7 +1001,7 @@ extension ValkeyClientProtocol {
         try await execute(HEXISTS(key, field: field))
     }
 
-    /// Set expiry time on hash fields.
+    /// Sets expiry time on hash fields.
     ///
     /// - Documentation: [HEXPIRE](https://valkey.io/commands/hexpire)
     /// - Available: 9.0.0
@@ -1018,7 +1018,7 @@ extension ValkeyClientProtocol {
         try await execute(HEXPIRE(key, seconds: seconds, condition: condition, fields: fields))
     }
 
-    /// Set expiry time on hash fields.
+    /// Sets expiry time on hash fields.
     ///
     /// - Documentation: [HEXPIREAT](https://valkey.io/commands/hexpireat)
     /// - Available: 9.0.0
@@ -1035,7 +1035,7 @@ extension ValkeyClientProtocol {
         try await execute(HEXPIREAT(key, unixTimeSeconds: unixTimeSeconds, condition: condition, fields: fields))
     }
 
-    /// Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire
+    /// Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire.
     ///
     /// - Documentation: [HEXPIRETIME](https://valkey.io/commands/hexpiretime)
     /// - Available: 9.0.0
@@ -1082,7 +1082,7 @@ extension ValkeyClientProtocol {
         try await execute(HGETDEL(key, fields: fields))
     }
 
-    /// Get the value of one or more fields of a given hash key, and optionally set their expiration time or time-to-live (TTL).
+    /// Gets the value of one or more fields of a given hash key, and optionally sets their expiration time or time-to-live (TTL).
     ///
     /// - Documentation: [HGETEX](https://valkey.io/commands/hgetex)
     /// - Available: 9.0.0
@@ -1184,7 +1184,7 @@ extension ValkeyClientProtocol {
         try await execute(HPERSIST(key, fields: fields))
     }
 
-    /// Set expiry time on hash object.
+    /// Sets expiry time on hash object.
     ///
     /// - Documentation: [HPEXPIRE](https://valkey.io/commands/hpexpire)
     /// - Available: 9.0.0
@@ -1201,7 +1201,7 @@ extension ValkeyClientProtocol {
         try await execute(HPEXPIRE(key, milliseconds: milliseconds, condition: condition, fields: fields))
     }
 
-    /// Set expiration time on hash field.
+    /// Sets expiration time on hash field.
     ///
     /// - Documentation: [HPEXPIREAT](https://valkey.io/commands/hpexpireat)
     /// - Available: 9.0.0
@@ -1218,7 +1218,7 @@ extension ValkeyClientProtocol {
         try await execute(HPEXPIREAT(key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition, fields: fields))
     }
 
-    /// Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire
+    /// Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire.
     ///
     /// - Documentation: [HPEXPIRETIME](https://valkey.io/commands/hpexpiretime)
     /// - Available: 9.0.0
@@ -1289,7 +1289,7 @@ extension ValkeyClientProtocol {
         try await execute(HSET(key, data: data))
     }
 
-    /// Set the value of one or more fields of a given hash key, and optionally set their expiration time.
+    /// Sets the value of one or more fields of a given hash key, and optionally sets their expiration time.
     ///
     /// - Documentation: [HSETEX](https://valkey.io/commands/hsetex)
     /// - Available: 9.0.0

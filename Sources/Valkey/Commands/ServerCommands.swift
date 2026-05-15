@@ -486,7 +486,7 @@ public enum COMMANDLOG {
         }
     }
 
-    /// Show helpful text about the different subcommands
+    /// Shows helpful text about the different subcommands.
     @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
@@ -1081,7 +1081,7 @@ public enum SLOWLOG {
         }
     }
 
-    /// Show helpful text about the different subcommands
+    /// Shows helpful text about the different subcommands.
     @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
@@ -1297,7 +1297,7 @@ public struct FLUSHALL: ValkeyCommand {
     }
 }
 
-/// Remove all keys from the current database.
+/// Removes all keys from the current database.
 @_documentation(visibility: internal)
 public struct FLUSHDB: ValkeyCommand {
     public enum FlushType: RESPRenderable, Sendable, Hashable {
@@ -1365,7 +1365,7 @@ public struct LASTSAVE: ValkeyCommand {
     }
 }
 
-/// Displays computer art and the server version
+/// Displays computer art and the server version.
 @_documentation(visibility: internal)
 public struct LOLWUT: ValkeyCommand {
     public typealias Response = RESPBulkString
@@ -1987,7 +1987,7 @@ extension ValkeyClientProtocol {
         try await execute(COMMANDLOG.GET(count: count, type: type))
     }
 
-    /// Show helpful text about the different subcommands
+    /// Shows helpful text about the different subcommands.
     ///
     /// - Documentation: [COMMANDLOG HELP](https://valkey.io/commands/commandlog-help)
     /// - Available: 8.1.0
@@ -2114,7 +2114,7 @@ extension ValkeyClientProtocol {
         _ = try await execute(FLUSHALL(flushType: flushType))
     }
 
-    /// Remove all keys from the current database.
+    /// Removes all keys from the current database.
     ///
     /// - Documentation: [FLUSHDB](https://valkey.io/commands/flushdb)
     /// - Available: 1.0.0
@@ -2237,7 +2237,7 @@ extension ValkeyClientProtocol {
         try await execute(LATENCY.RESET(events: events))
     }
 
-    /// Displays computer art and the server version
+    /// Displays computer art and the server version.
     ///
     /// - Documentation: [LOLWUT](https://valkey.io/commands/lolwut)
     /// - Available: 5.0.0
@@ -2456,7 +2456,7 @@ extension ValkeyClientProtocol {
         try await execute(SLOWLOG.GET(count: count))
     }
 
-    /// Show helpful text about the different subcommands
+    /// Shows helpful text about the different subcommands.
     ///
     /// - Documentation: [SLOWLOG HELP](https://valkey.io/commands/slowlog-help)
     /// - Available: 6.2.0

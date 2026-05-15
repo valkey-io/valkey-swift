@@ -57,7 +57,7 @@ public struct DECR: ValkeyCommand {
     }
 }
 
-/// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
+/// Decrements the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
 @_documentation(visibility: internal)
 public struct DECRBY: ValkeyCommand {
     public typealias Response = Int
@@ -287,7 +287,7 @@ public struct INCRBY: ValkeyCommand {
     }
 }
 
-/// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
+/// Increments the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
 @_documentation(visibility: internal)
 public struct INCRBYFLOAT: ValkeyCommand {
     public typealias Response = RESPBulkString
@@ -675,7 +675,7 @@ public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Set the string value of a key only when the key doesn't exist.
+/// Sets the string value of a key only when the key doesn't exist.
 @_documentation(visibility: internal)
 public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
@@ -795,7 +795,7 @@ extension ValkeyClientProtocol {
         try await execute(DECR(key))
     }
 
-    /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
+    /// Decrements the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
     ///
     /// - Documentation: [DECRBY](https://valkey.io/commands/decrby)
     /// - Available: 1.0.0
@@ -911,7 +911,7 @@ extension ValkeyClientProtocol {
         try await execute(INCRBY(key, increment: increment))
     }
 
-    /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
+    /// Increments the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
     ///
     /// - Documentation: [INCRBYFLOAT](https://valkey.io/commands/incrbyfloat)
     /// - Available: 2.6.0
@@ -1045,7 +1045,7 @@ extension ValkeyClientProtocol {
         _ = try await execute(SETEX(key, seconds: seconds, value: value))
     }
 
-    /// Set the string value of a key only when the key doesn't exist.
+    /// Sets the string value of a key only when the key doesn't exist.
     ///
     /// - Documentation: [SETNX](https://valkey.io/commands/setnx)
     /// - Available: 1.0.0

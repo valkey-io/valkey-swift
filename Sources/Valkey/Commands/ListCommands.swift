@@ -160,7 +160,7 @@ public struct BRPOP: ValkeyCommand {
     }
 }
 
-/// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
+/// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct BRPOPLPUSH: ValkeyCommand {
     public typealias Response = RESPBulkString?
@@ -539,7 +539,7 @@ public struct LSET<Element: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
+/// Removes elements from both ends of a list. Deletes the list if all elements were trimmed.
 @_documentation(visibility: internal)
 public struct LTRIM: ValkeyCommand {
     @inlinable public static var name: String { "LTRIM" }
@@ -718,7 +718,7 @@ extension ValkeyClientProtocol {
         try await execute(BRPOP(keys: keys, timeout: timeout))
     }
 
-    /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
+    /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [BRPOPLPUSH](https://valkey.io/commands/brpoplpush)
     /// - Available: 2.2.0
@@ -909,7 +909,7 @@ extension ValkeyClientProtocol {
         _ = try await execute(LSET(key, index: index, element: element))
     }
 
-    /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
+    /// Removes elements from both ends of a list. Deletes the list if all elements were trimmed.
     ///
     /// - Documentation: [LTRIM](https://valkey.io/commands/ltrim)
     /// - Available: 1.0.0

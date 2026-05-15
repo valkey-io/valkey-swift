@@ -237,7 +237,7 @@ public enum CLUSTER {
         }
     }
 
-    /// Remove all keys from the target slot.
+    /// Removes all keys from the target slot.
     @_documentation(visibility: internal)
     public struct FLUSHSLOT: ValkeyCommand {
         public enum FlushType: RESPRenderable, Sendable, Hashable {
@@ -325,7 +325,7 @@ public enum CLUSTER {
         }
     }
 
-    /// Get the status of ongoing and recently finished slot import and export operations.
+    /// Gets the status of ongoing and recently finished slot import and export operations.
     @_documentation(visibility: internal)
     public struct GETSLOTMIGRATIONS: ValkeyCommand {
         public typealias Response = RESPToken.Array
@@ -560,7 +560,7 @@ public enum CLUSTER {
         }
     }
 
-    /// Configure a node as replica of a primary node or detach a replica from its primary.
+    /// Configures a node as replica of a primary node or detaches a replica from its primary.
     @_documentation(visibility: internal)
     public struct REPLICATE: ValkeyCommand {
         public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
@@ -1051,7 +1051,7 @@ extension ValkeyClientProtocol {
         _ = try await execute(CLUSTER.FAILOVER(options: options))
     }
 
-    /// Remove all keys from the target slot.
+    /// Removes all keys from the target slot.
     ///
     /// - Documentation: [CLUSTER FLUSHSLOT](https://valkey.io/commands/cluster-flushslot)
     /// - Available: 9.0.0
@@ -1093,7 +1093,7 @@ extension ValkeyClientProtocol {
         try await execute(CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
     }
 
-    /// Get the status of ongoing and recently finished slot import and export operations.
+    /// Gets the status of ongoing and recently finished slot import and export operations.
     ///
     /// - Documentation: [CLUSTER GETSLOTMIGRATIONS](https://valkey.io/commands/cluster-getslotmigrations)
     /// - Available: 9.0.0
@@ -1225,7 +1225,7 @@ extension ValkeyClientProtocol {
         try await execute(CLUSTER.REPLICAS(nodeId: nodeId))
     }
 
-    /// Configure a node as replica of a primary node or detach a replica from its primary.
+    /// Configures a node as replica of a primary node or detaches a replica from its primary.
     ///
     /// - Documentation: [CLUSTER REPLICATE](https://valkey.io/commands/cluster-replicate)
     /// - Available: 3.0.0

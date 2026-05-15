@@ -287,7 +287,7 @@ public struct SPOP: ValkeyCommand {
     }
 }
 
-/// Get one or multiple random members from a set
+/// Gets one or multiple random members from a set.
 @_documentation(visibility: internal)
 public struct SRANDMEMBER: ValkeyCommand {
     public typealias Response = RESPToken?
@@ -554,7 +554,7 @@ extension ValkeyClientProtocol {
         try await execute(SPOP(key, count: count))
     }
 
-    /// Get one or multiple random members from a set
+    /// Gets one or multiple random members from a set.
     ///
     /// - Documentation: [SRANDMEMBER](https://valkey.io/commands/srandmember)
     /// - Available: 1.0.0

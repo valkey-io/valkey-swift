@@ -1692,7 +1692,7 @@
     }
   },
   "BRPOPLPUSH": {
-    "summary": "Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.",
+    "summary": "Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was popped.",
     "complexity": "O(1)",
     "group": "list",
     "since": "2.2.0",
@@ -1902,7 +1902,7 @@
     ]
   },
   "BZPOPMAX": {
-    "summary": "Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.",
+    "summary": "Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.",
     "complexity": "O(log(N)) with N being the number of elements in the sorted set.",
     "group": "sorted_set",
     "since": "5.0.0",
@@ -2262,7 +2262,7 @@
     }
   },
   "CLIENT IMPORT-SOURCE": {
-    "summary": "Mark this client as an import source when server is in import mode.",
+    "summary": "Marks this client as an import source when the server is in import mode.",
     "complexity": "O(1)",
     "group": "connection",
     "since": "8.1.0",
@@ -3831,7 +3831,7 @@
     ]
   },
   "CLUSTER FLUSHSLOT": {
-    "summary": "Remove all keys from the target slot.",
+    "summary": "Removes all keys from the target slot.",
     "complexity": "O(N) where N is the number of keys in the target slot",
     "group": "cluster",
     "since": "9.0.0",
@@ -3964,7 +3964,7 @@
     ]
   },
   "CLUSTER GETSLOTMIGRATIONS": {
-    "summary": "Get the status of ongoing and recently finished slot import and export operations.",
+    "summary": "Gets the status of ongoing and recently finished slot import and export operations.",
     "complexity": "O(N), where N is the number of active slot import and export jobs.",
     "group": "cluster",
     "since": "9.0.0",
@@ -4390,7 +4390,7 @@
     ]
   },
   "CLUSTER REPLICATE": {
-    "summary": "Configure a node as replica of a primary node or detach a replica from its primary.",
+    "summary": "Configures a node as replica of a primary node or detaches a replica from its primary.",
     "complexity": "O(1)",
     "group": "cluster",
     "since": "3.0.0",
@@ -5856,7 +5856,7 @@
     ]
   },
   "COMMANDLOG HELP": {
-    "summary": "Show helpful text about the different subcommands",
+    "summary": "Shows helpful text about the different subcommands.",
     "complexity": "O(1)",
     "group": "server",
     "since": "8.1.0",
@@ -6356,7 +6356,7 @@
     ]
   },
   "DECRBY": {
-    "summary": "Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.",
+    "summary": "Decrements the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.",
     "complexity": "O(1)",
     "group": "string",
     "since": "1.0.0",
@@ -7483,7 +7483,7 @@
     ]
   },
   "FLUSHDB": {
-    "summary": "Remove all keys from the current database.",
+    "summary": "Removes all keys from the current database.",
     "complexity": "O(N) where N is the number of keys in the selected database",
     "group": "server",
     "since": "1.0.0",
@@ -10364,7 +10364,7 @@
     ]
   },
   "HEXPIRE": {
-    "summary": "Set expiry time on hash fields.",
+    "summary": "Sets expiry time on hash fields.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -10482,7 +10482,7 @@
     ]
   },
   "HEXPIREAT": {
-    "summary": "Set expiry time on hash fields.",
+    "summary": "Sets expiry time on hash fields.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -10602,7 +10602,7 @@
     ]
   },
   "HEXPIRETIME": {
-    "summary": "Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire",
+    "summary": "Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -10879,7 +10879,7 @@
     ]
   },
   "HGETEX": {
-    "summary": "Get the value of one or more fields of a given hash key, and optionally set their expiration time or time-to-live (TTL).",
+    "summary": "Gets the value of one or more fields of a given hash key, and optionally sets their expiration time or time-to-live (TTL).",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -11417,7 +11417,7 @@
     ]
   },
   "HPEXPIRE": {
-    "summary": "Set expiry time on hash object.",
+    "summary": "Sets expiry time on hash object.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -11537,7 +11537,7 @@
     ]
   },
   "HPEXPIREAT": {
-    "summary": "Set expiration time on hash field.",
+    "summary": "Sets expiration time on hash field.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -11657,7 +11657,7 @@
     ]
   },
   "HPEXPIRETIME": {
-    "summary": "Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire",
+    "summary": "Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -12085,7 +12085,7 @@
     ]
   },
   "HSETEX": {
-    "summary": "Set the value of one or more fields of a given hash key, and optionally set their expiration time.",
+    "summary": "Sets the value of one or more fields of a given hash key, and optionally sets their expiration time.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -12596,7 +12596,7 @@
     ]
   },
   "INCRBYFLOAT": {
-    "summary": "Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.",
+    "summary": "Increments the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.",
     "complexity": "O(1)",
     "group": "string",
     "since": "2.6.0",
@@ -13582,7 +13582,7 @@
     ]
   },
   "LOLWUT": {
-    "summary": "Displays computer art and the server version",
+    "summary": "Displays computer art and the server version.",
     "group": "server",
     "since": "5.0.0",
     "arity": -1,
@@ -14060,7 +14060,7 @@
     ]
   },
   "LTRIM": {
-    "summary": "Removes elements from both ends a list. Deletes the list if all elements were trimmed.",
+    "summary": "Removes elements from both ends of a list. Deletes the list if all elements were trimmed.",
     "complexity": "O(N) where N is the number of elements to be removed by the operation.",
     "group": "list",
     "since": "1.0.0",
@@ -19474,7 +19474,7 @@
     ]
   },
   "SETNX": {
-    "summary": "Set the string value of a key only when the key doesn't exist.",
+    "summary": "Sets the string value of a key only when the key doesn't exist.",
     "complexity": "O(1)",
     "group": "string",
     "since": "1.0.0",
@@ -20085,7 +20085,7 @@
     ]
   },
   "SLOWLOG HELP": {
-    "summary": "Show helpful text about the different subcommands",
+    "summary": "Shows helpful text about the different subcommands.",
     "complexity": "O(1)",
     "group": "server",
     "since": "6.2.0",
@@ -20751,7 +20751,7 @@
     ]
   },
   "SPUBLISH": {
-    "summary": "Post a message to a shard channel",
+    "summary": "Posts a message to a shard channel.",
     "complexity": "O(N) where N is the number of clients subscribed to the receiving shard channel.",
     "group": "pubsub",
     "since": "7.0.0",
@@ -20804,7 +20804,7 @@
     ]
   },
   "SRANDMEMBER": {
-    "summary": "Get one or multiple random members from a set",
+    "summary": "Gets one or multiple random members from a set.",
     "complexity": "Without the count argument O(1), otherwise O(N) where N is the absolute value of the passed count.",
     "group": "set",
     "since": "1.0.0",
@@ -22090,7 +22090,7 @@
     }
   },
   "XAUTOCLAIM": {
-    "summary": "Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.",
+    "summary": "Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to a consumer group member.",
     "complexity": "O(1) if COUNT is small.",
     "group": "stream",
     "since": "6.2.0",
@@ -22248,7 +22248,7 @@
     ]
   },
   "XCLAIM": {
-    "summary": "Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.",
+    "summary": "Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered to a consumer group member.",
     "complexity": "O(log N) with N being the number of messages in the PEL of the consumer group.",
     "group": "stream",
     "since": "5.0.0",
@@ -23387,7 +23387,7 @@
     ]
   },
   "XLEN": {
-    "summary": "Return the number of messages in a stream.",
+    "summary": "Returns the number of messages in a stream.",
     "complexity": "O(1)",
     "group": "stream",
     "since": "5.0.0",
