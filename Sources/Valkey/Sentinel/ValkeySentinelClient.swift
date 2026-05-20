@@ -27,7 +27,7 @@ package final class ValkeySentinelClient: Sendable {
     private let nodeDiscovery: any ValkeyNodeDiscovery
 
     private enum RunAction {
-        case runSentinelDiscovery(runNodeDiscover: Bool)
+        case runSentinelDiscovery(runNodeDiscovery: Bool)
         case runNodeClient(ValkeyNodeClient)
     }
     private let actionStream: AsyncStream<RunAction>
@@ -60,7 +60,7 @@ package final class ValkeySentinelClient: Sendable {
 
     /// Run ValkeySentinelClient connection pool, and other supporting processes
     package func run() async {
-        self.queueAction(.runSentinelDiscovery(runNodeDiscover: true))
+        self.queueAction(.runSentinelDiscovery(runNodeDiscovery: true))
 
         /// Run discarding task group running actions
         await withDiscardingTaskGroup { group in
@@ -118,9 +118,7 @@ package final class ValkeySentinelClient: Sendable {
                         if count == 0 {
                             throw ValkeySentinelError.sentinelIsUnavailable
                         }
-                        break
                     }
-                    break
                 }
             }
             throw ValkeySentinelError.sentinelIsUnavailable
@@ -312,7 +310,7 @@ extension ValkeySentinelClient {
             .decode(as: [SentinelInstance].self)
             .compactMap {
                 // filter out disconnected or nodes flagged as `s_down`.
-                if !$0.flags.contains(.disconnected) && !$0.flags.contains(.s_down) {
+                if $0.flags.intersection([.disconnected, .o_down, .s_down]).isEmpty {
                     ValkeyNodeDescription(endpoint: $0.endpoint, port: $0.port)
                 } else {
                     nil
@@ -352,7 +350,7 @@ package struct SentinelInstance: RESPTokenDecodable {
         case sentinel
         case disconnected
         case s_down
-        // case o_down
+        case o_down
         case master_down
     }
     let endpoint: String
