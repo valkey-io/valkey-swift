@@ -539,7 +539,7 @@ public struct LSET<Element: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
+/// Removes elements from both ends of a list. Deletes the list if all elements were trimmed.
 @_documentation(visibility: internal)
 public struct LTRIM: ValkeyCommand {
     @inlinable public static var name: String { "LTRIM" }
@@ -909,7 +909,7 @@ extension ValkeyClientProtocol {
         _ = try await execute(LSET(key, index: index, element: element))
     }
 
-    /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
+    /// Removes elements from both ends of a list. Deletes the list if all elements were trimmed.
     ///
     /// - Documentation: [LTRIM](https://valkey.io/commands/ltrim)
     /// - Available: 1.0.0
