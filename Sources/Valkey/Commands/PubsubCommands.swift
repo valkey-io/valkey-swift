@@ -188,7 +188,7 @@ public struct PUNSUBSCRIBE: ValkeyCommand {
     }
 }
 
-/// Post a message to a shard channel
+/// Posts a message to a shard channel.
 @_documentation(visibility: internal)
 public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
@@ -224,7 +224,7 @@ public struct SSUBSCRIBE: ValkeyCommand {
     public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SSUBSCRIBE", shardchannels.map { RESPRenderableBulkString($0) })
+        commandEncoder.encodeArray("SSUBSCRIBE", shardchannels)
     }
 }
 
@@ -242,7 +242,7 @@ public struct SUBSCRIBE: ValkeyCommand {
     public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SUBSCRIBE", channels.map { RESPRenderableBulkString($0) })
+        commandEncoder.encodeArray("SUBSCRIBE", channels)
     }
 }
 
@@ -371,7 +371,7 @@ extension ValkeyClientProtocol {
         try await execute(PUBSUB.SHARDNUMSUB(shardchannels: shardchannels))
     }
 
-    /// Post a message to a shard channel
+    /// Posts a message to a shard channel.
     ///
     /// - Documentation: [SPUBLISH](https://valkey.io/commands/spublish)
     /// - Available: 7.0.0

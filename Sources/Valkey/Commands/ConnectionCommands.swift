@@ -135,7 +135,7 @@ extension CLIENT {
         }
     }
 
-    /// Mark this client as an import source when server is in import mode.
+    /// Marks this client as an import source when the server is in import mode.
     @_documentation(visibility: internal)
     public struct IMPORTSOURCE: ValkeyCommand {
         public enum Enabled: RESPRenderable, Sendable, Hashable {
@@ -1136,7 +1136,7 @@ extension ValkeyClientProtocol {
         try await execute(CLIENT.HELP())
     }
 
-    /// Mark this client as an import source when server is in import mode.
+    /// Marks this client as an import source when the server is in import mode.
     ///
     /// - Documentation: [CLIENT IMPORT-SOURCE](https://valkey.io/commands/client-import-source)
     /// - Available: 8.1.0
