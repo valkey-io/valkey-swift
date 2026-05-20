@@ -11,7 +11,7 @@ services:
   # networking mode. Please see the --net=host option in the Docker documentation
   # for more information.
   app:
-    image: swift:6.2
+    image: swift:6.3
     network_mode: "host"
     volumes:
       - ..:/workspace
