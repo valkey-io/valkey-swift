@@ -89,7 +89,7 @@ package final class ValkeySentinelClient: Sendable {
                     let replicas = try replicaResults.get()
                         .decode(as: [SentinelInstance].self)
                         .compactMap {
-                            if !$0.flags.contains(.disconnected) && !$0.flags.contains(.s_down) {
+                            if $0.flags.intersection([.disconnected, .o_down, .s_down]).isEmpty {
                                 ValkeyServerAddress.hostname($0.endpoint, port: $0.port)
                             } else {
                                 nil
