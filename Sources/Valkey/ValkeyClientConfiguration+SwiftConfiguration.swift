@@ -72,7 +72,7 @@ extension ValkeyClientConfiguration.ReadOnlyCommandNodeSelection {
             self = .az(zone)
         default:
             throw ConfigurationError(
-                message: "readOnlyCommandNodeSelection has invalid value. Valid values are \"primary\", \"cycleReplicas\", \"cycleAllNodes\")"
+                message: "readOnlyCommandNodeSelection has invalid value. Valid values are primary, cycleReplicas, cycleAllNodes."
             )
         }
     }

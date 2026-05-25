@@ -233,7 +233,7 @@ struct SwiftConfigurationTests {
 
         let configReader = ConfigReader(provider: testProvider)
 
-        let expectedError = "readOnlyCommandNodeSelection has invalid value. Valid values are primary, cycleReplicas, cycleAllNodes"
+        let expectedError = "readOnlyCommandNodeSelection has invalid value. Valid values are primary, cycleReplicas, cycleAllNodes."
         #expect(throws: ConfigurationError(message: expectedError)) {
             try ValkeyClientConfiguration(configReader: configReader)
         }

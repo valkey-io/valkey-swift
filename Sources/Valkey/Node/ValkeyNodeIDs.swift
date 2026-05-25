@@ -7,7 +7,7 @@
 //
 /// Represents the mapping of nodes consisting of a primary node and optional replicas.
 @usableFromInline
-package struct ValkeyNodeIDs<ID: Sendable & Hashable>: Hashable, Sendable {
+package struct ValkeyNodeIDs<ID: Sendable>: Sendable {
     /// The primary node responsible for handling write operations.
     @usableFromInline
     package var primary: ID
@@ -28,6 +28,8 @@ package struct ValkeyNodeIDs<ID: Sendable & Hashable>: Hashable, Sendable {
         self.replicas = replicas
     }
 }
+
+extension ValkeyNodeIDs: Equatable where ID: Equatable {}
 
 extension ValkeyNodeIDs: ExpressibleByArrayLiteral {
     @usableFromInline

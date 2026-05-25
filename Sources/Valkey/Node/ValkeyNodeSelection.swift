@@ -7,7 +7,7 @@
 //
 
 @usableFromInline
-protocol SelectableNodeIdentifier: Hashable & Sendable {
+protocol SelectableNodeIdentifier: Sendable {
     var availabilityZone: String? { get }
 }
 

@@ -567,8 +567,8 @@ where
 
         case .degraded(let context):
             let shardID = try context.hashSlotShardMap.nodeID(for: slots)
-            let nodeID = nodeSelection.select(nodeIDs: shardID)
-            if let pool = self.runningClients[nodeID]?.pool {
+            let node = nodeSelection.select(nodeIDs: shardID)
+            if let pool = self.runningClients[node.nodeID]?.pool {
                 return pool
             }
             // We don't have a client for a particular node. This is most likely due to a primary
@@ -577,8 +577,8 @@ where
 
         case .healthy(let context):
             let shardID = try context.hashSlotShardMap.nodeID(for: slots)
-            let nodeID = nodeSelection.select(nodeIDs: shardID)
-            if let pool = self.runningClients[nodeID]?.pool {
+            let node = nodeSelection.select(nodeIDs: shardID)
+            if let pool = self.runningClients[node.nodeID]?.pool {
                 return pool
             }
             // We don't have a client for a particular node. This is most likely due to a primary

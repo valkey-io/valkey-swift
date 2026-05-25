@@ -10,7 +10,7 @@
 /// `ValkeyNodeID` uniquely represents a node in the cluster by its network location
 /// (endpoint and port).
 @usableFromInline
-package struct ValkeyNodeID: Hashable, Sendable, SelectableNodeIdentifier {
+package struct ValkeyNodeID: Hashable, Sendable {
     /// The node's endpoint.
     ///
     /// This can be either a hostname (preferred) or an IP address.
@@ -21,10 +21,6 @@ package struct ValkeyNodeID: Hashable, Sendable, SelectableNodeIdentifier {
     @usableFromInline
     package var port: Int
 
-    /// Availability zone
-    @usableFromInline
-    package var availabilityZone: String?
-
     /// Creates a new node identifier with the specified endpoint and port.
     ///
     /// - Parameters:
@@ -32,20 +28,8 @@ package struct ValkeyNodeID: Hashable, Sendable, SelectableNodeIdentifier {
     ///   - port: The port number on which the node is accessible.
     ///   - availabilityZone: Availability zone (used in node selection)
     @usableFromInline
-    package init(endpoint: String, port: Int, availabilityZone: String? = nil) {
+    package init(endpoint: String, port: Int) {
         self.endpoint = endpoint
         self.port = port
-        self.availabilityZone = availabilityZone
-    }
-
-    @usableFromInline
-    package func hash(into hasher: inout Hasher) {
-        hasher.combine(endpoint)
-        hasher.combine(port)
-    }
-
-    @usableFromInline
-    package static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.endpoint == rhs.endpoint && lhs.port == rhs.port
     }
 }

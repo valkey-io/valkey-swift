@@ -30,7 +30,8 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStrin
             self.availabilityZone = description.availabilityZone
         }
 
-        package var nodeID: ValkeyNodeID { .init(endpoint: self.endpoint, port: self.port, availabilityZone: self.availabilityZone) }
+        package var nodeID: ValkeyNodeID { .init(endpoint: self.endpoint, port: self.port) }
+        package var hashSlotNode: HashSlotShardMap.Node { .init(endpoint: self.endpoint, port: self.port, availabilityZone: self.availabilityZone) }
 
         package var description: String {
             "Node(\(endpoint):\(port))"
