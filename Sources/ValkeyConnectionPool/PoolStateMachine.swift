@@ -28,6 +28,9 @@ struct PoolConfiguration: Sendable {
     var keepAliveDuration: Duration?
 
     @usableFromInline
+    var keepAliveReducesAvailableStreams: Bool = true
+
+    @usableFromInline
     var circuitBreakerTripAfter: Duration = .seconds(15)
 
     @usableFromInline
@@ -262,7 +265,7 @@ where
             maximumConcurrentConnectionSoftLimit: configuration.maximumConnectionSoftLimit,
             maximumConcurrentConnectionHardLimit: configuration.maximumConnectionHardLimit,
             keepAlive: configuration.keepAliveDuration != nil,
-            keepAliveReducesAvailableStreams: true
+            keepAliveReducesAvailableStreams: configuration.keepAliveReducesAvailableStreams
         )
         self.clock = clock
         self.requestQueue = RequestQueue()
