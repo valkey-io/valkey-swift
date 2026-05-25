@@ -332,6 +332,8 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
         public var replicationOffset: Int
         /// The health of the node
         public var health: Health
+        /// availability zone
+        public var availabilityZone: String?
 
         /// Creates a new node
         /// - Parameters:
@@ -353,7 +355,8 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             endpoint: String,
             role: Role,
             replicationOffset: Int,
-            health: Health
+            health: Health,
+            availabilityZone: String? = nil
         ) {
             self.id = id
             self.port = port
@@ -364,11 +367,26 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             self.role = role
             self.replicationOffset = replicationOffset
             self.health = health
+            self.availabilityZone = availabilityZone
         }
 
         public init(_ token: RESPToken) throws(RESPDecodeError) {
-            (self.id, self.port, self.tlsPort, self.ip, self.hostname, self.endpoint, self.role, self.replicationOffset, self.health) =
-                try token.decodeMapValues("id", "port", "tls-port", "ip", "hostname", "endpoint", "role", "replication-offset", "health")
+            (
+                self.id, self.port, self.tlsPort, self.ip, self.hostname, self.endpoint, self.role, self.replicationOffset, self.health,
+                self.availabilityZone
+            ) =
+                try token.decodeMapValues(
+                    "id",
+                    "port",
+                    "tls-port",
+                    "ip",
+                    "hostname",
+                    "endpoint",
+                    "role",
+                    "replication-offset",
+                    "health",
+                    "availability-zone"
+                )
         }
     }
 

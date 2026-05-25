@@ -28,7 +28,7 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     /// a consistent way to uniquely identify nodes across the system.
     @usableFromInline
     package var id: ValkeyNodeID {
-        ValkeyNodeID(endpoint: self.endpoint, port: self.port)
+        ValkeyNodeID(endpoint: self.endpoint, port: self.port, availabilityZone: nil)
     }
 
     /// The network endpoint (hostname or IP) used to connect to this node.

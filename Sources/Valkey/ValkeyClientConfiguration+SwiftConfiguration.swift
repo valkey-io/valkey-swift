@@ -23,7 +23,10 @@ extension ValkeyClientConfiguration {
     /// - `commandTimeoutMs` (duration, optional, default: 30 seconds): Timeout for command responses.
     /// - `blockingCommandTimeoutMs` (duration, optional, default: 120 seconds): Timeout for blocking command responses.
     /// - `databaseNumber` (int, optional, default: 0, range: 0-15): Database number to use for the Valkey Connection
-    /// - `readOnlyCommandNodeSelection` (string, optional, default: "primary"): Determine how we chose nodes for readonly commands. Valid values: "primary", "cycleReplicas", "cycleAllNodes".
+    /// - `readOnlyCommandNodeSelection` (string, optional, default: "primary"): Determine how we chose nodes for readonly commands.
+    ///         Valid values: "primary", "cycleReplicas", "cycleAllNodes".
+    /// - `readOnlyCommandNodeSelection.availabilityZone` (string, optional): If `readOnlyCommandNodeSelection` is not set this can
+    ///         be used to set readonly commands to use nodes in a particular availabilityZone.
     ///
     /// - Throws: Errors from nested configuration readers.
     public init(configReader: ConfigReader) throws {
@@ -46,14 +49,31 @@ extension ValkeyClientConfiguration {
         if let databaseNumber = configReader.int(forKey: "databaseNumber") {
             self.databaseNumber = databaseNumber
         }
+        self.readOnlyCommandNodeSelection = try .init(configReader: configReader)
+    }
+}
 
-        if let readOnlyCommandNodeSelection = configReader.string(forKey: "readOnlyCommandNodeSelection") {
-            guard let typed = ReadOnlyCommandNodeSelection._Internal(rawValue: readOnlyCommandNodeSelection) else {
-                // Set but not valid - that's an error
-                let validValues = Array(ReadOnlyCommandNodeSelection._Internal.allCases.map(\.rawValue)).joined(separator: ", ")
-                throw ConfigurationError(message: "readOnlyCommandNodeSelection has invalid value. Valid values are \(validValues)")
+@available(valkeySwift 1.0, *)
+extension ValkeyClientConfiguration.ReadOnlyCommandNodeSelection {
+    public init(configReader: ConfigReader) throws {
+        let selection = configReader.string(forKey: "readOnlyCommandNodeSelection")
+        switch selection {
+        case "primary":
+            self = .primary
+        case "cycleReplicas":
+            self = .cycleReplicas
+        case "cycleAllNodes":
+            self = .cycleAllNodes
+        case .none:
+            guard let zone = configReader.string(forKey: ["readOnlyCommandNodeSelection", "availabilityZone"]) else {
+                self = .primary
+                return
             }
-            self.readOnlyCommandNodeSelection = .init(value: typed)
+            self = .az(zone)
+        default:
+            throw ConfigurationError(
+                message: "readOnlyCommandNodeSelection has invalid value. Valid values are \"primary\", \"cycleReplicas\", \"cycleAllNodes\")"
+            )
         }
     }
 }

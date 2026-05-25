@@ -50,7 +50,7 @@ package struct ValkeyClusterRedirectionError: Hashable, Sendable {
 
     @usableFromInline
     package var nodeID: ValkeyNodeID {
-        ValkeyNodeID(endpoint: self.endpoint, port: self.port)
+        ValkeyNodeID(endpoint: self.endpoint, port: self.port, availabilityZone: nil)
     }
 }
 
