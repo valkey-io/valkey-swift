@@ -102,8 +102,6 @@ where
             @usableFromInline
             /* private */ var circuitBreakerTimer: Timer?
 
-            var lastHealthyState: ValkeyClusterTopology?
-
             var lastError: any Error
         }
 
@@ -124,14 +122,14 @@ where
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
 
-            var lastHealthyState: ValkeyClusterTopology
+            var lastHealthyStateHashValue: Int
 
             var lastError: any Error
         }
 
         @usableFromInline
         struct HealthyContext {
-            var clusterTopology: ValkeyClusterTopology
+            var clusterTopologyHashValue: Int
             @usableFromInline
             /* private */ var hashSlotShardMap: HashSlotShardMap
             var consensusStart: Clock.Instant
@@ -281,18 +279,21 @@ where
             self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: .init(consecutiveFailures: 0))
 
             let oldCusterState = self.clusterState
-            let oldHealthyClusterTopology: ValkeyClusterTopology? =
+            let oldHealthyClusterTopologyHashValue: Int? =
                 if case .healthy(let healthyState) = self.clusterState {
-                    healthyState.clusterTopology
+                    healthyState.clusterTopologyHashValue
                 } else {
                     nil
                 }
             var result: ClusterDiscoverySucceededAction
+            let topologyHashValue = topology.hashValue
             /// Don't update cluster if description hasnt changed
-            if oldHealthyClusterTopology != topology {
+            if oldHealthyClusterTopologyHashValue != topology.hashValue {
                 var map = HashSlotShardMap()
                 map.updateCluster(topology)
-                self.clusterState = .healthy(.init(clusterTopology: topology, hashSlotShardMap: map, consensusStart: self.clock.now))
+                self.clusterState = .healthy(
+                    .init(clusterTopologyHashValue: topologyHashValue, hashSlotShardMap: map, consensusStart: self.clock.now)
+                )
 
                 let poolUpdate = self.runningClients.updateNodes(
                     topology.shards.lazy.flatMap {
@@ -373,7 +374,7 @@ where
                         pendingSuccessNotifiers: [:],
                         circuitBreakerTimer: .init(id: circuitBreakerTimerID),
                         hashSlotShardMap: healthyContext.hashSlotShardMap,
-                        lastHealthyState: healthyContext.clusterTopology,
+                        lastHealthyStateHashValue: healthyContext.clusterTopologyHashValue,
                         lastError: error
                     )
                 )
@@ -492,7 +493,6 @@ where
                     .init(
                         start: degradedContext.start,
                         pendingSuccessNotifiers: [:],
-                        lastHealthyState: degradedContext.lastHealthyState,
                         lastError: degradedContext.lastError
                     )
                 )
@@ -677,7 +677,7 @@ where
                     pendingSuccessNotifiers: [:],
                     circuitBreakerTimer: .init(id: circuitBreakerTimerID),
                     hashSlotShardMap: healthyContext.hashSlotShardMap,
-                    lastHealthyState: healthyContext.clusterTopology,
+                    lastHealthyStateHashValue: healthyContext.clusterTopologyHashValue,
                     lastError: ValkeyClusterError.clusterIsMissingMovedErrorNode
                 )
             )
