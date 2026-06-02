@@ -221,7 +221,10 @@ public struct ValkeyClientConfiguration: Sendable {
         public static var cycleAllNodes: Self { .init(value: .cycleAllNodes) }
         /// Choose node based on availability zone, if no nodes are in availability zone use `backup`
         public static func az(_ zone: String, backup: ReadOnlyCommandNodeSelection = .cycleReplicas) -> Self {
-            .init(value: .az(zone, backup))
+            if case .az = backup.value {
+                preconditionFailure("Cannot use another availability zone as backup for an availability zone.")
+            }
+            return .init(value: .az(zone, backup))
         }
     }
 

@@ -26,7 +26,6 @@ package struct ValkeyNodeID: Hashable, Sendable {
     /// - Parameters:
     ///   - endpoint: The hostname or IP address of the Valkey node.
     ///   - port: The port number on which the node is accessible.
-    ///   - availabilityZone: Availability zone (used in node selection)
     @usableFromInline
     package init(endpoint: String, port: Int) {
         self.endpoint = endpoint

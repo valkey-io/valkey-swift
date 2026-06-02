@@ -69,7 +69,20 @@ extension ValkeyClientConfiguration.ReadOnlyCommandNodeSelection {
                 self = .primary
                 return
             }
-            self = .az(zone)
+            let backupSelection = configReader.string(forKey: ["readOnlyCommandNodeSelection", "availabilityZoneBackup"])
+            let backup: ValkeyClientConfiguration.ReadOnlyCommandNodeSelection =
+                switch backupSelection {
+                case "primary": .primary
+                case "cycleReplicas": .cycleReplicas
+                case "cycleAllNodes": .cycleAllNodes
+                case .none: .cycleReplicas
+                default:
+                    throw ConfigurationError(
+                        message:
+                            "readOnlyCommandNodeSelection.availabilityZoneBackup has invalid value. Valid values are primary, cycleReplicas, cycleAllNodes."
+                    )
+                }
+            self = .az(zone, backup: backup)
         default:
             throw ConfigurationError(
                 message: "readOnlyCommandNodeSelection has invalid value. Valid values are primary, cycleReplicas, cycleAllNodes."
