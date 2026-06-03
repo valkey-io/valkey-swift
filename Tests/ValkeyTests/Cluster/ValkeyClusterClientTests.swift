@@ -29,11 +29,18 @@ actor TestCluster {
             var address: Address
             var tlsEnabled: Bool
             var health: ValkeyClusterDescription.Node.Health
+            var availabilityZone: String?
 
-            init(address: TestCluster.Address, tlsEnabled: Bool = false, health: ValkeyClusterDescription.Node.Health = .online) {
+            init(
+                address: TestCluster.Address,
+                tlsEnabled: Bool = false,
+                health: ValkeyClusterDescription.Node.Health = .online,
+                availabilityZone: String?
+            ) {
                 self.address = address
                 self.tlsEnabled = tlsEnabled
                 self.health = health
+                self.availabilityZone = availabilityZone
             }
         }
         var hashKeyRanges: [ClosedRange<UInt16>]
@@ -46,8 +53,12 @@ actor TestCluster {
             replicas: [TestCluster.Address]
         ) {
             self.hashKeyRanges = hashKeyRanges
-            self.primary = .init(address: primary, tlsEnabled: false, health: .online)
-            self.replicas = replicas.map { .init(address: $0, tlsEnabled: false, health: .online) }
+            self.primary = .init(address: primary, tlsEnabled: false, health: .online, availabilityZone: "az1")
+            var count = 0
+            self.replicas = replicas.map {
+                count += 1
+                return .init(address: $0, tlsEnabled: false, health: .online, availabilityZone: "az\(count)")
+            }
         }
 
         init(
@@ -69,9 +80,10 @@ actor TestCluster {
         mutating func shutdownNode(address: Address) {
             if self.primary.address == address {
                 self.primary.health = .fail
+                let az = primary.availabilityZone
                 guard self.replicas.count > 0 else { return }
                 self.primary = self.replicas.removeLast()
-                self.replicas.append(.init(address: address, health: .fail))
+                self.replicas.append(.init(address: address, health: .fail, availabilityZone: az))
                 return
             } else {
                 for index in self.replicas.indices {
@@ -100,31 +112,35 @@ actor TestCluster {
         /// Shard description for CLUSTER SHARDS
         var respValue: RESP3Value {
             let hashKeyArray: RESP3Value = .array(self.hashKeyRanges.flatMap { [.number(Int64($0.first!)), .number(Int64($0.last!))] })
-            var nodes: [RESP3Value] = [
-                .map([
-                    .bulkString("id"): .bulkString(String(primary.address.hashValue)),
-                    .bulkString("port"): primary.tlsEnabled ? .null : .number(Int64(primary.address.port)),
-                    .bulkString("tls-port"): primary.tlsEnabled ? .number(Int64(primary.address.port)) : .null,
-                    .bulkString("ip"): .bulkString(primary.address.host),
-                    .bulkString("endpoint"): .bulkString(primary.address.host),
-                    .bulkString("role"): .bulkString("master"),
-                    .bulkString("replication-offset"): .number(70000),
-                    .bulkString("health"): .bulkString(primary.health.rawValue),
-                ])
+            var primaryNode: [RESP3Value: RESP3Value] = [
+                .bulkString("id"): .bulkString(String(primary.address.hashValue)),
+                .bulkString("port"): primary.tlsEnabled ? .null : .number(Int64(primary.address.port)),
+                .bulkString("tls-port"): primary.tlsEnabled ? .number(Int64(primary.address.port)) : .null,
+                .bulkString("ip"): .bulkString(primary.address.host),
+                .bulkString("endpoint"): .bulkString(primary.address.host),
+                .bulkString("role"): .bulkString("master"),
+                .bulkString("replication-offset"): .number(70000),
+                .bulkString("health"): .bulkString(primary.health.rawValue),
             ]
+            if let availabilityZone = primary.availabilityZone {
+                primaryNode[.bulkString("availability-zone")] = .bulkString(availabilityZone)
+            }
+            var nodes: [RESP3Value] = [.map(primaryNode)]
             for replica in replicas {
-                nodes.append(
-                    .map([
-                        .bulkString("id"): .bulkString(String(replica.address.hashValue)),
-                        .bulkString("port"): replica.tlsEnabled ? .null : .number(Int64(replica.address.port)),
-                        .bulkString("tls-port"): replica.tlsEnabled ? .number(Int64(replica.address.port)) : .null,
-                        .bulkString("ip"): .bulkString(replica.address.host),
-                        .bulkString("endpoint"): .bulkString(replica.address.host),
-                        .bulkString("role"): .bulkString("replica"),
-                        .bulkString("replication-offset"): .number(70000),
-                        .bulkString("health"): .bulkString(replica.health.rawValue),
-                    ])
-                )
+                var replicaNode: [RESP3Value: RESP3Value] = [
+                    .bulkString("id"): .bulkString(String(replica.address.hashValue)),
+                    .bulkString("port"): replica.tlsEnabled ? .null : .number(Int64(replica.address.port)),
+                    .bulkString("tls-port"): replica.tlsEnabled ? .number(Int64(replica.address.port)) : .null,
+                    .bulkString("ip"): .bulkString(replica.address.host),
+                    .bulkString("endpoint"): .bulkString(replica.address.host),
+                    .bulkString("role"): .bulkString("replica"),
+                    .bulkString("replication-offset"): .number(70000),
+                    .bulkString("health"): .bulkString(replica.health.rawValue),
+                ]
+                if let availabilityZone = replica.availabilityZone {
+                    replicaNode[.bulkString("availability-zone")] = .bulkString(availabilityZone)
+                }
+                nodes.append(.map(replicaNode))
             }
             return .map([
                 .bulkString("slots"): hashKeyArray,
@@ -355,6 +371,27 @@ struct ValkeyClusterClientTests {
             ])
         }
     }
+    var nineNodeHealthyCluster: TestCluster {
+        get async {
+            await TestCluster(shards: [
+                TestCluster.Shard(
+                    hashKeyRanges: [0...5460],
+                    primary: .init(host: "127.0.0.1", port: 16000),
+                    replicas: [.init(host: "127.0.0.1", port: 16001), .init(host: "127.0.0.1", port: 16002)]
+                ),
+                TestCluster.Shard(
+                    hashKeyRanges: [5461...10922],
+                    primary: .init(host: "127.0.0.1", port: 16003),
+                    replicas: [.init(host: "127.0.0.1", port: 16004), .init(host: "127.0.0.1", port: 16005)]
+                ),
+                TestCluster.Shard(
+                    hashKeyRanges: [10923...16383],
+                    primary: .init(host: "127.0.0.1", port: 16006),
+                    replicas: [.init(host: "127.0.0.1", port: 16007), .init(host: "127.0.0.1", port: 16008)]
+                ),
+            ])
+        }
+    }
 
     @available(valkeySwift 1.0, *)
     func withValkeyClusterClient(
@@ -426,8 +463,8 @@ struct ValkeyClusterClientTests {
             ),
             TestCluster.Shard(
                 hashKeyRanges: [10923...16383],
-                primary: .init(address: .init(host: "127.0.0.1", port: 16004), tlsEnabled: true),
-                replicas: [.init(address: .init(host: "127.0.0.1", port: 16005))]
+                primary: .init(address: .init(host: "127.0.0.1", port: 16004), tlsEnabled: true, availabilityZone: nil),
+                replicas: [.init(address: .init(host: "127.0.0.1", port: 16005), availabilityZone: nil)]
             ),
         ])
         let mockConnections = await cluster.mock(logger: logger)
@@ -683,6 +720,51 @@ struct ValkeyClusterClientTests {
             }
             let clusterError = try #require(error?.underlyingError as? ValkeyClusterError)
             #expect(clusterError == .clusterIsMissingNode)
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testAZReplica() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.nineNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            configuration: .init(client: .init(readOnlyCommandNodeSelection: .az("az2", backup: .primary))),
+            logger: logger
+        ) { client in
+            let value = try await client.get("$address{1}")
+            #expect(value.map { String($0) } == "127.0.0.1:16005")
+        }
+    }
+
+    /// Verify AZ selection will select primary as well as replica if primary AZ is the same as selected
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testAZReplicaPrimaryAZ() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let cluster = await self.nineNodeHealthyCluster
+        let mockConnections = await cluster.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClusterClient(
+            (host: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            configuration: .init(client: .init(readOnlyCommandNodeSelection: .az("az1", backup: .primary))),
+            logger: logger
+        ) { client in
+            var values: Set<String> = []
+            for _ in 0..<20 {
+                if let value = try await client.get("$address{1}").map({ String($0) }) {
+                    values.insert(value)
+                }
+            }
+            #expect(values.contains("127.0.0.1:16004"))
+            #expect(values.contains("127.0.0.1:16003"))
         }
     }
 

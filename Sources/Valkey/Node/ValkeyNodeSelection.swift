@@ -7,16 +7,22 @@
 //
 
 @usableFromInline
-package enum ValkeyNodeSelection: Sendable {
+protocol SelectableNodeIdentifier: Sendable {
+    var availabilityZone: String? { get }
+}
+
+@usableFromInline
+package indirect enum ValkeyNodeSelection: Sendable {
     case primary
     case cycleReplicas(Int)
     case cycleAllNodes(Int)
+    case az(String, Int, ValkeyNodeSelection)
 
     /// Select node from node ids
     /// - Parameter nodeIDs: Primary and replica nodes
     /// - Returns: ID of selected node
     @usableFromInline
-    func select<ID: Hashable & Sendable>(nodeIDs: ValkeyNodeIDs<ID>) -> ID {
+    func select<ID: SelectableNodeIdentifier>(nodeIDs: ValkeyNodeIDs<ID>) -> ID {
         switch self {
         case .primary:
             return nodeIDs.primary
@@ -29,6 +35,19 @@ package enum ValkeyNodeSelection: Sendable {
                 return nodeIDs.primary
             } else {
                 return nodeIDs.replicas[index - 1]
+            }
+        case .az(let zone, let index, let backup):
+            let replicaNodesInAvailabilityZone = nodeIDs.replicas.filter { $0.availabilityZone == zone }
+            if nodeIDs.primary.availabilityZone == zone {
+                let index = index % (replicaNodesInAvailabilityZone.count + 1)
+                if index == 0 {
+                    return nodeIDs.primary
+                } else {
+                    return replicaNodesInAvailabilityZone[index - 1]
+                }
+            } else {
+                guard replicaNodesInAvailabilityZone.count > 0 else { return backup.select(nodeIDs: nodeIDs) }
+                return replicaNodesInAvailabilityZone[index % replicaNodesInAvailabilityZone.count]
             }
         }
     }
@@ -46,8 +65,15 @@ extension ValkeyClientConfiguration.ReadOnlyCommandNodeSelection {
             .cycleReplicas(Self.idGenerator.next())
         case .cycleAllNodes:
             .cycleAllNodes(Self.idGenerator.next())
+        case .az(let zone, let backup):
+            .az(zone, Self.idGenerator.next(), backup.nodeSelection)
         }
     }
 
     static let idGenerator: IDGenerator = .init()
+}
+
+extension ValkeyServerAddress: SelectableNodeIdentifier {
+    @usableFromInline
+    var availabilityZone: String? { nil }
 }

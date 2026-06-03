@@ -18,6 +18,8 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStrin
         package var endpoint: String
         /// The health of the node
         package var health: ValkeyClusterDescription.Node.Health
+        /// availability zone
+        package var availabilityZone: String?
 
         package init(_ description: ValkeyClusterDescription.Node, usingTLS: Bool) throws(ValkeyClusterError) {
             guard let port = (usingTLS ? description.tlsPort : description.port) else { throw .tlsUsageInconsistencyInClusterDescription }
@@ -25,9 +27,10 @@ package struct ValkeyClusterTopology: Sendable, Equatable, Hashable, CustomStrin
             self.endpoint = description.endpoint
             self.port = port
             self.health = description.health
+            self.availabilityZone = description.availabilityZone
         }
 
-        package var nodeID: ValkeyNodeID { .init(endpoint: self.endpoint, port: self.port) }
+        package var hashSlotNode: HashSlotShardMap.Node { .init(endpoint: self.endpoint, port: self.port, availabilityZone: self.availabilityZone) }
 
         package var description: String {
             "Node(\(endpoint):\(port))"
