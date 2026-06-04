@@ -204,10 +204,11 @@ public struct ValkeyClientConfiguration: Sendable {
 
     /// Determine how nodes are chosen for readonly commands
     public struct ReadOnlyCommandNodeSelection: Sendable, Equatable {
-        enum _Internal: String, RawRepresentable, CaseIterable {
+        indirect enum _Internal: Sendable, Equatable {
             case primary
             case cycleReplicas
             case cycleAllNodes
+            case az(String, ReadOnlyCommandNodeSelection)
         }
 
         let value: _Internal
@@ -218,6 +219,13 @@ public struct ValkeyClientConfiguration: Sendable {
         public static var cycleReplicas: Self { .init(value: .cycleReplicas) }
         /// Cycle through primary and replicas
         public static var cycleAllNodes: Self { .init(value: .cycleAllNodes) }
+        /// Choose node based on availability zone, if no nodes are in availability zone use `backup`
+        public static func az(_ zone: String, backup: ReadOnlyCommandNodeSelection = .cycleReplicas) -> Self {
+            if case .az = backup.value {
+                preconditionFailure("Cannot use another availability zone as backup for an availability zone.")
+            }
+            return .init(value: .az(zone, backup))
+        }
     }
 
     public struct StandaloneConfiguration: Sendable {

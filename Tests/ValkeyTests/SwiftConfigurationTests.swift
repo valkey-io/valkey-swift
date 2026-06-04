@@ -226,6 +226,20 @@ struct SwiftConfigurationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func readOnlyCommandNodeSelectionAZStrategy() throws {
+        let testProvider = InMemoryProvider(values: [
+            "readOnlyCommandNodeSelection.availabilityZone": "us-east-1",
+            "readOnlyCommandNodeSelection.availabilityZoneBackup": "cycleAllNodes",
+        ])
+
+        let configReader = ConfigReader(provider: testProvider)
+        let config = try ValkeyClientConfiguration(configReader: configReader)
+
+        #expect(config.readOnlyCommandNodeSelection == .az("us-east-1", backup: .cycleAllNodes))
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func readOnlyCommandNodeSelectionInvalidStrategyThrows() throws {
         let testProvider = InMemoryProvider(values: [
             "readOnlyCommandNodeSelection": "invalid_strategy"
@@ -233,7 +247,7 @@ struct SwiftConfigurationTests {
 
         let configReader = ConfigReader(provider: testProvider)
 
-        let expectedError = "readOnlyCommandNodeSelection has invalid value. Valid values are primary, cycleReplicas, cycleAllNodes"
+        let expectedError = "readOnlyCommandNodeSelection has invalid value. Valid values are primary, cycleReplicas, cycleAllNodes."
         #expect(throws: ConfigurationError(message: expectedError)) {
             try ValkeyClientConfiguration(configReader: configReader)
         }

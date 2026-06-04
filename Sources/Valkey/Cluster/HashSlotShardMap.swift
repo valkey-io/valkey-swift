@@ -9,7 +9,7 @@
 ///
 /// In a Valkey cluster, each shard consists of one primary node and zero or more replica nodes.
 @usableFromInline
-package typealias ValkeyShardNodeIDs = ValkeyNodeIDs<ValkeyNodeID>
+package typealias ValkeyShardNodes = ValkeyNodeIDs<HashSlotShardMap.Node>
 
 /// This object allows us to efficiently look up the Valkey shard given a hash slot.
 ///
@@ -20,10 +20,34 @@ package typealias ValkeyShardNodeIDs = ValkeyNodeIDs<ValkeyNodeID>
 /// using the CRC16 algorithm, allowing the client to determine which node should handle a given command.
 @usableFromInline
 package struct HashSlotShardMap: Sendable {
+    @usableFromInline
+    package struct Node: Sendable, SelectableNodeIdentifier, Equatable {
+        package let endpoint: String
+        package let port: Int
+        @usableFromInline
+        package var availabilityZone: String?
+
+        package init(endpoint: String, port: Int, availabilityZone: String? = nil) {
+            self.endpoint = endpoint
+            self.port = port
+            self.availabilityZone = availabilityZone
+        }
+
+        package init(id: ValkeyNodeID) {
+            self.endpoint = id.endpoint
+            self.port = id.port
+            self.availabilityZone = nil
+        }
+
+        @usableFromInline
+        var nodeID: ValkeyNodeID {
+            .init(endpoint: self.endpoint, port: self.port)
+        }
+    }
     private static let allSlotsMissing = [OptionalShardID](repeating: .missing, count: HashSlot.count)
 
     private var slotToShardID: [OptionalShardID]
-    private var shardIDToShard: [ValkeyShardNodeIDs]
+    private var shardIDToShard: [ValkeyShardNodes]
 
     package init() {
         self.slotToShardID = Self.allSlotsMissing
@@ -35,7 +59,7 @@ package struct HashSlotShardMap: Sendable {
     /// - Parameter key: The hash slot to look up
     /// - Returns: The shard node information if the slot is assigned, or nil otherwise
     @usableFromInline
-    package subscript(_ key: HashSlot) -> ValkeyShardNodeIDs? {
+    package subscript(_ key: HashSlot) -> ValkeyShardNodes? {
         guard let shardID = self.slotToShardID[Int(key.rawValue)].value else {
             return nil
         }
@@ -53,7 +77,7 @@ package struct HashSlotShardMap: Sendable {
     ///           `ValkeyClusterError.clusterIsMissingSlotAssignment` if any slot is unassigned
     ///           `ValkeyClusterError.keysInCommandRequireMultipleNodes` if slots map to different shards
     @usableFromInline
-    package func nodeID(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ValkeyShardNodeIDs {
+    package func nodeID(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ValkeyShardNodes {
         guard let nodeIndex = try self.nodeIndex(for: slots) else {
             if let shardID = self.shardIDToShard.randomElement() {
                 return shardID
@@ -104,9 +128,9 @@ package struct HashSlotShardMap: Sendable {
 
         var shardID = 0
         for shard in topology.shards {
-            let nodeIDs = ValkeyShardNodeIDs(
-                primary: shard.primary.nodeID,
-                replicas: shard.replicas.map { $0.nodeID }
+            let nodeIDs = ValkeyShardNodes(
+                primary: shard.primary.hashSlotNode,
+                replicas: shard.replicas.map { $0.hashSlotNode }
             )
 
             defer { shardID += 1 }
@@ -148,40 +172,40 @@ package struct HashSlotShardMap: Sendable {
             var shard = self.shardIDToShard[shardIndex]
 
             // 1. No change
-            if shard.primary == movedError.nodeID {
+            if shard.primary.nodeID == movedError.nodeID {
                 return .updatedSlotToExistingNode
             }
 
             // 2. Failover
-            if shard.replicas.contains(movedError.nodeID) {
+            if shard.replicas.contains(where: { $0.nodeID == movedError.nodeID }) {
                 // lets promote the replica to be the primary and remove the old primary for now
-                shard.primary = movedError.nodeID
-                shard.replicas.removeAll { $0 == movedError.nodeID }
+                shard.primary = .init(id: movedError.nodeID)
+                shard.replicas.removeAll { $0.nodeID == movedError.nodeID }
                 self.shardIDToShard[shardIndex] = shard
                 return .updatedSlotToExistingNode
             }
         }
 
         // 3. Slot migration to an existing primary
-        if let newShardIndex = self.shardIDToShard.firstIndex(where: { $0.primary == movedError.nodeID }) {
+        if let newShardIndex = self.shardIDToShard.firstIndex(where: { $0.primary.nodeID == movedError.nodeID }) {
             self.slotToShardID[Int(movedError.slot.rawValue)] = .init(newShardIndex)
             return .updatedSlotToExistingNode
         }
 
         // 4. Replica moved to a different shard
-        if let ogShardIndexOfNewPrimary = self.shardIDToShard.firstIndex(where: { $0.replicas.contains(movedError.nodeID) }) {
+        if let ogShardIndexOfNewPrimary = self.shardIDToShard.firstIndex(where: { $0.replicas.contains(where: { $0.nodeID == movedError.nodeID }) }) {
             // remove replica from its og shard
-            self.shardIDToShard[ogShardIndexOfNewPrimary].replicas.removeAll(where: { $0 == movedError.nodeID })
+            self.shardIDToShard[ogShardIndexOfNewPrimary].replicas.removeAll(where: { $0.nodeID == movedError.nodeID })
             // create a new shard with the replica
             let newShardIndex = self.shardIDToShard.endIndex
-            self.shardIDToShard.append(.init(primary: movedError.nodeID))
+            self.shardIDToShard.append(.init(primary: .init(id: movedError.nodeID)))
             self.slotToShardID[Int(movedError.slot.rawValue)] = .init(newShardIndex)
             return .updatedSlotToExistingNode
         }
 
         // 5. totally new node
         let newShardIndex = self.shardIDToShard.endIndex
-        self.shardIDToShard.append(.init(primary: movedError.nodeID))
+        self.shardIDToShard.append(.init(primary: .init(id: movedError.nodeID)))
         self.slotToShardID[Int(movedError.slot.rawValue)] = .init(newShardIndex)
         return .updatedSlotToUnknownNode
     }
