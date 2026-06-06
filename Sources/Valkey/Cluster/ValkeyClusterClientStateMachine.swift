@@ -288,7 +288,7 @@ where
             var result: ClusterDiscoverySucceededAction
             let topologyHashValue = topology.hashValue
             /// Don't update cluster if description hasnt changed
-            if oldHealthyClusterTopologyHashValue != topology.hashValue {
+            if oldHealthyClusterTopologyHashValue != topologyHashValue {
                 var map = HashSlotShardMap()
                 map.updateCluster(topology)
                 self.clusterState = .healthy(
