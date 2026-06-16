@@ -187,6 +187,11 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
         #endif
 
+        #if MetricsSupport
+        let metricsEnabled = self.configuration.metrics.enabled
+        let metricsStart: ContinuousClock.Instant? = metricsEnabled ? .now : nil
+        #endif
+
         self.logger.trace("execute", metadata: ["command": "\(Command.name)"])
 
         let requestID = Self.requestIDGenerator.next()
@@ -213,6 +218,9 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 }
             }
             #endif
+            #if MetricsSupport
+            self.recordCommandLatency(Command.self, start: metricsStart, status: valkeyMetricsStatus(for: error))
+            #endif
             throw error
         } catch {
             #if DistributedTracingSupport
@@ -221,11 +229,21 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 span.setStatus(SpanStatus(code: .error))
             }
             #endif
+            #if MetricsSupport
+            self.recordCommandLatency(Command.self, start: metricsStart, status: .error)
+            #endif
             throw ValkeyClientError(.unrecognisedError, error: error)
         }
         do {
-            return try .init(token)
+            let response = try Command.Response(token)
+            #if MetricsSupport
+            self.recordCommandLatency(Command.self, start: metricsStart, status: .ok)
+            #endif
+            return response
         } catch {
+            #if MetricsSupport
+            self.recordCommandLatency(Command.self, start: metricsStart, status: .error)
+            #endif
             throw ValkeyClientError(.respDecodeError, error: error)
         }
     }
@@ -259,6 +277,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
         #endif
 
+        #if MetricsSupport
+        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        var metricsBatchSize = 0
+        defer { self.recordPipelineLatency(start: metricsStart, batchSize: metricsBatchSize) }
+        #endif
+
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
         var encoder = ValkeyCommandEncoder()
@@ -266,6 +290,9 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             command.encode(into: &encoder)
             promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         }
+        #if MetricsSupport
+        metricsBatchSize = promises.count
+        #endif
         return await _execute(
             buffer: encoder.buffer,
             promises: promises,
@@ -309,6 +336,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 attributes[self.configuration.tracing.attributeNames.databaseOperationBatchSize] = databaseOperationBatchSize
             }
         }
+        #endif
+
+        #if MetricsSupport
+        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        let metricsBatchSize = commands.count
+        defer { self.recordPipelineLatency(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
 
         // this currently allocates a promise for every command. We could collapse this down to one promise
@@ -362,6 +395,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 attributes[self.configuration.tracing.attributeNames.databaseOperationBatchSize] = commands.count
             }
         }
+        #endif
+
+        #if MetricsSupport
+        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        let metricsBatchSize = commands.count
+        defer { self.recordPipelineLatency(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
 
         // this currently allocates a promise for every command. We could collapse this down to one promise
@@ -478,6 +517,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
         #endif
 
+        #if MetricsSupport
+        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        var metricsBatchSize = 0
+        defer { self.recordTransactionLatency(start: metricsStart, batchSize: metricsBatchSize) }
+        #endif
+
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -489,6 +534,10 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
         EXEC().encode(into: &encoder)
         promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+
+        #if MetricsSupport
+        metricsBatchSize = promises.count - 2
+        #endif
 
         do {
             return try await _execute(
@@ -582,6 +631,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
         #endif
 
+        #if MetricsSupport
+        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        let metricsBatchSize = commands.count
+        defer { self.recordTransactionLatency(start: metricsStart, batchSize: metricsBatchSize) }
+        #endif
+
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -637,6 +692,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 attributes[self.configuration.tracing.attributeNames.databaseOperationBatchSize] = commands.count
             }
         }
+        #endif
+
+        #if MetricsSupport
+        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        let metricsBatchSize = commands.count
+        defer { self.recordTransactionLatency(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
 
         // Construct encoded commands and promise array
@@ -1075,6 +1136,52 @@ extension ValkeyClientError {
         guard case .commandError = self.errorCode, let message else { return nil }
         guard let prefixEndIndex = message.firstIndex(of: " ") else { return nil }
         return message[message.startIndex..<prefixEndIndex]
+    }
+}
+#endif
+
+#if MetricsSupport
+@available(valkeySwift 1.0, *)
+extension ValkeyConnection {
+    /// Record a single-command latency sample if metrics timing was started.
+    ///
+    /// `start` is `nil` when metrics are disabled in configuration; in that case this is
+    /// a single comparison and an early return.
+    @usableFromInline
+    nonisolated func recordCommandLatency<Command: ValkeyCommand>(
+        _ type: Command.Type,
+        start: ContinuousClock.Instant?,
+        status: ValkeyCommandStatus
+    ) {
+        guard let start else { return }
+        ValkeyMetrics.recordCommand(
+            type,
+            configuration: self.configuration.metrics,
+            status: status,
+            nanoseconds: valkeyElapsedNanoseconds(since: start)
+        )
+    }
+
+    /// Record a pipeline latency sample plus its batch size if metrics timing was started.
+    @usableFromInline
+    nonisolated func recordPipelineLatency(start: ContinuousClock.Instant?, batchSize: Int) {
+        guard let start else { return }
+        ValkeyMetrics.recordPipeline(
+            configuration: self.configuration.metrics,
+            batchSize: batchSize,
+            nanoseconds: valkeyElapsedNanoseconds(since: start)
+        )
+    }
+
+    /// Record a transaction latency sample plus its batch size if metrics timing was started.
+    @usableFromInline
+    nonisolated func recordTransactionLatency(start: ContinuousClock.Instant?, batchSize: Int) {
+        guard let start else { return }
+        ValkeyMetrics.recordTransaction(
+            configuration: self.configuration.metrics,
+            batchSize: batchSize,
+            nanoseconds: valkeyElapsedNanoseconds(since: start)
+        )
     }
 }
 #endif
