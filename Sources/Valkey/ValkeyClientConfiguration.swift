@@ -306,6 +306,12 @@ public struct ValkeyClientConfiguration: Sendable {
     public var tracing: ValkeyTracingConfiguration = .init()
     #endif
 
+    #if MetricsSupport
+    /// The metrics configuration to use for the Valkey connection.
+    /// Defaults to emitting metrics through the globally bootstrapped `MetricsSystem`.
+    public var metrics: ValkeyMetricsConfiguration = .init()
+    #endif
+
     /// Creates a Valkey client connection configuration.
     ///
     /// - Parameters:
