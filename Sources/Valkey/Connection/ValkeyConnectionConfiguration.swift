@@ -12,6 +12,10 @@ import NIOSSL
 import Tracing
 #endif
 
+#if MetricsSupport
+import Metrics
+#endif
+
 /// A configuration object that defines how to connect to a Valkey server.
 ///
 /// `ValkeyConnectionConfiguration` allows you to customize various aspects of the connection,
@@ -137,6 +141,12 @@ public struct ValkeyConnectionConfiguration: Sendable {
     public var tracing: ValkeyTracingConfiguration = .init()
     #endif
 
+    #if MetricsSupport
+    /// The metrics configuration to use for this connection.
+    /// Defaults to emitting metrics through the globally bootstrapped `MetricsSystem`.
+    public var metrics: ValkeyMetricsConfiguration = .init()
+    #endif
+
     /// Creates a new Valkey connection configuration.
     ///
     /// Use this initializer to create a configuration object that can be used to establish
@@ -200,6 +210,38 @@ public struct ValkeyTracingConfiguration: Sendable {
     /// Static attribute values used in spans created by Valkey.
     public struct AttributeValues: Sendable {
         public var databaseSystem: String = "valkey"
+    }
+}
+#endif
+
+#if MetricsSupport
+@available(valkeySwift 1.0, *)
+/// A configuration object that defines metrics emission behavior of a Valkey client.
+///
+/// When enabled the client emits a `Timer` per command and a `Timer` plus `Recorder` per
+/// pipeline through the globally bootstrapped `MetricsSystem`. Command timer labels embed
+/// the command name (e.g. `valkey.command.get.duration`) and carry a `status` dimension
+/// indicating whether the command completed successfully or failed.
+public struct ValkeyMetricsConfiguration: Sendable {
+    /// Whether metrics emission is enabled for this connection.
+    ///
+    /// When `false` the client skips clock reads and metric handler lookups entirely on
+    /// the command execution hot path. Defaults to `true`.
+    public var enabled: Bool
+
+    /// Prefix prepended to every metric label emitted by the client.
+    ///
+    /// For example, with the default prefix the GET command timer is emitted as
+    /// `valkey.command.get.duration`. Defaults to `"valkey"`.
+    public var labelPrefix: String
+
+    /// Create a new metrics configuration.
+    /// - Parameters:
+    ///   - enabled: Whether metrics emission is enabled. Defaults to `true`.
+    ///   - labelPrefix: Prefix prepended to every metric label. Defaults to `"valkey"`.
+    public init(enabled: Bool = true, labelPrefix: String = "valkey") {
+        self.enabled = enabled
+        self.labelPrefix = labelPrefix
     }
 }
 #endif
