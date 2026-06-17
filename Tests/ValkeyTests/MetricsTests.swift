@@ -25,18 +25,28 @@ struct MetricsTests {
         return factory
     }()
 
-    @Test
     @available(valkeySwift 1.0, *)
-    func testSingleCommandSuccessRecordsTimer() async throws {
+    private static func makeConnection(
+        metricsEnabled: Bool = true
+    ) async throws -> (ValkeyConnection, NIOAsyncTestingChannel, CapturingMetricsFactory) {
         let factory = Self.factory
         factory.reset()
         var config = ValkeyConnectionConfiguration()
-        config.metrics.enabled = true
-
+        config.metrics.enabled = metricsEnabled
         let channel = NIOAsyncTestingChannel()
-        let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(
+            channel,
+            configuration: config,
+            logger: Logger(label: "test")
+        )
         try await channel.processHello()
+        return (connection, channel, factory)
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testSingleCommandSuccessRecordsTimer() async throws {
+        let (connection, channel, factory) = try await Self.makeConnection()
 
         async let fooResult = connection.get("foo").map { String($0) }
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -44,24 +54,14 @@ struct MetricsTests {
         #expect(try await fooResult == "Bar")
 
         let label = "valkey.command.get.duration"
-        let samples = factory.timerSamples(label: label, status: "ok")
-        #expect(samples.count == 1)
-        #expect((samples.first ?? 0) >= 0)
+        #expect(factory.timerSamples(label: label, status: "ok").count == 1)
         #expect(factory.timerSamples(label: label, status: "error").isEmpty)
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testSingleCommandErrorRecordsErrorStatus() async throws {
-        let factory = Self.factory
-        factory.reset()
-        var config = ValkeyConnectionConfiguration()
-        config.metrics.enabled = true
-
-        let channel = NIOAsyncTestingChannel()
-        let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
-        try await channel.processHello()
+        let (connection, channel, factory) = try await Self.makeConnection()
 
         async let fooResult = connection.get("foo")
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -82,15 +82,7 @@ struct MetricsTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testPipelineRecordsTimerAndSize() async throws {
-        let factory = Self.factory
-        factory.reset()
-        var config = ValkeyConnectionConfiguration()
-        config.metrics.enabled = true
-
-        let channel = NIOAsyncTestingChannel()
-        let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
-        try await channel.processHello()
+        let (connection, channel, factory) = try await Self.makeConnection()
 
         async let results = connection.execute(GET("foo"), GET("bar"))
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -98,24 +90,14 @@ struct MetricsTests {
         try await channel.writeInbound(RESPToken(.bulkString("b")).base)
         _ = await results
 
-        let durationSamples = factory.timerSamples(label: "valkey.pipeline.duration", status: nil)
-        #expect(durationSamples.count == 1)
-        let sizeSamples = factory.recorderSamples(label: "valkey.pipeline.size")
-        #expect(sizeSamples == [2.0])
+        #expect(factory.timerSamples(label: "valkey.pipeline.duration", status: nil).count == 1)
+        #expect(factory.recorderSamples(label: "valkey.pipeline.size") == [2.0])
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testTransactionRecordsTimerAndSize() async throws {
-        let factory = Self.factory
-        factory.reset()
-        var config = ValkeyConnectionConfiguration()
-        config.metrics.enabled = true
-
-        let channel = NIOAsyncTestingChannel()
-        let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
-        try await channel.processHello()
+        let (connection, channel, factory) = try await Self.makeConnection()
 
         async let results = connection.transaction(
             SET("foo", value: "10"),
@@ -128,24 +110,14 @@ struct MetricsTests {
         try await channel.writeInbound(RESPToken(.array([.simpleString("OK"), .number(11)])).base)
         _ = try await results
 
-        let durationSamples = factory.timerSamples(label: "valkey.transaction.duration", status: nil)
-        #expect(durationSamples.count == 1)
-        let sizeSamples = factory.recorderSamples(label: "valkey.transaction.size")
-        #expect(sizeSamples == [2.0])
+        #expect(factory.timerSamples(label: "valkey.transaction.duration", status: nil).count == 1)
+        #expect(factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testMetricsDisabledSkipsEmission() async throws {
-        let factory = Self.factory
-        factory.reset()
-        var config = ValkeyConnectionConfiguration()
-        config.metrics.enabled = false
-
-        let channel = NIOAsyncTestingChannel()
-        let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
-        try await channel.processHello()
+        let (connection, channel, factory) = try await Self.makeConnection(metricsEnabled: false)
 
         async let fooResult = connection.get("foo").map { String($0) }
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)

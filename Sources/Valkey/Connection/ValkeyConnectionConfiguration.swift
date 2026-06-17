@@ -217,17 +217,8 @@ public struct ValkeyTracingConfiguration: Sendable {
 #if MetricsSupport
 @available(valkeySwift 1.0, *)
 /// A configuration object that defines metrics emission behavior of a Valkey client.
-///
-/// When enabled the client emits a `Timer` per command and a `Timer` plus `Recorder` per
-/// pipeline through the globally bootstrapped `MetricsSystem`. Command timer labels embed
-/// the command name (e.g. `valkey.command.get.duration`) and carry a `status` dimension
-/// indicating whether the command completed successfully or failed.
 public struct ValkeyMetricsConfiguration: Sendable {
     /// Whether metrics emission is enabled for this connection.
-    ///
-    /// When `false` the client skips clock reads and metric handler lookups entirely on
-    /// the command execution hot path. Defaults to `false`; set this to `true` after
-    /// bootstrapping `MetricsSystem` with a real metrics backend to opt in.
     public var enabled: Bool
 
     /// Create a new metrics configuration.
