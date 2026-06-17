@@ -219,7 +219,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             }
             #endif
             #if MetricsSupport
-            self.recordCommandLatency(Command.self, start: metricsStart, status: valkeyMetricsStatus(for: error))
+            self.recordCommandMetrics(Command.self, start: metricsStart, status: valkeyMetricsStatus(for: error))
             #endif
             throw error
         } catch {
@@ -230,19 +230,19 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             }
             #endif
             #if MetricsSupport
-            self.recordCommandLatency(Command.self, start: metricsStart, status: .error)
+            self.recordCommandMetrics(Command.self, start: metricsStart, status: .error)
             #endif
             throw ValkeyClientError(.unrecognisedError, error: error)
         }
         do {
             let response = try Command.Response(token)
             #if MetricsSupport
-            self.recordCommandLatency(Command.self, start: metricsStart, status: .ok)
+            self.recordCommandMetrics(Command.self, start: metricsStart, status: .ok)
             #endif
             return response
         } catch {
             #if MetricsSupport
-            self.recordCommandLatency(Command.self, start: metricsStart, status: .error)
+            self.recordCommandMetrics(Command.self, start: metricsStart, status: .error)
             #endif
             throw ValkeyClientError(.respDecodeError, error: error)
         }
@@ -280,7 +280,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         #if MetricsSupport
         let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
         var metricsBatchSize = 0
-        defer { self.recordPipelineLatency(start: metricsStart, batchSize: metricsBatchSize) }
+        defer { self.recordPipelineMetrics(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
 
         // this currently allocates a promise for every command. We could collapse this down to one promise
@@ -344,7 +344,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         #if MetricsSupport
         let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
         let metricsBatchSize = commands.count
-        defer { self.recordPipelineLatency(start: metricsStart, batchSize: metricsBatchSize) }
+        defer { self.recordPipelineMetrics(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
 
         // this currently allocates a promise for every command. We could collapse this down to one promise
@@ -464,7 +464,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         #if MetricsSupport
         let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
         var metricsBatchSize = 0
-        defer { self.recordTransactionLatency(start: metricsStart, batchSize: metricsBatchSize) }
+        defer { self.recordTransactionMetrics(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
 
         // Construct encoded commands and promise array
@@ -581,7 +581,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         #if MetricsSupport
         let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
         let metricsBatchSize = commands.count
-        defer { self.recordTransactionLatency(start: metricsStart, batchSize: metricsBatchSize) }
+        defer { self.recordTransactionMetrics(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
 
         // Construct encoded commands and promise array
@@ -1032,7 +1032,7 @@ extension ValkeyConnection {
     /// `start` is `nil` when metrics are disabled in configuration; in that case this is
     /// a single comparison and an early return.
     @usableFromInline
-    nonisolated func recordCommandLatency<Command: ValkeyCommand>(
+    nonisolated func recordCommandMetrics<Command: ValkeyCommand>(
         _ type: Command.Type,
         start: ContinuousClock.Instant?,
         status: ValkeyCommandStatus
@@ -1048,7 +1048,7 @@ extension ValkeyConnection {
 
     /// Record a pipeline latency sample plus its batch size if metrics timing was started.
     @usableFromInline
-    nonisolated func recordPipelineLatency(start: ContinuousClock.Instant?, batchSize: Int) {
+    nonisolated func recordPipelineMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
         guard let start else { return }
         ValkeyMetrics.recordPipeline(
             configuration: self.configuration.metrics,
@@ -1059,7 +1059,7 @@ extension ValkeyConnection {
 
     /// Record a transaction latency sample plus its batch size if metrics timing was started.
     @usableFromInline
-    nonisolated func recordTransactionLatency(start: ContinuousClock.Instant?, batchSize: Int) {
+    nonisolated func recordTransactionMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
         guard let start else { return }
         ValkeyMetrics.recordTransaction(
             configuration: self.configuration.metrics,
