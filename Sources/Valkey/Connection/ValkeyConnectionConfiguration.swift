@@ -226,22 +226,14 @@ public struct ValkeyMetricsConfiguration: Sendable {
     /// Whether metrics emission is enabled for this connection.
     ///
     /// When `false` the client skips clock reads and metric handler lookups entirely on
-    /// the command execution hot path. Defaults to `true`.
+    /// the command execution hot path. Defaults to `false`; set this to `true` after
+    /// bootstrapping `MetricsSystem` with a real metrics backend to opt in.
     public var enabled: Bool
 
-    /// Prefix prepended to every metric label emitted by the client.
-    ///
-    /// For example, with the default prefix the GET command timer is emitted as
-    /// `valkey.command.get.duration`. Defaults to `"valkey"`.
-    public var labelPrefix: String
-
     /// Create a new metrics configuration.
-    /// - Parameters:
-    ///   - enabled: Whether metrics emission is enabled. Defaults to `true`.
-    ///   - labelPrefix: Prefix prepended to every metric label. Defaults to `"valkey"`.
-    public init(enabled: Bool = true, labelPrefix: String = "valkey") {
+    /// - Parameter enabled: Whether metrics emission is enabled. Defaults to `false`.
+    public init(enabled: Bool = false) {
         self.enabled = enabled
-        self.labelPrefix = labelPrefix
     }
 }
 #endif

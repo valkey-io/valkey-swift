@@ -43,8 +43,8 @@ final class ValkeyCommandMetrics: Sendable {
     @usableFromInline let timeout: Timer
     @usableFromInline let cancelled: Timer
 
-    init(prefix: String, commandName: String) {
-        let label = "\(prefix).command.\(commandName.lowercased()).duration"
+    init(commandName: String) {
+        let label = "valkey.command.\(commandName.lowercased()).duration"
         self.ok = Timer(label: label, dimensions: [("status", "ok")])
         self.error = Timer(label: label, dimensions: [("status", "error")])
         self.timeout = Timer(label: label, dimensions: [("status", "timeout")])
@@ -65,13 +65,13 @@ final class ValkeyCommandMetrics: Sendable {
 /// Pipeline-level metric pair: latency timer plus batch-size recorder.
 @available(valkeySwift 1.0, *)
 @usableFromInline
-final class ValkeyPipelineMetrics: Sendable {
+struct ValkeyPipelineMetrics: Sendable {
     @usableFromInline let timer: Timer
     @usableFromInline let sizeRecorder: Recorder
 
-    init(prefix: String) {
-        self.timer = Timer(label: "\(prefix).pipeline.duration")
-        self.sizeRecorder = Recorder(label: "\(prefix).pipeline.size")
+    init() {
+        self.timer = Timer(label: "valkey.pipeline.duration")
+        self.sizeRecorder = Recorder(label: "valkey.pipeline.size")
     }
 }
 
@@ -81,61 +81,48 @@ final class ValkeyPipelineMetrics: Sendable {
 /// usually want to see transaction latency in isolation.
 @available(valkeySwift 1.0, *)
 @usableFromInline
-final class ValkeyTransactionMetrics: Sendable {
+struct ValkeyTransactionMetrics: Sendable {
     @usableFromInline let timer: Timer
     @usableFromInline let sizeRecorder: Recorder
 
-    init(prefix: String) {
-        self.timer = Timer(label: "\(prefix).transaction.duration")
-        self.sizeRecorder = Recorder(label: "\(prefix).transaction.size")
+    init() {
+        self.timer = Timer(label: "valkey.transaction.duration")
+        self.sizeRecorder = Recorder(label: "valkey.transaction.size")
     }
 }
 
-/// Process-wide cache of metric handles.
+/// Per-command-type metric handles, looked up by command name.
+@available(valkeySwift 1.0, *)
+@usableFromInline
+enum ValkeyCommandMetricsCache {
+    static let storage: Mutex<[String: ValkeyCommandMetrics]> = .init([:])
+
+    @usableFromInline
+    static func metrics<Command: ValkeyCommand>(for type: Command.Type) -> ValkeyCommandMetrics {
+        self.storage.withLock { cache in
+            if let cached = cache[Command.name] {
+                return cached
+            }
+            let metrics = ValkeyCommandMetrics(commandName: Command.name)
+            cache[Command.name] = metrics
+            return metrics
+        }
+    }
+}
+
+/// Static metric handle namespace.
 ///
-/// Cache keys include the configured label prefix so two clients configured with different
-/// prefixes do not stomp on each other's handles. The cache is keyed by the command type's
-/// ``ObjectIdentifier`` so we never allocate a `String` for the command name on the hot path.
+/// Pipeline and transaction handles are process-wide singletons because their labels are
+/// fixed (`valkey.pipeline.*` / `valkey.transaction.*`). Per-command handles live on
+/// ``ValkeyCommandMetricsCache``.
 @available(valkeySwift 1.0, *)
 @usableFromInline
 enum ValkeyMetrics {
     @usableFromInline
-    struct CommandKey: Hashable, Sendable {
-        @usableFromInline let prefix: String
-        @usableFromInline let typeID: ObjectIdentifier
-    }
-
-    static let commandCache: Mutex<[CommandKey: ValkeyCommandMetrics]> = .init([:])
-    static let pipelineCache: Mutex<[String: ValkeyPipelineMetrics]> = .init([:])
-    static let transactionCache: Mutex<[String: ValkeyTransactionMetrics]> = .init([:])
+    static let pipelineMetrics = ValkeyPipelineMetrics()
 
     @usableFromInline
-    static func commandMetrics<Command: ValkeyCommand>(
-        for type: Command.Type,
-        prefix: String
-    ) -> ValkeyCommandMetrics {
-        let key = CommandKey(prefix: prefix, typeID: ObjectIdentifier(type))
-        return self.commandCache.withLock { cache in
-            if let cached = cache[key] {
-                return cached
-            }
-            let metrics = ValkeyCommandMetrics(prefix: prefix, commandName: Command.name)
-            cache[key] = metrics
-            return metrics
-        }
-    }
-
-    @usableFromInline
-    static func pipelineMetrics(prefix: String) -> ValkeyPipelineMetrics {
-        self.pipelineCache.withLock { cache in
-            if let cached = cache[prefix] {
-                return cached
-            }
-            let metrics = ValkeyPipelineMetrics(prefix: prefix)
-            cache[prefix] = metrics
-            return metrics
-        }
-    }
+    static let transactionMetrics = ValkeyTransactionMetrics()
 
     /// Record a command latency sample.
     ///
@@ -152,8 +139,7 @@ enum ValkeyMetrics {
         nanoseconds: Int64
     ) {
         guard configuration.enabled else { return }
-        let metrics = self.commandMetrics(for: type, prefix: configuration.labelPrefix)
-        metrics.timer(for: status).recordNanoseconds(nanoseconds)
+        ValkeyCommandMetricsCache.metrics(for: type).timer(for: status).recordNanoseconds(nanoseconds)
     }
 
     /// Record a pipeline latency sample plus its batch size.
@@ -164,21 +150,8 @@ enum ValkeyMetrics {
         nanoseconds: Int64
     ) {
         guard configuration.enabled else { return }
-        let metrics = self.pipelineMetrics(prefix: configuration.labelPrefix)
-        metrics.timer.recordNanoseconds(nanoseconds)
-        metrics.sizeRecorder.record(batchSize)
-    }
-
-    @usableFromInline
-    static func transactionMetrics(prefix: String) -> ValkeyTransactionMetrics {
-        self.transactionCache.withLock { cache in
-            if let cached = cache[prefix] {
-                return cached
-            }
-            let metrics = ValkeyTransactionMetrics(prefix: prefix)
-            cache[prefix] = metrics
-            return metrics
-        }
+        self.pipelineMetrics.timer.recordNanoseconds(nanoseconds)
+        self.pipelineMetrics.sizeRecorder.record(batchSize)
     }
 
     /// Record a transaction latency sample plus the number of queued commands (excluding MULTI/EXEC).
@@ -189,9 +162,8 @@ enum ValkeyMetrics {
         nanoseconds: Int64
     ) {
         guard configuration.enabled else { return }
-        let metrics = self.transactionMetrics(prefix: configuration.labelPrefix)
-        metrics.timer.recordNanoseconds(nanoseconds)
-        metrics.sizeRecorder.record(batchSize)
+        self.transactionMetrics.timer.recordNanoseconds(nanoseconds)
+        self.transactionMetrics.sizeRecorder.record(batchSize)
     }
 }
 
@@ -201,7 +173,7 @@ enum ValkeyMetrics {
 func valkeyElapsedNanoseconds(since start: ContinuousClock.Instant) -> Int64 {
     let elapsed = ContinuousClock.now - start
     let components = elapsed.components
-    return components.seconds &* 1_000_000_000 &+ (components.attoseconds / 1_000_000_000)
+    return components.seconds * 1_000_000_000 + components.attoseconds / 1_000_000_000
 }
 
 /// Map a Valkey error to the corresponding metric status.
