@@ -17,7 +17,7 @@ import Testing
 
 @testable import Valkey
 
-@Suite
+@Suite(.serialized)
 struct MetricsTests {
     static let factory: CapturingMetricsFactory = {
         let factory = CapturingMetricsFactory()
@@ -28,10 +28,10 @@ struct MetricsTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testSingleCommandSuccessRecordsTimer() async throws {
-        let prefix = "valkey-test-success-\(UUID().uuidString)"
         let factory = Self.factory
+        factory.reset()
         var config = ValkeyConnectionConfiguration()
-        config.metrics.labelPrefix = prefix
+        config.metrics.enabled = true
 
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -43,7 +43,7 @@ struct MetricsTests {
         try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
         #expect(try await fooResult == "Bar")
 
-        let label = "\(prefix).command.get.duration"
+        let label = "valkey.command.get.duration"
         let samples = factory.timerSamples(label: label, status: "ok")
         #expect(samples.count == 1)
         #expect((samples.first ?? 0) >= 0)
@@ -53,10 +53,10 @@ struct MetricsTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testSingleCommandErrorRecordsErrorStatus() async throws {
-        let prefix = "valkey-test-error-\(UUID().uuidString)"
         let factory = Self.factory
+        factory.reset()
         var config = ValkeyConnectionConfiguration()
-        config.metrics.labelPrefix = prefix
+        config.metrics.enabled = true
 
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -74,7 +74,7 @@ struct MetricsTests {
             #expect(error.errorCode == .commandError)
         }
 
-        let label = "\(prefix).command.get.duration"
+        let label = "valkey.command.get.duration"
         #expect(factory.timerSamples(label: label, status: "error").count == 1)
         #expect(factory.timerSamples(label: label, status: "ok").isEmpty)
     }
@@ -82,10 +82,10 @@ struct MetricsTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testPipelineRecordsTimerAndSize() async throws {
-        let prefix = "valkey-test-pipeline-\(UUID().uuidString)"
         let factory = Self.factory
+        factory.reset()
         var config = ValkeyConnectionConfiguration()
-        config.metrics.labelPrefix = prefix
+        config.metrics.enabled = true
 
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -98,19 +98,19 @@ struct MetricsTests {
         try await channel.writeInbound(RESPToken(.bulkString("b")).base)
         _ = await results
 
-        let durationSamples = factory.timerSamples(label: "\(prefix).pipeline.duration", status: nil)
+        let durationSamples = factory.timerSamples(label: "valkey.pipeline.duration", status: nil)
         #expect(durationSamples.count == 1)
-        let sizeSamples = factory.recorderSamples(label: "\(prefix).pipeline.size")
+        let sizeSamples = factory.recorderSamples(label: "valkey.pipeline.size")
         #expect(sizeSamples == [2.0])
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testTransactionRecordsTimerAndSize() async throws {
-        let prefix = "valkey-test-transaction-\(UUID().uuidString)"
         let factory = Self.factory
+        factory.reset()
         var config = ValkeyConnectionConfiguration()
-        config.metrics.labelPrefix = prefix
+        config.metrics.enabled = true
 
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -128,19 +128,18 @@ struct MetricsTests {
         try await channel.writeInbound(RESPToken(.array([.simpleString("OK"), .number(11)])).base)
         _ = try await results
 
-        let durationSamples = factory.timerSamples(label: "\(prefix).transaction.duration", status: nil)
+        let durationSamples = factory.timerSamples(label: "valkey.transaction.duration", status: nil)
         #expect(durationSamples.count == 1)
-        let sizeSamples = factory.recorderSamples(label: "\(prefix).transaction.size")
+        let sizeSamples = factory.recorderSamples(label: "valkey.transaction.size")
         #expect(sizeSamples == [2.0])
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testMetricsDisabledSkipsEmission() async throws {
-        let prefix = "valkey-test-disabled-\(UUID().uuidString)"
         let factory = Self.factory
+        factory.reset()
         var config = ValkeyConnectionConfiguration()
-        config.metrics.labelPrefix = prefix
         config.metrics.enabled = false
 
         let channel = NIOAsyncTestingChannel()
@@ -153,7 +152,7 @@ struct MetricsTests {
         try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
         _ = try await fooResult
 
-        let label = "\(prefix).command.get.duration"
+        let label = "valkey.command.get.duration"
         #expect(factory.timerSamples(label: label, status: "ok").isEmpty)
         #expect(factory.timerSamples(label: label, status: "error").isEmpty)
     }
@@ -229,6 +228,23 @@ final class CapturingMetricsFactory: MetricsFactory, @unchecked Sendable {
         defer { self.lock.unlock() }
         return self.recorders[label]?.samples() ?? []
     }
+
+    /// Clear all captured samples while keeping the handler instances intact.
+    ///
+    /// Production code holds long-lived `Timer`/`Recorder` references via the
+    /// `ValkeyCommandMetricsHolder` / `ValkeyMetrics` statics, which capture handlers from
+    /// this factory at first use. Resetting samples between tests gives each test a clean
+    /// slate without invalidating those references.
+    func reset() {
+        self.lock.lock()
+        defer { self.lock.unlock() }
+        for handler in self.timers.values {
+            handler.reset()
+        }
+        for handler in self.recorders.values {
+            handler.reset()
+        }
+    }
 }
 
 final class CapturingTimerHandler: TimerHandler, @unchecked Sendable {
@@ -245,6 +261,12 @@ final class CapturingTimerHandler: TimerHandler, @unchecked Sendable {
         self.lock.lock()
         defer { self.lock.unlock() }
         return self.values
+    }
+
+    func reset() {
+        self.lock.lock()
+        defer { self.lock.unlock() }
+        self.values.removeAll(keepingCapacity: true)
     }
 }
 
@@ -268,6 +290,12 @@ final class CapturingRecorderHandler: RecorderHandler, @unchecked Sendable {
         self.lock.lock()
         defer { self.lock.unlock() }
         return self.values
+    }
+
+    func reset() {
+        self.lock.lock()
+        defer { self.lock.unlock() }
+        self.values.removeAll(keepingCapacity: true)
     }
 }
 
