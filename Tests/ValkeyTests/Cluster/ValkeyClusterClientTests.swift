@@ -152,12 +152,35 @@ actor TestCluster {
     var shards: [Shard]
     private(set) var addressMap: [Address: (role: Role, shardIndex: Int)]
     var keyValueMap: [String: String]
+    /// MULTI/EXEC queue per address. Used by the addNode closure to mock cluster transactions.
+    /// Per-address (not per-channel) state is sufficient because the cluster client serialises
+    /// transactions through a single connection per node and tests do not run concurrent MULTIs.
+    private var transactionQueues: [Address: [[String]]]
 
     init(shards: [Shard]) async {
         self.addressMap = [:]
         self.shards = shards
         self.keyValueMap = [:]
+        self.transactionQueues = [:]
         self.updateAddressMap()
+    }
+
+    func startMulti(at address: Address) {
+        self.transactionQueues[address] = []
+    }
+
+    func queueTransactionCommand(_ command: [String], at address: Address) {
+        self.transactionQueues[address, default: []].append(command)
+    }
+
+    func finishExec(at address: Address) -> [[String]] {
+        let queue = self.transactionQueues[address] ?? []
+        self.transactionQueues[address] = nil
+        return queue
+    }
+
+    func isInTransaction(at address: Address) -> Bool {
+        self.transactionQueues[address] != nil
     }
 
     func updateAddressMap() {
@@ -232,6 +255,62 @@ actor TestCluster {
     /// Add Valkey node to mock connections
     func addNode(to mockConnections: MockServerConnections, address: TestCluster.Address, logger: Logger) async {
         await mockConnections.addValkeyServer(.hostname(address.host, port: address.port)) { command in
+            // Transaction handling: intercept MULTI/EXEC and queue intermediate commands.
+            var transactionIterator = command.makeIterator()
+            switch transactionIterator.next() {
+            case "MULTI":
+                await self.startMulti(at: address)
+                return .simpleString("OK")
+            case "EXEC":
+                let queued = await self.finishExec(at: address)
+                var results: [RESP3Value] = []
+                for queuedCommand in queued {
+                    var queuedIterator = queuedCommand.makeIterator()
+                    switch queuedIterator.next() {
+                    case "SET":
+                        guard let key = queuedIterator.next(), let value = queuedIterator.next() else {
+                            results.append(.bulkError("ERR invalid command"))
+                            continue
+                        }
+                        let hashSlot = HashSlot(key: key.utf8)
+                        guard let shard = await self.getShard(hashSlot) else {
+                            results.append(.bulkError("CLUSTERDOWN Hash slot not served"))
+                            continue
+                        }
+                        let addressDetails = await self.addressMap[address]
+                        if shard.index != addressDetails?.shardIndex || addressDetails?.role == .replica {
+                            results.append(.bulkError("MOVED \(hashSlot.rawValue) \(shard.shard.primary.address)"))
+                        } else {
+                            await self.setKey(key, value: value)
+                            results.append(.simpleString("OK"))
+                        }
+                    case "GET":
+                        guard let key = queuedIterator.next() else {
+                            results.append(.bulkError("ERR invalid command"))
+                            continue
+                        }
+                        let hashSlot = HashSlot(key: key.utf8)
+                        guard let shard = await self.getShard(hashSlot) else {
+                            results.append(.null)
+                            continue
+                        }
+                        let addressDetails = await self.addressMap[address]
+                        if shard.index != addressDetails?.shardIndex {
+                            results.append(.bulkError("MOVED \(hashSlot.rawValue) \(shard.shard.primary.address)"))
+                        } else {
+                            results.append(await self.getKey(key).map { .bulkString($0) } ?? .null)
+                        }
+                    default:
+                        results.append(.bulkError("ERR unrecognised queued command"))
+                    }
+                }
+                return .array(results)
+            default:
+                if await self.isInTransaction(at: address) {
+                    await self.queueTransactionCommand(command, at: address)
+                    return .simpleString("QUEUED")
+                }
+            }
             var iterator = command.makeIterator()
             switch iterator.next() {
             case "GET":

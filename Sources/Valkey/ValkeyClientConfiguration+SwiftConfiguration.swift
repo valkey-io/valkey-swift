@@ -20,6 +20,7 @@ extension ValkeyClientConfiguration {
     /// - `keepAlive.*` (nested object, optional): Keep-alive behavior settings.
     /// - `retry.*` (nested object, optional): Retry parameters.
     /// - `authentication.*` (nested object, optional): Server authentication.
+    /// - `metrics.*` (nested object, optional): Metrics emission settings. Only available when `MetricsSupport` is enabled.
     /// - `commandTimeoutMs` (duration, optional, default: 30 seconds): Timeout for command responses.
     /// - `blockingCommandTimeoutMs` (duration, optional, default: 120 seconds): Timeout for blocking command responses.
     /// - `databaseNumber` (int, optional, default: 0, range: 0-15): Database number to use for the Valkey Connection
@@ -88,6 +89,10 @@ extension ValkeyClientConfiguration.ReadOnlyCommandNodeSelection {
                 message: "readOnlyCommandNodeSelection has invalid value. Valid values are primary, cycleReplicas, cycleAllNodes."
             )
         }
+
+        #if MetricsSupport
+        self.metrics = .init(configReader: configReader.scoped(to: "metrics"))
+        #endif
     }
 }
 
@@ -186,6 +191,22 @@ extension ValkeyClientConfiguration.Authentication {
         self.init(username: username, password: password)
     }
 }
+
+#if MetricsSupport
+@available(valkeySwift 1.0, *)
+extension ValkeyMetricsConfiguration {
+    /// Initializes a ``ValkeyMetricsConfiguration`` from a `ConfigReader`.
+    ///
+    /// ## Configuration keys:
+    /// - `enabled` (bool, optional, default: false): Whether metrics emission is enabled.
+    public init(configReader: ConfigReader) {
+        self.init()
+        if let enabled = configReader.bool(forKey: "enabled") {
+            self.enabled = enabled
+        }
+    }
+}
+#endif
 
 @available(valkeySwift 1.0, *)
 extension ConfigReader {
