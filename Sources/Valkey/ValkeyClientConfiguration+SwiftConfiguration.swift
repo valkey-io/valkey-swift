@@ -51,6 +51,10 @@ extension ValkeyClientConfiguration {
             self.databaseNumber = databaseNumber
         }
         self.readOnlyCommandNodeSelection = try .init(configReader: configReader)
+
+        #if MetricsSupport
+        self.metrics = .init(configReader: configReader.scoped(to: "metrics"))
+        #endif
     }
 }
 
@@ -89,10 +93,6 @@ extension ValkeyClientConfiguration.ReadOnlyCommandNodeSelection {
                 message: "readOnlyCommandNodeSelection has invalid value. Valid values are primary, cycleReplicas, cycleAllNodes."
             )
         }
-
-        #if MetricsSupport
-        self.metrics = .init(configReader: configReader.scoped(to: "metrics"))
-        #endif
     }
 }
 

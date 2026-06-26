@@ -159,11 +159,6 @@ protocol ValkeyMetricsRecording {
 @available(valkeySwift 1.0, *)
 extension ValkeyMetricsRecording {
     /// Record a single-command latency sample if metrics timing was started.
-    ///
-    /// A nil `start` indicates timing was not begun (metrics disabled at call site), so the call
-    /// is a no-op. Recorded once per user-level call (wrapping any retry/redirect loop), so a
-    /// single user operation produces exactly one sample regardless of how many MOVED / ASK /
-    /// TRYAGAIN retries occur.
     @usableFromInline
     func recordCommandMetrics<Command: ValkeyCommand>(
         _ type: Command.Type,
