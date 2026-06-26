@@ -720,49 +720,8 @@ extension ValkeyClient: Service {}
 
 #if MetricsSupport
 @available(valkeySwift 1.0, *)
-extension ValkeyClient {
-    /// Record a single-command latency sample if metrics timing was started.
-    ///
-    /// Recorded once per user-level call (wrapping the retry loop), so a single user
-    /// operation produces exactly one sample regardless of how many MOVED / TRYAGAIN retries occur.
+extension ValkeyClient: ValkeyMetricsRecording {
     @usableFromInline
-    func recordCommandMetrics<Command: ValkeyCommand>(
-        _ type: Command.Type,
-        start: ContinuousClock.Instant?,
-        status: ValkeyCommandStatus
-    ) {
-        guard let start else { return }
-        ValkeyMetrics.recordCommand(
-            type,
-            configuration: self.configuration.metrics,
-            status: status,
-            nanoseconds: valkeyElapsedNanoseconds(since: start)
-        )
-    }
-
-    /// Record a pipeline latency sample plus its batch size if metrics timing was started.
-    ///
-    /// Recorded once per user-level pipeline call (wrapping the retry loop), so a single user
-    /// operation produces exactly one sample regardless of how many MOVED / TRYAGAIN retries occur.
-    @usableFromInline
-    func recordPipelineMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
-        guard let start else { return }
-        ValkeyMetrics.recordPipeline(
-            configuration: self.configuration.metrics,
-            batchSize: batchSize,
-            nanoseconds: valkeyElapsedNanoseconds(since: start)
-        )
-    }
-
-    /// Record a transaction latency sample plus its batch size if metrics timing was started.
-    @usableFromInline
-    func recordTransactionMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
-        guard let start else { return }
-        ValkeyMetrics.recordTransaction(
-            configuration: self.configuration.metrics,
-            batchSize: batchSize,
-            nanoseconds: valkeyElapsedNanoseconds(since: start)
-        )
-    }
+    var metricsConfiguration: ValkeyMetricsConfiguration { self.configuration.metrics }
 }
 #endif
