@@ -1260,50 +1260,8 @@ extension ValkeyClusterClient: Service {}
 
 #if MetricsSupport
 @available(valkeySwift 1.0, *)
-extension ValkeyClusterClient {
-    /// Record a single-command latency sample if metrics timing was started.
-    ///
-    /// Recorded once per user-level call (wrapping the retry/redirect loop), so a single user
-    /// operation produces exactly one sample regardless of how many MOVED / ASK / TRYAGAIN retries occur.
+extension ValkeyClusterClient: ValkeyMetricsRecording {
     @usableFromInline
-    func recordCommandMetrics<Command: ValkeyCommand>(
-        _ type: Command.Type,
-        start: ContinuousClock.Instant?,
-        status: ValkeyCommandStatus
-    ) {
-        guard let start else { return }
-        ValkeyMetrics.recordCommand(
-            type,
-            configuration: self.configuration.client.metrics,
-            status: status,
-            nanoseconds: valkeyElapsedNanoseconds(since: start)
-        )
-    }
-
-    /// Record a pipeline latency sample plus its batch size if metrics timing was started.
-    ///
-    /// Recorded once per user-level pipeline call (wrapping the cross-node fan-out and retry loop),
-    /// so a single user operation produces exactly one sample regardless of how many MOVED / ASK /
-    /// TRYAGAIN retries or per-node sub-pipelines occur.
-    @usableFromInline
-    func recordPipelineMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
-        guard let start else { return }
-        ValkeyMetrics.recordPipeline(
-            configuration: self.configuration.client.metrics,
-            batchSize: batchSize,
-            nanoseconds: valkeyElapsedNanoseconds(since: start)
-        )
-    }
-
-    /// Record a transaction latency sample plus its batch size if metrics timing was started.
-    @usableFromInline
-    func recordTransactionMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
-        guard let start else { return }
-        ValkeyMetrics.recordTransaction(
-            configuration: self.configuration.client.metrics,
-            batchSize: batchSize,
-            nanoseconds: valkeyElapsedNanoseconds(since: start)
-        )
-    }
+    var metricsConfiguration: ValkeyMetricsConfiguration { self.configuration.client.metrics }
 }
 #endif

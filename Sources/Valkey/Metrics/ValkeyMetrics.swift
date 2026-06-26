@@ -123,48 +123,6 @@ enum ValkeyMetrics {
 
     @usableFromInline
     static let transactionMetrics = ValkeyTransactionMetrics()
-
-    /// Record a command latency sample.
-    ///
-    /// - Parameters:
-    ///   - type: The command type. Used as the cache key.
-    ///   - configuration: The metrics configuration. The call is a no-op if `enabled` is false.
-    ///   - status: The outcome of the command, used as the `status` dimension.
-    ///   - nanoseconds: The measured latency.
-    @usableFromInline
-    static func recordCommand<Command: ValkeyCommand>(
-        _ type: Command.Type,
-        configuration: ValkeyMetricsConfiguration,
-        status: ValkeyCommandStatus,
-        nanoseconds: Int64
-    ) {
-        guard configuration.enabled else { return }
-        ValkeyCommandMetricsCache.metrics(for: type).timer(for: status).recordNanoseconds(nanoseconds)
-    }
-
-    /// Record a pipeline latency sample plus its batch size.
-    @usableFromInline
-    static func recordPipeline(
-        configuration: ValkeyMetricsConfiguration,
-        batchSize: Int,
-        nanoseconds: Int64
-    ) {
-        guard configuration.enabled else { return }
-        self.pipelineMetrics.timer.recordNanoseconds(nanoseconds)
-        self.pipelineMetrics.sizeRecorder.record(batchSize)
-    }
-
-    /// Record a transaction latency sample plus the number of queued commands (excluding MULTI/EXEC).
-    @usableFromInline
-    static func recordTransaction(
-        configuration: ValkeyMetricsConfiguration,
-        batchSize: Int,
-        nanoseconds: Int64
-    ) {
-        guard configuration.enabled else { return }
-        self.transactionMetrics.timer.recordNanoseconds(nanoseconds)
-        self.transactionMetrics.sizeRecorder.record(batchSize)
-    }
 }
 
 /// Convert the elapsed `Duration` between two `ContinuousClock` instants to nanoseconds.
@@ -187,5 +145,49 @@ func valkeyMetricsStatus(for error: ValkeyClientError) -> ValkeyCommandStatus {
         return .cancelled
     }
     return .error
+}
+
+/// Internal conformance that lets `ValkeyClient` and `ValkeyClusterClient` share a single set of
+/// metric recording helpers. Each client exposes its own metrics configuration via
+/// ``metricsConfiguration``.
+@available(valkeySwift 1.0, *)
+@usableFromInline
+protocol ValkeyMetricsRecording {
+    var metricsConfiguration: ValkeyMetricsConfiguration { get }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyMetricsRecording {
+    /// Record a single-command latency sample if metrics timing was started.
+    ///
+    /// A nil `start` indicates timing was not begun (metrics disabled at call site), so the call
+    /// is a no-op. Recorded once per user-level call (wrapping any retry/redirect loop), so a
+    /// single user operation produces exactly one sample regardless of how many MOVED / ASK /
+    /// TRYAGAIN retries occur.
+    @usableFromInline
+    func recordCommandMetrics<Command: ValkeyCommand>(
+        _ type: Command.Type,
+        start: ContinuousClock.Instant?,
+        status: ValkeyCommandStatus
+    ) {
+        guard self.metricsConfiguration.enabled, let start else { return }
+        ValkeyCommandMetricsCache.metrics(for: type).timer(for: status).recordNanoseconds(valkeyElapsedNanoseconds(since: start))
+    }
+
+    /// Record a pipeline latency sample plus its batch size if metrics timing was started.
+    @usableFromInline
+    func recordPipelineMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
+        guard self.metricsConfiguration.enabled, let start else { return }
+        ValkeyMetrics.pipelineMetrics.timer.recordNanoseconds(valkeyElapsedNanoseconds(since: start))
+        ValkeyMetrics.pipelineMetrics.sizeRecorder.record(batchSize)
+    }
+
+    /// Record a transaction latency sample plus the number of queued commands (excluding MULTI/EXEC).
+    @usableFromInline
+    func recordTransactionMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
+        guard self.metricsConfiguration.enabled, let start else { return }
+        ValkeyMetrics.transactionMetrics.timer.recordNanoseconds(valkeyElapsedNanoseconds(since: start))
+        ValkeyMetrics.transactionMetrics.sizeRecorder.record(batchSize)
+    }
 }
 #endif
