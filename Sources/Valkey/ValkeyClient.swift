@@ -142,8 +142,7 @@ extension ValkeyClient {
 
     /// Get connection from connection pool and run operation using connection
     ///
-    /// Commands run via the supplied `ValkeyConnection` do not emit command/pipeline/transaction
-    /// metrics — those are only recorded by `ValkeyClient.execute` and `ValkeyClient.transaction`.
+    /// Commands run via the supplied `withConnection` do not emit metrics
     ///
     /// - Parameters:
     ///   - readOnly: Are operations in closure are read only
