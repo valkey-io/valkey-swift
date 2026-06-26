@@ -561,9 +561,7 @@ public final class ValkeyClusterClient: Sendable {
 
     /// Get connection from cluster and run operation using connection
     ///
-    /// Commands run via the supplied `ValkeyConnection` do not emit command/pipeline/transaction
-    /// metrics — those are only recorded by `ValkeyClusterClient.execute` and
-    /// `ValkeyClusterClient.transaction`.
+    /// Commands run via the supplied `withConnection` do not emit metrics
     ///
     /// - Parameters:
     ///   - keys: Keys affected by operation. This is used to choose the cluster node
