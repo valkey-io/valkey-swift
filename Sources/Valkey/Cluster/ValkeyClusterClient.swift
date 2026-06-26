@@ -153,6 +153,11 @@ public final class ValkeyClusterClient: Sendable {
     ///   - Other errors if the command execution or parsing fails
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
+        #if MetricsSupport
+        let metricsStart: ContinuousClock.Instant? = self.configuration.client.metrics.enabled ? .now : nil
+        var metricsStatus: ValkeyCommandStatus = .ok
+        defer { self.recordCommandMetrics(Command.self, start: metricsStart, status: metricsStatus) }
+        #endif
         do {
             let hashSlot = try self.hashSlot(for: command.keysAffected)
             let nodeSelection = getNodeSelection(readOnly: command.isReadOnly)
@@ -201,12 +206,24 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         } catch let error as ValkeyClientError {
+            #if MetricsSupport
+            metricsStatus = valkeyMetricsStatus(for: error)
+            #endif
             throw error
         } catch let error as ValkeyClusterError {
+            #if MetricsSupport
+            metricsStatus = .error
+            #endif
             throw ValkeyClientError(.clusterError, error: error)
         } catch {
+            #if MetricsSupport
+            metricsStatus = .error
+            #endif
             throw ValkeyClientError(.unrecognisedError, error: error)
         }
+        #if MetricsSupport
+        metricsStatus = .cancelled
+        #endif
         throw ValkeyClientError(.cancelled)
     }
 
@@ -277,6 +294,11 @@ public final class ValkeyClusterClient: Sendable {
         _ commands: [any ValkeyCommand]
     ) async -> [Result<RESPToken, ValkeyClientError>] {
         guard commands.count > 0 else { return [] }
+        #if MetricsSupport
+        let metricsStart: ContinuousClock.Instant? = self.configuration.client.metrics.enabled ? .now : nil
+        let metricsBatchSize = commands.count
+        defer { self.recordPipelineMetrics(start: metricsStart, batchSize: metricsBatchSize) }
+        #endif
         let readOnlyCommand = commands.reduce(true) { $0 && $1.isReadOnly }
         let nodeSelection = getNodeSelection(readOnly: readOnlyCommand)
         // get a list of nodes and the commands that should be run on them
@@ -380,6 +402,11 @@ public final class ValkeyClusterClient: Sendable {
     public func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
+        #if MetricsSupport
+        let metricsStart: ContinuousClock.Instant? = self.configuration.client.metrics.enabled ? .now : nil
+        let metricsBatchSize = commands.count
+        defer { self.recordTransactionMetrics(start: metricsStart, batchSize: metricsBatchSize) }
+        #endif
         // Get list of keys affected
         let keyCount = commands.reduce(0) { $0 + $1.keysAffected.count }
         var keysAffected: [ValkeyKey] = []
@@ -533,6 +560,10 @@ public final class ValkeyClusterClient: Sendable {
     }
 
     /// Get connection from cluster and run operation using connection
+    ///
+    /// Commands run via the supplied `ValkeyConnection` do not emit command/pipeline/transaction
+    /// metrics — those are only recorded by `ValkeyClusterClient.execute` and
+    /// `ValkeyClusterClient.transaction`.
     ///
     /// - Parameters:
     ///   - keys: Keys affected by operation. This is used to choose the cluster node
@@ -1228,3 +1259,53 @@ extension Array where Element == any ValkeyCommand {
 @available(valkeySwift 1.0, *)
 extension ValkeyClusterClient: Service {}
 #endif  // ServiceLifecycle
+
+#if MetricsSupport
+@available(valkeySwift 1.0, *)
+extension ValkeyClusterClient {
+    /// Record a single-command latency sample if metrics timing was started.
+    ///
+    /// Recorded once per user-level call (wrapping the retry/redirect loop), so a single user
+    /// operation produces exactly one sample regardless of how many MOVED / ASK / TRYAGAIN retries occur.
+    @usableFromInline
+    func recordCommandMetrics<Command: ValkeyCommand>(
+        _ type: Command.Type,
+        start: ContinuousClock.Instant?,
+        status: ValkeyCommandStatus
+    ) {
+        guard let start else { return }
+        ValkeyMetrics.recordCommand(
+            type,
+            configuration: self.configuration.client.metrics,
+            status: status,
+            nanoseconds: valkeyElapsedNanoseconds(since: start)
+        )
+    }
+
+    /// Record a pipeline latency sample plus its batch size if metrics timing was started.
+    ///
+    /// Recorded once per user-level pipeline call (wrapping the cross-node fan-out and retry loop),
+    /// so a single user operation produces exactly one sample regardless of how many MOVED / ASK /
+    /// TRYAGAIN retries or per-node sub-pipelines occur.
+    @usableFromInline
+    func recordPipelineMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
+        guard let start else { return }
+        ValkeyMetrics.recordPipeline(
+            configuration: self.configuration.client.metrics,
+            batchSize: batchSize,
+            nanoseconds: valkeyElapsedNanoseconds(since: start)
+        )
+    }
+
+    /// Record a transaction latency sample plus its batch size if metrics timing was started.
+    @usableFromInline
+    func recordTransactionMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
+        guard let start else { return }
+        ValkeyMetrics.recordTransaction(
+            configuration: self.configuration.client.metrics,
+            batchSize: batchSize,
+            nanoseconds: valkeyElapsedNanoseconds(since: start)
+        )
+    }
+}
+#endif
