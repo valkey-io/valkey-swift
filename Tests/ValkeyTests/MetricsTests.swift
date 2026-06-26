@@ -26,6 +26,13 @@ struct MetricsTests {
         return factory
     }()
 
+    /// Serializes every metric test across `MetricsTests` and `ClusterMetricsTests`. The two
+    /// suites share `factory` and the process-wide `ValkeyMetrics.pipelineMetrics` /
+    /// `transactionMetrics` handles; `@Suite(.serialized)` only orders tests within a single
+    /// suite, so without this lock the two suites' tests interleave their `factory.reset()`
+    /// and recording calls.
+    static let serializeLock = AsyncTestLock()
+
     private static let primaryAddress = TestStandaloneTopology.Address(host: "127.0.0.1", port: 9100)
 
     @available(valkeySwift 1.0, *)
@@ -60,141 +67,151 @@ struct MetricsTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testSingleCommandSuccessRecordsTimer() async throws {
-        Self.factory.reset()
-        let logger = Logger(label: "test")
-        let topology = await self.makeTopology()
-        let mockConnections = await topology.mock(logger: logger)
-        async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client in
-            try await client.set("foo", value: "Bar")
-            let value = try await client.get("foo")
-            #expect(value.map { String($0) } == "Bar")
-        }
+        try await Self.serializeLock.withLock {
+            Self.factory.reset()
+            let logger = Logger(label: "test")
+            let topology = await self.makeTopology()
+            let mockConnections = await topology.mock(logger: logger)
+            async let _ = mockConnections.run()
+            try await withClient(mockConnections: mockConnections, logger: logger) { client in
+                try await client.set("foo", value: "Bar")
+                let value = try await client.get("foo")
+                #expect(value.map { String($0) } == "Bar")
+            }
 
-        let label = "valkey.command.get.duration"
-        #expect(Self.factory.timerSamples(label: label, status: "ok").count == 1)
-        #expect(Self.factory.timerSamples(label: label, status: "error").isEmpty)
+            let label = "valkey.command.get.duration"
+            #expect(Self.factory.timerSamples(label: label, status: "ok").count == 1)
+            #expect(Self.factory.timerSamples(label: label, status: "error").isEmpty)
+        }
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testSingleCommandErrorRecordsErrorStatus() async throws {
-        Self.factory.reset()
-        let logger = Logger(label: "test")
-        let mockConnections = MockServerConnections(logger: logger)
-        await mockConnections.addValkeyServer(.hostname(Self.primaryAddress.host, port: Self.primaryAddress.port)) { command in
-            var iterator = command.makeIterator()
-            switch iterator.next() {
-            case "GET":
-                return .bulkError("ERR boom")
-            case "ROLE":
-                return .array([
-                    .bulkString("master"),
-                    .number(1001),
-                    .array([]),
-                ])
-            default:
-                return nil
+        try await Self.serializeLock.withLock {
+            Self.factory.reset()
+            let logger = Logger(label: "test")
+            let mockConnections = MockServerConnections(logger: logger)
+            await mockConnections.addValkeyServer(.hostname(Self.primaryAddress.host, port: Self.primaryAddress.port)) { command in
+                var iterator = command.makeIterator()
+                switch iterator.next() {
+                case "GET":
+                    return .bulkError("ERR boom")
+                case "ROLE":
+                    return .array([
+                        .bulkString("master"),
+                        .number(1001),
+                        .array([]),
+                    ])
+                default:
+                    return nil
+                }
             }
-        }
-        async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client in
-            do {
-                _ = try await client.get("foo")
-                Issue.record("expected error")
-            } catch let error as ValkeyClientError {
-                #expect(error.errorCode == .commandError)
+            async let _ = mockConnections.run()
+            try await withClient(mockConnections: mockConnections, logger: logger) { client in
+                do {
+                    _ = try await client.get("foo")
+                    Issue.record("expected error")
+                } catch let error as ValkeyClientError {
+                    #expect(error.errorCode == .commandError)
+                }
             }
-        }
 
-        let label = "valkey.command.get.duration"
-        #expect(Self.factory.timerSamples(label: label, status: "error").count == 1)
-        #expect(Self.factory.timerSamples(label: label, status: "ok").isEmpty)
+            let label = "valkey.command.get.duration"
+            #expect(Self.factory.timerSamples(label: label, status: "error").count == 1)
+            #expect(Self.factory.timerSamples(label: label, status: "ok").isEmpty)
+        }
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testPipelineRecordsTimerAndSize() async throws {
-        Self.factory.reset()
-        let logger = Logger(label: "test")
-        let topology = await self.makeTopology()
-        let mockConnections = await topology.mock(logger: logger)
-        async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client in
-            try await client.set("foo", value: "a")
-            try await client.set("bar", value: "b")
-            // Reset samples so only the pipeline call is measured below.
+        try await Self.serializeLock.withLock {
             Self.factory.reset()
-            _ = await client.execute(GET("foo"), GET("bar"))
-        }
+            let logger = Logger(label: "test")
+            let topology = await self.makeTopology()
+            let mockConnections = await topology.mock(logger: logger)
+            async let _ = mockConnections.run()
+            try await withClient(mockConnections: mockConnections, logger: logger) { client in
+                try await client.set("foo", value: "a")
+                try await client.set("bar", value: "b")
+                // Reset samples so only the pipeline call is measured below.
+                Self.factory.reset()
+                _ = await client.execute(GET("foo"), GET("bar"))
+            }
 
-        #expect(Self.factory.timerSamples(label: "valkey.pipeline.duration", status: nil).count == 1)
-        #expect(Self.factory.recorderSamples(label: "valkey.pipeline.size") == [2.0])
+            #expect(Self.factory.timerSamples(label: "valkey.pipeline.duration", status: nil).count == 1)
+            #expect(Self.factory.recorderSamples(label: "valkey.pipeline.size") == [2.0])
+        }
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testTransactionRecordsTimerAndSize() async throws {
-        Self.factory.reset()
-        let logger = Logger(label: "test")
-        let mockConnections = MockServerConnections(logger: logger)
-        // The tests open a single connection so a single shared MULTI/EXEC state is sufficient.
-        let queuedCount = Mutex<Int>(0)
-        let inTransaction = Mutex<Bool>(false)
-        await mockConnections.addValkeyServer(.hostname(Self.primaryAddress.host, port: Self.primaryAddress.port)) { command in
-            var iterator = command.makeIterator()
-            switch iterator.next() {
-            case "MULTI":
-                inTransaction.withLock { $0 = true }
-                queuedCount.withLock { $0 = 0 }
-                return .simpleString("OK")
-            case "EXEC":
-                let count = queuedCount.withLock { value -> Int in
-                    let count = value
-                    value = 0
-                    return count
+        try await Self.serializeLock.withLock {
+            Self.factory.reset()
+            let logger = Logger(label: "test")
+            let mockConnections = MockServerConnections(logger: logger)
+            // The tests open a single connection so a single shared MULTI/EXEC state is sufficient.
+            let queuedCount = Mutex<Int>(0)
+            let inTransaction = Mutex<Bool>(false)
+            await mockConnections.addValkeyServer(.hostname(Self.primaryAddress.host, port: Self.primaryAddress.port)) { command in
+                var iterator = command.makeIterator()
+                switch iterator.next() {
+                case "MULTI":
+                    inTransaction.withLock { $0 = true }
+                    queuedCount.withLock { $0 = 0 }
+                    return .simpleString("OK")
+                case "EXEC":
+                    let count = queuedCount.withLock { value -> Int in
+                        let count = value
+                        value = 0
+                        return count
+                    }
+                    inTransaction.withLock { $0 = false }
+                    return .array(Array(repeating: .simpleString("OK"), count: count))
+                case "ROLE":
+                    return .array([
+                        .bulkString("master"),
+                        .number(1001),
+                        .array([]),
+                    ])
+                default:
+                    if inTransaction.withLock({ $0 }) {
+                        queuedCount.withLock { $0 += 1 }
+                        return .simpleString("QUEUED")
+                    }
+                    return nil
                 }
-                inTransaction.withLock { $0 = false }
-                return .array(Array(repeating: .simpleString("OK"), count: count))
-            case "ROLE":
-                return .array([
-                    .bulkString("master"),
-                    .number(1001),
-                    .array([]),
-                ])
-            default:
-                if inTransaction.withLock({ $0 }) {
-                    queuedCount.withLock { $0 += 1 }
-                    return .simpleString("QUEUED")
-                }
-                return nil
             }
-        }
-        async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client in
-            _ = try await client.transaction(SET("foo", value: "10"), INCR("foo"))
-        }
+            async let _ = mockConnections.run()
+            try await withClient(mockConnections: mockConnections, logger: logger) { client in
+                _ = try await client.transaction(SET("foo", value: "10"), INCR("foo"))
+            }
 
-        #expect(Self.factory.timerSamples(label: "valkey.transaction.duration", status: nil).count == 1)
-        #expect(Self.factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
+            #expect(Self.factory.timerSamples(label: "valkey.transaction.duration", status: nil).count == 1)
+            #expect(Self.factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
+        }
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testMetricsDisabledSkipsEmission() async throws {
-        Self.factory.reset()
-        let logger = Logger(label: "test")
-        let topology = await self.makeTopology()
-        let mockConnections = await topology.mock(logger: logger)
-        async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, metricsEnabled: false, logger: logger) { client in
-            try await client.set("foo", value: "Bar")
-            _ = try await client.get("foo")
-        }
+        try await Self.serializeLock.withLock {
+            Self.factory.reset()
+            let logger = Logger(label: "test")
+            let topology = await self.makeTopology()
+            let mockConnections = await topology.mock(logger: logger)
+            async let _ = mockConnections.run()
+            try await withClient(mockConnections: mockConnections, metricsEnabled: false, logger: logger) { client in
+                try await client.set("foo", value: "Bar")
+                _ = try await client.get("foo")
+            }
 
-        let label = "valkey.command.get.duration"
-        #expect(Self.factory.timerSamples(label: label, status: "ok").isEmpty)
-        #expect(Self.factory.timerSamples(label: label, status: "error").isEmpty)
+            let label = "valkey.command.get.duration"
+            #expect(Self.factory.timerSamples(label: label, status: "ok").isEmpty)
+            #expect(Self.factory.timerSamples(label: label, status: "error").isEmpty)
+        }
     }
 
 }
@@ -355,5 +372,42 @@ final class NoOpMeter: MeterHandler, Sendable {
     func set(_ value: Double) {}
     func increment(by: Double) {}
     func decrement(by: Double) {}
+}
+
+/// Single-permit async semaphore used to serialize entire async test bodies across suites.
+actor AsyncTestLock {
+    private var available = true
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        if self.available {
+            self.available = false
+            return
+        }
+        await withCheckedContinuation { cont in
+            self.waiters.append(cont)
+        }
+    }
+
+    func signal() {
+        if let next = self.waiters.first {
+            self.waiters.removeFirst()
+            next.resume()
+        } else {
+            self.available = true
+        }
+    }
+
+    func withLock<T: Sendable>(_ body: @Sendable () async throws -> T) async rethrows -> T {
+        await self.wait()
+        do {
+            let result = try await body()
+            self.signal()
+            return result
+        } catch {
+            self.signal()
+            throw error
+        }
+    }
 }
 #endif

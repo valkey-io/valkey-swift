@@ -69,30 +69,32 @@ struct ClusterMetricsTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testClusterPipelineWithMovedRetryRecordsOnce() async throws {
-        Self.factory.reset()
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
-        let cluster = await self.sixNodeHealthyCluster
-        let mockConnections = await cluster.mock(logger: logger)
-        async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client in
-            try await client.set("randomKey", value: "before")
-            // Migrate the slot for "randomKey" to shard 2 so the next pipeline gets MOVED
-            // on shard 0 and the cluster client retries against the new owner.
-            let hashSlot = HashSlot(key: "randomKey".utf8).rawValue
-            await cluster.migrateSlots(hashSlot...hashSlot, to: 2)
-
+        try await MetricsTests.serializeLock.withLock {
             Self.factory.reset()
-            let results = await client.execute(
-                GET("randomKey"),
-                SET("randomKey", value: "after"),
-                GET("randomKey")
-            )
-            try #expect(results.0.get().map { String($0) } == "before")
-            try #expect(results.2.get().map { String($0) } == "after")
+            var logger = Logger(label: "Valkey")
+            logger.logLevel = .debug
+            let cluster = await self.sixNodeHealthyCluster
+            let mockConnections = await cluster.mock(logger: logger)
+            async let _ = mockConnections.run()
+            try await withClient(mockConnections: mockConnections, logger: logger) { client in
+                try await client.set("randomKey", value: "before")
+                // Migrate the slot for "randomKey" to shard 2 so the next pipeline gets MOVED
+                // on shard 0 and the cluster client retries against the new owner.
+                let hashSlot = HashSlot(key: "randomKey".utf8).rawValue
+                await cluster.migrateSlots(hashSlot...hashSlot, to: 2)
 
-            #expect(Self.factory.timerSamples(label: "valkey.pipeline.duration", status: nil).count == 1)
-            #expect(Self.factory.recorderSamples(label: "valkey.pipeline.size") == [3.0])
+                Self.factory.reset()
+                let results = await client.execute(
+                    GET("randomKey"),
+                    SET("randomKey", value: "after"),
+                    GET("randomKey")
+                )
+                try #expect(results.0.get().map { String($0) } == "before")
+                try #expect(results.2.get().map { String($0) } == "after")
+
+                #expect(Self.factory.timerSamples(label: "valkey.pipeline.duration", status: nil).count == 1)
+                #expect(Self.factory.recorderSamples(label: "valkey.pipeline.size") == [3.0])
+            }
         }
     }
 
@@ -101,25 +103,27 @@ struct ClusterMetricsTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testClusterTransactionWithMovedRetryRecordsOnce() async throws {
-        Self.factory.reset()
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
-        let cluster = await self.sixNodeHealthyCluster
-        let mockConnections = await cluster.mock(logger: logger)
-        async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client in
-            try await client.set("txnKey", value: "before")
-            let hashSlot = HashSlot(key: "txnKey".utf8).rawValue
-            await cluster.migrateSlots(hashSlot...hashSlot, to: 2)
-
+        try await MetricsTests.serializeLock.withLock {
             Self.factory.reset()
-            _ = try await client.transaction(
-                SET("txnKey", value: "v1"),
-                SET("txnKey", value: "v2")
-            )
+            var logger = Logger(label: "Valkey")
+            logger.logLevel = .debug
+            let cluster = await self.sixNodeHealthyCluster
+            let mockConnections = await cluster.mock(logger: logger)
+            async let _ = mockConnections.run()
+            try await withClient(mockConnections: mockConnections, logger: logger) { client in
+                try await client.set("txnKey", value: "before")
+                let hashSlot = HashSlot(key: "txnKey".utf8).rawValue
+                await cluster.migrateSlots(hashSlot...hashSlot, to: 2)
 
-            #expect(Self.factory.timerSamples(label: "valkey.transaction.duration", status: nil).count == 1)
-            #expect(Self.factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
+                Self.factory.reset()
+                _ = try await client.transaction(
+                    SET("txnKey", value: "v1"),
+                    SET("txnKey", value: "v2")
+                )
+
+                #expect(Self.factory.timerSamples(label: "valkey.transaction.duration", status: nil).count == 1)
+                #expect(Self.factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
+            }
         }
     }
 }
