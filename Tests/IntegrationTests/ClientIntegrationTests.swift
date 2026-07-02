@@ -85,7 +85,7 @@ struct ClientIntegratedTests {
                 commandEncoder.encodeArray("GET", key)
             }
         }
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "ValkeyCommand")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -99,7 +99,7 @@ struct ClientIntegratedTests {
     @Test("Test ValkeyConnection.withConnection()")
     @available(valkeySwift 1.0, *)
     func testWithConnectionSetGet() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "WithConnectionSetGet")
         logger.logLevel = .debug
         try await ValkeyConnection.withConnection(address: .hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -115,7 +115,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testSetGet() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "SetGet")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -131,7 +131,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testClientSetGet() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "ClientSetGet")
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { valkeyClient in
             try await valkeyClient.set("sdf", value: "Hello")
@@ -145,7 +145,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testClientShutdown() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "ClientShutdown")
         logger.logLevel = .debug
         let client = ValkeyClient(.hostname(valkeyHostname, port: 6379), configuration: .init(), logger: logger)
         try await withThrowingTaskGroup(of: Void.self) { group in
@@ -166,7 +166,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testServiceLifecycleGracefulShutdown() async throws {
-        var logger = Logger(label: "ValkeyCluster")
+        var logger = Logger(label: "ServiceLifecycleGracefulShutdown")
         logger.logLevel = .trace
 
         let client = ValkeyClient(.hostname(valkeyHostname, port: 6379), configuration: .init(), logger: logger)
@@ -184,7 +184,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testBinarySetGet() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "BinarySetGet")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -199,7 +199,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testSPOP() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "SPOP")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -215,7 +215,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testUnixTime() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "UnixTime")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -232,7 +232,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testPipelinedSetGet() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "PipelinedSetGet")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -255,7 +255,7 @@ struct ClientIntegratedTests {
             let responses = await client.execute(commands)
             try #expect(responses[1].get().decode(as: String.self) == "Pipelined Hello")
         }
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "PipelinedProtocolSetGet")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -267,7 +267,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testPipelinedSetGetClient() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "PipelinedSetGetClient")
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
             try await withKey(connection: client) { key in
@@ -283,7 +283,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testAlternativePipelinedSetGet() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "AlternativePipelinedSetGet")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -300,7 +300,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testAlternativePipelinedSetGetClient() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "AlternativePipelinedSetGetClient")
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
             try await withKey(connection: client) { key in
@@ -317,7 +317,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testTransactionSetIncrGet() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "TransactionSetIncrGet")
         logger.logLevel = .trace
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
             try await withKey(connection: client) { key in
@@ -334,7 +334,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testInvalidTransactionSetIncrGet() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "InvalidTransactionSetIncrGet")
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
             try await withKey(connection: client) { key in
@@ -368,7 +368,7 @@ struct ClientIntegratedTests {
                 commandEncoder.encodeArray("INVALID")
             }
         }
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "InvalidTransactionExecError")
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
             let transactionError = await #expect(throws: ValkeyTransactionError.self) {
@@ -405,7 +405,7 @@ struct ClientIntegratedTests {
                 commandEncoder.encodeArray("INVALID")
             }
         }
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "InvalidArrayTransactionExecError")
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
             let transactionError = await #expect(throws: ValkeyTransactionError.self) {
@@ -432,7 +432,7 @@ struct ClientIntegratedTests {
     @available(valkeySwift 1.0, *)
     func testWatch() async throws {
         let logger = {
-            var logger = Logger(label: "Valkey")
+            var logger = Logger(label: "Watch")
             logger.logLevel = .trace
             return logger
         }()
@@ -469,7 +469,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testSingleElementArray() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "SingleElementArray")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -484,7 +484,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testCommandWithMoreThan9Strings() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "CommandWithMoreThan9Strings")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -499,7 +499,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testSort() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "Sort")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -515,7 +515,7 @@ struct ClientIntegratedTests {
     @available(valkeySwift 1.0, *)
     @Test("Test command error is thrown")
     func testCommandError() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "CommandError")
         logger.logLevel = .trace
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
@@ -528,7 +528,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testMultiplexing() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "Multiplexing")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withThrowingTaskGroup(of: Void.self) { group in
@@ -549,7 +549,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testMultiplexingPipelinedRequests() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "MultiplexingPipelinedRequests")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withThrowingTaskGroup(of: Void.self) { group in
@@ -575,7 +575,7 @@ struct ClientIntegratedTests {
     @available(valkeySwift 1.0, *)
     func testAuthentication() async throws {
         let logger = {
-            var logger = Logger(label: "Valkey")
+            var logger = Logger(label: "Authentication")
             logger.logLevel = .debug
             return logger
         }()
@@ -598,7 +598,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testAuthenticationFailure() async throws {
-        var logger = Logger(label: "testAuthenticationFailure")
+        var logger = Logger(label: "AuthenticationFailure")
         logger.logLevel = .trace
         try await withValkeyConnection(.hostname(valkeyHostname), logger: logger) { connection in
             try await connection.aclSetuser(username: "johnsmith", rules: ["on", ">3guygsf43", "+ACL|WHOAMI"])
@@ -617,7 +617,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testLoadsOfConnections() async throws {
-        var logger = Logger(label: "testLoadsOfConnections")
+        var logger = Logger(label: "LoadsOfConnections")
         logger.logLevel = .trace
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { valkeyClient in
             try await withThrowingTaskGroup(of: Void.self) { group in
@@ -648,7 +648,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testBlockingCommandTimeout() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "BlockingCommandTimeout")
         logger.logLevel = .trace
         try await withValkeyConnection(
             .hostname(valkeyHostname, port: 6379),
@@ -670,7 +670,7 @@ struct ClientIntegratedTests {
     @available(valkeySwift 1.0, *)
     @Test
     func testClientInfo() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "ClientInfo")
         logger.logLevel = .trace
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
             let result = try await client.clientList()
@@ -689,7 +689,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testMultipleDB() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "MultipleDB")
         logger.logLevel = .debug
         // Test all default enabled databases in range {0,15}
         for dbNum in 0...15 {
@@ -723,7 +723,7 @@ struct ClientIntegratedTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testMultipleStreamsPerConnection() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "MultipleStreamsPerConnection")
         logger.logLevel = .info
 
         var connectionPoolConfiguration = ValkeyClientConfiguration.ConnectionPool()
