@@ -727,8 +727,10 @@ struct ClientIntegratedTests {
         logger.logLevel = .info
 
         var connectionPoolConfiguration = ValkeyClientConfiguration.ConnectionPool()
-        connectionPoolConfiguration.maximumNumberOfStreamsPerConnection = 4
-        try await withValkeyConnection(
+        connectionPoolConfiguration.maximumNumberOfStreamsPerConnection = 16
+        connectionPoolConfiguration.maximumConnectionHardLimit = 5
+        connectionPoolConfiguration.maximumConnectionSoftLimit = 5
+        try await withValkeyClient(
             .hostname("127.0.0.1", port: 6379),
             configuration: .init(connectionPool: connectionPoolConfiguration),
             logger: logger
