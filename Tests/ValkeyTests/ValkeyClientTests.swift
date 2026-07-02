@@ -339,4 +339,38 @@ struct ValkeyClientTests {
             try #expect(results[4].get().decode(as: String.self) == "bar")
         }
     }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testMultipleStreamsPerConnection() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .info
+        let topology = await self.healthyPrimaryWithTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+
+        var connectionPoolConfiguration = ValkeyClientConfiguration.ConnectionPool()
+        connectionPoolConfiguration.maximumNumberOfStreamsPerConnection = 4
+        try await withValkeyClient(
+            .hostname("127.0.0.1", port: 9001),
+            mockConnections: mockConnections,
+            configuration: .init(connectionPool: connectionPoolConfiguration),
+            logger: logger
+        ) { client in
+            try await withThrowingTaskGroup { group in
+                for i in 0..<1024 {
+                    group.addTask {
+                        let key = ValkeyKey("testMultipleStreams\(i)")
+                        let (_, result) = await client.execute(
+                            SET(key, value: "\(i)"),
+                            GET(key)
+                        )
+                        let value = try result.get().map { String($0) }
+                        #expect(value == "\(i)")
+                    }
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
 }

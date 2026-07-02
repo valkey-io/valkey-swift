@@ -719,6 +719,39 @@ struct ClientIntegratedTests {
             }
         }
     }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testMultipleStreamsPerConnection() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .info
+
+        var connectionPoolConfiguration = ValkeyClientConfiguration.ConnectionPool()
+        connectionPoolConfiguration.maximumNumberOfStreamsPerConnection = 4
+        try await withValkeyConnection(
+            .hostname("127.0.0.1", port: 6379),
+            configuration: .init(connectionPool: connectionPoolConfiguration),
+            logger: logger
+        ) { client in
+            try await withThrowingTaskGroup { group in
+                for i in 0..<1024 {
+                    group.addTask {
+                        let key = ValkeyKey("testMultipleStreams\(i)")
+                        let (_, _, result, _) = await client.execute(
+                            SET(key, value: "\(i)"),
+                            INCR(key),
+                            GET(key),
+                            DEL(keys: [key])
+                        )
+                        let value = try result.get().map { String($0) }
+                        #expect(value == "\(i+1)")
+                    }
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
+
 }
 
 extension ValkeyClientError: Equatable {

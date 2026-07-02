@@ -106,7 +106,7 @@ package final class ValkeyNodeClient: Sendable {
                 logger: logger
             )
 
-            return ConnectionAndMetadata(connection: connection, maximalStreamsOnConnection: 1)
+            return ConnectionAndMetadata(connection: connection, maximalStreamsOnConnection: connectionFactory.configuration.connectionPool.maximumNumberOfStreamsPerConnection)
         }
         self.connectionFactory = connectionFactory
         self.eventLoopGroup = eventLoopGroup
