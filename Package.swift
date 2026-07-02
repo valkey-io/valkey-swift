@@ -141,14 +141,14 @@ package.targets[index].dependencies.append(.product(name: "Configuration", packa
 if Context.environment["ENABLE_VALKEY_BENCHMARKS"] != nil {
     package.platforms = [.macOS(.v13)]
     package.dependencies.append(
-        .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.0.0")
+        .package(url: "https://github.com/ordo-one/benchmark", from: "1.33.0")
     )
     package.targets.append(
         .executableTarget(
             name: "ValkeyBenchmarks",
             dependencies: [
                 "Valkey",
-                .product(name: "Benchmark", package: "package-benchmark"),
+                .product(name: "Benchmark", package: "benchmark"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
@@ -156,7 +156,7 @@ if Context.environment["ENABLE_VALKEY_BENCHMARKS"] != nil {
             path: "Benchmarks/ValkeyBenchmarks",
             swiftSettings: defaultSwiftSettings,
             plugins: [
-                .plugin(name: "BenchmarkPlugin", package: "package-benchmark")
+                .plugin(name: "BenchmarkPlugin", package: "benchmark")
             ]
         )
     )
