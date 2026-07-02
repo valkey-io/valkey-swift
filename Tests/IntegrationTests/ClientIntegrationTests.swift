@@ -724,14 +724,14 @@ struct ClientIntegratedTests {
     @available(valkeySwift 1.0, *)
     func testMultipleStreamsPerConnection() async throws {
         var logger = Logger(label: "MultipleStreamsPerConnection")
-        logger.logLevel = .info
+        logger.logLevel = .trace
 
         var connectionPoolConfiguration = ValkeyClientConfiguration.ConnectionPool()
         connectionPoolConfiguration.maximumNumberOfStreamsPerConnection = 16
         connectionPoolConfiguration.maximumConnectionHardLimit = 5
         connectionPoolConfiguration.maximumConnectionSoftLimit = 5
         try await withValkeyClient(
-            .hostname("127.0.0.1", port: 6379),
+            .hostname(valkeyHostname, port: 6379),
             configuration: .init(connectionPool: connectionPoolConfiguration),
             logger: logger
         ) { client in
@@ -739,14 +739,16 @@ struct ClientIntegratedTests {
                 for i in 0..<1024 {
                     group.addTask {
                         let key = ValkeyKey("testMultipleStreams\(i)")
-                        let (_, _, result, _) = await client.execute(
+                        let (_, incrResult, getResult, _) = await client.execute(
                             SET(key, value: "\(i)"),
                             INCR(key),
                             GET(key),
                             DEL(keys: [key])
                         )
-                        let value = try result.get().map { String($0) }
-                        #expect(value == "\(i+1)")
+                        let incrValue = try incrResult.get()
+                        let getValue = try getResult.get().map { String($0) }
+                        #expect(incrValue == i + 1)
+                        #expect(getValue == "\(i+1)")
                     }
                 }
                 try await group.waitForAll()
