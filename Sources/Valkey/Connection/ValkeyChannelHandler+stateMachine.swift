@@ -41,17 +41,16 @@ extension ValkeyChannelHandler {
             let context: Context
             var pendingCommands: Deque<PendingCommand>
 
-            func cancel(requestID: Int) -> (cancel: [PendingCommand], connectionClosedDueToCancellation: [PendingCommand]) {
-                var withRequestID = [PendingCommand]()
-                var withoutRequestID = [PendingCommand]()
-                for command in pendingCommands {
-                    if command.requestID == requestID {
-                        withRequestID.append(command)
-                    } else {
-                        withoutRequestID.append(command)
-                    }
+            mutating func cancel(requestID: Int) -> (cancel: [PendingCommand], stillPending: Bool) {
+                let index = pendingCommands.partition { $0.requestID == requestID }
+                let cancelled = [PendingCommand](pendingCommands[index...])
+                if index == pendingCommands.startIndex {
+                    pendingCommands.removeAll()
+                    return (cancelled, false)
+                } else {
+                    pendingCommands = .init(pendingCommands[..<index])
+                    return (cancelled, true)
                 }
-                return (withRequestID, withoutRequestID)
             }
         }
 
@@ -285,6 +284,7 @@ extension ValkeyChannelHandler {
 
         @usableFromInline
         enum CancelAction {
+            case failPendingCommands(cancel: [PendingCommand])
             case failPendingCommandsAndClose(Context, cancel: [PendingCommand], closeConnectionDueToCancel: [PendingCommand])
             case doNothing
         }
@@ -297,28 +297,38 @@ extension ValkeyChannelHandler {
                 preconditionFailure("Cannot cancel when initialized")
             case .connected:
                 preconditionFailure("Cannot cancel while in connected state")
-            case .active(let state):
-                let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
+            case .active(var state):
+                let (cancel, stillPending) = state.cancel(requestID: requestID)
                 if cancel.count > 0 {
-                    self = .closed(ValkeyClientError(.cancelled))
-                    return .failPendingCommandsAndClose(
-                        state.context,
-                        cancel: cancel,
-                        closeConnectionDueToCancel: closeConnectionDueToCancel
-                    )
+                    if stillPending {
+                        self = .closing(state)
+                        return .failPendingCommands(cancel: cancel)
+                    } else {
+                        self = .closed(ValkeyClientError(.cancelled))
+                        return .failPendingCommandsAndClose(
+                            state.context,
+                            cancel: cancel,
+                            closeConnectionDueToCancel: []
+                        )
+                    }
                 } else {
                     self = .active(state)
                     return .doNothing
                 }
-            case .closing(let state):
-                let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
+            case .closing(var state):
+                let (cancel, stillPending) = state.cancel(requestID: requestID)
                 if cancel.count > 0 {
-                    self = .closed(ValkeyClientError(.cancelled))
-                    return .failPendingCommandsAndClose(
-                        state.context,
-                        cancel: cancel,
-                        closeConnectionDueToCancel: closeConnectionDueToCancel
-                    )
+                    if stillPending {
+                        self = .closing(state)
+                        return .failPendingCommands(cancel: cancel)
+                    } else {
+                        self = .closed(ValkeyClientError(.cancelled))
+                        return .failPendingCommandsAndClose(
+                            state.context,
+                            cancel: cancel,
+                            closeConnectionDueToCancel: []
+                        )
+                    }
                 } else {
                     self = .closing(state)
                     return .doNothing

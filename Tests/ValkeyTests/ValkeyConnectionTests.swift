@@ -494,9 +494,8 @@ struct ConnectionTests {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                await #expect(throws: ValkeyClientError(.connectionClosedDueToCancellation)) {
-                    _ = try await connection.get("foo").map { String($0) }
-                }
+                let result = try await connection.get("foo").map { String($0) }
+                #expect(result == "OK")
             }
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
@@ -508,6 +507,11 @@ struct ConnectionTests {
                 _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 group.cancelAll()
+            }
+            try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+
+            await #expect(throws: ValkeyClientError(.connectionClosed)) {
+                _ = try await connection.get("foo").map { String($0) }
             }
         }
     }
