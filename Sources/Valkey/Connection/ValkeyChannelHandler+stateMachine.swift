@@ -42,14 +42,32 @@ extension ValkeyChannelHandler {
             var pendingCommands: Deque<PendingCommand>
 
             mutating func cancel(requestID: Int) -> (cancel: [PendingCommand], stillPending: Bool) {
-                let index = pendingCommands.partition { $0.requestID == requestID }
-                let cancelled = [PendingCommand](pendingCommands[index...])
-                if index == pendingCommands.startIndex {
-                    pendingCommands.removeAll()
-                    return (cancelled, false)
+                var cancelledCommands: [PendingCommand] = []
+                var lastPending: Deque<PendingCommand>.Index? = nil
+                for index in pendingCommands.indices {
+                    // record pending commands that should be cancelled and set their promise to forget
+                    // so when a response comes in it is ignored. If there are commands that shouldnt be
+                    // cancelled then record the index of the last command that shouldn't be cancelled
+                    if self.pendingCommands[index].requestID == requestID {
+                        cancelledCommands.append(self.pendingCommands[index])
+                        self.pendingCommands[index].promise = .forget
+                    } else {
+                        switch self.pendingCommands[index].promise {
+                        case .forget:
+                            break
+                        default:
+                            lastPending = index
+                        }
+                    }
+                }
+                if let lastPending {
+                    // drop any commands at the end of the list of pending commands whose results are to be ignored
+                    if lastPending != self.pendingCommands.index(before: self.pendingCommands.endIndex) {
+                        self.pendingCommands = .init(self.pendingCommands[...lastPending])
+                    }
+                    return (cancelledCommands, true)
                 } else {
-                    pendingCommands = .init(pendingCommands[..<index])
-                    return (cancelled, true)
+                    return (cancelledCommands, false)
                 }
             }
         }

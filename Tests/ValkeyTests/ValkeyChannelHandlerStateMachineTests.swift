@@ -324,6 +324,62 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid cancel action")
         }
+        // Although we have cancelled request 23, we still receive the response
+        // This should have a forget promise and should do nothing in relation
+        // to the deadline
+        switch stateMachine.receivedResponse(token: RESPToken.ok) {
+        case .respond(let command, let deadlineAction):
+            #expect(command.requestID == 23)
+            // we cancelled this command so the promise should be forget
+            switch command.promise {
+            case .nio, .swift:
+                Issue.record()
+            case .forget:
+                break
+            }
+            #expect(deadlineAction == .doNothing)
+            break
+        default:
+            Issue.record("Invalid cancel action")
+        }
+        switch stateMachine.receivedResponse(token: RESPToken.ok) {
+        case .respondAndClose(let command, let error):
+            #expect(command.requestID == 48)
+            #expect(error == nil)
+            break
+        default:
+            Issue.record("Invalid cancel action")
+        }
+        expect(stateMachine.state == .closed(nil))
+        promise.fail(CancellationError())
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testSecondCancelWithPending() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
+        stateMachine.setConnected(context: "testCancelWithPending")
+        stateMachine.receiveHelloResponse()
+        let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
+        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 23, deadline: .now())) {
+        case .sendCommand:
+            break
+        case .throwError:
+            Issue.record("Invalid sendCommand action")
+        }
+        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 48, deadline: .now())) {
+        case .sendCommand:
+            break
+        case .throwError:
+            Issue.record("Invalid sendCommand action")
+        }
+        switch stateMachine.cancel(requestID: 23) {
+        case .failPendingCommands(let cancel):
+            #expect(cancel.map { $0.requestID } == [23])
+            break
+        default:
+            Issue.record("Invalid cancel action")
+        }
         switch stateMachine.cancel(requestID: 48) {
         case .failPendingCommandsAndClose(let context, let cancel, _):
             #expect(context == "testCancelWithPending")

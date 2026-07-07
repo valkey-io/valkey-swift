@@ -486,6 +486,7 @@ struct ConnectionTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    @available(iOS 26, macOS 26, tvOS 26, *)
     func testConnectionCloseDueToCancellation() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -493,7 +494,7 @@ struct ConnectionTests {
         try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
-            group.addTask {
+            group.addImmediateTask {
                 let result = try await connection.get("foo").map { String($0) }
                 #expect(result == "OK")
             }
@@ -509,6 +510,7 @@ struct ConnectionTests {
                 group.cancelAll()
             }
             try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+            try await channel.writeInbound(RESPToken(.simpleString("NOT OK")).base)
 
             await #expect(throws: ValkeyClientError(.connectionClosed)) {
                 _ = try await connection.get("foo").map { String($0) }
