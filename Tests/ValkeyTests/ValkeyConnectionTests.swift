@@ -494,10 +494,17 @@ struct ConnectionTests {
         try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
+            #if compiler(>=6.2)
             group.addImmediateTask {
                 let result = try await connection.get("foo").map { String($0) }
                 #expect(result == "OK")
             }
+            #else
+            group.addTask {
+                let result = try await connection.get("foo").map { String($0) }
+                #expect(result == "OK")
+            }
+            #endif
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
                     await #expect(throws: ValkeyClientError(.cancelled)) {
@@ -510,8 +517,12 @@ struct ConnectionTests {
                 group.cancelAll()
             }
             try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+            #if compiler(>=6.2)
             try await channel.writeInbound(RESPToken(.simpleString("NOT OK")).base)
-
+            #else
+            // can't guarantee order, as we don't have addImmediateTask, so just output "OK" again
+            try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+            #endif
             await #expect(throws: ValkeyClientError(.connectionClosed)) {
                 _ = try await connection.get("foo").map { String($0) }
             }
