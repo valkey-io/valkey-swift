@@ -106,6 +106,10 @@ package final class ValkeyNodeClient: Sendable {
                 logger: logger
             )
 
+            precondition(
+                connectionFactory.configuration.connectionPool.maximumNumberOfStreamsPerConnection > 0,
+                "The maximum number of streams per connection must be greater than zero"
+            )
             return ConnectionAndMetadata(
                 connection: connection,
                 maximalStreamsOnConnection: connectionFactory.configuration.connectionPool.maximumNumberOfStreamsPerConnection
