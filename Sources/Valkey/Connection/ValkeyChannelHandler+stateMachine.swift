@@ -53,10 +53,10 @@ extension ValkeyChannelHandler {
                         self.pendingCommands[index].promise = .forget
                     } else {
                         switch self.pendingCommands[index].promise {
+                        case .nio, .swift:
+                            lastPending = index
                         case .forget:
                             break
-                        default:
-                            lastPending = index
                         }
                     }
                 }
