@@ -41,17 +41,34 @@ extension ValkeyChannelHandler {
             let context: Context
             var pendingCommands: Deque<PendingCommand>
 
-            func cancel(requestID: Int) -> (cancel: [PendingCommand], connectionClosedDueToCancellation: [PendingCommand]) {
-                var withRequestID = [PendingCommand]()
-                var withoutRequestID = [PendingCommand]()
-                for command in pendingCommands {
-                    if command.requestID == requestID {
-                        withRequestID.append(command)
+            mutating func cancel(requestID: Int) -> (cancel: [PendingCommand], stillPending: Bool) {
+                var cancelledCommands: [PendingCommand] = []
+                var lastPending: Deque<PendingCommand>.Index? = nil
+                for index in pendingCommands.indices {
+                    // record pending commands that should be cancelled and set their promise to forget
+                    // so when a response comes in it is ignored. If there are commands that shouldnt be
+                    // cancelled then record the index of the last command that shouldn't be cancelled
+                    if self.pendingCommands[index].requestID == requestID {
+                        cancelledCommands.append(self.pendingCommands[index])
+                        self.pendingCommands[index].promise = .forget
                     } else {
-                        withoutRequestID.append(command)
+                        switch self.pendingCommands[index].promise {
+                        case .nio, .swift:
+                            lastPending = index
+                        case .forget:
+                            break
+                        }
                     }
                 }
-                return (withRequestID, withoutRequestID)
+                if let lastPending {
+                    // drop any commands at the end of the list of pending commands whose results are to be ignored
+                    if lastPending != self.pendingCommands.index(before: self.pendingCommands.endIndex) {
+                        self.pendingCommands = .init(self.pendingCommands[...lastPending])
+                    }
+                    return (cancelledCommands, true)
+                } else {
+                    return (cancelledCommands, false)
+                }
             }
         }
 
@@ -285,6 +302,7 @@ extension ValkeyChannelHandler {
 
         @usableFromInline
         enum CancelAction {
+            case failPendingCommands(cancel: [PendingCommand])
             case failPendingCommandsAndClose(Context, cancel: [PendingCommand], closeConnectionDueToCancel: [PendingCommand])
             case doNothing
         }
@@ -297,28 +315,38 @@ extension ValkeyChannelHandler {
                 preconditionFailure("Cannot cancel when initialized")
             case .connected:
                 preconditionFailure("Cannot cancel while in connected state")
-            case .active(let state):
-                let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
+            case .active(var state):
+                let (cancel, stillPending) = state.cancel(requestID: requestID)
                 if cancel.count > 0 {
-                    self = .closed(ValkeyClientError(.cancelled))
-                    return .failPendingCommandsAndClose(
-                        state.context,
-                        cancel: cancel,
-                        closeConnectionDueToCancel: closeConnectionDueToCancel
-                    )
+                    if stillPending {
+                        self = .closing(state)
+                        return .failPendingCommands(cancel: cancel)
+                    } else {
+                        self = .closed(ValkeyClientError(.cancelled))
+                        return .failPendingCommandsAndClose(
+                            state.context,
+                            cancel: cancel,
+                            closeConnectionDueToCancel: []
+                        )
+                    }
                 } else {
                     self = .active(state)
                     return .doNothing
                 }
-            case .closing(let state):
-                let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
+            case .closing(var state):
+                let (cancel, stillPending) = state.cancel(requestID: requestID)
                 if cancel.count > 0 {
-                    self = .closed(ValkeyClientError(.cancelled))
-                    return .failPendingCommandsAndClose(
-                        state.context,
-                        cancel: cancel,
-                        closeConnectionDueToCancel: closeConnectionDueToCancel
-                    )
+                    if stillPending {
+                        self = .closing(state)
+                        return .failPendingCommands(cancel: cancel)
+                    } else {
+                        self = .closed(ValkeyClientError(.cancelled))
+                        return .failPendingCommandsAndClose(
+                            state.context,
+                            cancel: cancel,
+                            closeConnectionDueToCancel: []
+                        )
+                    }
                 } else {
                     self = .closing(state)
                     return .doNothing
