@@ -7,36 +7,38 @@
 //
 
 #if MetricsSupport
-import Foundation
 import Logging
-import Metrics
-import NIOCore
-import NIOEmbedded
-import NIOPosix
+import MetricsTestKit
 import Synchronization
 import Testing
 
 @testable import Valkey
 
-@Suite(.serialized)
+@Suite
 struct MetricsTests {
-    static let factory: CapturingMetricsFactory = {
-        let factory = CapturingMetricsFactory()
-        MetricsSystem.bootstrap(factory)
-        return factory
-    }()
-
     private static let primaryAddress = TestStandaloneTopology.Address(host: "127.0.0.1", port: 9100)
 
+    /// Runs `operation` against a client that records into a `TestMetrics` factory created for this
+    /// test alone.
+    ///
+    /// Because the factory is injected rather than bootstrapped into `MetricsSystem`, each test sees
+    /// only its own samples and tests can run in parallel.
+    ///
+    /// - Parameters:
+    ///   - mockConnections: The mock servers the client talks to.
+    ///   - metricsEnabled: Whether the client is configured to record into the factory at all.
+    ///   - logger: Logger.
+    ///   - operation: Closure run with the client and the factory it records into.
     @available(valkeySwift 1.0, *)
-    private func withClient(
+    private func withClientAndMetricsFactory(
         mockConnections: MockServerConnections,
         metricsEnabled: Bool = true,
         logger: Logger,
-        operation: @escaping @Sendable (ValkeyClient) async throws -> Void
+        operation: @escaping @Sendable (ValkeyClient, TestMetrics) async throws -> Void
     ) async throws {
+        let factory = TestMetrics()
         var clientConfig = ValkeyClientConfiguration()
-        clientConfig.metrics.enabled = metricsEnabled
+        clientConfig.metrics.factory = metricsEnabled ? factory : nil
         let client = ValkeyClient(
             .hostname(Self.primaryAddress.host, port: Self.primaryAddress.port),
             customHandler: mockConnections.connectionManagerCustomHandler,
@@ -46,7 +48,7 @@ struct MetricsTests {
         )
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask { await client.run() }
-            group.addTask { try await operation(client) }
+            group.addTask { try await operation(client, factory) }
             try await group.next()
             group.cancelAll()
         }
@@ -60,26 +62,24 @@ struct MetricsTests {
     @Test
     @available(valkeySwift 1.0, *)
     func testSingleCommandSuccessRecordsTimer() async throws {
-        Self.factory.reset()
         let logger = Logger(label: "test")
         let topology = await self.makeTopology()
         let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client in
+        try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
             try await client.set("foo", value: "Bar")
             let value = try await client.get("foo")
             #expect(value.map { String($0) } == "Bar")
-        }
 
-        let label = "valkey.command.get.duration"
-        #expect(Self.factory.timerSamples(label: label, status: "ok").count == 1)
-        #expect(Self.factory.timerSamples(label: label, status: "error").isEmpty)
+            let label = "valkey.command.get.duration"
+            #expect(factory.timerSamples(label: label, status: "ok").count == 1)
+            #expect(factory.timerSamples(label: label, status: "error").isEmpty)
+        }
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testSingleCommandErrorRecordsErrorStatus() async throws {
-        Self.factory.reset()
         let logger = Logger(label: "test")
         let mockConnections = MockServerConnections(logger: logger)
         await mockConnections.addValkeyServer(.hostname(Self.primaryAddress.host, port: Self.primaryAddress.port)) { command in
@@ -98,44 +98,40 @@ struct MetricsTests {
             }
         }
         async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client in
+        try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
             do {
                 _ = try await client.get("foo")
                 Issue.record("expected error")
             } catch let error as ValkeyClientError {
+                // Any RESP error reply, simple or bulk, reaches the caller as `.commandError`.
                 #expect(error.errorCode == .commandError)
+                #expect(error.message == "ERR boom")
             }
-        }
 
-        let label = "valkey.command.get.duration"
-        #expect(Self.factory.timerSamples(label: label, status: "error").count == 1)
-        #expect(Self.factory.timerSamples(label: label, status: "ok").isEmpty)
+            let label = "valkey.command.get.duration"
+            #expect(factory.timerSamples(label: label, status: "error").count == 1)
+            #expect(factory.timerSamples(label: label, status: "ok").isEmpty)
+        }
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testPipelineRecordsTimerAndSize() async throws {
-        Self.factory.reset()
         let logger = Logger(label: "test")
         let topology = await self.makeTopology()
         let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client in
-            try await client.set("foo", value: "a")
-            try await client.set("bar", value: "b")
-            // Reset samples so only the pipeline call is measured below.
-            Self.factory.reset()
+        try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
             _ = await client.execute(GET("foo"), GET("bar"))
-        }
 
-        #expect(Self.factory.timerSamples(label: "valkey.pipeline.duration", status: nil).count == 1)
-        #expect(Self.factory.recorderSamples(label: "valkey.pipeline.size") == [2.0])
+            #expect(factory.timerSamples(label: "valkey.pipeline.duration").count == 1)
+            #expect(factory.recorderSamples(label: "valkey.pipeline.size") == [2.0])
+        }
     }
 
     @Test
     @available(valkeySwift 1.0, *)
     func testTransactionRecordsTimerAndSize() async throws {
-        Self.factory.reset()
         let logger = Logger(label: "test")
         let mockConnections = MockServerConnections(logger: logger)
         // The tests open a single connection so a single shared MULTI/EXEC state is sufficient.
@@ -171,36 +167,34 @@ struct MetricsTests {
             }
         }
         async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client in
+        try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
             _ = try await client.transaction(SET("foo", value: "10"), INCR("foo"))
-        }
 
-        #expect(Self.factory.timerSamples(label: "valkey.transaction.duration", status: nil).count == 1)
-        #expect(Self.factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
+            #expect(factory.timerSamples(label: "valkey.transaction.duration").count == 1)
+            #expect(factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
+        }
     }
 
+    /// A client with no ``ValkeyMetricsConfiguration/factory`` must not create a single metric, let
+    /// alone record into one.
     @Test
     @available(valkeySwift 1.0, *)
     func testMetricsDisabledSkipsEmission() async throws {
-        Self.factory.reset()
         let logger = Logger(label: "test")
         let topology = await self.makeTopology()
         let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, metricsEnabled: false, logger: logger) { client in
+        try await withClientAndMetricsFactory(mockConnections: mockConnections, metricsEnabled: false, logger: logger) { client, factory in
             try await client.set("foo", value: "Bar")
             _ = try await client.get("foo")
-        }
+            _ = await client.execute(GET("foo"), GET("foo"))
 
-        let label = "valkey.command.get.duration"
-        #expect(Self.factory.timerSamples(label: label, status: "ok").isEmpty)
-        #expect(Self.factory.timerSamples(label: label, status: "error").isEmpty)
+            #expect(factory.timers.isEmpty)
+            #expect(factory.recorders.isEmpty)
+        }
     }
 
-    /// Nested suite for cluster-client metrics. Lives inside `MetricsTests` so it inherits the
-    /// outer `.serialized` trait — that single ordering is what keeps cluster and standalone
-    /// tests from interleaving on the shared `factory` and the process-wide
-    /// `ValkeyMetrics.pipelineMetrics` / `transactionMetrics` handles.
+    /// Nested suite for cluster-client metrics.
     @Suite
     struct Cluster {
         private var sixNodeHealthyCluster: TestCluster {
@@ -225,14 +219,16 @@ struct MetricsTests {
             }
         }
 
+        /// Cluster-client counterpart of ``MetricsTests/withClientAndMetricsFactory(mockConnections:metricsEnabled:logger:operation:)``.
         @available(valkeySwift 1.0, *)
-        private func withClient(
+        private func withClientAndMetricsFactory(
             mockConnections: MockServerConnections,
             logger: Logger,
-            operation: @escaping @Sendable (ValkeyClusterClient) async throws -> Void
+            operation: @escaping @Sendable (ValkeyClusterClient, TestMetrics) async throws -> Void
         ) async throws {
+            let factory = TestMetrics()
             var clientConfig = ValkeyClientConfiguration(readOnlyCommandNodeSelection: .cycleReplicas)
-            clientConfig.metrics.enabled = true
+            clientConfig.metrics.factory = factory
             let client = ValkeyClusterClient(
                 nodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: "127.0.0.1", port: 17000)]),
                 configuration: .init(client: clientConfig),
@@ -242,7 +238,7 @@ struct MetricsTests {
             )
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask { await client.run() }
-                group.addTask { try await operation(client) }
+                group.addTask { try await operation(client, factory) }
                 try await group.next()
                 group.cancelAll()
             }
@@ -254,20 +250,18 @@ struct MetricsTests {
         @Test
         @available(valkeySwift 1.0, *)
         func testClusterPipelineWithMovedRetryRecordsOnce() async throws {
-            MetricsTests.factory.reset()
             var logger = Logger(label: "Valkey")
             logger.logLevel = .debug
             let cluster = await self.sixNodeHealthyCluster
             let mockConnections = await cluster.mock(logger: logger)
             async let _ = mockConnections.run()
-            try await withClient(mockConnections: mockConnections, logger: logger) { client in
+            try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
                 try await client.set("randomKey", value: "before")
                 // Migrate the slot for "randomKey" to shard 2 so the next pipeline gets MOVED
                 // on shard 0 and the cluster client retries against the new owner.
                 let hashSlot = HashSlot(key: "randomKey".utf8).rawValue
                 await cluster.migrateSlots(hashSlot...hashSlot, to: 2)
 
-                MetricsTests.factory.reset()
                 let results = await client.execute(
                     GET("randomKey"),
                     SET("randomKey", value: "after"),
@@ -276,8 +270,8 @@ struct MetricsTests {
                 try #expect(results.0.get().map { String($0) } == "before")
                 try #expect(results.2.get().map { String($0) } == "after")
 
-                #expect(MetricsTests.factory.timerSamples(label: "valkey.pipeline.duration", status: nil).count == 1)
-                #expect(MetricsTests.factory.recorderSamples(label: "valkey.pipeline.size") == [3.0])
+                #expect(factory.timerSamples(label: "valkey.pipeline.duration").count == 1)
+                #expect(factory.recorderSamples(label: "valkey.pipeline.size") == [3.0])
             }
         }
 
@@ -286,186 +280,43 @@ struct MetricsTests {
         @Test
         @available(valkeySwift 1.0, *)
         func testClusterTransactionWithMovedRetryRecordsOnce() async throws {
-            MetricsTests.factory.reset()
             var logger = Logger(label: "Valkey")
             logger.logLevel = .debug
             let cluster = await self.sixNodeHealthyCluster
             let mockConnections = await cluster.mock(logger: logger)
             async let _ = mockConnections.run()
-            try await withClient(mockConnections: mockConnections, logger: logger) { client in
+            try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
                 try await client.set("txnKey", value: "before")
                 let hashSlot = HashSlot(key: "txnKey".utf8).rawValue
                 await cluster.migrateSlots(hashSlot...hashSlot, to: 2)
 
-                MetricsTests.factory.reset()
                 _ = try await client.transaction(
                     SET("txnKey", value: "v1"),
                     SET("txnKey", value: "v2")
                 )
 
-                #expect(MetricsTests.factory.timerSamples(label: "valkey.transaction.duration", status: nil).count == 1)
-                #expect(MetricsTests.factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
+                #expect(factory.timerSamples(label: "valkey.transaction.duration").count == 1)
+                #expect(factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
             }
         }
     }
-
 }
 
-// MARK: - In-memory metrics factory
+// MARK: - Sample lookup
 
-final class CapturingMetricsFactory: MetricsFactory, @unchecked Sendable {
-    struct TimerKey: Hashable {
-        let label: String
-        let dimensions: [String: String]
-    }
-
-    private let lock = NSLock()
-    private var timers: [TimerKey: CapturingTimerHandler] = [:]
-    private var recorders: [String: CapturingRecorderHandler] = [:]
-
-    func makeCounter(label: String, dimensions: [(String, String)]) -> any CounterHandler {
-        NoOpCounter()
-    }
-
-    func makeFloatingPointCounter(label: String, dimensions: [(String, String)]) -> any FloatingPointCounterHandler {
-        NoOpFloatingPointCounter()
-    }
-
-    func makeMeter(label: String, dimensions: [(String, String)]) -> any MeterHandler {
-        NoOpMeter()
-    }
-
-    func makeRecorder(label: String, dimensions: [(String, String)], aggregate: Bool) -> any RecorderHandler {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        if let existing = self.recorders[label] {
-            return existing
-        }
-        let handler = CapturingRecorderHandler()
-        self.recorders[label] = handler
-        return handler
-    }
-
-    func makeTimer(label: String, dimensions: [(String, String)]) -> any TimerHandler {
-        let key = TimerKey(label: label, dimensions: Dictionary(uniqueKeysWithValues: dimensions))
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        if let existing = self.timers[key] {
-            return existing
-        }
-        let handler = CapturingTimerHandler()
-        self.timers[key] = handler
-        return handler
-    }
-
-    func destroyCounter(_ handler: any CounterHandler) {}
-    func destroyFloatingPointCounter(_ handler: any FloatingPointCounterHandler) {}
-    func destroyMeter(_ handler: any MeterHandler) {}
-    func destroyRecorder(_ handler: any RecorderHandler) {}
-    func destroyTimer(_ handler: any TimerHandler) {}
-
-    func timerSamples(label: String, status: String?) -> [Int64] {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        for (key, handler) in self.timers {
-            guard key.label == label else { continue }
-            if let status, key.dimensions["status"] != status { continue }
-            if status == nil, !key.dimensions.isEmpty { continue }
-            return handler.samples()
-        }
-        return []
-    }
-
-    func recorderSamples(label: String) -> [Double] {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        return self.recorders[label]?.samples() ?? []
-    }
-
-    /// Clear all captured samples while keeping the handler instances intact.
+extension TestMetrics {
+    /// Samples recorded by the timer with `label`, optionally qualified by a `status` dimension.
     ///
-    /// Production code holds long-lived `Timer`/`Recorder` references via the
-    /// `ValkeyCommandMetricsHolder` / `ValkeyMetrics` statics, which capture handlers from
-    /// this factory at first use. Resetting samples between tests gives each test a clean
-    /// slate without invalidating those references.
-    func reset() {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        for handler in self.timers.values {
-            handler.reset()
-        }
-        for handler in self.recorders.values {
-            handler.reset()
-        }
-    }
-}
-
-final class CapturingTimerHandler: TimerHandler, @unchecked Sendable {
-    private let lock = NSLock()
-    private var values: [Int64] = []
-
-    func recordNanoseconds(_ duration: Int64) {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        self.values.append(duration)
+    /// Returns an empty array when the client never created that timer, so that a test can assert
+    /// nothing was recorded without having to distinguish "no samples" from "no such timer".
+    fileprivate func timerSamples(label: String, status: String? = nil) -> [Int64] {
+        let dimensions = status.map { [("status", $0)] } ?? []
+        return (try? self.expectTimer(label, dimensions))?.values ?? []
     }
 
-    func samples() -> [Int64] {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        return self.values
+    /// Samples recorded by the recorder with `label`, or an empty array when it was never created.
+    fileprivate func recorderSamples(label: String) -> [Double] {
+        (try? self.expectRecorder(label))?.values ?? []
     }
-
-    func reset() {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        self.values.removeAll(keepingCapacity: true)
-    }
-}
-
-final class CapturingRecorderHandler: RecorderHandler, @unchecked Sendable {
-    private let lock = NSLock()
-    private var values: [Double] = []
-
-    func record(_ value: Int64) {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        self.values.append(Double(value))
-    }
-
-    func record(_ value: Double) {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        self.values.append(value)
-    }
-
-    func samples() -> [Double] {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        return self.values
-    }
-
-    func reset() {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        self.values.removeAll(keepingCapacity: true)
-    }
-}
-
-final class NoOpCounter: CounterHandler, Sendable {
-    func increment(by: Int64) {}
-    func reset() {}
-}
-
-final class NoOpFloatingPointCounter: FloatingPointCounterHandler, Sendable {
-    func increment(by: Double) {}
-    func reset() {}
-}
-
-final class NoOpMeter: MeterHandler, Sendable {
-    func set(_ value: Int64) {}
-    func set(_ value: Double) {}
-    func increment(by: Double) {}
-    func decrement(by: Double) {}
 }
 #endif

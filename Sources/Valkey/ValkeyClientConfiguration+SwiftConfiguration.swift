@@ -9,6 +9,10 @@
 #if compiler(>=6.2)
 import Configuration
 
+#if MetricsSupport
+import Metrics
+#endif
+
 @available(valkeySwift 1.0, *)
 extension ValkeyClientConfiguration {
     /// Initializes a ``ValkeyClientConfiguration``` from a ConfigReader.
@@ -197,13 +201,15 @@ extension ValkeyClientConfiguration.Authentication {
 extension ValkeyMetricsConfiguration {
     /// Initializes a ``ValkeyMetricsConfiguration`` from a `ConfigReader`.
     ///
+    /// External configuration can only turn metrics on or off; when on, metrics are emitted through
+    /// the factory bootstrapped into `MetricsSystem`, which therefore has to be bootstrapped before
+    /// the configuration is read. To emit through a factory you own, set
+    /// ``ValkeyMetricsConfiguration/factory`` in code instead.
+    ///
     /// ## Configuration keys:
     /// - `enabled` (bool, optional, default: false): Whether metrics emission is enabled.
     public init(configReader: ConfigReader) {
-        self.init()
-        if let enabled = configReader.bool(forKey: "enabled") {
-            self.enabled = enabled
-        }
+        self.init(factory: configReader.bool(forKey: "enabled") == true ? MetricsSystem.factory : nil)
     }
 }
 #endif

@@ -82,6 +82,12 @@ public final class ValkeyClusterClient: Sendable {
     @usableFromInline
     /* private */ let configuration: ValkeyClusterClientConfiguration
 
+    #if MetricsSupport
+    /// Metric handles created from the configured factory, or `nil` when metrics are disabled
+    @usableFromInline
+    /* private */ let valkeyMetrics: ValkeyMetricsStore?
+    #endif
+
     private enum RunAction {
         case runClusterDiscovery(runNodeDiscovery: Bool)
         case runClient(ValkeyNodeClient)
@@ -110,6 +116,10 @@ public final class ValkeyClusterClient: Sendable {
     ) {
         self.logger = logger
         self.configuration = configuration
+
+        #if MetricsSupport
+        self.valkeyMetrics = configuration.client.metrics.initMetricsStore()
+        #endif
 
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
 
@@ -154,7 +164,7 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
         #if MetricsSupport
-        let metricsStart: ContinuousClock.Instant? = self.configuration.client.metrics.enabled ? .now : nil
+        let metricsStart = self.startMetricsTiming()
         var metricsStatus: ValkeyCommandStatus = .ok
         defer { self.recordCommandMetrics(Command.self, start: metricsStart, status: metricsStatus) }
         #endif
@@ -295,7 +305,7 @@ public final class ValkeyClusterClient: Sendable {
     ) async -> [Result<RESPToken, ValkeyClientError>] {
         guard commands.count > 0 else { return [] }
         #if MetricsSupport
-        let metricsStart: ContinuousClock.Instant? = self.configuration.client.metrics.enabled ? .now : nil
+        let metricsStart = self.startMetricsTiming()
         let metricsBatchSize = commands.count
         defer { self.recordPipelineMetrics(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
@@ -403,7 +413,7 @@ public final class ValkeyClusterClient: Sendable {
         _ commands: Commands
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         #if MetricsSupport
-        let metricsStart: ContinuousClock.Instant? = self.configuration.client.metrics.enabled ? .now : nil
+        let metricsStart = self.startMetricsTiming()
         let metricsBatchSize = commands.count
         defer { self.recordTransactionMetrics(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
@@ -1260,8 +1270,5 @@ extension ValkeyClusterClient: Service {}
 
 #if MetricsSupport
 @available(valkeySwift 1.0, *)
-extension ValkeyClusterClient: ValkeyMetricsRecording {
-    @usableFromInline
-    var metricsConfiguration: ValkeyMetricsConfiguration { self.configuration.client.metrics }
-}
+extension ValkeyClusterClient: ValkeyMetricsRecording {}
 #endif

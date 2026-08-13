@@ -41,6 +41,12 @@ public final class ValkeyClient: Sendable {
     /// running atomic
     let runningAtomic: Atomic<Bool>
 
+    #if MetricsSupport
+    /// Metric handles created from the configured factory, or `nil` when metrics are disabled
+    @usableFromInline
+    let valkeyMetrics: ValkeyMetricsStore?
+    #endif
+
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
         case runTimer(ValkeyTimer)
@@ -108,6 +114,9 @@ public final class ValkeyClient: Sendable {
         )
         self.logger = logger
         self.runningAtomic = .init(false)
+        #if MetricsSupport
+        self.valkeyMetrics = connectionFactory.configuration.metrics.initMetricsStore()
+        #endif
         self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.setPrimary(address)
@@ -328,7 +337,7 @@ extension ValkeyClient: ValkeyClientProtocol {
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
         #if MetricsSupport
-        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        let metricsStart = self.startMetricsTiming()
         var metricsStatus: ValkeyCommandStatus = .ok
         defer { self.recordCommandMetrics(Command.self, start: metricsStart, status: metricsStatus) }
         #endif
@@ -404,7 +413,7 @@ extension ValkeyClient {
             #endif
         }
         #if MetricsSupport
-        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        let metricsStart = self.startMetricsTiming()
         defer { self.recordPipelineMetrics(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
         #if compiler(<6.2)
@@ -472,7 +481,7 @@ extension ValkeyClient {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
         #if MetricsSupport
-        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        let metricsStart = self.startMetricsTiming()
         let metricsBatchSize = commands.count
         defer { self.recordPipelineMetrics(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
@@ -553,7 +562,7 @@ extension ValkeyClient {
             #endif
         }
         #if MetricsSupport
-        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        let metricsStart = self.startMetricsTiming()
         defer { self.recordTransactionMetrics(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
         var attempt = 0
@@ -620,7 +629,7 @@ extension ValkeyClient {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
         #if MetricsSupport
-        let metricsStart: ContinuousClock.Instant? = self.configuration.metrics.enabled ? .now : nil
+        let metricsStart = self.startMetricsTiming()
         let metricsBatchSize = commands.count
         defer { self.recordTransactionMetrics(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
@@ -720,8 +729,5 @@ extension ValkeyClient: Service {}
 
 #if MetricsSupport
 @available(valkeySwift 1.0, *)
-extension ValkeyClient: ValkeyMetricsRecording {
-    @usableFromInline
-    var metricsConfiguration: ValkeyMetricsConfiguration { self.configuration.metrics }
-}
+extension ValkeyClient: ValkeyMetricsRecording {}
 #endif

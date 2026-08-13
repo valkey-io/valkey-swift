@@ -119,13 +119,6 @@ package final class ValkeyConnectionFactory: Sendable {
         #if DistributedTracingSupport
         var mConfig = newConfig
         mConfig.tracing = self.configuration.tracing
-        #if MetricsSupport
-        mConfig.metrics = self.configuration.metrics
-        #endif
-        return mConfig
-        #elseif MetricsSupport
-        var mConfig = newConfig
-        mConfig.metrics = self.configuration.metrics
         return mConfig
         #else
         return newConfig
