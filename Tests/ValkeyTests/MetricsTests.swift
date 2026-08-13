@@ -30,7 +30,7 @@ struct MetricsTests {
     ///   - logger: Logger.
     ///   - operation: Closure run with the client and the factory it records into.
     @available(valkeySwift 1.0, *)
-    private func withClientAndMetricsFactory(
+    private func withClient(
         mockConnections: MockServerConnections,
         metricsEnabled: Bool = true,
         logger: Logger,
@@ -66,7 +66,7 @@ struct MetricsTests {
         let topology = await self.makeTopology()
         let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
-        try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
+        try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
             try await client.set("foo", value: "Bar")
             let value = try await client.get("foo")
             #expect(value.map { String($0) } == "Bar")
@@ -98,7 +98,7 @@ struct MetricsTests {
             }
         }
         async let _ = mockConnections.run()
-        try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
+        try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
             do {
                 _ = try await client.get("foo")
                 Issue.record("expected error")
@@ -121,7 +121,7 @@ struct MetricsTests {
         let topology = await self.makeTopology()
         let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
-        try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
+        try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
             _ = await client.execute(GET("foo"), GET("bar"))
 
             #expect(factory.timerSamples(label: "valkey.pipeline.duration").count == 1)
@@ -167,7 +167,7 @@ struct MetricsTests {
             }
         }
         async let _ = mockConnections.run()
-        try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
+        try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
             _ = try await client.transaction(SET("foo", value: "10"), INCR("foo"))
 
             #expect(factory.timerSamples(label: "valkey.transaction.duration").count == 1)
@@ -184,7 +184,7 @@ struct MetricsTests {
         let topology = await self.makeTopology()
         let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
-        try await withClientAndMetricsFactory(mockConnections: mockConnections, metricsEnabled: false, logger: logger) { client, factory in
+        try await withClient(mockConnections: mockConnections, metricsEnabled: false, logger: logger) { client, factory in
             try await client.set("foo", value: "Bar")
             _ = try await client.get("foo")
             _ = await client.execute(GET("foo"), GET("foo"))
@@ -219,9 +219,9 @@ struct MetricsTests {
             }
         }
 
-        /// Cluster-client counterpart of ``MetricsTests/withClientAndMetricsFactory(mockConnections:metricsEnabled:logger:operation:)``.
+        /// Cluster-client counterpart of ``MetricsTests/withClient(mockConnections:metricsEnabled:logger:operation:)``.
         @available(valkeySwift 1.0, *)
-        private func withClientAndMetricsFactory(
+        private func withClient(
             mockConnections: MockServerConnections,
             logger: Logger,
             operation: @escaping @Sendable (ValkeyClusterClient, TestMetrics) async throws -> Void
@@ -255,7 +255,7 @@ struct MetricsTests {
             let cluster = await self.sixNodeHealthyCluster
             let mockConnections = await cluster.mock(logger: logger)
             async let _ = mockConnections.run()
-            try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
+            try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
                 try await client.set("randomKey", value: "before")
                 // Migrate the slot for "randomKey" to shard 2 so the next pipeline gets MOVED
                 // on shard 0 and the cluster client retries against the new owner.
@@ -285,7 +285,7 @@ struct MetricsTests {
             let cluster = await self.sixNodeHealthyCluster
             let mockConnections = await cluster.mock(logger: logger)
             async let _ = mockConnections.run()
-            try await withClientAndMetricsFactory(mockConnections: mockConnections, logger: logger) { client, factory in
+            try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
                 try await client.set("txnKey", value: "before")
                 let hashSlot = HashSlot(key: "txnKey".utf8).rawValue
                 await cluster.migrateSlots(hashSlot...hashSlot, to: 2)
