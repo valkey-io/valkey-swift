@@ -44,7 +44,7 @@ public final class ValkeyClient: Sendable {
     #if MetricsSupport
     /// Metric handles created from the configured factory, or `nil` when metrics are disabled
     @usableFromInline
-    let valkeyMetrics: ValkeyMetricsStore?
+    let valkeyMetrics: ValkeyMetrics?
     #endif
 
     enum RunAction: Sendable {
@@ -115,7 +115,7 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         #if MetricsSupport
-        self.valkeyMetrics = connectionFactory.configuration.metrics.initMetricsStore()
+        self.valkeyMetrics = ValkeyMetrics(factory: connectionFactory.configuration.metrics.factory)
         #endif
         self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
@@ -337,9 +337,9 @@ extension ValkeyClient: ValkeyClientProtocol {
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
         #if MetricsSupport
-        let metricsStart = self.startMetricsTiming()
+        let metricsStart = self.valkeyMetrics?.startTiming()
         var metricsStatus: ValkeyCommandStatus = .ok
-        defer { self.recordCommandMetrics(Command.self, start: metricsStart, status: metricsStatus) }
+        defer { self.valkeyMetrics?.recordCommand(Command.self, start: metricsStart, status: metricsStatus) }
         #endif
         var attempt = 0
         repeat {
@@ -352,7 +352,7 @@ extension ValkeyClient: ValkeyClientProtocol {
                 case .redirect(let redirectError):
                     guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
                         #if MetricsSupport
-                        metricsStatus = valkeyMetricsStatus(for: error)
+                        metricsStatus = ValkeyCommandStatus(error: error)
                         #endif
                         throw error
                     }
@@ -362,7 +362,7 @@ extension ValkeyClient: ValkeyClientProtocol {
                 case .tryAgain:
                     guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
                         #if MetricsSupport
-                        metricsStatus = valkeyMetricsStatus(for: error)
+                        metricsStatus = ValkeyCommandStatus(error: error)
                         #endif
                         throw error
                     }
@@ -371,7 +371,7 @@ extension ValkeyClient: ValkeyClientProtocol {
 
                 case .dontRetry:
                     #if MetricsSupport
-                    metricsStatus = valkeyMetricsStatus(for: error)
+                    metricsStatus = ValkeyCommandStatus(error: error)
                     #endif
                     throw error
                 }
@@ -413,8 +413,8 @@ extension ValkeyClient {
             #endif
         }
         #if MetricsSupport
-        let metricsStart = self.startMetricsTiming()
-        defer { self.recordPipelineMetrics(start: metricsStart, batchSize: metricsBatchSize) }
+        let metricsStart = self.valkeyMetrics?.startTiming()
+        defer { self.valkeyMetrics?.recordPipeline(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
         #if compiler(<6.2)
         let node = self.getNode(readOnly: readOnly)
@@ -481,9 +481,9 @@ extension ValkeyClient {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
         #if MetricsSupport
-        let metricsStart = self.startMetricsTiming()
+        let metricsStart = self.valkeyMetrics?.startTiming()
         let metricsBatchSize = commands.count
-        defer { self.recordPipelineMetrics(start: metricsStart, batchSize: metricsBatchSize) }
+        defer { self.valkeyMetrics?.recordPipeline(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
         // get node client and execute commands
         var node = self.getNode(readOnly: readOnly)
@@ -562,8 +562,8 @@ extension ValkeyClient {
             #endif
         }
         #if MetricsSupport
-        let metricsStart = self.startMetricsTiming()
-        defer { self.recordTransactionMetrics(start: metricsStart, batchSize: metricsBatchSize) }
+        let metricsStart = self.valkeyMetrics?.startTiming()
+        defer { self.valkeyMetrics?.recordTransaction(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
         var attempt = 0
         outsideLoop: repeat {
@@ -629,9 +629,9 @@ extension ValkeyClient {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
         #if MetricsSupport
-        let metricsStart = self.startMetricsTiming()
+        let metricsStart = self.valkeyMetrics?.startTiming()
         let metricsBatchSize = commands.count
-        defer { self.recordTransactionMetrics(start: metricsStart, batchSize: metricsBatchSize) }
+        defer { self.valkeyMetrics?.recordTransaction(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
         var attempt = 0
         outsideLoop: repeat {
@@ -726,8 +726,3 @@ extension ValkeyClient {
 @available(valkeySwift 1.0, *)
 extension ValkeyClient: Service {}
 #endif  // ServiceLifecycle
-
-#if MetricsSupport
-@available(valkeySwift 1.0, *)
-extension ValkeyClient: ValkeyMetricsRecording {}
-#endif

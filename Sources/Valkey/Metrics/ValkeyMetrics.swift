@@ -45,6 +45,18 @@ enum ValkeyCommandStatus: Sendable {
     case error
     case timeout
     case cancelled
+
+    /// The status to record for a failed command.
+    @usableFromInline
+    init(error: ValkeyClientError) {
+        if error.errorCode == .timeout {
+            self = .timeout
+        } else if error.errorCode == .cancelled || error.errorCode == .connectionClosedDueToCancellation {
+            self = .cancelled
+        } else {
+            self = .error
+        }
+    }
 }
 
 /// Per-command-type bundle of preconfigured timers, one per ``ValkeyCommandStatus``.
@@ -79,65 +91,89 @@ final class ValkeyCommandMetrics: Sendable {
     }
 }
 
-/// Pipeline-level metric pair: latency timer plus batch-size recorder.
-@available(valkeySwift 1.0, *)
-@usableFromInline
-struct ValkeyPipelineMetrics: Sendable {
-    @usableFromInline let timer: Timer
-    @usableFromInline let sizeRecorder: Recorder
-
-    init(factory: any MetricsFactory) {
-        self.timer = Timer(label: "valkey.pipeline.duration", factory: factory)
-        self.sizeRecorder = Recorder(label: "valkey.pipeline.size", factory: factory)
-    }
-}
-
-/// Transaction-level metric pair: latency timer plus batch-size recorder.
-///
-/// Tracked separately from pipelines because MULTI/EXEC has different semantics and operators
-/// usually want to see transaction latency in isolation.
-@available(valkeySwift 1.0, *)
-@usableFromInline
-struct ValkeyTransactionMetrics: Sendable {
-    @usableFromInline let timer: Timer
-    @usableFromInline let sizeRecorder: Recorder
-
-    init(factory: any MetricsFactory) {
-        self.timer = Timer(label: "valkey.transaction.duration", factory: factory)
-        self.sizeRecorder = Recorder(label: "valkey.transaction.size", factory: factory)
-    }
-}
-
 /// Every metric handle a single client records into, all created from the `MetricsFactory` that
 /// client was configured with.
 ///
-/// A client creates one store when it is initialized and holds it for its lifetime: `Timer` and
+/// A client creates one instance when it is initialized and holds it for its lifetime: `Timer` and
 /// `Recorder` resolve their handler from the factory at creation time, so recreating them per
 /// command would both allocate on the hot path and go through the factory's own lookup each time.
+///
+/// Transactions are tracked separately from pipelines because MULTI/EXEC has different semantics and
+/// operators usually want to see transaction latency in isolation.
 ///
 /// The handles are deliberately never `destroy()`ed. Factories generally return the same handler for
 /// a given label and dimension set, so destroying handles as one client shuts down could stop
 /// recording for other clients that share the factory.
 @available(valkeySwift 1.0, *)
 @usableFromInline
-final class ValkeyMetricsStore: Sendable {
-    @usableFromInline let pipeline: ValkeyPipelineMetrics
-    @usableFromInline let transaction: ValkeyTransactionMetrics
+final class ValkeyMetrics: Sendable {
+    private let pipelineTimer: Timer
+    private let pipelineSizeRecorder: Recorder
+    private let transactionTimer: Timer
+    private let transactionSizeRecorder: Recorder
 
     private let factory: any MetricsFactory
     /// Per-command-type handles, created on first use of each command and keyed by command name.
     private let commandMetricsCache: Mutex<[String: ValkeyCommandMetrics]>
 
-    init(factory: any MetricsFactory) {
+    /// Creates the handles a client records into, or `nil` when metrics emission is disabled.
+    ///
+    /// - Parameter factory: The configured factory, or `nil` to emit no metrics.
+    init?(factory: (any MetricsFactory)?) {
+        guard let factory else { return nil }
         self.factory = factory
-        self.pipeline = ValkeyPipelineMetrics(factory: factory)
-        self.transaction = ValkeyTransactionMetrics(factory: factory)
+        self.pipelineTimer = Timer(label: "valkey.pipeline.duration", factory: factory)
+        self.pipelineSizeRecorder = Recorder(label: "valkey.pipeline.size", factory: factory)
+        self.transactionTimer = Timer(label: "valkey.transaction.duration", factory: factory)
+        self.transactionSizeRecorder = Recorder(label: "valkey.transaction.size", factory: factory)
         self.commandMetricsCache = .init([:])
     }
 
-    /// The timers for `Command`, creating them from the store's factory on first use.
+    /// The instant to measure latency from.
+    ///
+    /// Callers reach this through `self.valkeyMetrics?.startTiming()`, so the clock goes unread and
+    /// the result is `nil` when metrics are disabled.
     @usableFromInline
-    func commandMetrics<Command: ValkeyCommand>(for type: Command.Type) -> ValkeyCommandMetrics {
+    func startTiming() -> ContinuousClock.Instant {
+        .now
+    }
+
+    /// Record a single-command latency sample if metrics timing was started.
+    @usableFromInline
+    func recordCommand<Command: ValkeyCommand>(
+        _ type: Command.Type,
+        start: ContinuousClock.Instant?,
+        status: ValkeyCommandStatus
+    ) {
+        guard let start else { return }
+        self.commandMetrics(for: type).timer(for: status).recordNanoseconds(self.elapsedNanoseconds(since: start))
+    }
+
+    /// Record a pipeline latency sample plus its batch size if metrics timing was started.
+    @usableFromInline
+    func recordPipeline(start: ContinuousClock.Instant?, batchSize: Int) {
+        guard let start else { return }
+        self.pipelineTimer.recordNanoseconds(self.elapsedNanoseconds(since: start))
+        self.pipelineSizeRecorder.record(batchSize)
+    }
+
+    /// Record a transaction latency sample plus the number of queued commands (excluding MULTI/EXEC).
+    @usableFromInline
+    func recordTransaction(start: ContinuousClock.Instant?, batchSize: Int) {
+        guard let start else { return }
+        self.transactionTimer.recordNanoseconds(self.elapsedNanoseconds(since: start))
+        self.transactionSizeRecorder.record(batchSize)
+    }
+
+    /// Nanoseconds elapsed since `start`.
+    private func elapsedNanoseconds(since start: ContinuousClock.Instant) -> Int64 {
+        let elapsed = ContinuousClock.now - start
+        let components = elapsed.components
+        return components.seconds * 1_000_000_000 + components.attoseconds / 1_000_000_000
+    }
+
+    /// The timers for `Command`, creating them from the client's factory on first use.
+    private func commandMetrics<Command: ValkeyCommand>(for type: Command.Type) -> ValkeyCommandMetrics {
         self.commandMetricsCache.withLock { cache in
             if let cached = cache[Command.name] {
                 return cached
@@ -149,87 +185,4 @@ final class ValkeyMetricsStore: Sendable {
     }
 }
 
-@available(valkeySwift 1.0, *)
-extension ValkeyMetricsConfiguration {
-    /// The metric handles this configuration asks for, or `nil` when metrics emission is disabled.
-    ///
-    /// Called once per client, at client initialization.
-    func initMetricsStore() -> ValkeyMetricsStore? {
-        self.factory.map { ValkeyMetricsStore(factory: $0) }
-    }
-}
-
-// MARK: - Helpers
-
-/// Convert the elapsed `Duration` between two `ContinuousClock` instants to nanoseconds.
-@available(valkeySwift 1.0, *)
-@usableFromInline
-func valkeyElapsedNanoseconds(since start: ContinuousClock.Instant) -> Int64 {
-    let elapsed = ContinuousClock.now - start
-    let components = elapsed.components
-    return components.seconds * 1_000_000_000 + components.attoseconds / 1_000_000_000
-}
-
-/// Map a Valkey error to the corresponding metric status.
-@available(valkeySwift 1.0, *)
-@usableFromInline
-func valkeyMetricsStatus(for error: ValkeyClientError) -> ValkeyCommandStatus {
-    if error.errorCode == .timeout {
-        return .timeout
-    }
-    if error.errorCode == .cancelled || error.errorCode == .connectionClosedDueToCancellation {
-        return .cancelled
-    }
-    return .error
-}
-
-// MARK: - Recording
-
-/// Internal conformance that lets `ValkeyClient` and `ValkeyClusterClient` share a single set of
-/// metric recording helpers. Each client exposes the handles it was configured with via
-/// ``valkeyMetrics``.
-@available(valkeySwift 1.0, *)
-@usableFromInline
-protocol ValkeyMetricsRecording {
-    /// The client's metric handles, or `nil` when metrics emission is disabled.
-    var valkeyMetrics: ValkeyMetricsStore? { get }
-}
-
-@available(valkeySwift 1.0, *)
-extension ValkeyMetricsRecording {
-    /// The instant to measure a command's latency from, or `nil` when metrics are disabled.
-    ///
-    /// Returning an optional keeps the clock unread when nothing will be recorded.
-    @usableFromInline
-    func startMetricsTiming() -> ContinuousClock.Instant? {
-        self.valkeyMetrics != nil ? .now : nil
-    }
-
-    /// Record a single-command latency sample if metrics timing was started.
-    @usableFromInline
-    func recordCommandMetrics<Command: ValkeyCommand>(
-        _ type: Command.Type,
-        start: ContinuousClock.Instant?,
-        status: ValkeyCommandStatus
-    ) {
-        guard let metrics = self.valkeyMetrics, let start else { return }
-        metrics.commandMetrics(for: type).timer(for: status).recordNanoseconds(valkeyElapsedNanoseconds(since: start))
-    }
-
-    /// Record a pipeline latency sample plus its batch size if metrics timing was started.
-    @usableFromInline
-    func recordPipelineMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
-        guard let metrics = self.valkeyMetrics, let start else { return }
-        metrics.pipeline.timer.recordNanoseconds(valkeyElapsedNanoseconds(since: start))
-        metrics.pipeline.sizeRecorder.record(batchSize)
-    }
-
-    /// Record a transaction latency sample plus the number of queued commands (excluding MULTI/EXEC).
-    @usableFromInline
-    func recordTransactionMetrics(start: ContinuousClock.Instant?, batchSize: Int) {
-        guard let metrics = self.valkeyMetrics, let start else { return }
-        metrics.transaction.timer.recordNanoseconds(valkeyElapsedNanoseconds(since: start))
-        metrics.transaction.sizeRecorder.record(batchSize)
-    }
-}
 #endif
