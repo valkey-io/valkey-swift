@@ -224,7 +224,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             throw ValkeyClientError(.unrecognisedError, error: error)
         }
         do {
-            return try Command.Response(token)
+            return try .init(token)
         } catch {
             throw ValkeyClientError(.respDecodeError, error: error)
         }
