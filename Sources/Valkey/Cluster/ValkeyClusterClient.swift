@@ -85,7 +85,7 @@ public final class ValkeyClusterClient: Sendable {
     #if MetricsSupport
     /// Metric handles created from the configured factory, or `nil` when metrics are disabled
     @usableFromInline
-    /* private */ let valkeyMetrics: ValkeyMetricsStore?
+    /* private */ let valkeyMetrics: ValkeyMetrics?
     #endif
 
     private enum RunAction {
@@ -118,7 +118,7 @@ public final class ValkeyClusterClient: Sendable {
         self.configuration = configuration
 
         #if MetricsSupport
-        self.valkeyMetrics = configuration.client.metrics.initMetricsStore()
+        self.valkeyMetrics = ValkeyMetrics(factory: configuration.client.metrics.factory)
         #endif
 
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
@@ -164,9 +164,9 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
         #if MetricsSupport
-        let metricsStart = self.startMetricsTiming()
+        let metricsStart = self.valkeyMetrics?.startTiming()
         var metricsStatus: ValkeyCommandStatus = .ok
-        defer { self.recordCommandMetrics(Command.self, start: metricsStart, status: metricsStatus) }
+        defer { self.valkeyMetrics?.recordCommand(Command.self, start: metricsStart, status: metricsStatus) }
         #endif
         do {
             let hashSlot = try self.hashSlot(for: command.keysAffected)
@@ -217,7 +217,7 @@ public final class ValkeyClusterClient: Sendable {
             }
         } catch let error as ValkeyClientError {
             #if MetricsSupport
-            metricsStatus = valkeyMetricsStatus(for: error)
+            metricsStatus = ValkeyCommandStatus(error: error)
             #endif
             throw error
         } catch let error as ValkeyClusterError {
@@ -305,9 +305,9 @@ public final class ValkeyClusterClient: Sendable {
     ) async -> [Result<RESPToken, ValkeyClientError>] {
         guard commands.count > 0 else { return [] }
         #if MetricsSupport
-        let metricsStart = self.startMetricsTiming()
+        let metricsStart = self.valkeyMetrics?.startTiming()
         let metricsBatchSize = commands.count
-        defer { self.recordPipelineMetrics(start: metricsStart, batchSize: metricsBatchSize) }
+        defer { self.valkeyMetrics?.recordPipeline(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
         let readOnlyCommand = commands.reduce(true) { $0 && $1.isReadOnly }
         let nodeSelection = getNodeSelection(readOnly: readOnlyCommand)
@@ -413,9 +413,9 @@ public final class ValkeyClusterClient: Sendable {
         _ commands: Commands
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
         #if MetricsSupport
-        let metricsStart = self.startMetricsTiming()
+        let metricsStart = self.valkeyMetrics?.startTiming()
         let metricsBatchSize = commands.count
-        defer { self.recordTransactionMetrics(start: metricsStart, batchSize: metricsBatchSize) }
+        defer { self.valkeyMetrics?.recordTransaction(start: metricsStart, batchSize: metricsBatchSize) }
         #endif
         // Get list of keys affected
         let keyCount = commands.reduce(0) { $0 + $1.keysAffected.count }
@@ -1267,8 +1267,3 @@ extension Array where Element == any ValkeyCommand {
 @available(valkeySwift 1.0, *)
 extension ValkeyClusterClient: Service {}
 #endif  // ServiceLifecycle
-
-#if MetricsSupport
-@available(valkeySwift 1.0, *)
-extension ValkeyClusterClient: ValkeyMetricsRecording {}
-#endif
