@@ -307,7 +307,8 @@ public struct ValkeyClientConfiguration: Sendable {
     #endif
 
     #if MetricsSupport
-    /// The metrics configuration to use for the Valkey connection.
+    /// The metrics configuration to use for the Valkey client.
+    /// Defaults to emitting no metrics.
     public var metrics: ValkeyMetricsConfiguration = .init()
     #endif
 

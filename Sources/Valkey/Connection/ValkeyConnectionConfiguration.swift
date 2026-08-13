@@ -12,10 +12,6 @@ import NIOSSL
 import Tracing
 #endif
 
-#if MetricsSupport
-import Metrics
-#endif
-
 /// A configuration object that defines how to connect to a Valkey server.
 ///
 /// `ValkeyConnectionConfiguration` allows you to customize various aspects of the connection,
@@ -141,12 +137,6 @@ public struct ValkeyConnectionConfiguration: Sendable {
     public var tracing: ValkeyTracingConfiguration = .init()
     #endif
 
-    #if MetricsSupport
-    /// The metrics configuration to use for this connection.
-    /// Defaults to emitting metrics through the globally bootstrapped `MetricsSystem`.
-    public var metrics: ValkeyMetricsConfiguration = .init()
-    #endif
-
     /// Creates a new Valkey connection configuration.
     ///
     /// Use this initializer to create a configuration object that can be used to establish
@@ -210,21 +200,6 @@ public struct ValkeyTracingConfiguration: Sendable {
     /// Static attribute values used in spans created by Valkey.
     public struct AttributeValues: Sendable {
         public var databaseSystem: String = "valkey"
-    }
-}
-#endif
-
-#if MetricsSupport
-@available(valkeySwift 1.0, *)
-/// A configuration object that defines metrics emission behavior of a Valkey client.
-public struct ValkeyMetricsConfiguration: Sendable {
-    /// Whether metrics emission is enabled for this connection.
-    public var enabled: Bool
-
-    /// Create a new metrics configuration.
-    /// - Parameter enabled: Whether metrics emission is enabled. Defaults to `false`.
-    public init(enabled: Bool = false) {
-        self.enabled = enabled
     }
 }
 #endif
