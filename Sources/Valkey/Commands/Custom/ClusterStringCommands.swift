@@ -122,6 +122,7 @@ extension ValkeyClusterClient {
     /// - Complexity: O(N) where N is the number of keys to set.
     /// - Parameter data: The key-value pairs to set.
     /// - Throws: ``ValkeyClientError`` if any node fails or returns a non-OK response.
+    @inlinable
     public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws(ValkeyClientError) {
         _ = try await executeMultiKeyCommand(MSET(data: data))
     }
