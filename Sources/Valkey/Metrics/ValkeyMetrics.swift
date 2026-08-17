@@ -33,6 +33,14 @@ public struct ValkeyMetricsConfiguration: Sendable {
     /// Assigning `MetricsSystem.factory` therefore captures whichever factory is current at that
     /// point, so `MetricsSystem.bootstrap(_:)` has to run first.
     public var factory: (any MetricsFactory)?
+
+    /// Creates a metrics configuration.
+    ///
+    /// - Parameter factory: The factory the client creates its metrics from. Defaults to `nil`, which
+    ///   emits no metrics.
+    public init(factory: (any MetricsFactory)? = nil) {
+        self.factory = factory
+    }
 }
 
 // MARK: - Metric handles
