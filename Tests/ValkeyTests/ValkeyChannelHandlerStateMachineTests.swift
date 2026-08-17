@@ -37,6 +37,39 @@ struct ValkeyChannelHandlerStateMachineTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testCloseBeforeHello() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()
+        stateMachine.setConnected(context: "testCloseBeforeHello")
+        let state: ValkeyChannelHandler.StateMachine<String>.ConnectedState? =
+            switch stateMachine.state {
+            case .connected(let state): state
+            default: nil
+            }
+        guard let state else {
+            Issue.record("Invalid state")
+            return
+        }
+        expect(
+            stateMachine.state
+                == .connected(.init(context: "testCloseBeforeHello", pendingHelloCommand: state.pendingHelloCommand, pendingCommands: []))
+        )
+        switch stateMachine.close() {
+        case .failPendingCommandsAndClose(let context, let commands):
+            #expect(context == "testCloseBeforeHello")
+            #expect(commands.count == 1)
+            #expect(commands.first?.requestID == 0)
+            for command in commands {
+                // Just to avoid leaking the promise
+                command.promise.fail(ValkeyClientError(.connectionClosed))
+            }
+        default:
+            Issue.record("Invalid close action")
+        }
+        expect(stateMachine.state == .closed(nil))
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testClosed() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setConnected(context: "testClosed")

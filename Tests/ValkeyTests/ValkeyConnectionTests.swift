@@ -70,6 +70,23 @@ struct ConnectionTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testConnectionCreationHelloClose() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let hello3 = RESPToken(.command(["HELLO", "3"])).base
+        #expect(outbound.readSlice(length: hello3.readableBytes) == hello3)
+        // write invalid RESPToken, it should return a ValkeyClientError with id `respParsingError`
+        let error = await #expect(throws: ValkeyClientError.self) {
+            try await channel.writeInbound(ByteBuffer(string: "ERROR"))
+        }
+        #expect(error?.errorCode == .respParsingError)
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testConnectionCreationHelloAuth() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
