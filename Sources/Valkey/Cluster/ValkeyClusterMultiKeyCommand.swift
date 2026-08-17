@@ -17,6 +17,7 @@
 /// - ``createSubCommand(for:)`` — produce a sub-command scoped to a subset of keys.
 /// - ``combineResults(originalKeyCount:slotResults:)`` — merge per-slot results back
 ///   into the full command response.
+@usableFromInline
 @available(valkeySwift 1.0, *)
 package protocol ValkeyClusterMultiKeyCommand: ValkeyCommand {
 

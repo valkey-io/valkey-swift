@@ -20,6 +20,7 @@ extension ValkeyClusterClient {
     /// - Parameter command: A command conforming to ``ValkeyClusterMultiKeyCommand``.
     /// - Returns: The assembled command response in original key order.
     /// - Throws: ``ValkeyClientError`` if execution on any node fails.
+    @usableFromInline
     package func executeMultiKeyCommand<Command: ValkeyClusterMultiKeyCommand>(
         _ command: Command
     ) async throws(ValkeyClientError) -> Command.Response {
