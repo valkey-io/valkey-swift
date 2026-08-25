@@ -119,6 +119,27 @@ try await valkeyClient.withConnection { connection in
 }
 ```
 
+#### Subscriptions (Pub/Sub)
+
+Subscribe to one or more channels and process messages as an AsyncSequence. When the closure exits, the client automatically unsubscribes.
+
+```swift
+try await valkeyClient.subscribe(to: "notifications") { stream in
+    for try await message in stream {
+        print("Received: \(message.message)")
+    }
+}
+```
+
+When you subscribe from a `ValkeyClient`, the subscription runs on a dedicated connection, kept separate from the connection pool used for every other command. Because of this, you can publish and run other commands on the *same* client while a subscription is active, the client manages the two connections for you.
+
+
+// The client keeps subscribe and publish on separate connections automatically.
+try await valkeyClient.publish(channel: "notifications", message: "hello")
+
+> **Note:** valkey-swift uses the RESP3 protocol, so a single connection can handle both subscriptions and regular commands. `ValkeyClient` still runs subscriptions on their own dedicated connection because subscriptions are long-running and can hold a connection open for a long time, keeping them separate avoids tying up the pool used for other commands.
+
+
 ### ValkeyClusterClient
 
 For [Cluster Mode](https://valkey.io/topics/cluster-tutorial/) Valkey deployments with automatic command routing, topology discovery, and live cluster topology changes.
