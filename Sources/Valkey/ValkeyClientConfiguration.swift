@@ -158,6 +158,22 @@ public struct ValkeyClientConfiguration: Sendable {
         /// become idle.
         public var maximumConnectionHardLimit: Int
 
+        /// The maximum number of leases that can use the one connection. This defaults
+        /// to 1 but increasing it from 1 allows for increased throughput on the same
+        /// number of connections.
+        ///
+        /// Downsides from increasing this above 1 include
+        /// - Commands that take a long time can affect the performance of completely
+        ///   unrelated commands run elsewhere on the same connection.
+        /// - You cannot guarantee unique access to a connection. So transactions
+        ///   maybe affected by calls to `WATCH` elsewhere.
+        /// - If you are using seeing a large number of subscription push messages per second
+        ///   This could affect the performance of commands run on the same connection.
+        ///
+        /// In these situations you can start up a separate client with the maximum number of
+        /// streams set to one to run operations that are expensive or affect the state of a connection.
+        public var maximumNumberOfStreamsPerConnection: UInt16
+
         /// The time that a _preserved_ idle connection stays in the
         /// pool before it is closed.
         public var idleTimeout: Duration
@@ -199,6 +215,7 @@ public struct ValkeyClientConfiguration: Sendable {
             self.idleTimeout = idleTimeout
             self.circuitBreakerTripAfter = circuitBreakerTripAfter
             self.maximumConcurrentConnectionRequests = maximumConcurrentConnectionRequests
+            self.maximumNumberOfStreamsPerConnection = 1
         }
     }
 
