@@ -121,7 +121,7 @@ try await valkeyClient.withConnection { connection in
 
 #### Subscriptions (Pub/Sub)
 
-Subscribe to one or more channels and process messages as an async sequence. When the closure exits, the client automatically unsubscribes.
+Subscribe to one or more channels and process messages as an AsyncSequence. When the closure exits, the client automatically unsubscribes.
 
 ```swift
 try await valkeyClient.subscribe(to: "notifications") { stream in
