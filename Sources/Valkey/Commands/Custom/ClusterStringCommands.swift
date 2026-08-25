@@ -13,6 +13,7 @@ import NIOCore
 @available(valkeySwift 1.0, *)
 extension MGET: ValkeyClusterMultiKeyCommand {
 
+    @usableFromInline
     package func createSubCommand(for indices: [Int]) -> MGET {
         MGET(keys: indices.map { self.keys[$0] })
     }
@@ -21,6 +22,7 @@ extension MGET: ValkeyClusterMultiKeyCommand {
     ///
     /// Each element in the returned array corresponds to the key at the same
     /// position in the original `MGET`. Null tokens represent absent keys.
+    @usableFromInline
     package static func combineResults(
         originalKeyCount: Int,
         slotResults: [(indices: [Int], result: RESPToken)]
@@ -63,6 +65,7 @@ extension MGET: ValkeyClusterMultiKeyCommand {
 
 @available(valkeySwift 1.0, *)
 extension MSET: ValkeyClusterMultiKeyCommand {
+    @usableFromInline
     package func createSubCommand(for indices: [Int]) -> MSET {
         MSET(data: indices.map { self.data[$0] })
     }
@@ -71,6 +74,7 @@ extension MSET: ValkeyClusterMultiKeyCommand {
     ///
     /// Every sub-result must be the simple string `OK`. Any other response
     /// causes a ``RESPDecodeError`` to be thrown.
+    @usableFromInline
     package static func combineResults(
         originalKeyCount: Int,
         slotResults: [(indices: [Int], result: RESPToken)]
@@ -102,6 +106,7 @@ extension ValkeyClusterClient {
     /// - Returns: A ``RESPToken/Array`` with values in the same order as `keys`.
     ///   Null tokens represent absent keys.
     /// - Throws: ``ValkeyClientError`` if any node fails.
+    @inlinable
     public func mget(keys: [ValkeyKey]) async throws(ValkeyClientError) -> RESPToken.Array {
         try await executeMultiKeyCommand(MGET(keys: keys))
     }
@@ -117,6 +122,7 @@ extension ValkeyClusterClient {
     /// - Complexity: O(N) where N is the number of keys to set.
     /// - Parameter data: The key-value pairs to set.
     /// - Throws: ``ValkeyClientError`` if any node fails or returns a non-OK response.
+    @inlinable
     public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws(ValkeyClientError) {
         _ = try await executeMultiKeyCommand(MSET(data: data))
     }
