@@ -9,6 +9,10 @@
 #if compiler(>=6.2)
 import Configuration
 
+#if MetricsSupport
+import Metrics
+#endif
+
 @available(valkeySwift 1.0, *)
 extension ValkeyClientConfiguration {
     /// Initializes a ``ValkeyClientConfiguration``` from a ConfigReader.
@@ -20,6 +24,7 @@ extension ValkeyClientConfiguration {
     /// - `keepAlive.*` (nested object, optional): Keep-alive behavior settings.
     /// - `retry.*` (nested object, optional): Retry parameters.
     /// - `authentication.*` (nested object, optional): Server authentication.
+    /// - `metrics.*` (nested object, optional): Metrics emission settings. Only available when `MetricsSupport` is enabled.
     /// - `commandTimeoutMs` (duration, optional, default: 30 seconds): Timeout for command responses.
     /// - `blockingCommandTimeoutMs` (duration, optional, default: 120 seconds): Timeout for blocking command responses.
     /// - `databaseNumber` (int, optional, default: 0, range: 0-15): Database number to use for the Valkey Connection
@@ -50,6 +55,10 @@ extension ValkeyClientConfiguration {
             self.databaseNumber = databaseNumber
         }
         self.readOnlyCommandNodeSelection = try .init(configReader: configReader)
+
+        #if MetricsSupport
+        self.metrics = .init(configReader: configReader.scoped(to: "metrics"))
+        #endif
     }
 }
 
@@ -186,6 +195,24 @@ extension ValkeyClientConfiguration.Authentication {
         self.init(username: username, password: password)
     }
 }
+
+#if MetricsSupport
+@available(valkeySwift 1.0, *)
+extension ValkeyMetricsConfiguration {
+    /// Initializes a ``ValkeyMetricsConfiguration`` from a `ConfigReader`.
+    ///
+    /// External configuration can only turn metrics on or off; when on, metrics are emitted through
+    /// the factory bootstrapped into `MetricsSystem`, which therefore has to be bootstrapped before
+    /// the configuration is read. To emit through a factory you own, set
+    /// ``ValkeyMetricsConfiguration/factory`` in code instead.
+    ///
+    /// ## Configuration keys:
+    /// - `enabled` (bool, optional, default: false): Whether metrics emission is enabled.
+    public init(configReader: ConfigReader) {
+        self.init(factory: configReader.bool(forKey: "enabled") == true ? MetricsSystem.factory : nil)
+    }
+}
+#endif
 
 @available(valkeySwift 1.0, *)
 extension ConfigReader {

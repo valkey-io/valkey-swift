@@ -82,6 +82,12 @@ public final class ValkeyClusterClient: Sendable {
     @usableFromInline
     /* private */ let configuration: ValkeyClusterClientConfiguration
 
+    #if MetricsSupport
+    /// Metric handles created from the configured factory, or `nil` when metrics are disabled
+    @usableFromInline
+    /* private */ let valkeyMetrics: ValkeyMetrics?
+    #endif
+
     private enum RunAction {
         case runClusterDiscovery(runNodeDiscovery: Bool)
         case runClient(ValkeyNodeClient)
@@ -110,6 +116,10 @@ public final class ValkeyClusterClient: Sendable {
     ) {
         self.logger = logger
         self.configuration = configuration
+
+        #if MetricsSupport
+        self.valkeyMetrics = ValkeyMetrics(factory: configuration.client.metrics.factory)
+        #endif
 
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
 
@@ -153,6 +163,11 @@ public final class ValkeyClusterClient: Sendable {
     ///   - Other errors if the command execution or parsing fails
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
+        #if MetricsSupport
+        let metricsStart = self.valkeyMetrics?.startTiming()
+        var metricsStatus: ValkeyCommandStatus = .ok
+        defer { self.valkeyMetrics?.recordCommand(Command.self, start: metricsStart, status: metricsStatus) }
+        #endif
         do {
             let hashSlot = try self.hashSlot(for: command.keysAffected)
             let nodeSelection = getNodeSelection(readOnly: command.isReadOnly)
@@ -201,12 +216,24 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         } catch let error as ValkeyClientError {
+            #if MetricsSupport
+            metricsStatus = ValkeyCommandStatus(error: error)
+            #endif
             throw error
         } catch let error as ValkeyClusterError {
+            #if MetricsSupport
+            metricsStatus = .error
+            #endif
             throw ValkeyClientError(.clusterError, error: error)
         } catch {
+            #if MetricsSupport
+            metricsStatus = .error
+            #endif
             throw ValkeyClientError(.unrecognisedError, error: error)
         }
+        #if MetricsSupport
+        metricsStatus = .cancelled
+        #endif
         throw ValkeyClientError(.cancelled)
     }
 
@@ -277,6 +304,11 @@ public final class ValkeyClusterClient: Sendable {
         _ commands: [any ValkeyCommand]
     ) async -> [Result<RESPToken, ValkeyClientError>] {
         guard commands.count > 0 else { return [] }
+        #if MetricsSupport
+        let metricsStart = self.valkeyMetrics?.startTiming()
+        let metricsBatchSize = commands.count
+        defer { self.valkeyMetrics?.recordPipeline(start: metricsStart, batchSize: metricsBatchSize) }
+        #endif
         let readOnlyCommand = commands.reduce(true) { $0 && $1.isReadOnly }
         let nodeSelection = getNodeSelection(readOnly: readOnlyCommand)
         // get a list of nodes and the commands that should be run on them
@@ -380,6 +412,11 @@ public final class ValkeyClusterClient: Sendable {
     public func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
     ) async throws -> [Result<RESPToken, ValkeyClientError>] where Commands.Element == any ValkeyCommand {
+        #if MetricsSupport
+        let metricsStart = self.valkeyMetrics?.startTiming()
+        let metricsBatchSize = commands.count
+        defer { self.valkeyMetrics?.recordTransaction(start: metricsStart, batchSize: metricsBatchSize) }
+        #endif
         // Get list of keys affected
         let keyCount = commands.reduce(0) { $0 + $1.keysAffected.count }
         var keysAffected: [ValkeyKey] = []
@@ -533,6 +570,8 @@ public final class ValkeyClusterClient: Sendable {
     }
 
     /// Get connection from cluster and run operation using connection
+    ///
+    /// Commands run via the supplied `withConnection` do not emit metrics
     ///
     /// - Parameters:
     ///   - keys: Keys affected by operation. This is used to choose the cluster node
