@@ -178,8 +178,8 @@ extension ValkeyClientConfiguration.Authentication {
     /// - Note: Both `username` and `password` must be present to create valid authentication credentials.
     ///   If either is missing, this initializer returns `nil`.
     public init?(configReader: ConfigReader) throws {
-        guard let username = configReader.string(forKey: "username"),
-            let password = configReader.string(forKey: "password")
+        guard let username = configReader.string(forKey: "username", isSecret: true),
+            let password = configReader.string(forKey: "password", isSecret: true)
         else {
             return nil
         }
