@@ -5,7 +5,7 @@ public struct ConnectionRequest<Connection: PooledConnection>: ConnectionRequest
     public var id: ID
 
     @usableFromInline
-    private(set) var continuation: CheckedContinuation<ConnectionLease<Connection>, any Error>
+    /*private(set)*/ var continuation: CheckedContinuation<ConnectionLease<Connection>, any Error>
 
     @inlinable
     init(
