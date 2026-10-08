@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        swift: ["swift:6.1", "swift:6.2", "swift:6.3"]
+        swift: ["swift:6.2", "swift:6.3", "swift:6.4"]
         database: ["valkey/valkey:latest", "redis:latest"]
     container:
       image: ${{ matrix.swift }}
@@ -60,14 +60,7 @@ jobs:
           VALKEY_HOSTNAME: database
         run: |
           swift test --enable-code-coverage
-      - name: Convert coverage files
-        run: |
-          llvm-cov export -format="lcov" \
-            .build/debug/valkey-swiftPackageTests.xctest \
-            -ignore-filename-regex="\/Tests\/" \
-            -instr-profile .build/debug/codecov/default.profdata > info.lcov
-      - name: Upload to codecov.io
-        uses: codecov/codecov-action@v4
+      - name: Upload coverage data
+        uses: vapor/swift-codecov-action@v0.3.7
         with:
-          files: info.lcov
-          token: ${{ secrets.CODECOV_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
