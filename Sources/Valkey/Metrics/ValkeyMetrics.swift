@@ -137,11 +137,11 @@ final class ValkeyMetrics: Sendable {
         let errorType: String?
     }
 
-    /// `db.system.name` and `db.namespace`, carried by every sample.
-    private let commonDimensions: [(String, String)]
     private let label: String
     private let preferredDisplayUnit: TimeUnit
     private let dimensions: ValkeyMetricsConfiguration.Dimensions
+    /// The value reported for `db.namespace`: the database number the client was configured with.
+    private let databaseNamespace: String
     private let factory: any MetricsFactory
     private let timers: Mutex<[TimerKey: Timer]>
 
@@ -157,10 +157,7 @@ final class ValkeyMetrics: Sendable {
         self.label = configuration.labels.operationDuration
         self.preferredDisplayUnit = configuration.preferredDisplayUnit
         self.dimensions = configuration.dimensions
-        self.commonDimensions = [
-            (configuration.dimensions.databaseSystemKey, configuration.dimensions.databaseSystemValue),
-            (configuration.dimensions.databaseNamespaceKey, String(databaseNumber)),
-        ]
+        self.databaseNamespace = String(databaseNumber)
         self.timers = .init([:])
     }
 
@@ -194,12 +191,16 @@ final class ValkeyMetrics: Sendable {
             if let cached = timers[key] {
                 return cached
             }
-            var timerDimensions = self.commonDimensions
-            timerDimensions.reserveCapacity(self.commonDimensions.count + 2)
-            timerDimensions.append((self.dimensions.databaseOperationKey, commandName))
-            if let errorType {
-                timerDimensions.append((self.dimensions.errorTypeKey, errorType))
-            }
+            let system = (self.dimensions.databaseSystemKey, self.dimensions.databaseSystemValue)
+            let namespace = (self.dimensions.databaseNamespaceKey, self.databaseNamespace)
+            let operation = (self.dimensions.databaseOperationKey, commandName)
+            // One literal per case, so the array is allocated once at its exact size.
+            let timerDimensions: [(String, String)] =
+                if let errorType {
+                    [system, namespace, operation, (self.dimensions.errorTypeKey, errorType)]
+                } else {
+                    [system, namespace, operation]
+                }
             let timer = Timer(
                 label: self.label,
                 dimensions: timerDimensions,
