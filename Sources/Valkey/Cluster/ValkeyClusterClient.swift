@@ -82,6 +82,12 @@ public final class ValkeyClusterClient: Sendable {
     @usableFromInline
     /* private */ let configuration: ValkeyClusterClientConfiguration
 
+    #if MetricsSupport
+    /// Metric handles created from the configured factory, or `nil` when metrics are disabled
+    @usableFromInline
+    /* private */ let valkeyMetrics: ValkeyMetrics?
+    #endif
+
     private enum RunAction {
         case runClusterDiscovery(runNodeDiscovery: Bool)
         case runClient(ValkeyNodeClient)
@@ -110,6 +116,13 @@ public final class ValkeyClusterClient: Sendable {
     ) {
         self.logger = logger
         self.configuration = configuration
+
+        #if MetricsSupport
+        self.valkeyMetrics = ValkeyMetrics(
+            configuration: configuration.client.metrics,
+            databaseNumber: configuration.client.databaseNumber
+        )
+        #endif
 
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
 
@@ -153,6 +166,11 @@ public final class ValkeyClusterClient: Sendable {
     ///   - Other errors if the command execution or parsing fails
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
+        #if MetricsSupport
+        let metricsStart = self.valkeyMetrics?.startTiming()
+        var metricsError: ValkeyClientError?
+        defer { self.valkeyMetrics?.record(Command.name, start: metricsStart, error: metricsError) }
+        #endif
         do {
             let hashSlot = try self.hashSlot(for: command.keysAffected)
             let nodeSelection = getNodeSelection(readOnly: command.isReadOnly)
@@ -201,12 +219,24 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         } catch let error as ValkeyClientError {
+            #if MetricsSupport
+            metricsError = error
+            #endif
             throw error
         } catch let error as ValkeyClusterError {
+            #if MetricsSupport
+            metricsError = ValkeyClientError(.clusterError, error: error)
+            #endif
             throw ValkeyClientError(.clusterError, error: error)
         } catch {
+            #if MetricsSupport
+            metricsError = ValkeyClientError(.unrecognisedError, error: error)
+            #endif
             throw ValkeyClientError(.unrecognisedError, error: error)
         }
+        #if MetricsSupport
+        metricsError = ValkeyClientError(.cancelled)
+        #endif
         throw ValkeyClientError(.cancelled)
     }
 
@@ -533,6 +563,8 @@ public final class ValkeyClusterClient: Sendable {
     }
 
     /// Get connection from cluster and run operation using connection
+    ///
+    /// Commands run via the supplied `withConnection` do not emit metrics
     ///
     /// - Parameters:
     ///   - keys: Keys affected by operation. This is used to choose the cluster node
