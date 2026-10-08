@@ -37,11 +37,8 @@ public struct ValkeyMetricsConfiguration: Sendable {
     /// The labels of the metrics recorded by Valkey. Defaults to OpenTelemetry semantics.
     public var labels: Labels = .init()
 
-    /// The dimension names used on metrics recorded by Valkey. Defaults to OpenTelemetry semantics.
-    public var dimensionNames: DimensionNames = .init()
-
-    /// The static dimension values used on metrics recorded by Valkey.
-    public var dimensionValues: DimensionValues = .init()
+    /// The dimensions used on metrics recorded by Valkey. Defaults to OpenTelemetry semantics.
+    public var dimensions: Dimensions = .init()
 
     /// The unit the metrics backend is asked to display operation durations in. Defaults to
     /// `.seconds`, the unit OpenTelemetry semantics specify for `db.client.operation.duration`.
@@ -57,24 +54,28 @@ public struct ValkeyMetricsConfiguration: Sendable {
         public init() {}
     }
 
-    /// Dimension names used on metrics recorded by Valkey.
-    public struct DimensionNames: Sendable {
-        public var databaseOperationName: String = "db.operation.name"
-        public var databaseSystemName: String = "db.system.name"
-        public var databaseNamespace: String = "db.namespace"
-        public var errorType: String = "error.type"
+    /// Dimensions used on metrics recorded by Valkey.
+    ///
+    /// Each `Key` is the dimension name. A `Value` is provided only for dimensions with a static value;
+    /// the others are filled in per operation.
+    public struct Dimensions: Sendable {
+        /// The dimension identifying the database system.
+        public var databaseSystemKey: String = "db.system.name"
+        /// The value reported for ``databaseSystemKey``.
+        public var databaseSystemValue: String = "valkey"
 
-        /// Creates the default dimension names.
-        public init() {}
-    }
+        /// The dimension carrying the database number the client was configured with.
+        public var databaseNamespaceKey: String = "db.namespace"
 
-    /// Static dimension values used on metrics recorded by Valkey.
-    public struct DimensionValues: Sendable {
-        public var databaseSystem: String = "valkey"
-        /// Reported as `error.type` when an error carries no recognisable Valkey error prefix.
-        public var otherError: String = "_OTHER"
+        /// The dimension carrying the command name, such as `GET`.
+        public var databaseOperationKey: String = "db.operation.name"
 
-        /// Creates the default dimension values.
+        /// The dimension carrying the error a failed operation reported. Omitted on success.
+        public var errorTypeKey: String = "error.type"
+        /// Reported for ``errorTypeKey`` when an error carries no recognisable Valkey error prefix.
+        public var otherErrorTypeValue: String = "_OTHER"
+
+        /// Creates the default dimensions.
         public init() {}
     }
 
@@ -90,14 +91,13 @@ public struct ValkeyMetricsConfiguration: Sendable {
 @available(valkeySwift 1.0, *)
 extension ValkeyClientError {
     /// The value to report as `error.type`, following the conventions' guidance that it match the
-    /// Valkey error prefix that would be reported as `db.response.status_code`.
+    /// Valkey error prefix that would be reported as `db.response.status_code`, or `nil` when the
+    /// error carries no recognisable prefix.
     ///
     /// Prefixes are accepted only when they look like a Valkey error code - an upper-case ASCII token
     /// such as `ERR`, `WRONGTYPE` or `CLUSTERDOWN` - so that a server returning unusual text cannot
     /// inflate the cardinality of the metric.
-    ///
-    /// - Parameter otherError: The value to report when no such prefix is available.
-    fileprivate func metricsErrorType(otherError: String) -> String {
+    fileprivate var metricsErrorType: String? {
         if self.errorCode == .timeout {
             return "timeout"
         }
@@ -105,11 +105,11 @@ extension ValkeyClientError {
             return "cancelled"
         }
         guard self.errorCode == .commandError, let message = self.message else {
-            return otherError
+            return nil
         }
         let prefix = message.prefix { $0 != " " }
         guard !prefix.isEmpty, prefix.allSatisfy({ $0.isASCII && $0.isUppercase }) else {
-            return otherError
+            return nil
         }
         return String(prefix)
     }
@@ -141,9 +141,7 @@ final class ValkeyMetrics: Sendable {
     private let commonDimensions: [(String, String)]
     private let label: String
     private let preferredDisplayUnit: TimeUnit
-    private let dimensionNames: ValkeyMetricsConfiguration.DimensionNames
-    /// The `error.type` value used when an error carries no Valkey error prefix.
-    private let otherError: String
+    private let dimensions: ValkeyMetricsConfiguration.Dimensions
     private let factory: any MetricsFactory
     private let timers: Mutex<[TimerKey: Timer]>
 
@@ -158,11 +156,10 @@ final class ValkeyMetrics: Sendable {
         self.factory = factory
         self.label = configuration.labels.operationDuration
         self.preferredDisplayUnit = configuration.preferredDisplayUnit
-        self.dimensionNames = configuration.dimensionNames
-        self.otherError = configuration.dimensionValues.otherError
+        self.dimensions = configuration.dimensions
         self.commonDimensions = [
-            (configuration.dimensionNames.databaseSystemName, configuration.dimensionValues.databaseSystem),
-            (configuration.dimensionNames.databaseNamespace, String(databaseNumber)),
+            (configuration.dimensions.databaseSystemKey, configuration.dimensions.databaseSystemValue),
+            (configuration.dimensions.databaseNamespaceKey, String(databaseNumber)),
         ]
         self.timers = .init([:])
     }
@@ -186,7 +183,7 @@ final class ValkeyMetrics: Sendable {
     func record(_ commandName: String, start: ContinuousClock.Instant?, error: ValkeyClientError?) {
         guard let start else { return }
         let elapsed = ContinuousClock.now - start
-        let errorType = error?.metricsErrorType(otherError: self.otherError)
+        let errorType = error.map { $0.metricsErrorType ?? self.dimensions.otherErrorTypeValue }
         self.timer(for: commandName, errorType: errorType).recordNanoseconds(elapsed.nanosecondsClamped)
     }
 
@@ -197,15 +194,15 @@ final class ValkeyMetrics: Sendable {
             if let cached = timers[key] {
                 return cached
             }
-            var dimensions = self.commonDimensions
-            dimensions.reserveCapacity(self.commonDimensions.count + 2)
-            dimensions.append((self.dimensionNames.databaseOperationName, commandName))
+            var timerDimensions = self.commonDimensions
+            timerDimensions.reserveCapacity(self.commonDimensions.count + 2)
+            timerDimensions.append((self.dimensions.databaseOperationKey, commandName))
             if let errorType {
-                dimensions.append((self.dimensionNames.errorType, errorType))
+                timerDimensions.append((self.dimensions.errorTypeKey, errorType))
             }
             let timer = Timer(
                 label: self.label,
-                dimensions: dimensions,
+                dimensions: timerDimensions,
                 preferredDisplayUnit: self.preferredDisplayUnit,
                 factory: self.factory
             )

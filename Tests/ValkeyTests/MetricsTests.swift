@@ -137,6 +137,39 @@ struct MetricsTests {
         }
     }
 
+    /// An error reply that does not start with an upper-case code is reported as `_OTHER`, so unusual
+    /// server text cannot create new series.
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testUnrecognisedErrorPrefixRecordsOtherErrorType() async throws {
+        let logger = Logger(label: "test")
+        let mockConnections = MockServerConnections(logger: logger)
+        await mockConnections.addValkeyServer(.hostname(Self.primaryAddress.host, port: Self.primaryAddress.port)) { command in
+            var iterator = command.makeIterator()
+            switch iterator.next() {
+            case "GET":
+                return .bulkError("something went wrong")
+            case "ROLE":
+                return .array([
+                    .bulkString("master"),
+                    .number(1001),
+                    .array([]),
+                ])
+            default:
+                return nil
+            }
+        }
+        async let _ = mockConnections.run()
+        try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
+            await #expect(throws: ValkeyClientError.self) {
+                _ = try await client.get("foo")
+            }
+
+            #expect(factory.operationSamples("GET", errorType: "_OTHER").count == 1)
+            #expect(factory.operationSamples("GET").isEmpty)
+        }
+    }
+
     /// A client with no ``ValkeyMetricsConfiguration/factory`` must not create a single metric, let
     /// alone record into one.
     @Test
@@ -155,7 +188,7 @@ struct MetricsTests {
         }
     }
 
-    /// Every label, dimension name, static dimension value and the display unit is overridable, for
+    /// Every label, dimension key, static dimension value and the display unit is overridable, for
     /// users whose backend has its own naming scheme.
     @Test
     @available(valkeySwift 1.0, *)
@@ -169,10 +202,10 @@ struct MetricsTests {
         var clientConfig = ValkeyClientConfiguration()
         clientConfig.metrics.factory = factory
         clientConfig.metrics.labels.operationDuration = "custom.duration"
-        clientConfig.metrics.dimensionNames.databaseOperationName = "custom.operation"
-        clientConfig.metrics.dimensionNames.databaseSystemName = "custom.system"
-        clientConfig.metrics.dimensionNames.databaseNamespace = "custom.namespace"
-        clientConfig.metrics.dimensionValues.databaseSystem = "my-valkey"
+        clientConfig.metrics.dimensions.databaseOperationKey = "custom.operation"
+        clientConfig.metrics.dimensions.databaseSystemKey = "custom.system"
+        clientConfig.metrics.dimensions.databaseNamespaceKey = "custom.namespace"
+        clientConfig.metrics.dimensions.databaseSystemValue = "my-valkey"
         clientConfig.metrics.preferredDisplayUnit = .microseconds
 
         let client = ValkeyClient(
