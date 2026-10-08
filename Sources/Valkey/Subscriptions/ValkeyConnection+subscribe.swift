@@ -112,6 +112,7 @@ extension ValkeyConnection {
         if Task.isCancelled {
             throw ValkeyClientError(.cancelled)
         }
+        #if compiler(<6.4)
         let subscriptionID: Int = try await withCheckedThrowingContinuation(isolation: self) { continuation in
             self.channelHandler.subscribe(
                 command: command,
@@ -121,6 +122,17 @@ extension ValkeyConnection {
                 requestID: requestID
             )
         }
+        #else
+        let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
+            self.channelHandler.subscribe(
+                command: command,
+                streamContinuation: streamContinuation,
+                filters: filters,
+                promise: .swift(continuation),
+                requestID: requestID
+            )
+        }
+        #endif
         return (subscriptionID, stream)
     }
 
