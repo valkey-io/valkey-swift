@@ -34,6 +34,50 @@ public struct ValkeyMetricsConfiguration: Sendable {
     /// point, so `MetricsSystem.bootstrap(_:)` has to run first.
     public var factory: (any MetricsFactory)?
 
+    /// The labels of the metrics recorded by Valkey. Defaults to OpenTelemetry semantics.
+    public var labels: Labels = .init()
+
+    /// The dimension names used on metrics recorded by Valkey. Defaults to OpenTelemetry semantics.
+    public var dimensionNames: DimensionNames = .init()
+
+    /// The static dimension values used on metrics recorded by Valkey.
+    public var dimensionValues: DimensionValues = .init()
+
+    /// The unit the metrics backend is asked to display operation durations in. Defaults to
+    /// `.seconds`, the unit OpenTelemetry semantics specify for `db.client.operation.duration`.
+    ///
+    /// Durations are always recorded in nanoseconds; this is only a hint, which the backend may ignore.
+    public var preferredDisplayUnit: TimeUnit = .seconds
+
+    /// Labels of the metrics recorded by Valkey.
+    public struct Labels: Sendable {
+        public var operationDuration: String = "db.client.operation.duration"
+
+        /// Creates the default metric labels.
+        public init() {}
+    }
+
+    /// Dimension names used on metrics recorded by Valkey.
+    public struct DimensionNames: Sendable {
+        public var databaseOperationName: String = "db.operation.name"
+        public var databaseSystemName: String = "db.system.name"
+        public var databaseNamespace: String = "db.namespace"
+        public var errorType: String = "error.type"
+
+        /// Creates the default dimension names.
+        public init() {}
+    }
+
+    /// Static dimension values used on metrics recorded by Valkey.
+    public struct DimensionValues: Sendable {
+        public var databaseSystem: String = "valkey"
+        /// Reported as `error.type` when an error carries no recognisable Valkey error prefix.
+        public var otherError: String = "_OTHER"
+
+        /// Creates the default dimension values.
+        public init() {}
+    }
+
     /// Creates a metrics configuration.
     ///
     /// - Parameter factory: The factory the client creates its metrics from. Defaults to `nil`, which
@@ -43,71 +87,42 @@ public struct ValkeyMetricsConfiguration: Sendable {
     }
 }
 
+@available(valkeySwift 1.0, *)
+extension ValkeyClientError {
+    /// The value to report as `error.type`, following the conventions' guidance that it match the
+    /// Valkey error prefix that would be reported as `db.response.status_code`.
+    ///
+    /// Prefixes are accepted only when they look like a Valkey error code - an upper-case ASCII token
+    /// such as `ERR`, `WRONGTYPE` or `CLUSTERDOWN` - so that a server returning unusual text cannot
+    /// inflate the cardinality of the metric.
+    ///
+    /// - Parameter otherError: The value to report when no such prefix is available.
+    fileprivate func metricsErrorType(otherError: String) -> String {
+        if self.errorCode == .timeout {
+            return "timeout"
+        }
+        if self.errorCode == .cancelled || self.errorCode == .connectionClosedDueToCancellation {
+            return "cancelled"
+        }
+        guard self.errorCode == .commandError, let message = self.message else {
+            return otherError
+        }
+        let prefix = message.prefix { $0 != " " }
+        guard !prefix.isEmpty, prefix.allSatisfy({ $0.isASCII && $0.isUppercase }) else {
+            return otherError
+        }
+        return String(prefix)
+    }
+}
+
 // MARK: - Metric handles
-
-/// Outcome dimension recorded with every command latency sample.
-@available(valkeySwift 1.0, *)
-@usableFromInline
-enum ValkeyCommandStatus: Sendable {
-    case ok
-    case error
-    case timeout
-    case cancelled
-
-    /// The status to record for a failed command.
-    @usableFromInline
-    init(error: ValkeyClientError) {
-        if error.errorCode == .timeout {
-            self = .timeout
-        } else if error.errorCode == .cancelled || error.errorCode == .connectionClosedDueToCancellation {
-            self = .cancelled
-        } else {
-            self = .error
-        }
-    }
-}
-
-/// Per-command-type bundle of preconfigured timers, one per ``ValkeyCommandStatus``.
-///
-/// Holding the four timer instances together lets the hot path resolve the right one with a
-/// single switch rather than allocating dimension arrays or building label strings on every
-/// command execution.
-@available(valkeySwift 1.0, *)
-@usableFromInline
-final class ValkeyCommandMetrics: Sendable {
-    @usableFromInline let ok: Timer
-    @usableFromInline let error: Timer
-    @usableFromInline let timeout: Timer
-    @usableFromInline let cancelled: Timer
-
-    init(commandName: String, factory: any MetricsFactory) {
-        let label = "valkey.command.\(commandName.lowercased()).duration"
-        self.ok = Timer(label: label, dimensions: [("status", "ok")], factory: factory)
-        self.error = Timer(label: label, dimensions: [("status", "error")], factory: factory)
-        self.timeout = Timer(label: label, dimensions: [("status", "timeout")], factory: factory)
-        self.cancelled = Timer(label: label, dimensions: [("status", "cancelled")], factory: factory)
-    }
-
-    @usableFromInline
-    func timer(for status: ValkeyCommandStatus) -> Timer {
-        switch status {
-        case .ok: self.ok
-        case .error: self.error
-        case .timeout: self.timeout
-        case .cancelled: self.cancelled
-        }
-    }
-}
 
 /// Every metric handle a single client records into, all created from the `MetricsFactory` that
 /// client was configured with.
 ///
-/// A client creates one instance when it is initialized and holds it for its lifetime: `Timer` and
-/// `Recorder` resolve their handler from the factory at creation time, so recreating them per
-/// command would both allocate on the hot path and go through the factory's own lookup each time.
-///
-/// Transactions are tracked separately from pipelines because MULTI/EXEC has different semantics and
-/// operators usually want to see transaction latency in isolation.
+/// A client creates one instance when it is initialized and holds it for its lifetime: a `Timer`
+/// resolves its handler from the factory at creation time, so recreating timers per command would
+/// both allocate on the hot path and go through the factory's own lookup each time.
 ///
 /// The handles are deliberately never `destroy()`ed. Factories generally return the same handler for
 /// a given label and dimension set, so destroying handles as one client shuts down could stop
@@ -115,26 +130,41 @@ final class ValkeyCommandMetrics: Sendable {
 @available(valkeySwift 1.0, *)
 @usableFromInline
 final class ValkeyMetrics: Sendable {
-    private let pipelineTimer: Timer
-    private let pipelineSizeRecorder: Recorder
-    private let transactionTimer: Timer
-    private let transactionSizeRecorder: Recorder
+    /// Identifies one timer: a command plus the outcome it recorded.
+    private struct TimerKey: Hashable {
+        let commandName: String
+        /// `nil` for a successful operation, where the conventions omit `error.type` entirely.
+        let errorType: String?
+    }
 
+    /// `db.system.name` and `db.namespace`, carried by every sample.
+    private let commonDimensions: [(String, String)]
+    private let label: String
+    private let preferredDisplayUnit: TimeUnit
+    private let dimensionNames: ValkeyMetricsConfiguration.DimensionNames
+    /// The `error.type` value used when an error carries no Valkey error prefix.
+    private let otherError: String
     private let factory: any MetricsFactory
-    /// Per-command-type handles, created on first use of each command and keyed by command name.
-    private let commandMetricsCache: Mutex<[String: ValkeyCommandMetrics]>
+    private let timers: Mutex<[TimerKey: Timer]>
 
     /// Creates the handles a client records into, or `nil` when metrics emission is disabled.
     ///
-    /// - Parameter factory: The configured factory, or `nil` to emit no metrics.
-    init?(factory: (any MetricsFactory)?) {
-        guard let factory else { return nil }
+    /// - Parameters:
+    ///   - configuration: The client's metrics configuration. Returns `nil` when it has no factory.
+    ///   - databaseNumber: The database index reported as `db.namespace`. As the conventions permit,
+    ///     this is the index the connection was established with, not one a later `SELECT` moved to.
+    init?(configuration: ValkeyMetricsConfiguration, databaseNumber: Int) {
+        guard let factory = configuration.factory else { return nil }
         self.factory = factory
-        self.pipelineTimer = Timer(label: "valkey.pipeline.duration", factory: factory)
-        self.pipelineSizeRecorder = Recorder(label: "valkey.pipeline.size", factory: factory)
-        self.transactionTimer = Timer(label: "valkey.transaction.duration", factory: factory)
-        self.transactionSizeRecorder = Recorder(label: "valkey.transaction.size", factory: factory)
-        self.commandMetricsCache = .init([:])
+        self.label = configuration.labels.operationDuration
+        self.preferredDisplayUnit = configuration.preferredDisplayUnit
+        self.dimensionNames = configuration.dimensionNames
+        self.otherError = configuration.dimensionValues.otherError
+        self.commonDimensions = [
+            (configuration.dimensionNames.databaseSystemName, configuration.dimensionValues.databaseSystem),
+            (configuration.dimensionNames.databaseNamespace, String(databaseNumber)),
+        ]
+        self.timers = .init([:])
     }
 
     /// The instant to measure latency from.
@@ -146,50 +176,54 @@ final class ValkeyMetrics: Sendable {
         .now
     }
 
-    /// Record a single-command latency sample if metrics timing was started.
+    /// Record a latency sample for a command if metrics timing was started.
+    ///
+    /// - Parameters:
+    ///   - commandName: The command name, reported as `db.operation.name`.
+    ///   - start: The instant returned by ``startTiming()``, or `nil` when timing never started.
+    ///   - error: The error the command failed with, or `nil` when it succeeded.
     @usableFromInline
-    func recordCommand<Command: ValkeyCommand>(
-        _ type: Command.Type,
-        start: ContinuousClock.Instant?,
-        status: ValkeyCommandStatus
-    ) {
+    func record(_ commandName: String, start: ContinuousClock.Instant?, error: ValkeyClientError?) {
         guard let start else { return }
-        self.commandMetrics(for: type).timer(for: status).recordNanoseconds(self.elapsedNanoseconds(since: start))
-    }
-
-    /// Record a pipeline latency sample plus its batch size if metrics timing was started.
-    @usableFromInline
-    func recordPipeline(start: ContinuousClock.Instant?, batchSize: Int) {
-        guard let start else { return }
-        self.pipelineTimer.recordNanoseconds(self.elapsedNanoseconds(since: start))
-        self.pipelineSizeRecorder.record(batchSize)
-    }
-
-    /// Record a transaction latency sample plus the number of queued commands (excluding MULTI/EXEC).
-    @usableFromInline
-    func recordTransaction(start: ContinuousClock.Instant?, batchSize: Int) {
-        guard let start else { return }
-        self.transactionTimer.recordNanoseconds(self.elapsedNanoseconds(since: start))
-        self.transactionSizeRecorder.record(batchSize)
-    }
-
-    /// Nanoseconds elapsed since `start`.
-    private func elapsedNanoseconds(since start: ContinuousClock.Instant) -> Int64 {
         let elapsed = ContinuousClock.now - start
-        let components = elapsed.components
-        return components.seconds * 1_000_000_000 + components.attoseconds / 1_000_000_000
+        let errorType = error?.metricsErrorType(otherError: self.otherError)
+        self.timer(for: commandName, errorType: errorType).recordNanoseconds(elapsed.nanosecondsClamped)
     }
 
-    /// The timers for `Command`, creating them from the client's factory on first use.
-    private func commandMetrics<Command: ValkeyCommand>(for type: Command.Type) -> ValkeyCommandMetrics {
-        self.commandMetricsCache.withLock { cache in
-            if let cached = cache[Command.name] {
+    /// The timer for a command and outcome, created from the client's factory on first use.
+    private func timer(for commandName: String, errorType: String?) -> Timer {
+        let key = TimerKey(commandName: commandName, errorType: errorType)
+        return self.timers.withLock { timers in
+            if let cached = timers[key] {
                 return cached
             }
-            let metrics = ValkeyCommandMetrics(commandName: Command.name, factory: self.factory)
-            cache[Command.name] = metrics
-            return metrics
+            var dimensions = self.commonDimensions
+            dimensions.reserveCapacity(self.commonDimensions.count + 2)
+            dimensions.append((self.dimensionNames.databaseOperationName, commandName))
+            if let errorType {
+                dimensions.append((self.dimensionNames.errorType, errorType))
+            }
+            let timer = Timer(
+                label: self.label,
+                dimensions: dimensions,
+                preferredDisplayUnit: self.preferredDisplayUnit,
+                factory: self.factory
+            )
+            timers[key] = timer
+            return timer
         }
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension Duration {
+    /// The duration in nanoseconds, saturating rather than trapping on overflow.
+    fileprivate var nanosecondsClamped: Int64 {
+        let components = self.components
+        let (seconds, secondsOverflowed) = components.seconds.multipliedReportingOverflow(by: 1_000_000_000)
+        guard !secondsOverflowed else { return components.seconds > 0 ? .max : .min }
+        let (total, totalOverflowed) = seconds.addingReportingOverflow(components.attoseconds / 1_000_000_000)
+        return totalOverflowed ? (seconds > 0 ? .max : .min) : total
     }
 }
 
