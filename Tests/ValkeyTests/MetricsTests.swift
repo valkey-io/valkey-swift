@@ -8,8 +8,8 @@
 
 #if MetricsSupport
 import Logging
+import Metrics
 import MetricsTestKit
-import Synchronization
 import Testing
 
 @testable import Valkey
@@ -71,9 +71,32 @@ struct MetricsTests {
             let value = try await client.get("foo")
             #expect(value.map { String($0) } == "Bar")
 
-            let label = "valkey.command.get.duration"
-            #expect(factory.timerSamples(label: label, status: "ok").count == 1)
-            #expect(factory.timerSamples(label: label, status: "error").isEmpty)
+            // A successful operation carries no `error.type` at all.
+            #expect(factory.operationSamples("GET").count == 1)
+            #expect(factory.operationSamples("GET", errorType: "ERR").isEmpty)
+        }
+    }
+
+    /// Durations are displayed in seconds by default, the unit OpenTelemetry semantics specify.
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testDefaultDisplayUnitIsSeconds() async throws {
+        let logger = Logger(label: "test")
+        let topology = await self.makeTopology()
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
+            _ = try await client.get("foo")
+
+            let timer = try factory.expectTimer(
+                "db.client.operation.duration",
+                [
+                    ("db.system.name", "valkey"),
+                    ("db.namespace", "0"),
+                    ("db.operation.name", "GET"),
+                ]
+            )
+            #expect(timer.displayUnit == .seconds)
         }
     }
 
@@ -108,70 +131,9 @@ struct MetricsTests {
                 #expect(error.message == "ERR boom")
             }
 
-            let label = "valkey.command.get.duration"
-            #expect(factory.timerSamples(label: label, status: "error").count == 1)
-            #expect(factory.timerSamples(label: label, status: "ok").isEmpty)
-        }
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testPipelineRecordsTimerAndSize() async throws {
-        let logger = Logger(label: "test")
-        let topology = await self.makeTopology()
-        let mockConnections = await topology.mock(logger: logger)
-        async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
-            _ = await client.execute(GET("foo"), GET("bar"))
-
-            #expect(factory.timerSamples(label: "valkey.pipeline.duration").count == 1)
-            #expect(factory.recorderSamples(label: "valkey.pipeline.size") == [2.0])
-        }
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testTransactionRecordsTimerAndSize() async throws {
-        let logger = Logger(label: "test")
-        let mockConnections = MockServerConnections(logger: logger)
-        // The tests open a single connection so a single shared MULTI/EXEC state is sufficient.
-        let queuedCount = Mutex<Int>(0)
-        let inTransaction = Mutex<Bool>(false)
-        await mockConnections.addValkeyServer(.hostname(Self.primaryAddress.host, port: Self.primaryAddress.port)) { command in
-            var iterator = command.makeIterator()
-            switch iterator.next() {
-            case "MULTI":
-                inTransaction.withLock { $0 = true }
-                queuedCount.withLock { $0 = 0 }
-                return .simpleString("OK")
-            case "EXEC":
-                let count = queuedCount.withLock { value -> Int in
-                    let count = value
-                    value = 0
-                    return count
-                }
-                inTransaction.withLock { $0 = false }
-                return .array(Array(repeating: .simpleString("OK"), count: count))
-            case "ROLE":
-                return .array([
-                    .bulkString("master"),
-                    .number(1001),
-                    .array([]),
-                ])
-            default:
-                if inTransaction.withLock({ $0 }) {
-                    queuedCount.withLock { $0 += 1 }
-                    return .simpleString("QUEUED")
-                }
-                return nil
-            }
-        }
-        async let _ = mockConnections.run()
-        try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
-            _ = try await client.transaction(SET("foo", value: "10"), INCR("foo"))
-
-            #expect(factory.timerSamples(label: "valkey.transaction.duration").count == 1)
-            #expect(factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
+            // `error.type` carries the Valkey error prefix from "ERR boom".
+            #expect(factory.operationSamples("GET", errorType: "ERR").count == 1)
+            #expect(factory.operationSamples("GET").isEmpty)
         }
     }
 
@@ -187,10 +149,61 @@ struct MetricsTests {
         try await withClient(mockConnections: mockConnections, metricsEnabled: false, logger: logger) { client, factory in
             try await client.set("foo", value: "Bar")
             _ = try await client.get("foo")
-            _ = await client.execute(GET("foo"), GET("foo"))
 
             #expect(factory.timers.isEmpty)
             #expect(factory.recorders.isEmpty)
+        }
+    }
+
+    /// Every label, dimension name, static dimension value and the display unit is overridable, for
+    /// users whose backend has its own naming scheme.
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testMetricNamesAreOverridable() async throws {
+        let logger = Logger(label: "test")
+        let topology = await self.makeTopology()
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+
+        let factory = TestMetrics()
+        var clientConfig = ValkeyClientConfiguration()
+        clientConfig.metrics.factory = factory
+        clientConfig.metrics.labels.operationDuration = "custom.duration"
+        clientConfig.metrics.dimensionNames.databaseOperationName = "custom.operation"
+        clientConfig.metrics.dimensionNames.databaseSystemName = "custom.system"
+        clientConfig.metrics.dimensionNames.databaseNamespace = "custom.namespace"
+        clientConfig.metrics.dimensionValues.databaseSystem = "my-valkey"
+        clientConfig.metrics.preferredDisplayUnit = .microseconds
+
+        let client = ValkeyClient(
+            .hostname(Self.primaryAddress.host, port: Self.primaryAddress.port),
+            customHandler: mockConnections.connectionManagerCustomHandler,
+            configuration: clientConfig,
+            eventLoopGroup: mockConnections.eventLoop,
+            logger: logger
+        )
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask { await client.run() }
+            group.addTask {
+                _ = try await client.get("foo")
+
+                let timer = try #require(
+                    try? factory.expectTimer(
+                        "custom.duration",
+                        [
+                            ("custom.system", "my-valkey"),
+                            ("custom.namespace", "0"),
+                            ("custom.operation", "GET"),
+                        ]
+                    )
+                )
+                #expect(timer.values.count == 1)
+                #expect(timer.displayUnit == .microseconds)
+                // Nothing was recorded under the defaults.
+                #expect(factory.operationSamples("GET").isEmpty)
+            }
+            try await group.next()
+            group.cancelAll()
         }
     }
 
@@ -244,59 +257,27 @@ struct MetricsTests {
             }
         }
 
-        /// Pipeline that hits a MOVED redirect (slot migrated to another shard) must produce exactly
-        /// one pipeline metric sample per user-level call regardless of the per-node retry happening
-        /// inside the cluster client.
+        /// A command that hits a MOVED redirect (slot migrated to another shard) must produce exactly
+        /// one metric sample per user-level call regardless of the retry happening inside the cluster
+        /// client.
         @Test
         @available(valkeySwift 1.0, *)
-        func testClusterPipelineWithMovedRetryRecordsOnce() async throws {
-            var logger = Logger(label: "Valkey")
-            logger.logLevel = .debug
+        func testClusterCommandWithMovedRetryRecordsOnce() async throws {
+            let logger = Logger(label: "Valkey")
             let cluster = await self.sixNodeHealthyCluster
             let mockConnections = await cluster.mock(logger: logger)
             async let _ = mockConnections.run()
             try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
                 try await client.set("randomKey", value: "before")
-                // Migrate the slot for "randomKey" to shard 2 so the next pipeline gets MOVED
-                // on shard 0 and the cluster client retries against the new owner.
+                // Migrate the slot for "randomKey" to shard 2 so the next GET gets MOVED on shard 0
+                // and the cluster client retries against the new owner.
                 let hashSlot = HashSlot(key: "randomKey".utf8).rawValue
                 await cluster.migrateSlots(hashSlot...hashSlot, to: 2)
 
-                let results = await client.execute(
-                    GET("randomKey"),
-                    SET("randomKey", value: "after"),
-                    GET("randomKey")
-                )
-                try #expect(results.0.get().map { String($0) } == "before")
-                try #expect(results.2.get().map { String($0) } == "after")
+                let value = try await client.get("randomKey")
+                #expect(value.map { String($0) } == "before")
 
-                #expect(factory.timerSamples(label: "valkey.pipeline.duration").count == 1)
-                #expect(factory.recorderSamples(label: "valkey.pipeline.size") == [3.0])
-            }
-        }
-
-        /// Same invariant for transactions: a single user-level transaction call produces exactly one
-        /// transaction metric sample regardless of MOVED retries.
-        @Test
-        @available(valkeySwift 1.0, *)
-        func testClusterTransactionWithMovedRetryRecordsOnce() async throws {
-            var logger = Logger(label: "Valkey")
-            logger.logLevel = .debug
-            let cluster = await self.sixNodeHealthyCluster
-            let mockConnections = await cluster.mock(logger: logger)
-            async let _ = mockConnections.run()
-            try await withClient(mockConnections: mockConnections, logger: logger) { client, factory in
-                try await client.set("txnKey", value: "before")
-                let hashSlot = HashSlot(key: "txnKey".utf8).rawValue
-                await cluster.migrateSlots(hashSlot...hashSlot, to: 2)
-
-                _ = try await client.transaction(
-                    SET("txnKey", value: "v1"),
-                    SET("txnKey", value: "v2")
-                )
-
-                #expect(factory.timerSamples(label: "valkey.transaction.duration").count == 1)
-                #expect(factory.recorderSamples(label: "valkey.transaction.size") == [2.0])
+                #expect(factory.operationSamples("GET").count == 1)
             }
         }
     }
@@ -305,18 +286,21 @@ struct MetricsTests {
 // MARK: - Sample lookup
 
 extension TestMetrics {
-    /// Samples recorded by the timer with `label`, optionally qualified by a `status` dimension.
+    /// Samples recorded under the default `db.client.operation.duration` timer for `operationName`,
+    /// optionally qualified by an `error.type` dimension.
     ///
     /// Returns an empty array when the client never created that timer, so that a test can assert
     /// nothing was recorded without having to distinguish "no samples" from "no such timer".
-    fileprivate func timerSamples(label: String, status: String? = nil) -> [Int64] {
-        let dimensions = status.map { [("status", $0)] } ?? []
-        return (try? self.expectTimer(label, dimensions))?.values ?? []
-    }
-
-    /// Samples recorded by the recorder with `label`, or an empty array when it was never created.
-    fileprivate func recorderSamples(label: String) -> [Double] {
-        (try? self.expectRecorder(label))?.values ?? []
+    fileprivate func operationSamples(_ operationName: String, errorType: String? = nil, databaseNumber: Int = 0) -> [Int64] {
+        var dimensions = [
+            ("db.system.name", "valkey"),
+            ("db.namespace", String(databaseNumber)),
+            ("db.operation.name", operationName),
+        ]
+        if let errorType {
+            dimensions.append(("error.type", errorType))
+        }
+        return (try? self.expectTimer("db.client.operation.duration", dimensions))?.values ?? []
     }
 }
 #endif
