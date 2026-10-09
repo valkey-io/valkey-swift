@@ -585,6 +585,55 @@ struct CommandTests {
 
         @Test
         @available(valkeySwift 1.0, *)
+        func latencyLatestEvents() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["LATENCY", "LATEST"]),
+                    response: .array([
+                        .array([.bulkString("command"), .number(100), .number(25), .number(50)])
+                    ])
+                ),
+                (
+                    request: .command(["LATENCY", "LATEST"]),
+                    response: .array([
+                        .array([.bulkString("fork"), .number(200), .number(10), .number(80), .number(120), .number(3)])
+                    ])
+                ),
+                (request: .command(["LATENCY", "LATEST"]), response: .array([])),
+                (
+                    request: .command(["LATENCY", "LATEST"]),
+                    response: .array([
+                        .array([.bulkString("command"), .number(100), .number(25), .number(50), .number(75)])
+                    ])
+                )
+            ) { connection in
+                let oldEvent = try #require(try await connection.latencyLatestEvents().first)
+                #expect(oldEvent.name == "command")
+                #expect(oldEvent.timestamp == 100)
+                #expect(oldEvent.latestLatency == 25)
+                #expect(oldEvent.maximumLatency == 50)
+                #expect(oldEvent.totalLatency == nil)
+                #expect(oldEvent.sampleCount == nil)
+
+                let newEvent = try #require(try await connection.latencyLatestEvents().first)
+                #expect(newEvent.name == "fork")
+                #expect(newEvent.timestamp == 200)
+                #expect(newEvent.latestLatency == 10)
+                #expect(newEvent.maximumLatency == 80)
+                #expect(newEvent.totalLatency == 120)
+                #expect(newEvent.sampleCount == 3)
+
+                #expect(try await connection.latencyLatestEvents().isEmpty)
+
+                let error = await #expect(throws: ValkeyClientError.self) {
+                    try await connection.latencyLatestEvents()
+                }
+                #expect(error?.errorCode == .respDecodeError)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func info() async throws {
             try await testCommandEncodesDecodes(
                 (
