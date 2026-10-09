@@ -339,6 +339,56 @@ extension TIME {
     }
 }
 
+/// A latency event reported by `LATENCY LATEST` on the selected server node.
+public struct ValkeyLatencyEvent: RESPTokenDecodable, Sendable, Equatable {
+    public let name: String
+    /// Unix timestamp of the latest spike, in seconds.
+    public let timestamp: Int
+    /// Duration of the latest spike, in milliseconds.
+    public let latestLatency: Int
+    /// Maximum spike duration since startup or the last reset, in milliseconds.
+    public let maximumLatency: Int
+    /// Sum of recorded spike durations, in milliseconds. Available in Valkey 8.1 and later.
+    public let totalLatency: Int?
+    /// Number of recorded spikes. Available in Valkey 8.1 and later.
+    public let sampleCount: Int?
+
+    public init(_ token: RESPToken) throws(RESPDecodeError) {
+        guard case .array(let values) = token.value else {
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
+        }
+
+        switch values.count {
+        case 4:
+            (self.name, self.timestamp, self.latestLatency, self.maximumLatency) = try values.decodeElements()
+            self.totalLatency = nil
+            self.sampleCount = nil
+        case 6...:
+            (
+                self.name, self.timestamp, self.latestLatency, self.maximumLatency,
+                self.totalLatency, self.sampleCount
+            ) = try values.decodeElements(as: (String, Int, Int, Int, Int, Int).self)
+        default:
+            throw RESPDecodeError.invalidArraySize(values)
+        }
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyClientProtocol {
+    /// Returns typed latency events from the selected server node.
+    ///
+    /// For a cluster client, this does not aggregate events across nodes.
+    public func latencyLatestEvents() async throws(ValkeyClientError) -> [ValkeyLatencyEvent] {
+        let response = try await latencyLatest()
+        do {
+            return try response.decode()
+        } catch {
+            throw ValkeyClientError(.respDecodeError, error: error)
+        }
+    }
+}
+
 extension INFO {
     /// Represents an INFO section name.
     ///
