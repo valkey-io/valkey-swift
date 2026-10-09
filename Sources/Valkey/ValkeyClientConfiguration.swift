@@ -167,11 +167,13 @@ public struct ValkeyClientConfiguration: Sendable {
         ///   unrelated commands run elsewhere on the same connection.
         /// - You cannot guarantee unique access to a connection. So transactions
         ///   maybe affected by calls to `WATCH` elsewhere.
-        /// - If you are using seeing a large number of subscription push messages per second
-        ///   This could affect the performance of commands run on the same connection.
+        /// - The subscription connection will be shared with other leases and if you
+        ///   are seeing a large number of subscription push messages per second this
+        ///   could affect the performance of commands run on the same connection.
         ///
         /// In these situations you can start up a separate client with the maximum number of
-        /// streams set to one to run operations that are expensive or affect the state of a connection.
+        /// streams set to one to run subscriptions, operations that are expensive, or affect
+        /// the state of a connection.
         public var maximumNumberOfStreamsPerConnection: UInt16
 
         /// The time that a _preserved_ idle connection stays in the
