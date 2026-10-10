@@ -200,6 +200,42 @@ struct ValkeyClientTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testMultipleStreamsPerConnection() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyPrimaryWithTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        var connectionPoolConfiguration = ValkeyClientConfiguration.ConnectionPool()
+        connectionPoolConfiguration.maximumNumberOfStreamsPerConnection = 16
+        connectionPoolConfiguration.minimumConnectionCount = 1
+        connectionPoolConfiguration.maximumConnectionHardLimit = 20
+        connectionPoolConfiguration.maximumConnectionSoftLimit = 20
+        try await withValkeyClient(
+            .hostname("127.0.0.1", port: 9000),
+            mockConnections: mockConnections,
+            configuration: .init(connectionPool: connectionPoolConfiguration),
+            logger: logger
+        ) { client in
+            // prime connection pool to ensure we have a connection
+            try await client.set("foo", value: "bar")
+            try await withThrowingTaskGroup { group in
+                // run 16 commands concurrently
+                for _ in 0..<16 {
+                    group.addTask {
+                        try await client.set("foo", value: "bar")
+                    }
+                }
+                try await group.waitForAll()
+            }
+            // check we still only have one connection
+            let connectionCount = await mockConnections.serverInstances.count
+            #expect(connectionCount == 1)
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testReadFromReplica() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug

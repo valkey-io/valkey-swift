@@ -733,7 +733,7 @@ public final class ValkeyClusterClient: Sendable {
             }
         case let error as ValkeyClientError:
             switch error.errorCode {
-            case .clientIsShutDown, .connectionClosed, .connectionClosing:
+            case .clientIsShutDown, .connectionClosed, .connectionClosing, .connectionClosedDueToCancellation:
                 return .tryAgain
             default:
                 return .dontRetry
