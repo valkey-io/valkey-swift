@@ -17,7 +17,10 @@ public protocol ValkeyClientProtocol: Sendable {
     /// Pipeline a series of commands to Valkey connection
     ///
     /// Once all the responses for the commands have been received the function returns
-    /// an array of RESPToken Results, one for each command.
+    /// a parameter pack of Results, one for each command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
     func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, ValkeyClientError>)
@@ -71,7 +74,10 @@ extension ValkeyClientProtocol {
     /// Pipeline a series of commands to Valkey connection
     ///
     /// Once all the responses for the commands have been received the function returns
-    /// an array of RESPToken Results, one for each command.
+    /// a parameter pack of Results, one for each command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
