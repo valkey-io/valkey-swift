@@ -17,9 +17,20 @@ public protocol ValkeyClientProtocol: Sendable {
     /// Pipeline a series of commands to Valkey connection
     ///
     /// Once all the responses for the commands have been received the function returns
+    /// a parameter pack of Results, one for each command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    func execute<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async -> sending (repeat Result<(each Command).Response, ValkeyClientError>)
+
+    /// Pipeline a series of commands to Valkey connection
+    ///
+    /// Once all the responses for the commands have been received the function returns
     /// an array of RESPToken Results, one for each command.
     ///
-    /// This is an alternative version of the pipelining function ``ValkeyConnection/execute(_:)->(_,_)``
+    /// This is an alternative version of the pipelining function ``ValkeyClientProtocol/execute(_:)->(_,_)``
     /// that allows for a collection of ValkeyCommands. It provides more flexibility but
     /// is more expensive to run and the command responses are returned as ``RESPToken``
     /// instead of the response type for the command.
@@ -60,6 +71,21 @@ public protocol ValkeyClientProtocol: Sendable {
 
 @available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
+    /// Pipeline a series of commands to Valkey connection
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// a parameter pack of Results, one for each command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    public func execute<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async -> sending (repeat Result<(each Command).Response, ValkeyClientError>) {
+        let results = await self.execute([any ValkeyCommand](commands: repeat each commands))
+        var index = AutoIncrementingInteger()
+        return (repeat results[index.next()].convertFromRESP(to: (each Command).Response.self))
+    }
+
     /// Subscribe to list of channels and run closure with subscription
     ///
     /// When the closure is exited the channels are automatically unsubscribed from. It is
