@@ -585,7 +585,7 @@ struct CommandTests {
 
         @Test
         @available(valkeySwift 1.0, *)
-        func latencyLatestEvents() async throws {
+        func latencyLatestEventDecoding() async throws {
             try await testCommandEncodesDecodes(
                 (
                     request: .command(["LATENCY", "LATEST"]),
@@ -607,7 +607,7 @@ struct CommandTests {
                     ])
                 )
             ) { connection in
-                let oldEvent = try #require(try await connection.latencyLatestEvents().first)
+                let oldEvent = try #require(try await connection.latencyLatest().decode(as: [LatencyLatestEvent].self).first)
                 #expect(oldEvent.name == "command")
                 #expect(oldEvent.timestamp == 100)
                 #expect(oldEvent.latestLatency == 25)
@@ -615,7 +615,7 @@ struct CommandTests {
                 #expect(oldEvent.totalLatency == nil)
                 #expect(oldEvent.sampleCount == nil)
 
-                let newEvent = try #require(try await connection.latencyLatestEvents().first)
+                let newEvent = try #require(try await connection.latencyLatest().decode(as: [LatencyLatestEvent].self).first)
                 #expect(newEvent.name == "fork")
                 #expect(newEvent.timestamp == 200)
                 #expect(newEvent.latestLatency == 10)
@@ -623,12 +623,12 @@ struct CommandTests {
                 #expect(newEvent.totalLatency == 120)
                 #expect(newEvent.sampleCount == 3)
 
-                #expect(try await connection.latencyLatestEvents().isEmpty)
+                #expect(try await connection.latencyLatest().decode(as: [LatencyLatestEvent].self).isEmpty)
 
-                let error = await #expect(throws: ValkeyClientError.self) {
-                    try await connection.latencyLatestEvents()
+                let error = await #expect(throws: RESPDecodeError.self) {
+                    try await connection.latencyLatest().decode(as: [LatencyLatestEvent].self)
                 }
-                #expect(error?.errorCode == .respDecodeError)
+                #expect(error?.errorCode == .invalidArraySize)
             }
         }
 

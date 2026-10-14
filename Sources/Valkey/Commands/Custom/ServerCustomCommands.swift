@@ -340,7 +340,7 @@ extension TIME {
 }
 
 /// A latency event reported by `LATENCY LATEST` on the selected server node.
-public struct ValkeyLatencyEvent: RESPTokenDecodable, Sendable, Equatable {
+public struct LatencyLatestEvent: RESPTokenDecodable, Sendable, Equatable {
     public let name: String
     /// Unix timestamp of the latest spike, in seconds.
     public let timestamp: Int
@@ -370,21 +370,6 @@ public struct ValkeyLatencyEvent: RESPTokenDecodable, Sendable, Equatable {
             ) = try values.decodeElements(as: (String, Int, Int, Int, Int, Int).self)
         default:
             throw RESPDecodeError.invalidArraySize(values)
-        }
-    }
-}
-
-@available(valkeySwift 1.0, *)
-extension ValkeyClientProtocol {
-    /// Returns typed latency events from the selected server node.
-    ///
-    /// For a cluster client, this does not aggregate events across nodes.
-    public func latencyLatestEvents() async throws(ValkeyClientError) -> [ValkeyLatencyEvent] {
-        let response = try await latencyLatest()
-        do {
-            return try response.decode()
-        } catch {
-            throw ValkeyClientError(.respDecodeError, error: error)
         }
     }
 }
