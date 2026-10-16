@@ -259,7 +259,7 @@ struct ValkeySentinelTests {
     @available(valkeySwift 1.0, *)
     func withValkeySentinelClient(
         primaryName: String,
-        address: ValkeyServerAddress,
+        address: ValkeyStaticNodeDiscovery.NodeDescription,
         mockConnections: MockServerConnections,
         configuration: ValkeySentinelClientConfiguration = .init(clientConfiguration: .init()),
         logger: Logger,
@@ -268,7 +268,36 @@ struct ValkeySentinelTests {
         try await withThrowingTaskGroup(of: Void.self) { group in
             let client = ValkeySentinelClient(
                 primaryName: primaryName,
-                nodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: "127.0.0.1", port: 16000)]),
+                nodeDiscovery: ValkeyStaticNodeDiscovery([address]),
+                customHandler: mockConnections.connectionManagerCustomHandler,
+                configuration: configuration,
+                eventLoopGroup: mockConnections.eventLoop,
+                logger: logger
+            )
+            group.addTask {
+                await client.run()
+            }
+            group.addTask {
+                try await operation(client)
+            }
+            try await group.next()
+            group.cancelAll()
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    func withValkeyClient(
+        primaryName: String,
+        address: ValkeyStaticNodeDiscovery.NodeDescription,
+        mockConnections: MockServerConnections,
+        configuration: ValkeyClientConfiguration = .init(),
+        logger: Logger,
+        operation: @escaping @Sendable (ValkeyClient) async throws -> Void
+    ) async throws {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            let client = ValkeyClient(
+                primaryName: primaryName,
+                sentinelNodeDiscovery: ValkeyStaticNodeDiscovery([address]),
                 customHandler: mockConnections.connectionManagerCustomHandler,
                 configuration: configuration,
                 eventLoopGroup: mockConnections.eventLoop,
@@ -295,7 +324,7 @@ struct ValkeySentinelTests {
         async let _ = mockConnections.run()
         try await withValkeySentinelClient(
             primaryName: "TestPrimary",
-            address: .hostname("127.0.0.1", port: 16000),
+            address: .init(endpoint: "127.0.0.1", port: 16000),
             mockConnections: mockConnections,
             logger: logger
         ) { client in
@@ -305,7 +334,7 @@ struct ValkeySentinelTests {
         }
         try await withValkeySentinelClient(
             primaryName: "TestPrimary2",
-            address: .hostname("127.0.0.1", port: 16000),
+            address: .init(endpoint: "127.0.0.1", port: 16000),
             mockConnections: mockConnections,
             logger: logger
         ) { client in
@@ -325,7 +354,7 @@ struct ValkeySentinelTests {
         async let _ = mockConnections.run()
         try await withValkeySentinelClient(
             primaryName: "UnknownPrimary",
-            address: .hostname("127.0.0.1", port: 16000),
+            address: .init(endpoint: "127.0.0.1", port: 16000),
             mockConnections: mockConnections,
             logger: logger
         ) { client in
@@ -351,7 +380,7 @@ struct ValkeySentinelTests {
         async let _ = mockConnections.run()
         try await withValkeySentinelClient(
             primaryName: "TwoSentinels",
-            address: .hostname("127.0.0.1", port: 16000),
+            address: .init(endpoint: "127.0.0.1", port: 16000),
             mockConnections: mockConnections,
             logger: logger
         ) { client in
@@ -377,7 +406,7 @@ struct ValkeySentinelTests {
         async let _ = mockConnections.run()
         try await withValkeySentinelClient(
             primaryName: "OneSentinel",
-            address: .hostname("127.0.0.1", port: 16000),
+            address: .init(endpoint: "127.0.0.1", port: 16000),
             mockConnections: mockConnections,
             logger: logger
         ) { client in
@@ -398,7 +427,7 @@ struct ValkeySentinelTests {
         async let _ = mockConnections.run()
         try await withValkeySentinelClient(
             primaryName: "TestPrimary",
-            address: .hostname("127.0.0.1", port: 16000),
+            address: .init(endpoint: "127.0.0.1", port: 16000),
             mockConnections: mockConnections,
             logger: logger
         ) { client in
@@ -421,13 +450,33 @@ struct ValkeySentinelTests {
         async let _ = mockConnections.run()
         try await withValkeySentinelClient(
             primaryName: "TestPrimary",
-            address: .hostname("127.0.0.1", port: 16000),
+            address: .init(endpoint: "127.0.0.1", port: 16000),
             mockConnections: mockConnections,
             logger: logger
         ) { client in
             let nodes = try await client.getNodes()
             #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
             #expect(nodes.replicas == [.hostname("127.0.0.1", port: 9002)])
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientGetPrimary() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyThreeSentinelOnePrimaryTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClient(
+            primaryName: "TestPrimary",
+            address: .init(endpoint: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            try await client.set("key", value: "value")
+            let value = try await client.get("key").map { String($0) }
+            #expect(value == "value")
         }
     }
 }

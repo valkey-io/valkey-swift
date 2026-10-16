@@ -26,6 +26,10 @@ public final class ValkeyClient: Sendable {
     typealias StateMachine = ValkeyClientStateMachine<
         ValkeyNodeClient, ValkeyNodeClientFactory, AsyncStream<Void>.Continuation, CheckedContinuation<ValkeyNodeClient, any Error>
     >
+    enum Topology {
+        case standalone
+        case sentinel(ValkeySentinelClient)
+    }
 
     let nodeClientFactory: ValkeyNodeClientFactory
     /// Client state machine
@@ -36,8 +40,8 @@ public final class ValkeyClient: Sendable {
     var configuration: ValkeyClientConfiguration { self.nodeClientFactory.configuration }
     @usableFromInline
     let clock = ContinuousClock()
-    /// Sentinel client
-    let sentinelClient: ValkeySentinelClient?
+    /// topology of servers
+    let topology: Topology
     /// EventLoopGroup to use
     var eventLoopGroup: any EventLoopGroup { self.nodeClientFactory.eventLoopGroup }
     /// Logger
@@ -115,9 +119,52 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))
-        self.sentinelClient = nil
+        self.topology = .standalone
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.setPrimary(address)
+    }
+
+    /// Creates a new Valkey client
+    ///
+    /// - Parameters:
+    ///   - address: Valkey database address
+    ///   - configuration: Valkey client configuration
+    ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
+    ///   - logger: Logger
+    public convenience init(
+        primaryName: String,
+        sentinelNodeDiscovery: any ValkeyNodeDiscovery,
+        configuration: ValkeyClientConfiguration = .init(),
+        eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        logger: Logger
+    ) {
+        self.init(
+            primaryName: primaryName,
+            sentinelNodeDiscovery: sentinelNodeDiscovery,
+            connectionIDGenerator: ConnectionIDGenerator(),
+            connectionFactory: ValkeyConnectionFactory(configuration: configuration),
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
+    }
+
+    package convenience init(
+        primaryName: String,
+        sentinelNodeDiscovery: any ValkeyNodeDiscovery,
+        customHandler: @escaping @Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel,
+        configuration: ValkeyClientConfiguration = .init(),
+        eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        logger: Logger
+    ) {
+        self.init(
+            primaryName: primaryName,
+            sentinelNodeDiscovery: sentinelNodeDiscovery,
+            customHandler: customHandler,
+            connectionIDGenerator: ConnectionIDGenerator(),
+            connectionFactory: ValkeyConnectionFactory(configuration: configuration),
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
     }
 
     package init(
@@ -149,7 +196,7 @@ public final class ValkeyClient: Sendable {
             eventLoopGroup: eventLoopGroup,
             logger: logger
         )
-        self.sentinelClient = sentinelClient
+        self.topology = .sentinel(sentinelClient)
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.queueAction(.runSentinelClient(sentinelClient))
         self.queueAction(.askSentinelForPrimary(sentinelClient))
