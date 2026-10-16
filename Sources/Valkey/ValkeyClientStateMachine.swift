@@ -115,6 +115,7 @@ struct ValkeyClientStateMachine<
             self.waiters = waiters
         }
     }
+
     @usableFromInline
     mutating func setPrimary(_ address: ValkeyServerAddress) -> SetPrimaryAction {
         let nodes = ValkeyNodeIDs(primary: address)
@@ -153,6 +154,24 @@ struct ValkeyClientStateMachine<
             }
         } else {
             return SetPrimaryAction(nextAction: .doNothing, nodeToRun: client, waiters: waiters)
+        }
+    }
+
+    @usableFromInline
+    enum SetWaitingForPrimaryAction {
+        case triggerGetPrimary
+        case doNothing
+    }
+
+    mutating func setWaitingForPrimary() -> SetWaitingForPrimaryAction {
+        switch self.state {
+        case .healthy:
+            self.state = .waitingForPrimary(.init(notifiers: [:]))
+            return .triggerGetPrimary
+        case .waitingForPrimary:
+            return .doNothing
+        case .shutdown:
+            preconditionFailure("Shouldn't set waiting for primary when ")
         }
     }
 

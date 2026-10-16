@@ -255,6 +255,8 @@ extension ValkeyClient {
         if let node = self.stateMachine.withLock({ $0.getNode(selection) }) {
             return node
         } else {
+            // We didn't get a node from the state machine we should wait for the primary to be set
+            // TODO: Deal with cancellation, and returning errors
             return try! await withCheckedThrowingContinuation { cont in
                 let value = self.stateMachine.withLock { $0.waitForPrimary(waiterID: 0, successNotifier: cont) }
                 switch value {
@@ -426,6 +428,22 @@ extension ValkeyClient {
             return try await group.reduce(true) { $0 && $1 }
         }
     }
+
+    @usableFromInline
+    func refreshPrimary() {
+        let action = self.stateMachine.withLock { $0.setWaitingForPrimary() }
+        switch action {
+        case .triggerGetPrimary:
+            switch self.topology {
+            case .sentinel(let client):
+                self.queueAction(.askSentinelForPrimary(client))
+            case .standalone:
+                preconditionFailure("Cannot refresh primary in standalone mode")
+            }
+        case .doNothing:
+            break
+        }
+    }
 }
 
 // MARK: ValkeyClientProtocol methods
@@ -453,7 +471,10 @@ extension ValkeyClient: ValkeyClientProtocol {
                     try? await Task.sleep(for: wait)
                     attempt += 1
                     self.setPrimary(redirectError.address)
-                case .tryAgain:
+                case .tryAgain(let refreshPrimary):
+                    if refreshPrimary {
+                        self.refreshPrimary()
+                    }
                     guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
                         throw error
                     }
@@ -507,7 +528,10 @@ extension ValkeyClient {
                         self.setPrimary(redirectError.address)
                         node = await self.getNode(readOnly: false)
                         continue executeCommands
-                    case .tryAgain:
+                    case .tryAgain(let refreshPrimary):
+                        if refreshPrimary {
+                            self.refreshPrimary()
+                        }
                         guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
                             return results
                         }
@@ -570,7 +594,10 @@ extension ValkeyClient {
                         self.setPrimary(redirectError.address)
                         node = await self.getNode(readOnly: false)
                         break resultLoop
-                    case .tryAgain:
+                    case .tryAgain(let refreshPrimary):
+                        if refreshPrimary {
+                            self.refreshPrimary()
+                        }
                         guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
                             return results
                         }
@@ -635,7 +662,10 @@ extension ValkeyClient {
                                 attempt += 1
                                 self.setPrimary(redirectError.address)
                                 continue outsideLoop
-                            case .tryAgain:
+                            case .tryAgain(let refreshPrimary):
+                                if refreshPrimary {
+                                    self.refreshPrimary()
+                                }
                                 guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
                                     break
                                 }
@@ -698,7 +728,10 @@ extension ValkeyClient {
                                 attempt += 1
                                 self.setPrimary(redirectError.address)
                                 continue outsideLoop
-                            case .tryAgain:
+                            case .tryAgain(let refreshPrimary):
+                                if refreshPrimary {
+                                    self.refreshPrimary()
+                                }
                                 guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
                                     break
                                 }
@@ -742,7 +775,7 @@ extension ValkeyClient {
     @usableFromInline
     enum RetryAction {
         case redirect(ValkeyRedirectError)
-        case tryAgain
+        case tryAgain(refreshPrimary: Bool)
         case dontRetry
     }
 
@@ -761,13 +794,23 @@ extension ValkeyClient {
                 switch prefix {
                 case "LOADING", "BUSY":
                     self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
-                    return .tryAgain
+                    return .tryAgain(refreshPrimary: false)
                 default:
                     return .dontRetry
                 }
             }
-        case .connectionClosed, .connectionClosing, .connectionClosedDueToCancellation:
-            return .tryAgain
+        case .connectionClosed, .connectionClosing:
+            switch self.topology {
+            case .standalone: return .tryAgain(refreshPrimary: false)
+            case .sentinel: return .tryAgain(refreshPrimary: true)
+            }
+        case .connectionClosedDueToCancellation:
+            return .tryAgain(refreshPrimary: false)
+        case .connectionCreationCircuitBreakerTripped:
+            switch self.topology {
+            case .standalone: return .dontRetry
+            case .sentinel: return .tryAgain(refreshPrimary: true)
+            }
         default:
             return .dontRetry
         }

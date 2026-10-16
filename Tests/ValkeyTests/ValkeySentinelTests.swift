@@ -58,6 +58,28 @@ actor TestSentinelTopology {
                 }
             }
         }
+
+        mutating func removeNode(address: Address) {
+            for index in self.sentinels.indices {
+                if self.sentinels[index].address == address {
+                    self.sentinels[index].flags.insert(.disconnected)
+                }
+            }
+
+            if self.primary.address == address {
+                if var replica = self.replicas.first {
+                    replica.flags.insert(.primary)
+                    replica.flags.remove(.replica)
+                    self.primary = replica
+                    self.replicas = Array(self.replicas.dropFirst())
+                }
+            }
+            for index in self.replicas.indices {
+                if self.replicas[index].address == address {
+                    self.replicas[index].flags.insert(.disconnected)
+                }
+            }
+        }
     }
 
     var namedPrimaries: [String: Topology]
@@ -91,9 +113,7 @@ actor TestSentinelTopology {
 
     func shutdownNode(address: Address) {
         guard let details = self.addressMap[address] else { return }
-        self.namedPrimaries[details.name]?.editNode(address: address) { node in
-            node.flags.insert(.disconnected)
-        }
+        self.namedPrimaries[details.name]?.removeNode(address: address)
         self.updateAddressMap()
     }
 
@@ -121,14 +141,12 @@ actor TestSentinelTopology {
 
         switch addressDetails.role {
         case .primary:
-            guard let topology = self.namedPrimaries[addressDetails.name] else { return }
             await mockConnections.addValkeyServer(.hostname(address.host, port: address.port)) { command in
-                await self.processPrimaryCommands(command: command, name: addressDetails.name, topology: topology, address: address, logger: logger)
+                await self.processCommands(command: command, name: addressDetails.name, address: address, logger: logger)
             }
         case .replica:
-            guard let topology = self.namedPrimaries[addressDetails.name] else { return }
             await mockConnections.addValkeyServer(.hostname(address.host, port: address.port)) { command in
-                await self.processReplicaCommands(command: command, name: addressDetails.name, topology: topology, address: address, logger: logger)
+                await self.processCommands(command: command, name: addressDetails.name, address: address, logger: logger)
             }
         case .sentinel:
             await mockConnections.addValkeyServer(.hostname(address.host, port: address.port)) { command in
@@ -161,7 +179,7 @@ actor TestSentinelTopology {
             return nil
         }
     }
-    func processPrimaryCommands(command: [String], name: String, topology: Topology, address: Address, logger: Logger) async -> RESP3Value? {
+    func processCommands(command: [String], name: String, address: Address, logger: Logger) async -> RESP3Value? {
         var iterator = command.makeIterator()
         switch iterator.next() {
         case "GET":
@@ -175,6 +193,9 @@ actor TestSentinelTopology {
         case "SET":
             guard let key = iterator.next() else { return .bulkError("ERR invalid command") }
             guard let value = iterator.next() else { return .bulkError("ERR invalid command") }
+            if let primaryAddress = self.namedPrimaries[name]?.primary.address, primaryAddress != address {
+                return .bulkError("REDIRECT \(primaryAddress)")
+            }
             // Keys with $address prefix are special as they return the address of the node
             if key.hasPrefix("$address") {
                 return .bulkString(address.description)
@@ -182,45 +203,32 @@ actor TestSentinelTopology {
             self.setKey(primary: name, key: key, value: value)
             return .simpleString("OK")
         case "ROLE":
-            return .array([
-                .bulkString("master"),
-                .number(1001),
-                .array(
-                    topology.replicas.map {
-                        RESP3Value.array([
-                            .bulkString($0.address.host),
-                            .bulkString("\($0.address.port)"),
-                            .bulkString("1001"),
-                        ])
-                    }
-                ),
-            ])
-        default:
-            return nil
-        }
-    }
-
-    func processReplicaCommands(command: [String], name: String, topology: Topology, address: Address, logger: Logger) async -> RESP3Value? {
-        var iterator = command.makeIterator()
-        switch iterator.next() {
-        case "GET":
-            guard let key = iterator.next() else { return .bulkError("ERR invalid command") }
-            // Keys with $address prefix are special as they return the address of the node
-            if key.hasPrefix("$address") {
-                return .bulkString(address.description)
+            guard let topology = self.namedPrimaries[name] else {
+                return .bulkError("ERR internal error")
             }
-            return self.getKey(primary: name, key: key).map { .bulkString($0) } ?? .null
-
-        case "SET":
-            return .bulkError("REDIRECT \(topology.primary.address)")
-        case "ROLE":
-            return .array([
-                .bulkString("slave"),
-                .bulkString(topology.primary.address.host),
-                .number(Int64(topology.primary.address.port)),
-                .bulkString("connected"),
-                .number(1001),
-            ])
+            if topology.primary.address == address {
+                return .array([
+                    .bulkString("master"),
+                    .number(1001),
+                    .array(
+                        topology.replicas.map {
+                            RESP3Value.array([
+                                .bulkString($0.address.host),
+                                .bulkString("\($0.address.port)"),
+                                .bulkString("1001"),
+                            ])
+                        }
+                    ),
+                ])
+            } else {
+                return .array([
+                    .bulkString("slave"),
+                    .bulkString(topology.primary.address.host),
+                    .number(Int64(topology.primary.address.port)),
+                    .bulkString("connected"),
+                    .number(1001),
+                ])
+            }
         default:
             return nil
         }
@@ -477,6 +485,57 @@ struct ValkeySentinelTests {
             try await client.set("key", value: "value")
             let value = try await client.get("key").map { String($0) }
             #expect(value == "value")
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientRefresh() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyThreeSentinelOnePrimaryTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClient(
+            primaryName: "TestPrimary",
+            address: .init(endpoint: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            configuration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
+            logger: logger
+        ) { client in
+            var value = try await client.get("$address").map { String($0) }
+            #expect(value == "127.0.0.1:9000")
+            await topology.shutdownNode(address: .init(host: "127.0.0.1", port: 9000))
+            await mockConnections.shutdownServer(.hostname("127.0.0.1", port: 9000))
+            value = try await client.get("$address").map { String($0) }
+            #expect(value == "127.0.0.1:9001")
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientRefreshWithPipeline() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyThreeSentinelOnePrimaryTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClient(
+            primaryName: "TestPrimary",
+            address: .init(endpoint: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            configuration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
+            logger: logger
+        ) { client in
+            let value = try await client.get("$address").map { String($0) }
+            #expect(value == "127.0.0.1:9000")
+            await topology.shutdownNode(address: .init(host: "127.0.0.1", port: 9000))
+            await mockConnections.shutdownServer(.hostname("127.0.0.1", port: 9000))
+            let values = await client.execute(
+                SET("test", value: "This"),
+                GET("$address")
+            )
+            try #expect(values.1.get().map { String($0) } == "127.0.0.1:9001")
         }
     }
 }
