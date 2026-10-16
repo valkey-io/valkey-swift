@@ -23,10 +23,12 @@ import ServiceLifecycle
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
     @usableFromInline
-    typealias StateMachine = ValkeyClientStateMachine<ValkeyNodeClient, ValkeyNodeClientFactory, AsyncStream<Void>.Continuation>
+    typealias StateMachine = ValkeyClientStateMachine<
+        ValkeyNodeClient, ValkeyNodeClientFactory, AsyncStream<Void>.Continuation, CheckedContinuation<ValkeyNodeClient, any Error>
+    >
 
     let nodeClientFactory: ValkeyNodeClientFactory
-    /// single node
+    /// Client state machine
     @usableFromInline
     let stateMachine: Mutex<StateMachine>
     /// configuration
@@ -34,6 +36,8 @@ public final class ValkeyClient: Sendable {
     var configuration: ValkeyClientConfiguration { self.nodeClientFactory.configuration }
     @usableFromInline
     let clock = ContinuousClock()
+    /// Sentinel client
+    let sentinelClient: ValkeySentinelClient?
     /// EventLoopGroup to use
     var eventLoopGroup: any EventLoopGroup { self.nodeClientFactory.eventLoopGroup }
     /// Logger
@@ -46,6 +50,8 @@ public final class ValkeyClient: Sendable {
         case runTimer(ValkeyTimer)
         case runRole
         case verifyReplicas
+        case runSentinelClient(ValkeySentinelClient)
+        case askSentinelForPrimary(ValkeySentinelClient)
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -109,8 +115,44 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))
+        self.sentinelClient = nil
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.setPrimary(address)
+    }
+
+    package init(
+        primaryName: String,
+        sentinelNodeDiscovery: any ValkeyNodeDiscovery,
+        customHandler: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil,
+        connectionIDGenerator: ConnectionIDGenerator,
+        connectionFactory: ValkeyConnectionFactory,
+        eventLoopGroup: any EventLoopGroup,
+        logger: Logger
+    ) {
+        self.nodeClientFactory = ValkeyNodeClientFactory(
+            logger: logger,
+            configuration: connectionFactory.configuration,
+            connectionFactory: ValkeyConnectionFactory(
+                configuration: connectionFactory.configuration,
+                customHandler: customHandler
+            ),
+            eventLoopGroup: eventLoopGroup
+        )
+        self.logger = logger
+        self.runningAtomic = .init(false)
+        self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))
+        let sentinelClient = ValkeySentinelClient(
+            primaryName: primaryName,
+            nodeDiscovery: sentinelNodeDiscovery,
+            customHandler: customHandler,
+            configuration: .init(clientConfiguration: connectionFactory.configuration),
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
+        self.sentinelClient = sentinelClient
+        (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
+        self.queueAction(.runSentinelClient(sentinelClient))
+        self.queueAction(.askSentinelForPrimary(sentinelClient))
     }
 }
 
@@ -151,19 +193,30 @@ extension ValkeyClient {
         readOnly: Bool = false,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        let node = self.getNode(readOnly: readOnly)
+        let node = await self.getNode(readOnly: readOnly)
         return try await node.withConnection(operation: operation)
     }
 
     @inlinable
-    func getNode(readOnly: Bool) -> ValkeyNodeClient {
+    func getNode(readOnly: Bool) async -> ValkeyNodeClient {
         let selection =
             if readOnly {
                 self.configuration.readOnlyCommandNodeSelection.nodeSelection
             } else {
                 ValkeyNodeSelection.primary
             }
-        return self.stateMachine.withLock { $0.getNode(selection) }
+        if let node = self.stateMachine.withLock({ $0.getNode(selection) }) {
+            return node
+        } else {
+            return try! await withCheckedThrowingContinuation { cont in
+                let value = self.stateMachine.withLock { $0.waitForPrimary(waiterID: 0, successNotifier: cont) }
+                switch value {
+                case .none: break
+                case .success(let node): cont.resume(returning: node)
+                case .failure(let error): cont.resume(throwing: error)
+                }
+            }
+        }
     }
 }
 
@@ -181,10 +234,16 @@ extension ValkeyClient {
             await nodeClient.run()
 
         case .runRole:
-            await runRoleAction()
+            await self.runRoleAction()
 
         case .runTimer(let timer):
-            await runTimerAction(timer)
+            await self.runTimerAction(timer)
+
+        case .runSentinelClient(let sentinelClient):
+            await sentinelClient.run()
+
+        case .askSentinelForPrimary(let sentinelClient):
+            await self.runAskSentinelForPrimary(sentinelClient)
 
         case .verifyReplicas:
             break
@@ -195,7 +254,7 @@ extension ValkeyClient {
     private func runRoleAction() async {
         struct NotReplicaError: Error {}
         var topology: StateMachine.TopologyRefreshInput
-        let nodeClient = self.getNode(readOnly: false)
+        let nodeClient = await self.getNode(readOnly: false)
         do {
             let role = try await nodeClient.execute(ROLE())
             switch role {
@@ -299,6 +358,13 @@ extension ValkeyClient {
         }
     }
 
+    private func runAskSentinelForPrimary(_ sentinelClient: ValkeySentinelClient) async {
+        // TODO: Report errors from sentinel client
+        if let nodes = try? await sentinelClient.getNodes() {
+            self.setPrimary(nodes.primary)
+        }
+    }
+
     private func verifyReplicas(_ replicas: [ValkeyNodeClient]) async throws -> Bool {
         try await withThrowingTaskGroup(of: Bool.self) { group in
             for replica in replicas {
@@ -375,12 +441,8 @@ extension ValkeyClient {
         for command in repeat each commands {
             readOnly = readOnly && command.isReadOnly
         }
-        #if compiler(<6.2)
-        let node = self.getNode(readOnly: readOnly)
-        return await node.execute(repeat each commands)
-        #else
         var attempt = 0
-        var node = self.getNode(readOnly: readOnly)
+        var node = await self.getNode(readOnly: readOnly)
         executeCommands: while true {
             let results = await node.execute(repeat each commands)
             if Task.isCancelled {
@@ -396,7 +458,7 @@ extension ValkeyClient {
                         try? await Task.sleep(for: wait)
                         attempt += 1
                         self.setPrimary(redirectError.address)
-                        node = self.getNode(readOnly: false)
+                        node = await self.getNode(readOnly: false)
                         continue executeCommands
                     case .tryAgain:
                         guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
@@ -404,7 +466,7 @@ extension ValkeyClient {
                         }
                         try? await Task.sleep(for: wait)
                         attempt += 1
-                        node = self.getNode(readOnly: readOnly)
+                        node = await self.getNode(readOnly: readOnly)
                         continue executeCommands
 
                     case .dontRetry:
@@ -414,7 +476,6 @@ extension ValkeyClient {
             }
             return results
         }
-        #endif
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -440,7 +501,7 @@ extension ValkeyClient {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
         // get node client and execute commands
-        var node = self.getNode(readOnly: readOnly)
+        var node = await self.getNode(readOnly: readOnly)
         var results = await node.execute(commands)
 
         var attempt = 0
@@ -460,7 +521,7 @@ extension ValkeyClient {
                         try? await Task.sleep(for: wait)
                         attempt += 1
                         self.setPrimary(redirectError.address)
-                        node = self.getNode(readOnly: false)
+                        node = await self.getNode(readOnly: false)
                         break resultLoop
                     case .tryAgain:
                         guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
@@ -468,7 +529,7 @@ extension ValkeyClient {
                         }
                         try? await Task.sleep(for: wait)
                         attempt += 1
-                        node = self.getNode(readOnly: readOnly)
+                        node = await self.getNode(readOnly: readOnly)
                         break resultLoop
 
                     case .dontRetry:
@@ -511,7 +572,7 @@ extension ValkeyClient {
         }
         var attempt = 0
         outsideLoop: repeat {
-            let node = self.getNode(readOnly: readOnly)
+            let node = await self.getNode(readOnly: readOnly)
             do {
                 return try await node.transaction(repeat each commands)
             } catch let error as ValkeyTransactionError {
@@ -574,7 +635,7 @@ extension ValkeyClient {
             }
         var attempt = 0
         outsideLoop: repeat {
-            let node = self.getNode(readOnly: readOnly)
+            let node = await self.getNode(readOnly: readOnly)
             do {
                 return try await node.transaction(commands)
             } catch let error as ValkeyTransactionError {
@@ -618,6 +679,9 @@ extension ValkeyClient {
         let action = self.stateMachine.withLock { $0.setPrimary(address) }
         if let node = action.nodeToRun {
             self.queueAction(.runNodeClient(node))
+            for waiter in action.waiters {
+                waiter.resume(returning: node)
+            }
         }
         switch action.nextAction {
         case .refreshTopology(let cancelTimer):

@@ -18,7 +18,8 @@ struct ValkeyClientStateMachineTests {
     typealias TestStateMachine = ValkeyClientStateMachine<
         MockClient<ValkeyClientNodeDescription>,
         MockClientFactory<ValkeyClientNodeDescription>,
-        ClientTestsTimerCancellationToken
+        ClientTestsTimerCancellationToken,
+        Int
     >
 
     @available(valkeySwift 1.0, *)
@@ -72,9 +73,9 @@ struct ValkeyClientStateMachineTests {
 
         runInitialStates(stateMachine: &stateMachine)
 
-        #expect(stateMachine.getNode(.primary).nodeDescription.address == .hostname("127.0.0.1", port: 9000))
-        #expect(stateMachine.getNode(.cycleAllNodes(4)).nodeDescription.address == .hostname("127.0.0.1", port: 9000))
-        #expect(stateMachine.getNode(.cycleReplicas(4)).nodeDescription.address == .hostname("127.0.0.1", port: 9000))
+        #expect(stateMachine.getNode(.primary)?.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
+        #expect(stateMachine.getNode(.cycleAllNodes(4))?.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
+        #expect(stateMachine.getNode(.cycleReplicas(4))?.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
     }
 
     @Test
@@ -85,14 +86,14 @@ struct ValkeyClientStateMachineTests {
 
         runInitialStates(stateMachine: &stateMachine)
 
-        #expect(stateMachine.getNode(.primary).nodeDescription.address == .hostname("127.0.0.1", port: 9000))
-        #expect(stateMachine.getNode(.cycleAllNodes(0)).nodeDescription.address == .hostname("127.0.0.1", port: 9000))
-        #expect(stateMachine.getNode(.cycleAllNodes(1)).nodeDescription.address == .hostname("127.0.0.1", port: 9001))
-        #expect(stateMachine.getNode(.cycleAllNodes(2)).nodeDescription.address == .hostname("127.0.0.1", port: 9002))
-        #expect(stateMachine.getNode(.cycleAllNodes(3)).nodeDescription.address == .hostname("127.0.0.1", port: 9000))
-        #expect(stateMachine.getNode(.cycleReplicas(0)).nodeDescription.address == .hostname("127.0.0.1", port: 9001))
-        #expect(stateMachine.getNode(.cycleReplicas(1)).nodeDescription.address == .hostname("127.0.0.1", port: 9002))
-        #expect(stateMachine.getNode(.cycleReplicas(2)).nodeDescription.address == .hostname("127.0.0.1", port: 9001))
+        #expect(stateMachine.getNode(.primary)?.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
+        #expect(stateMachine.getNode(.cycleAllNodes(0))?.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
+        #expect(stateMachine.getNode(.cycleAllNodes(1))?.nodeDescription.address == .hostname("127.0.0.1", port: 9001))
+        #expect(stateMachine.getNode(.cycleAllNodes(2))?.nodeDescription.address == .hostname("127.0.0.1", port: 9002))
+        #expect(stateMachine.getNode(.cycleAllNodes(3))?.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
+        #expect(stateMachine.getNode(.cycleReplicas(0))?.nodeDescription.address == .hostname("127.0.0.1", port: 9001))
+        #expect(stateMachine.getNode(.cycleReplicas(1))?.nodeDescription.address == .hostname("127.0.0.1", port: 9002))
+        #expect(stateMachine.getNode(.cycleReplicas(2))?.nodeDescription.address == .hostname("127.0.0.1", port: 9001))
     }
 
     @Test
@@ -130,10 +131,10 @@ struct ValkeyClientStateMachineTests {
         #expect(refreshAction2.clientsToShutdown.count == 1)
         #expect(refreshAction2.clientsToShutdown[0].nodeDescription.address == .hostname("127.0.0.1", port: 9001))
 
-        #expect(stateMachine.getNode(.primary).nodeDescription.address == .hostname("127.0.0.1", port: 9000))
-        #expect(stateMachine.getNode(.cycleReplicas(0)).nodeDescription.address == .hostname("127.0.0.1", port: 9002))
-        #expect(stateMachine.getNode(.cycleReplicas(1)).nodeDescription.address == .hostname("127.0.0.1", port: 9003))
-        #expect(stateMachine.getNode(.cycleReplicas(2)).nodeDescription.address == .hostname("127.0.0.1", port: 9002))
+        #expect(stateMachine.getNode(.primary)?.nodeDescription.address == .hostname("127.0.0.1", port: 9000))
+        #expect(stateMachine.getNode(.cycleReplicas(0))?.nodeDescription.address == .hostname("127.0.0.1", port: 9002))
+        #expect(stateMachine.getNode(.cycleReplicas(1))?.nodeDescription.address == .hostname("127.0.0.1", port: 9003))
+        #expect(stateMachine.getNode(.cycleReplicas(2))?.nodeDescription.address == .hostname("127.0.0.1", port: 9002))
     }
 
     @Test

@@ -11,7 +11,8 @@
 struct ValkeyClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory,
-    TimerCancellationToken: Sendable
+    TimerCancellationToken: Sendable,
+    SuccessNotifier
 > where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription == ValkeyNodeClientFactory.NodeDescription {
     /// State machine configuration
     @usableFromInline
@@ -34,7 +35,12 @@ struct ValkeyClientStateMachine<
             @usableFromInline
             let nodes: ValkeyNodeIDs<ValkeyServerAddress>
         }
-        case uninitialized
+        @usableFromInline
+        struct WaitingForPrimaryContext {
+            @usableFromInline
+            var notifiers: [Int: SuccessNotifier]
+        }
+        case waitingForPrimary(WaitingForPrimaryContext)
         case healthy(HealthyContext)
         case shutdown
     }
@@ -71,7 +77,7 @@ struct ValkeyClientStateMachine<
 
     init(poolFactory: ConnectionPoolFactory, configuration: ValkeyClientConfiguration) {
         self.runningClients = .init(poolFactory: poolFactory)
-        self.state = .uninitialized
+        self.state = .waitingForPrimary(.init(notifiers: [:]))
         self.topologyRefreshState = .notRefreshing
         self.configuration = .init(
             findReplicas: configuration.readOnlyCommandNodeSelection != .primary,
@@ -81,9 +87,9 @@ struct ValkeyClientStateMachine<
     }
 
     @inlinable
-    func getNode(_ selection: ValkeyNodeSelection) -> ConnectionPool {
+    func getNode(_ selection: ValkeyNodeSelection) -> ConnectionPool? {
         guard case .healthy(let healthyContext) = self.state else {
-            preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
+            return nil
         }
         let nodeID = selection.select(nodeIDs: healthyContext.nodes)
         if let pool = self.runningClients[nodeID]?.pool {
@@ -101,10 +107,12 @@ struct ValkeyClientStateMachine<
         }
         let nextAction: NextAction
         let nodeToRun: ConnectionPool?
+        let waiters: [SuccessNotifier]
 
-        init(nextAction: NextAction = .doNothing, nodeToRun: ConnectionPool? = nil) {
+        init(nextAction: NextAction = .doNothing, nodeToRun: ConnectionPool? = nil, waiters: [SuccessNotifier]) {
             self.nextAction = nextAction
             self.nodeToRun = nodeToRun
+            self.waiters = waiters
         }
     }
     @usableFromInline
@@ -116,7 +124,7 @@ struct ValkeyClientStateMachine<
         case .useExistingPool:
             if case .healthy(let healthyContext) = self.state {
                 if healthyContext.nodes.primary == address {
-                    return .init()
+                    return .init(waiters: [])
                 }
             }
             client = nil
@@ -124,31 +132,45 @@ struct ValkeyClientStateMachine<
             client = node
         }
 
+        let waiters: [SuccessNotifier] =
+            if case .waitingForPrimary(let context) = self.state {
+                Array(context.notifiers.values)
+            } else {
+                .init()
+            }
+
         self.state = .healthy(.init(nodes: nodes))
         if self.configuration.findReplicas {
             switch self.topologyRefreshState {
             case .notRefreshing:
                 self.topologyRefreshState = .refreshing(.init())
-                return SetPrimaryAction(nextAction: .refreshTopology(nil), nodeToRun: client)
+                return SetPrimaryAction(nextAction: .refreshTopology(nil), nodeToRun: client, waiters: waiters)
             case .refreshing:
-                return .init(nodeToRun: client)
+                return .init(nodeToRun: client, waiters: waiters)
             case .waitingForNextRefresh(let waitingState):
                 self.topologyRefreshState = .refreshing(.init())
-                return SetPrimaryAction(nextAction: .refreshTopology(waitingState.timer.cancellationToken), nodeToRun: client)
+                return SetPrimaryAction(nextAction: .refreshTopology(waitingState.timer.cancellationToken), nodeToRun: client, waiters: waiters)
             }
         } else {
-            return SetPrimaryAction(nextAction: .doNothing, nodeToRun: client)
+            return SetPrimaryAction(nextAction: .doNothing, nodeToRun: client, waiters: waiters)
         }
     }
 
-    func getNodes() -> ValkeyNodeIDs<ValkeyServerAddress>? {
+    @usableFromInline
+    mutating func waitForPrimary(waiterID: Int, successNotifier: SuccessNotifier) -> Result<ConnectionPool, any Error>? {
         switch self.state {
-        case .uninitialized:
-            preconditionFailure("Invalid state: \(self.state)")
-        case .healthy(let healthContext):
-            return healthContext.nodes
-        case .shutdown:
+        case .waitingForPrimary(var context):
+            context.notifiers[waiterID] = successNotifier
+            self.state = .waitingForPrimary(context)
             return nil
+        case .healthy(let healthContext):
+            if let pool = self.runningClients[healthContext.nodes.primary]?.pool {
+                return .success(pool)
+            } else {
+                preconditionFailure()
+            }
+        case .shutdown:
+            return .failure(ValkeyClientError(.clientIsShutDown))
         }
     }
 
@@ -161,8 +183,8 @@ struct ValkeyClientStateMachine<
         switch timer.useCase {
         case .nextTopologyDiscovery:
             switch self.state {
-            case .uninitialized:
-                preconditionFailure("Invalid state: \(self.state)")
+            case .waitingForPrimary:
+                return .doNothing
             case .healthy:
                 break
             case .shutdown:
@@ -189,7 +211,7 @@ struct ValkeyClientStateMachine<
         switch timer.useCase {
         case .nextTopologyDiscovery:
             switch self.state {
-            case .shutdown, .uninitialized:
+            case .shutdown, .waitingForPrimary:
                 return .cancelTimer(token)
             case .healthy:
                 break

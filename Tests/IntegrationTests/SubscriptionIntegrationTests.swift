@@ -415,7 +415,8 @@ struct PubSubIntegratedTests {
                         await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
                         await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
-                    client.stateMachine.withLock { $0.getNode(.primary) }.subscriptionConnectionStateMachine.withLock { stateMachine in
+                    var primary = try #require(client.stateMachine.withLock { $0.getNode(.primary) })
+                    primary.subscriptionConnectionStateMachine.withLock { stateMachine in
                         #expect(stateMachine.isEmpty() == true)
                     }
                     try await client.subscribe(to: "testSubscriptions") { subscription in
@@ -424,7 +425,8 @@ struct PubSubIntegratedTests {
                         await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
                         await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
-                    client.stateMachine.withLock { $0.getNode(.primary) }.subscriptionConnectionStateMachine.withLock { stateMachine in
+                    primary = try #require(client.stateMachine.withLock { $0.getNode(.primary) })
+                    primary.subscriptionConnectionStateMachine.withLock { stateMachine in
                         #expect(stateMachine.isEmpty() == true)
                     }
                 }
@@ -475,7 +477,8 @@ struct PubSubIntegratedTests {
                     client.logger.info("Published \(i)")
                 }
                 try await group.waitForAll()
-                client.stateMachine.withLock { $0.getNode(.primary) }.subscriptionConnectionStateMachine.withLock { stateMachine in
+                let primary = try #require(client.stateMachine.withLock { $0.getNode(.primary) })
+                primary.subscriptionConnectionStateMachine.withLock { stateMachine in
                     #expect(stateMachine.isEmpty() == true)
                 }
             }
