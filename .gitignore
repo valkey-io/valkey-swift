@@ -13,3 +13,4 @@ Package.resolved
 .swift-version
 .docc-build
 /valkey
+devcontainer-lock.json

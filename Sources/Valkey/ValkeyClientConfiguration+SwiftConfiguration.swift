@@ -102,6 +102,7 @@ extension ValkeyClientConfiguration.ConnectionPool {
     /// - `idleTimeoutMs` (int, optional, default: 60,000): Milliseconds before idle preserved connections are closed.
     /// - `circuitBreakerTripAfterMs` (int, optional, default: 60,000): Milliseconds between first connection failure and circuit breaker activation.
     /// - `maximumConcurrentConnectionRequests` (int, optional, default: 20): Max concurrent new connection requests.
+    /// - `maximumStreamsPerConnectionCount` (int, optional, default: 1): The maximum number of leases that can use the one connection.
     public init(configReader: ConfigReader) {
         self.init()
 
@@ -127,6 +128,10 @@ extension ValkeyClientConfiguration.ConnectionPool {
 
         if let maxConcurrentRequests = configReader.int(forKey: "maximumConcurrentConnectionRequests") {
             self.maximumConcurrentConnectionRequests = maxConcurrentRequests
+        }
+
+        if let maxStreamsPerConnection = configReader.int(forKey: "maximumStreamsPerConnectionCount") {
+            self.maximumNumberOfStreamsPerConnection = UInt16(maxStreamsPerConnection)
         }
     }
 }

@@ -86,6 +86,11 @@ package final class ValkeyNodeClient: Sendable {
         poolConfiguration.circuitBreakerTripAfter = connectionFactory.configuration.connectionPool.circuitBreakerTripAfter
         poolConfiguration.maximumConcurrentConnectionRequests = connectionFactory.configuration.connectionPool.maximumConcurrentConnectionRequests
 
+        precondition(
+            connectionFactory.configuration.connectionPool.maximumNumberOfStreamsPerConnection > 0,
+            "The maximum number of streams per connection must be greater than zero"
+        )
+
         self.readOnly = readOnly
         self.connectionPool = .init(
             configuration: poolConfiguration,
@@ -105,8 +110,10 @@ package final class ValkeyNodeClient: Sendable {
                 eventLoop: eventLoopGroup.any(),
                 logger: logger
             )
-
-            return ConnectionAndMetadata(connection: connection, maximalStreamsOnConnection: 1)
+            return ConnectionAndMetadata(
+                connection: connection,
+                maximalStreamsOnConnection: connectionFactory.configuration.connectionPool.maximumNumberOfStreamsPerConnection
+            )
         }
         self.connectionFactory = connectionFactory
         self.eventLoopGroup = eventLoopGroup
