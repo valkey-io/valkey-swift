@@ -158,6 +158,49 @@ struct ValkeyClientStateMachine<
     }
 
     @usableFromInline
+    struct SetTopologyAction {
+        let primaryClient: ConnectionPool
+        let clientsToRun: [ConnectionPool]
+        let clientsToShutdown: [ConnectionPool]
+        let waiters: [SuccessNotifier]
+
+        init(primaryClient: ConnectionPool, clientsToRun: [ConnectionPool], clientsToShutdown: [ConnectionPool], waiters: [SuccessNotifier]) {
+            self.primaryClient = primaryClient
+            self.clientsToRun = clientsToRun
+            self.clientsToShutdown = clientsToShutdown
+            self.waiters = waiters
+        }
+    }
+
+    @usableFromInline
+    mutating func setTopology(primary: ValkeyServerAddress, replicas: [ValkeyServerAddress]) -> SetTopologyAction {
+        var nodes: [ValkeyClientNodeDescription] = [.init(address: primary)]
+        nodes.append(contentsOf: replicas.lazy.map { .init(address: $0) })
+        let action = self.runningClients.updateNodes(nodes, removeUnmentionedPools: true)
+        guard let primaryClient = self.runningClients[primary]?.pool else {
+            preconditionFailure()
+        }
+        let waiters: [SuccessNotifier]
+        switch self.state {
+        case .healthy:
+            self.state = .healthy(.init(nodes: .init(primary: primary, replicas: replicas)))
+            waiters = []
+        case .waitingForPrimary(let context):
+            self.state = .healthy(.init(nodes: .init(primary: primary, replicas: replicas)))
+            waiters = Array(context.notifiers.values)
+        case .shutdown:
+            preconditionFailure("Shouldn't set primary when shutdown")
+        }
+
+        return .init(
+            primaryClient: primaryClient,
+            clientsToRun: action.poolsToRun.map { $0.0 },
+            clientsToShutdown: action.poolsToShutdown,
+            waiters: waiters
+        )
+    }
+
+    @usableFromInline
     enum SetWaitingForPrimaryAction {
         case triggerGetPrimary
         case doNothing
@@ -171,7 +214,7 @@ struct ValkeyClientStateMachine<
         case .waitingForPrimary:
             return .doNothing
         case .shutdown:
-            preconditionFailure("Shouldn't set waiting for primary when ")
+            preconditionFailure("Shouldn't set waiting for primary when shutdown")
         }
     }
 

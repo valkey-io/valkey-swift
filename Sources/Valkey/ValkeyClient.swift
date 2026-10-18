@@ -410,7 +410,7 @@ extension ValkeyClient {
     private func runAskSentinelForPrimary(_ sentinelClient: ValkeySentinelClient) async {
         // TODO: Report errors from sentinel client
         if let nodes = try? await sentinelClient.getNodes() {
-            self.setPrimary(nodes.primary)
+            self.setTopology(primary: nodes.primary, replicas: nodes.replicas)
         }
     }
 
@@ -769,6 +769,20 @@ extension ValkeyClient {
             self.queueAction(.runRole)
         case .doNothing:
             break
+        }
+    }
+
+    @usableFromInline
+    /* private */ func setTopology(primary: ValkeyServerAddress, replicas: [ValkeyServerAddress]) {
+        let action = self.stateMachine.withLock { $0.setTopology(primary: primary, replicas: replicas) }
+        for client in action.clientsToRun {
+            self.queueAction(.runNodeClient(client))
+        }
+        for client in action.clientsToShutdown {
+            client.triggerForceShutdown()
+        }
+        for waiter in action.waiters {
+            waiter.resume(returning: action.primaryClient)
         }
     }
 
