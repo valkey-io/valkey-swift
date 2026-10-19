@@ -73,9 +73,15 @@ struct SentinelIntegrationTests {
         )
         async let _ = sentinelClient.run()
         let nodes = try await sentinelClient.getNodes()
-        #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
-        #expect(nodes.replicas.contains(where: { $0 == .hostname("127.0.0.1", port: 9001) }))
-        #expect(nodes.replicas.contains(where: { $0 == .hostname("127.0.0.1", port: 9002) }))
+        let ports: Set<Int> = .init(
+            ([nodes.primary] + nodes.replicas).map {
+                switch $0.value {
+                case .hostname(_, let port): port
+                default: fatalError()
+                }
+            }
+        )
+        #expect(ports == [9000, 9001, 9002])
     }
 
     @Test
@@ -134,6 +140,37 @@ struct SentinelIntegrationTests {
                 try await client.info()
             }
             #expect(error?.errorCode == .sentinelError)
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientSentinelFailover() async throws {
+        let logger = {
+            var logger = Logger(label: "testClientWithSentinel")
+            logger.logLevel = .trace
+            return logger
+        }()
+        try await self.withValkeyClient(primaryName: "testprimary", configuration: .init(enableClientCapaRedirect: false), logger: logger) { client in
+            _ = try await self.withKey(client) { (key: ValkeyKey) in
+                try await client.set(key, value: "testClientSentinelFailover")
+                let sentinelClient = ValkeyClient(.hostname(sentinelHostname!, port: sentinelPort!), logger: logger)
+                async let _ = sentinelClient.run()
+                let addr = try await sentinelClient.sentinelGetPrimaryAddrByName(primaryName: "testprimary").decodeElements(as: (String, Int).self)
+                try await sentinelClient.sentinelFailover(primaryName: "testprimary", coordinated: true)
+                while true {
+                    let newAddr = try await sentinelClient.sentinelGetPrimaryAddrByName(primaryName: "testprimary").decodeElements(
+                        as: (String, Int).self
+                    )
+                    if newAddr != addr {
+                        break
+                    }
+                    try await Task.sleep(for: .seconds(1))
+                }
+                try await client.set(key, value: "testClientSentinelFailover2")
+                let value = try await client.get(key).map { String($0) }
+                #expect(value == "testClientSentinelFailover2")
+            }
         }
     }
 }

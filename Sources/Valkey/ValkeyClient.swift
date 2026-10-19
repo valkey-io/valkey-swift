@@ -838,6 +838,14 @@ extension ValkeyClient {
                 case "LOADING", "BUSY":
                     self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
                     return .tryAgain(refreshPrimary: false)
+                case "READONLY":
+                    // If we receive a READONLY error then the client primary node is a replica node
+                    // most likely due to a failover. If we are using sentinel we can ask the
+                    // sentinels for the latest deployment topology.
+                    switch self.topology {
+                    case .standalone: return .dontRetry
+                    case .sentinel: return .tryAgain(refreshPrimary: true)
+                    }
                 default:
                     return .dontRetry
                 }
