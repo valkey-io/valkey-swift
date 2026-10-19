@@ -240,12 +240,12 @@ extension ValkeyClient {
         readOnly: Bool = false,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        let node = await self.getNode(readOnly: readOnly)
+        let node = try await self.getNode(readOnly: readOnly)
         return try await node.withConnection(operation: operation)
     }
 
     @inlinable
-    func getNode(readOnly: Bool) async -> ValkeyNodeClient {
+    func getNode(readOnly: Bool) async throws(ValkeyClientError) -> ValkeyNodeClient {
         let selection =
             if readOnly {
                 self.configuration.readOnlyCommandNodeSelection.nodeSelection
@@ -257,13 +257,24 @@ extension ValkeyClient {
         } else {
             // We didn't get a node from the state machine we should wait for the primary to be set
             // TODO: Deal with cancellation, and returning errors
-            return try! await withCheckedThrowingContinuation { cont in
-                let value = self.stateMachine.withLock { $0.waitForPrimary(waiterID: 0, successNotifier: cont) }
-                switch value {
-                case .none: break
-                case .success(let node): cont.resume(returning: node)
-                case .failure(let error): cont.resume(throwing: error)
+            do {
+                return try await withCheckedThrowingContinuation { cont in
+                    let value = self.stateMachine.withLock { $0.sentinelWaitForPrimary(waiterID: 0, successNotifier: cont) }
+                    switch value {
+                    case .none:
+                        break
+                    case .success(let node):
+                        cont.resume(returning: node)
+                    case .failure(let error):
+                        cont.resume(throwing: error)
+                    }
                 }
+            } catch let error as ValkeyClientError {
+                throw error
+            } catch let error as ValkeySentinelError {
+                throw ValkeyClientError(.sentinelError, error: error)
+            } catch {
+                throw ValkeyClientError(.unrecognisedError, error: error)
             }
         }
     }
@@ -303,7 +314,7 @@ extension ValkeyClient {
     private func runRoleAction() async {
         struct NotReplicaError: Error {}
         var topology: StateMachine.TopologyRefreshInput
-        let nodeClient = await self.getNode(readOnly: false)
+        guard let nodeClient = try? await self.getNode(readOnly: false) else { return }
         do {
             let role = try await nodeClient.execute(ROLE())
             switch role {
@@ -408,9 +419,19 @@ extension ValkeyClient {
     }
 
     private func runAskSentinelForPrimary(_ sentinelClient: ValkeySentinelClient) async {
-        // TODO: Report errors from sentinel client
-        if let nodes = try? await sentinelClient.getNodes() {
+        do {
+            let nodes = try await sentinelClient.getNodes()
             self.setTopology(primary: nodes.primary, replicas: nodes.replicas)
+        } catch {
+            let action = self.stateMachine.withLock { $0.sentinelReportError(error: error) }
+            switch action {
+            case .reportError(let waiters):
+                for waiter in waiters {
+                    waiter.resume(throwing: error)
+                }
+            case .doNothing:
+                break
+            }
         }
     }
 
@@ -431,7 +452,7 @@ extension ValkeyClient {
 
     @usableFromInline
     func refreshPrimary() {
-        let action = self.stateMachine.withLock { $0.setWaitingForPrimary() }
+        let action = self.stateMachine.withLock { $0.sentinelSetWaitingForPrimary() }
         switch action {
         case .triggerGetPrimary:
             switch self.topology {
@@ -510,42 +531,46 @@ extension ValkeyClient {
             readOnly = readOnly && command.isReadOnly
         }
         var attempt = 0
-        var node = await self.getNode(readOnly: readOnly)
-        executeCommands: while true {
-            let results = await node.execute(repeat each commands)
-            if Task.isCancelled {
-                return results
-            }
-            for result in repeat each results {
-                if case .failure(let error) = result {
-                    switch self.getRetryAction(from: error) {
-                    case .redirect(let redirectError):
-                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
-                            return results
-                        }
-                        try? await Task.sleep(for: wait)
-                        attempt += 1
-                        self.setPrimary(redirectError.address)
-                        node = await self.getNode(readOnly: false)
-                        continue executeCommands
-                    case .tryAgain(let refreshPrimary):
-                        if refreshPrimary {
-                            self.refreshPrimary()
-                        }
-                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
-                            return results
-                        }
-                        try? await Task.sleep(for: wait)
-                        attempt += 1
-                        node = await self.getNode(readOnly: readOnly)
-                        continue executeCommands
+        do {
+            var node = try await self.getNode(readOnly: readOnly)
+            executeCommands: while true {
+                let results = await node.execute(repeat each commands)
+                if Task.isCancelled {
+                    return results
+                }
+                for result in repeat each results {
+                    if case .failure(let error) = result {
+                        switch self.getRetryAction(from: error) {
+                        case .redirect(let redirectError):
+                            guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                return results
+                            }
+                            try? await Task.sleep(for: wait)
+                            attempt += 1
+                            self.setPrimary(redirectError.address)
+                            node = try await self.getNode(readOnly: false)
+                            continue executeCommands
+                        case .tryAgain(let refreshPrimary):
+                            if refreshPrimary {
+                                self.refreshPrimary()
+                            }
+                            guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                return results
+                            }
+                            try? await Task.sleep(for: wait)
+                            attempt += 1
+                            node = try await self.getNode(readOnly: readOnly)
+                            continue executeCommands
 
-                    case .dontRetry:
-                        break
+                        case .dontRetry:
+                            break
+                        }
                     }
                 }
+                return results
             }
-            return results
+        } catch {
+            return (repeat Result<(each Command).Response, ValkeyClientError>.failure(error))
         }
     }
 
@@ -572,58 +597,62 @@ extension ValkeyClient {
                 commands.reduce(true) { $0 && $1.isReadOnly }
             }
         // get node client and execute commands
-        var node = await self.getNode(readOnly: readOnly)
-        var results = await node.execute(commands)
+        do {
+            var node = try await self.getNode(readOnly: readOnly)
+            var results = await node.execute(commands)
 
-        var attempt = 0
-        var startIndex = commands.startIndex
-        var resultIndex = results.startIndex
+            var attempt = 0
+            var startIndex = commands.startIndex
+            var resultIndex = results.startIndex
 
-        // Process results, If we find one that needs a retry, then retry command and all the commands that follow
-        while !Task.isCancelled {
-            // loop through results that haven't been checked
-            resultLoop: for result in results[resultIndex...] {
-                if case .failure(let error) = result {
-                    switch self.getRetryAction(from: error) {
-                    case .redirect(let redirectError):
-                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
-                            return results
-                        }
-                        try? await Task.sleep(for: wait)
-                        attempt += 1
-                        self.setPrimary(redirectError.address)
-                        node = await self.getNode(readOnly: false)
-                        break resultLoop
-                    case .tryAgain(let refreshPrimary):
-                        if refreshPrimary {
-                            self.refreshPrimary()
-                        }
-                        guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
-                            return results
-                        }
-                        try? await Task.sleep(for: wait)
-                        attempt += 1
-                        node = await self.getNode(readOnly: readOnly)
-                        break resultLoop
+            // Process results, If we find one that needs a retry, then retry command and all the commands that follow
+            while !Task.isCancelled {
+                // loop through results that haven't been checked
+                resultLoop: for result in results[resultIndex...] {
+                    if case .failure(let error) = result {
+                        switch self.getRetryAction(from: error) {
+                        case .redirect(let redirectError):
+                            guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                return results
+                            }
+                            try? await Task.sleep(for: wait)
+                            attempt += 1
+                            self.setPrimary(redirectError.address)
+                            node = try await self.getNode(readOnly: false)
+                            break resultLoop
+                        case .tryAgain(let refreshPrimary):
+                            if refreshPrimary {
+                                self.refreshPrimary()
+                            }
+                            guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                return results
+                            }
+                            try? await Task.sleep(for: wait)
+                            attempt += 1
+                            node = try await self.getNode(readOnly: readOnly)
+                            break resultLoop
 
-                    case .dontRetry:
-                        break
+                        case .dontRetry:
+                            break
+                        }
                     }
+                    resultIndex += 1
+                    startIndex = commands.index(after: startIndex)
                 }
-                resultIndex += 1
-                startIndex = commands.index(after: startIndex)
+                // if no results require a retry break out of loop
+                if resultIndex == results.count {
+                    break
+                }
+                // Retry commands that failed and all subsequent commands
+                let newResults = await node.execute(commands[startIndex...])
+                // Replace old results with new results
+                results.removeLast(newResults.count)
+                results.append(contentsOf: newResults)
             }
-            // if no results require a retry break out of loop
-            if resultIndex == results.count {
-                break
-            }
-            // Retry commands that failed and all subsequent commands
-            let newResults = await node.execute(commands[startIndex...])
-            // Replace old results with new results
-            results.removeLast(newResults.count)
-            results.append(contentsOf: newResults)
+            return results
+        } catch {
+            return .init(repeating: .failure(error), count: commands.count)
         }
-        return results
     }
     /// Pipeline a series of commands as a transaction to Valkey connection
     ///
@@ -646,7 +675,7 @@ extension ValkeyClient {
         }
         var attempt = 0
         outsideLoop: repeat {
-            let node = await self.getNode(readOnly: readOnly)
+            let node = try await self.getNode(readOnly: readOnly)
             do {
                 return try await node.transaction(repeat each commands)
             } catch let error as ValkeyTransactionError {
@@ -712,7 +741,7 @@ extension ValkeyClient {
             }
         var attempt = 0
         outsideLoop: repeat {
-            let node = await self.getNode(readOnly: readOnly)
+            let node = try await self.getNode(readOnly: readOnly)
             do {
                 return try await node.transaction(commands)
             } catch let error as ValkeyTransactionError {
@@ -774,7 +803,7 @@ extension ValkeyClient {
 
     @usableFromInline
     /* private */ func setTopology(primary: ValkeyServerAddress, replicas: [ValkeyServerAddress]) {
-        let action = self.stateMachine.withLock { $0.setTopology(primary: primary, replicas: replicas) }
+        let action = self.stateMachine.withLock { $0.sentinelSetTopology(primary: primary, replicas: replicas) }
         for client in action.clientsToRun {
             self.queueAction(.runNodeClient(client))
         }

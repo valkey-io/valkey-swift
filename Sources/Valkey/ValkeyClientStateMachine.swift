@@ -38,9 +38,10 @@ struct ValkeyClientStateMachine<
         @usableFromInline
         struct WaitingForPrimaryContext {
             @usableFromInline
-            var notifiers: [Int: SuccessNotifier]
+            var waiters: [Int: SuccessNotifier]
         }
         case waitingForPrimary(WaitingForPrimaryContext)
+        case sentinelError(any Error)
         case healthy(HealthyContext)
         case shutdown
     }
@@ -77,7 +78,7 @@ struct ValkeyClientStateMachine<
 
     init(poolFactory: ConnectionPoolFactory, configuration: ValkeyClientConfiguration) {
         self.runningClients = .init(poolFactory: poolFactory)
-        self.state = .waitingForPrimary(.init(notifiers: [:]))
+        self.state = .waitingForPrimary(.init(waiters: [:]))
         self.topologyRefreshState = .notRefreshing
         self.configuration = .init(
             findReplicas: configuration.readOnlyCommandNodeSelection != .primary,
@@ -135,7 +136,7 @@ struct ValkeyClientStateMachine<
 
         let waiters: [SuccessNotifier] =
             if case .waitingForPrimary(let context) = self.state {
-                Array(context.notifiers.values)
+                Array(context.waiters.values)
             } else {
                 .init()
             }
@@ -157,85 +158,6 @@ struct ValkeyClientStateMachine<
         }
     }
 
-    @usableFromInline
-    struct SetTopologyAction {
-        let primaryClient: ConnectionPool
-        let clientsToRun: [ConnectionPool]
-        let clientsToShutdown: [ConnectionPool]
-        let waiters: [SuccessNotifier]
-
-        init(primaryClient: ConnectionPool, clientsToRun: [ConnectionPool], clientsToShutdown: [ConnectionPool], waiters: [SuccessNotifier]) {
-            self.primaryClient = primaryClient
-            self.clientsToRun = clientsToRun
-            self.clientsToShutdown = clientsToShutdown
-            self.waiters = waiters
-        }
-    }
-
-    @usableFromInline
-    mutating func setTopology(primary: ValkeyServerAddress, replicas: [ValkeyServerAddress]) -> SetTopologyAction {
-        var nodes: [ValkeyClientNodeDescription] = [.init(address: primary)]
-        nodes.append(contentsOf: replicas.lazy.map { .init(address: $0) })
-        let action = self.runningClients.updateNodes(nodes, removeUnmentionedPools: true)
-        guard let primaryClient = self.runningClients[primary]?.pool else {
-            preconditionFailure()
-        }
-        let waiters: [SuccessNotifier]
-        switch self.state {
-        case .healthy:
-            self.state = .healthy(.init(nodes: .init(primary: primary, replicas: replicas)))
-            waiters = []
-        case .waitingForPrimary(let context):
-            self.state = .healthy(.init(nodes: .init(primary: primary, replicas: replicas)))
-            waiters = Array(context.notifiers.values)
-        case .shutdown:
-            preconditionFailure("Shouldn't set primary when shutdown")
-        }
-
-        return .init(
-            primaryClient: primaryClient,
-            clientsToRun: action.poolsToRun.map { $0.0 },
-            clientsToShutdown: action.poolsToShutdown,
-            waiters: waiters
-        )
-    }
-
-    @usableFromInline
-    enum SetWaitingForPrimaryAction {
-        case triggerGetPrimary
-        case doNothing
-    }
-
-    mutating func setWaitingForPrimary() -> SetWaitingForPrimaryAction {
-        switch self.state {
-        case .healthy:
-            self.state = .waitingForPrimary(.init(notifiers: [:]))
-            return .triggerGetPrimary
-        case .waitingForPrimary:
-            return .doNothing
-        case .shutdown:
-            preconditionFailure("Shouldn't set waiting for primary when shutdown")
-        }
-    }
-
-    @usableFromInline
-    mutating func waitForPrimary(waiterID: Int, successNotifier: SuccessNotifier) -> Result<ConnectionPool, any Error>? {
-        switch self.state {
-        case .waitingForPrimary(var context):
-            context.notifiers[waiterID] = successNotifier
-            self.state = .waitingForPrimary(context)
-            return nil
-        case .healthy(let healthContext):
-            if let pool = self.runningClients[healthContext.nodes.primary]?.pool {
-                return .success(pool)
-            } else {
-                preconditionFailure()
-            }
-        case .shutdown:
-            return .failure(ValkeyClientError(.clientIsShutDown))
-        }
-    }
-
     enum TimerFiredAction {
         case runRole
         case doNothing
@@ -249,6 +171,8 @@ struct ValkeyClientStateMachine<
                 return .doNothing
             case .healthy:
                 break
+            case .sentinelError:
+                preconditionFailure("Topoogy discovery should not occur if using sentinel")
             case .shutdown:
                 return .doNothing
             }
@@ -275,6 +199,8 @@ struct ValkeyClientStateMachine<
             switch self.state {
             case .shutdown, .waitingForPrimary:
                 return .cancelTimer(token)
+            case .sentinelError:
+                preconditionFailure("Topoogy discovery should not occur if using sentinel")
             case .healthy:
                 break
             }
@@ -416,6 +342,113 @@ struct ValkeyClientStateMachine<
                 self.topologyRefreshState = .notRefreshing
                 return .init(retryTimer: nil)
             }
+        }
+    }
+
+    @usableFromInline
+    struct SetTopologyAction {
+        let primaryClient: ConnectionPool
+        let clientsToRun: [ConnectionPool]
+        let clientsToShutdown: [ConnectionPool]
+        let waiters: [SuccessNotifier]
+
+        init(primaryClient: ConnectionPool, clientsToRun: [ConnectionPool], clientsToShutdown: [ConnectionPool], waiters: [SuccessNotifier]) {
+            self.primaryClient = primaryClient
+            self.clientsToRun = clientsToRun
+            self.clientsToShutdown = clientsToShutdown
+            self.waiters = waiters
+        }
+    }
+
+    @usableFromInline
+    mutating func sentinelSetTopology(primary: ValkeyServerAddress, replicas: [ValkeyServerAddress]) -> SetTopologyAction {
+        var nodes: [ValkeyClientNodeDescription] = [.init(address: primary)]
+        nodes.append(contentsOf: replicas.lazy.map { .init(address: $0) })
+        let action = self.runningClients.updateNodes(nodes, removeUnmentionedPools: true)
+        guard let primaryClient = self.runningClients[primary]?.pool else {
+            preconditionFailure()
+        }
+        let waiters: [SuccessNotifier]
+        switch self.state {
+        case .healthy:
+            self.state = .healthy(.init(nodes: .init(primary: primary, replicas: replicas)))
+            waiters = []
+        case .sentinelError:
+            self.state = .healthy(.init(nodes: .init(primary: primary, replicas: replicas)))
+            waiters = []
+        case .waitingForPrimary(let context):
+            self.state = .healthy(.init(nodes: .init(primary: primary, replicas: replicas)))
+            waiters = Array(context.waiters.values)
+        case .shutdown:
+            preconditionFailure("Shouldn't set primary when shutdown")
+        }
+
+        return .init(
+            primaryClient: primaryClient,
+            clientsToRun: action.poolsToRun.map { $0.0 },
+            clientsToShutdown: action.poolsToShutdown,
+            waiters: waiters
+        )
+    }
+
+    enum ReportErrorAction {
+        case reportError([SuccessNotifier])
+        case doNothing
+    }
+    mutating func sentinelReportError(error: any Error) -> ReportErrorAction {
+        switch self.state {
+        case .healthy:
+            self.state = .sentinelError(error)
+            return .doNothing
+        case .sentinelError:
+            // update error
+            self.state = .sentinelError(error)
+            return .doNothing
+        case .waitingForPrimary(let context):
+            self.state = .sentinelError(error)
+            return .reportError(Array(context.waiters.values))
+        case .shutdown:
+            preconditionFailure("Shouldn't set primary when shutdown")
+        }
+    }
+
+    @usableFromInline
+    enum SetWaitingForPrimaryAction {
+        case triggerGetPrimary
+        case doNothing
+    }
+
+    mutating func sentinelSetWaitingForPrimary() -> SetWaitingForPrimaryAction {
+        switch self.state {
+        case .healthy:
+            self.state = .waitingForPrimary(.init(waiters: [:]))
+            return .triggerGetPrimary
+        case .waitingForPrimary:
+            return .doNothing
+        case .sentinelError:
+            return .doNothing
+        case .shutdown:
+            preconditionFailure("Shouldn't set waiting for primary when shutdown")
+        }
+    }
+
+    @usableFromInline
+    mutating func sentinelWaitForPrimary(waiterID: Int, successNotifier: SuccessNotifier) -> Result<ConnectionPool, any Error>? {
+        switch self.state {
+        case .waitingForPrimary(var context):
+            context.waiters[waiterID] = successNotifier
+            self.state = .waitingForPrimary(context)
+            return nil
+        case .healthy(let healthContext):
+            if let pool = self.runningClients[healthContext.nodes.primary]?.pool {
+                return .success(pool)
+            } else {
+                preconditionFailure()
+            }
+        case .sentinelError(let error):
+            return .failure(error)
+        case .shutdown:
+            return .failure(ValkeyClientError(.clientIsShutDown))
         }
     }
 
