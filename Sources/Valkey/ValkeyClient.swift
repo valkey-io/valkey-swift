@@ -47,6 +47,8 @@ public final class ValkeyClient: Sendable {
     var eventLoopGroup: any EventLoopGroup { self.nodeClientFactory.eventLoopGroup }
     /// Logger
     let logger: Logger
+    @usableFromInline
+    /* private */ let nextRequestIDGenerator = Atomic(0)
     /// running atomic
     let runningAtomic: Atomic<Bool>
 
@@ -259,15 +261,29 @@ extension ValkeyClient {
             // We didn't get a node from the state machine we should wait for the primary to be set
             // TODO: Deal with cancellation, and returning errors
             do {
-                return try await withCheckedThrowingContinuation { cont in
-                    let value = self.stateMachine.withLock { $0.sentinelWaitForPrimary(waiterID: 0, successNotifier: cont) }
-                    switch value {
-                    case .none:
+                let waiterID = self.nextRequestID()
+                return try await withTaskCancellationHandler {
+                    if Task.isCancelled {
+                        throw ValkeyClientError(.cancelled)
+                    }
+                    return try await withCheckedThrowingContinuation { cont in
+                        let value = self.stateMachine.withLock { $0.sentinelWaitForPrimary(waiterID: waiterID, successNotifier: cont) }
+                        switch value {
+                        case .none:
+                            break
+                        case .success(let node):
+                            cont.resume(returning: node)
+                        case .failure(let error):
+                            cont.resume(throwing: error)
+                        }
+                    }
+                } onCancel: {
+                    let action = self.stateMachine.withLock { $0.sentinelCancelWaitingForPrimary(waiterID: waiterID) }
+                    switch action {
+                    case .cancel(let cont):
+                        cont.resume(throwing: ValkeyClientError(.cancelled))
+                    case .doNothing:
                         break
-                    case .success(let node):
-                        cont.resume(returning: node)
-                    case .failure(let error):
-                        cont.resume(throwing: error)
                     }
                 }
             } catch let error as ValkeyClientError {
@@ -870,6 +886,11 @@ extension ValkeyClient {
         default:
             return .dontRetry
         }
+    }
+
+    @inlinable
+    /* private */ func nextRequestID() -> Int {
+        self.nextRequestIDGenerator.wrappingAdd(1, ordering: .relaxed).oldValue
     }
 }
 

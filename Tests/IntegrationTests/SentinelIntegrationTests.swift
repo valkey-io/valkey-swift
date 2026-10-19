@@ -21,6 +21,7 @@ struct SentinelIntegrationTests {
     @available(valkeySwift 1.0, *)
     func withValkeyClient(
         primaryName: String,
+        sentinelNodeDiscovery: some ValkeyNodeDiscovery = ValkeyStaticNodeDiscovery([.init(endpoint: sentinelHostname!, port: sentinelPort!)]),
         configuration: ValkeyClientConfiguration = .init(),
         logger: Logger,
         operation: @escaping @Sendable (ValkeyClient) async throws -> Void
@@ -28,7 +29,7 @@ struct SentinelIntegrationTests {
         try await withThrowingTaskGroup(of: Void.self) { group in
             let client = ValkeyClient(
                 primaryName: primaryName,
-                sentinelNodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: sentinelHostname!, port: sentinelPort!)]),
+                sentinelNodeDiscovery: sentinelNodeDiscovery,
                 configuration: configuration,
                 logger: logger
             )
@@ -136,6 +137,33 @@ struct SentinelIntegrationTests {
             #expect(error?.errorCode == .sentinelError)
             let sentinelError = try #require(error?.underlyingError as? ValkeySentinelError)
             #expect(sentinelError == .sentinelUnknownPrimary)
+            error = await #expect(throws: ValkeyClientError.self) {
+                try await client.info()
+            }
+            #expect(error?.errorCode == .sentinelError)
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientUnknownSentinel() async throws {
+        let logger = {
+            var logger = Logger(label: "testClientWithSentinel")
+            logger.logLevel = .trace
+            return logger
+        }()
+        try await self.withValkeyClient(
+            primaryName: "testUnknownPrimary",
+            sentinelNodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: "127.0.0.1", port: 16383)]),
+            configuration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
+            logger: logger
+        ) { client in
+            var error = await #expect(throws: ValkeyClientError.self) {
+                try await client.info()
+            }
+            #expect(error?.errorCode == .sentinelError)
+            let sentinelError = try #require(error?.underlyingError as? ValkeySentinelError)
+            #expect(sentinelError == .sentinelNoConsensusReached)
             error = await #expect(throws: ValkeyClientError.self) {
                 try await client.info()
             }

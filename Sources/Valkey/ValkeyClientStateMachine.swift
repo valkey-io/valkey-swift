@@ -452,6 +452,25 @@ struct ValkeyClientStateMachine<
         }
     }
 
+    @usableFromInline
+    enum CancelWaitingForPrimaryResult {
+        case cancel(SuccessNotifier)
+        case doNothing
+    }
+
+    @usableFromInline
+    mutating func sentinelCancelWaitingForPrimary(waiterID: Int) -> CancelWaitingForPrimaryResult {
+        switch self.state {
+        case .waitingForPrimary(var context):
+            guard let waiter = context.waiters[waiterID] else { return .doNothing }
+            context.waiters.removeValue(forKey: waiterID)
+            self.state = .waitingForPrimary(context)
+            return .cancel(waiter)
+        case .healthy, .sentinelError, .shutdown:
+            return .doNothing
+        }
+    }
+
     private mutating func nextTimerID() -> Int {
         defer { self._nextTimerID += 1 }
         return self._nextTimerID
