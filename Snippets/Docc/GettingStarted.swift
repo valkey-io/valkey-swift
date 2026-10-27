@@ -11,7 +11,7 @@ func connectTaskGroupExample() async throws {
     // snippet.show
     // snippet.client-taskgroup
 
-    let valkeyClient = ValkeyClient(.hostname("localhost", port: 6379), logger: logger)
+    let valkeyClient = ValkeyClient(.hostname("localhost"))
     await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask {
             // run connection pool in the background
