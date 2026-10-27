@@ -87,13 +87,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ///   - configuration: Configuration of Valkey connection
     ///   - eventLoop: EventLoop to run connection on
     ///   - logger: Logger for connection
-    ///   - operation: Closure handling Valkey connection
+    ///   - operation: Closure handling Valkey connection. Defaults to the task-local logger.
     /// - Returns: Return value of operation closure
     public static func withConnection<Value>(
         address: ValkeyServerAddress,
         configuration: ValkeyConnectionConfiguration = .init(),
         eventLoop: any EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
-        logger: Logger,
+        logger: Logger = .current,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> sending Value {
         let connection = try await connect(
