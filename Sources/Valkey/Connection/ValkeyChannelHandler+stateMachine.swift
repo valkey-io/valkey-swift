@@ -171,8 +171,9 @@ extension ValkeyChannelHandler {
                 }
             case .active(var state):
                 guard let command = state.pendingCommands.popFirst() else {
-                    self = .closed(nil)
-                    return .closeWithError(ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"))
+                    let error = ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")
+                    self = .closed(error)
+                    return .closeWithError(error)
                 }
                 self = .active(state)
                 let deadlineCallback: DeadlineCallbackAction =
@@ -398,21 +399,21 @@ extension ValkeyChannelHandler {
         }
         /// Want to close the connection
         @usableFromInline
-        mutating func close() -> CloseAction {
+        mutating func close(error: ValkeyClientError?) -> CloseAction {
             switch consume self.state {
             case .initialized:
-                self = .closed(nil)
+                self = .closed(error)
                 return .doNothing
             case .connected(let state):
-                self = .closed(nil)
+                self = .closed(error)
                 var pendingCommands = state.pendingCommands
                 pendingCommands.prepend(state.pendingHelloCommand)
                 return .failPendingCommandsAndClose(state.context, pendingCommands)
             case .active(let state):
-                self = .closed(nil)
+                self = .closed(error)
                 return .failPendingCommandsAndClose(state.context, state.pendingCommands)
             case .closing(let state):
-                self = .closed(nil)
+                self = .closed(error)
                 return .failPendingCommandsAndClose(state.context, state.pendingCommands)
             case .closed(let error):
                 self = .closed(error)

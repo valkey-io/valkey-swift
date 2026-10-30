@@ -470,7 +470,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     func handleError(context: ChannelHandlerContext, error: ValkeyClientError) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
-        switch self.stateMachine.close() {
+        switch self.stateMachine.close(error: error) {
         case .failPendingCommandsAndClose(let context, let commands):
             for command in commands {
                 command.promise.fail(error)
