@@ -25,7 +25,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         stateMachine.setConnected(context: "testClose")
         stateMachine.receiveHelloResponse()
         expect(stateMachine.state == .active(.init(context: "testClose", pendingCommands: [])))
-        switch stateMachine.close() {
+        switch stateMachine.close(error: nil) {
         case .failPendingCommandsAndClose(let context, let commands):
             #expect(context == "testClose")
             #expect(commands.count == 0)
@@ -53,7 +53,7 @@ struct ValkeyChannelHandlerStateMachineTests {
             stateMachine.state
                 == .connected(.init(context: "testCloseBeforeHello", pendingHelloCommand: state.pendingHelloCommand, pendingCommands: []))
         )
-        switch stateMachine.close() {
+        switch stateMachine.close(error: nil) {
         case .failPendingCommandsAndClose(let context, let commands):
             #expect(context == "testCloseBeforeHello")
             #expect(commands.count == 1)
@@ -303,7 +303,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .closeWithError(let valkeyError):
             #expect(valkeyError.errorCode == .unsolicitedToken)
         }
-        expect(stateMachine.state == .closed(nil))
+        expect(stateMachine.state == .closed(ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")))
     }
 
     @Test
