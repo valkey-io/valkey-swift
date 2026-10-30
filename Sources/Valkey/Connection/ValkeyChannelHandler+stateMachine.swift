@@ -451,6 +451,28 @@ extension ValkeyChannelHandler {
             }
         }
 
+        @usableFromInline
+        enum SetInactiveAction {
+            case finishProcessing
+            case doNothing
+        }
+
+        @usableFromInline
+        func setInactive() -> SetInactiveAction {
+            switch self.state {
+            case .initialized:
+                return .doNothing
+            case .connected:
+                return .doNothing
+            case .active:
+                return .finishProcessing
+            case .closing:
+                return .finishProcessing
+            case .closed:
+                return .doNothing
+            }
+        }
+
         private static var initialized: Self {
             StateMachine(.initialized)
         }
