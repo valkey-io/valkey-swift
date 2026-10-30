@@ -149,6 +149,11 @@ Valkey Swift clients conform to `Service`:
 
 @Snippet(path: "valkey-swift/Snippets/Docc/MigratingFromRediStack", slice: "serviceLifecycle")
 
+### Logging
+
+RediStack uses [a custom pattern](https://github.com/swift-server/RediStack/blob/main/docs/api-design/Logging.md) for logging.
+Valkey Swift by default logs all events using [the current task-local logger](https://swiftpackageindex.com/apple/swift-log/documentation/logging/logger/current), but you can provide a custom logger in the client initializer if you prefer.
+
 ## Migrate commands
 
 Once your connections work, update your command call sites.

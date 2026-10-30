@@ -42,7 +42,7 @@ var package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.4"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.6.3"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.14.0"),
         .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.3.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.93.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
