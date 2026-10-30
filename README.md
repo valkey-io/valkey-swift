@@ -19,11 +19,11 @@ Create a client with server connection details:
 ```swift
 import Valkey
 
-let valkeyClient = ValkeyClient(
-    .hostname("127.0.0.1", port: 6379),
-    logger: logger
-)
+let valkeyClient = ValkeyClient(.hostname("127.0.0.1"))
 ```
+
+By default, the client connects to the default Valkey port (6379), but you can specify a different port if needed.
+The client also uses by default [the current task-local logger](https://swiftpackageindex.com/apple/swift-log/documentation/logging/logger/current), but you can provide a custom logger if you prefer.
 
 #### Running the Client
 
@@ -69,7 +69,7 @@ let services: [Service] = [myApp, valkeyClient]
 let serviceGroup = ServiceGroup(
     services: services,
     gracefulShutdownSignals: [.sigint, .sigterm],
-    logger: logger
+    logger: .current
 )
 try await serviceGroup.run()
 ```
@@ -133,9 +133,10 @@ try await valkeyClient.subscribe(to: "notifications") { stream in
 
 When you subscribe from a `ValkeyClient`, the subscription runs on a dedicated connection, kept separate from the connection pool used for every other command. Because of this, you can publish and run other commands on the *same* client while a subscription is active, the client manages the two connections for you.
 
-
+```swift
 // The client keeps subscribe and publish on separate connections automatically.
 try await valkeyClient.publish(channel: "notifications", message: "hello")
+```
 
 > **Note:** valkey-swift uses the RESP3 protocol, so a single connection can handle both subscriptions and regular commands. `ValkeyClient` still runs subscriptions on their own dedicated connection because subscriptions are long-running and can hold a connection open for a long time, keeping them separate avoids tying up the pool used for other commands.
 
@@ -167,8 +168,7 @@ let configuration = ValkeyClusterClientConfiguration(
 
 let clusterClient = ValkeyClusterClient(
     nodeDiscovery: discovery,
-    configuration: configuration,
-    logger: logger
+    configuration: configuration
 )
 ```
 

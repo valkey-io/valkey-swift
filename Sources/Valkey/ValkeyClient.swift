@@ -55,13 +55,13 @@ public final class ValkeyClient: Sendable {
     /// - Parameters:
     ///   - address: Valkey database address
     ///   - configuration: Valkey client configuration
-    ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
-    ///   - logger: Logger
+    ///   - eventLoopGroup: EventLoopGroup to run the client on
+    ///   - logger: Logger to use for the client. Defaults to the task-local logger.
     public convenience init(
         _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(),
         eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
-        logger: Logger
+        logger: Logger = .current
     ) {
         self.init(
             address,

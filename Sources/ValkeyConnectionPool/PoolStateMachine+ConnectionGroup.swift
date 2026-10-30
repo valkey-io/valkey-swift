@@ -929,6 +929,7 @@ extension PoolStateMachine {
                 }
 
             default:
+                self.removeO1(indexToDelete)
                 return nil
             }
         }

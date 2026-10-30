@@ -10,8 +10,6 @@ import NIOSSL
 import ServiceLifecycle
 import Valkey
 
-let logger = Logger(label: "migration-example")
-
 @available(macOS 15.0, *)
 func connectStandaloneExample() async throws {
     // snippet.show
@@ -24,8 +22,7 @@ func connectStandaloneExample() async throws {
                 username: "default",
                 password: "secret"
             )
-        ),
-        logger: logger
+        )
     )
 
     await withTaskGroup(of: Void.self) { group in
@@ -55,8 +52,7 @@ func connectionPoolExample() async {
                 maximumConnectionSoftLimit: 8,
                 maximumConnectionHardLimit: 16
             )
-        ),
-        logger: logger
+        )
     )
     // Pool starts when you call client.run() and stops on cancellation
     async let _ = client.run()
@@ -76,8 +72,7 @@ func tlsConfigurationExample() async throws {
         .hostname("valkey.example.com", port: 6380),
         configuration: try .init(
             tls: .enable(tlsConfiguration, tlsServerName: "valkey.example.com")
-        ),
-        logger: logger
+        )
     )
     //snippet.end
 
@@ -95,14 +90,11 @@ func serviceLifecycleExample() async throws {
     // snippet.show
 
     // snippet.serviceLifecycle
-    let client = ValkeyClient(
-        .hostname("localhost", port: 6379),
-        logger: logger
-    )
+    let client = ValkeyClient(.hostname("localhost"))
     let serviceGroup = ServiceGroup(
         services: [client, webserver],
         gracefulShutdownSignals: [.sigint, .sigterm],
-        logger: logger
+        logger: .current
     )
     try await serviceGroup.run()
     //snippet.end
@@ -205,7 +197,7 @@ func clusterExamples() async throws {
     // snippet.clusterSetup
     let clusterClient = ValkeyClusterClient(
         nodeDiscovery: ValkeyStaticNodeDiscovery([
-            .init(endpoint: "node1.example.com", port: 6379)
+            .init(endpoint: "node1.example.com")
         ]),
         configuration: .init(
             client: .init(
@@ -215,14 +207,13 @@ func clusterExamples() async throws {
                 )
             ),
             clusterRefreshInterval: .seconds(30)
-        ),
-        logger: logger
+        )
     )
 
     let clusterServiceGroup = ServiceGroup(
         services: [clusterClient],
         gracefulShutdownSignals: [.sigint, .sigterm],
-        logger: logger
+        logger: .current
     )
     try await clusterServiceGroup.run()
     //snippet.end
@@ -259,8 +250,7 @@ func customDiscoveryExample() async throws {
                     password: "secret"
                 )
             )
-        ),
-        logger: logger
+        )
     )
     //snippet.end
 
@@ -273,10 +263,7 @@ func customDiscoveryExample() async throws {
 //   container run -d --name valkey-test \
 //     -p 6379:6379 docker.io/valkey/valkey:latest
 if #available(macOS 15.0, *) {
-    let client = ValkeyClient(
-        .hostname("localhost", port: 6379),
-        logger: logger
-    )
+    let client = ValkeyClient(.hostname("localhost"))
     try await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask { await client.run() }
 

@@ -356,14 +356,19 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     @usableFromInline
     func channelInactive(context: ChannelHandlerContext) {
-        do {
-            try self.decoder.finishProcessing(seenEOF: true) { token in
-                self.handleToken(context: context, token: token)
+        switch self.stateMachine.setInactive() {
+        case .finishProcessing:
+            do {
+                try self.decoder.finishProcessing(seenEOF: true) { token in
+                    self.handleToken(context: context, token: token)
+                }
+            } catch let error as RESPParsingError {
+                self.handleError(context: context, error: ValkeyClientError(.respParsingError, error: error))
+            } catch {
+                preconditionFailure("Expected to only get RESPParsingError from the RESPTokenDecoder.")
             }
-        } catch let error as RESPParsingError {
-            self.handleError(context: context, error: ValkeyClientError(.respParsingError, error: error))
-        } catch {
-            preconditionFailure("Expected to only get RESPParsingError from the RESPTokenDecoder.")
+        case .doNothing:
+            break
         }
         self.setClosed()
 
@@ -470,7 +475,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     func handleError(context: ChannelHandlerContext, error: ValkeyClientError) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
-        switch self.stateMachine.close() {
+        switch self.stateMachine.close(error: error) {
         case .failPendingCommandsAndClose(let context, let commands):
             for command in commands {
                 command.promise.fail(error)
