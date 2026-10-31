@@ -14,18 +14,34 @@ import Synchronization
 @available(valkeySwift 1.0, *)
 package final class ValkeyConnectionFactory: Sendable {
 
-    enum Mode: Sendable {
-        case `default`
-        case custom(@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)
+    enum Mode: Sendable, ~Copyable {
+        enum Handler: Sendable {
+            case `default`
+            case custom(@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)
+        }
+        struct SentinelContext: ~Copyable {
+            let currentPrimary: Mutex<ValkeyServerAddress?>
+            let sentinelClient: ValkeySentinelClient
+            let handler: Handler
+        }
+        case standalone(Handler)
+        case sentinel(SentinelContext)
     }
 
     let mode: Mode
     let configuration: ValkeyClientConfiguration
     let cache: SSLContextCache?
 
-    package init(configuration: ValkeyClientConfiguration) {
+    package init(
+        configuration: ValkeyClientConfiguration,
+        customHandler: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
+    ) {
         self.configuration = configuration
-        self.mode = .default
+        if let customHandler {
+            self.mode = .standalone(.custom(customHandler))
+        } else {
+            self.mode = .standalone(.default)
+        }
         switch configuration.tls.base {
         case .enable(let tlsConfiguration, _):
             self.cache = SSLContextCache(tlsConfiguration: tlsConfiguration)
@@ -36,13 +52,14 @@ package final class ValkeyConnectionFactory: Sendable {
 
     package init(
         configuration: ValkeyClientConfiguration,
-        customHandler: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)?
+        sentinelClient: ValkeySentinelClient,
+        customHandler: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
     ) {
         self.configuration = configuration
         if let customHandler {
-            self.mode = .custom(customHandler)
+            self.mode = .sentinel(.init(currentPrimary: .init(nil), sentinelClient: sentinelClient, handler: .custom(customHandler)))
         } else {
-            self.mode = .default
+            self.mode = .sentinel(.init(currentPrimary: .init(nil), sentinelClient: sentinelClient, handler: .default))
         }
         switch configuration.tls.base {
         case .enable(let tlsConfiguration, _):
@@ -60,6 +77,51 @@ package final class ValkeyConnectionFactory: Sendable {
         logger: Logger
     ) async throws -> ValkeyConnection {
         switch self.mode {
+        case .standalone(let handler):
+            return try await self.makeConnection(
+                handler: handler,
+                address: address,
+                readOnly: readOnly,
+                connectionID: connectionID,
+                eventLoop: eventLoop,
+                logger: logger
+            )
+
+        case .sentinel(let context):
+            switch address.value {
+            case .sentinel:
+                let address = try await context.sentinelClient.getNodes().primary
+                return try await self.makeConnection(
+                    handler: context.handler,
+                    address: address,
+                    readOnly: readOnly,
+                    connectionID: connectionID,
+                    eventLoop: eventLoop,
+                    logger: logger
+                )
+
+            default:
+                return try await self.makeConnection(
+                    handler: context.handler,
+                    address: address,
+                    readOnly: readOnly,
+                    connectionID: connectionID,
+                    eventLoop: eventLoop,
+                    logger: logger
+                )
+            }
+        }
+    }
+
+    func makeConnection(
+        handler: Mode.Handler,
+        address: ValkeyServerAddress,
+        readOnly: Bool,
+        connectionID: Int,
+        eventLoop: any EventLoop,
+        logger: Logger
+    ) async throws -> ValkeyConnection {
+        switch handler {
         case .default:
             let connectionConfig = try await self.makeConnectionConfiguration(readOnly: readOnly)
             return try await ValkeyConnection.connect(

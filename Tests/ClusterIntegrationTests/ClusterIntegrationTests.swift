@@ -1155,7 +1155,7 @@ extension ValkeyServerAddress {
         switch self.value {
         case .hostname(let hostname, let port):
             (hostname, port)
-        case .unixDomainSocket:
+        case .unixDomainSocket, .sentinel:
             nil
         }
     }

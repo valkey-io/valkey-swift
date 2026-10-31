@@ -702,6 +702,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             commonAttributes[configuration.tracing.attributeNames.serverPort] = (port == 6379 ? nil : port)
         case let .unixDomainSocket(path):
             commonAttributes[configuration.tracing.attributeNames.serverAddress] = path
+        case .sentinel:
+            preconditionFailure("Cannot create connection with sentinel address")
         case nil:
             break
         }
@@ -836,6 +838,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             future.whenSuccess { _ in
                 logger.debug("Client connected to socket path \(path)")
             }
+        case .sentinel:
+            preconditionFailure()
         }
 
         return future.flatMapThrowing { channel in

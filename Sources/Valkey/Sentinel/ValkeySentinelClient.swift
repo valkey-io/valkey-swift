@@ -230,7 +230,7 @@ extension ValkeySentinelClient {
                 ]
             )
             let action = self.stateMachine.withLock {
-                $0.topologyDiscoveryFailed(error: error)
+                $0.topologyDiscoveryFailed(error: ValkeyClientError(.sentinelError, error: error))
             }
             for waiter in action.waitersToFail {
                 waiter.resume(throwing: error)

@@ -5,6 +5,8 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+
+import AsyncAlgorithms
 import Logging
 import NIOCore
 import NIOPosix
@@ -46,6 +48,7 @@ public final class ValkeyClient: Sendable {
         case runTimer(ValkeyTimer)
         case runRole
         case verifyReplicas
+        case runSentinelClient(ValkeySentinelClient)
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -81,17 +84,84 @@ public final class ValkeyClient: Sendable {
     ) {
         self.init(
             address,
-            customHandler: customHandler,
             connectionIDGenerator: ConnectionIDGenerator(),
-            connectionFactory: ValkeyConnectionFactory(configuration: configuration),
+            connectionFactory: ValkeyConnectionFactory(
+                configuration: configuration,
+                customHandler: customHandler
+            ),
             eventLoopGroup: eventLoopGroup,
             logger: logger
         )
     }
 
+    /// Creates a new Valkey client
+    ///
+    /// - Parameters:
+    ///   - address: Valkey database address
+    ///   - configuration: Valkey client configuration
+    ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
+    ///   - logger: Logger
+    public convenience init(
+        primaryName: String,
+        sentinelNodeDiscovery: any ValkeyNodeDiscovery,
+        configuration: ValkeyClientConfiguration = .init(),
+        eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        logger: Logger
+    ) {
+        let sentinelClient = ValkeySentinelClient(
+            primaryName: primaryName,
+            nodeDiscovery: sentinelNodeDiscovery,
+            configuration: .init(clientConfiguration: configuration),
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
+        let connectionFactory = ValkeyConnectionFactory(
+            configuration: configuration,
+            sentinelClient: sentinelClient
+        )
+        self.init(
+            .sentinel,
+            connectionIDGenerator: ConnectionIDGenerator(),
+            connectionFactory: connectionFactory,
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
+        self.queueAction(.runSentinelClient(sentinelClient))
+    }
+
+    package convenience init(
+        primaryName: String,
+        sentinelNodeDiscovery: any ValkeyNodeDiscovery,
+        customHandler: @escaping @Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel,
+        configuration: ValkeyClientConfiguration = .init(),
+        eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        logger: Logger
+    ) {
+        let sentinelClient = ValkeySentinelClient(
+            primaryName: primaryName,
+            nodeDiscovery: sentinelNodeDiscovery,
+            customHandler: customHandler,
+            configuration: .init(clientConfiguration: configuration),
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
+        let connectionFactory = ValkeyConnectionFactory(
+            configuration: configuration,
+            sentinelClient: sentinelClient,
+            customHandler: customHandler
+        )
+        self.init(
+            .sentinel,
+            connectionIDGenerator: ConnectionIDGenerator(),
+            connectionFactory: connectionFactory,
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
+        self.queueAction(.runSentinelClient(sentinelClient))
+    }
+
     package init(
         _ address: ValkeyServerAddress,
-        customHandler: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil,
         connectionIDGenerator: ConnectionIDGenerator,
         connectionFactory: ValkeyConnectionFactory,
         eventLoopGroup: any EventLoopGroup,
@@ -100,10 +170,7 @@ public final class ValkeyClient: Sendable {
         self.nodeClientFactory = ValkeyNodeClientFactory(
             logger: logger,
             configuration: connectionFactory.configuration,
-            connectionFactory: ValkeyConnectionFactory(
-                configuration: connectionFactory.configuration,
-                customHandler: customHandler
-            ),
+            connectionFactory: connectionFactory,
             eventLoopGroup: eventLoopGroup
         )
         self.logger = logger
@@ -188,6 +255,9 @@ extension ValkeyClient {
 
         case .verifyReplicas:
             break
+
+        case .runSentinelClient(let sentinelClient):
+            await sentinelClient.run()
         }
     }
 
@@ -207,10 +277,10 @@ extension ValkeyClient {
                     self.queueAction(.runNodeClient(replicaClient))
                 }
                 // verify all replicas are replicas
-                guard try await self.verifyReplicas(action.clientsToRun) else { throw NotReplicaError() }
+                let verifiedReplicas = await self.verifyReplicas(action.clientsToRun).map(\.serverAddress)
 
-                topology = .primary(replicas: replicas)
-                self.logger.debug("Found replicas \(replicas)")
+                topology = .primary(replicas: verifiedReplicas)
+                self.logger.debug("Found replicas \(verifiedReplicas)")
 
             case .replica(let replica):
                 if !self.configuration.connectingToReplica {
@@ -299,18 +369,22 @@ extension ValkeyClient {
         }
     }
 
-    private func verifyReplicas(_ replicas: [ValkeyNodeClient]) async throws -> Bool {
-        try await withThrowingTaskGroup(of: Bool.self) { group in
+    private func verifyReplicas(_ replicas: [ValkeyNodeClient]) async -> [ValkeyNodeClient] {
+        await withTaskGroup(of: ValkeyNodeClient?.self) { group in
             for replica in replicas {
                 group.addTask {
-                    let role = try await replica.execute(ROLE())
+                    let role = try? await replica.execute(ROLE())
                     guard case .replica = role else {
-                        return false
+                        return nil
                     }
-                    return true
+                    return replica
                 }
             }
-            return try await group.reduce(true) { $0 && $1 }
+            var replicas: [ValkeyNodeClient] = []
+            for await replica in group.compacted() {
+                replicas.append(replica)
+            }
+            return replicas
         }
     }
 }
