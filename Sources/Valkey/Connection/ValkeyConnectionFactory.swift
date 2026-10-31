@@ -20,8 +20,20 @@ package final class ValkeyConnectionFactory: Sendable {
             case custom(@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)
         }
         struct SentinelContext: ~Copyable {
-            let currentPrimary: Mutex<ValkeyServerAddress?>
+            internal init(
+                sentinelClient: ValkeySentinelClient,
+                sentinelUpdatesContinuation: AsyncStream<ValkeyNodeIDs<ValkeyServerAddress>>.Continuation,
+                handler: ValkeyConnectionFactory.Mode.Handler
+            ) {
+                self.currentTopologyHash = .init(0)
+                self.sentinelClient = sentinelClient
+                self.sentinelUpdatesContinuation = sentinelUpdatesContinuation
+                self.handler = handler
+            }
+
+            let currentTopologyHash: Atomic<Int>
             let sentinelClient: ValkeySentinelClient
+            let sentinelUpdatesContinuation: AsyncStream<ValkeyNodeIDs<ValkeyServerAddress>>.Continuation
             let handler: Handler
         }
         case standalone(Handler)
@@ -53,13 +65,26 @@ package final class ValkeyConnectionFactory: Sendable {
     package init(
         configuration: ValkeyClientConfiguration,
         sentinelClient: ValkeySentinelClient,
+        sentinelUpdatesContinuation: AsyncStream<ValkeyNodeIDs<ValkeyServerAddress>>.Continuation,
         customHandler: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
     ) {
         self.configuration = configuration
         if let customHandler {
-            self.mode = .sentinel(.init(currentPrimary: .init(nil), sentinelClient: sentinelClient, handler: .custom(customHandler)))
+            self.mode = .sentinel(
+                .init(
+                    sentinelClient: sentinelClient,
+                    sentinelUpdatesContinuation: sentinelUpdatesContinuation,
+                    handler: .custom(customHandler)
+                )
+            )
         } else {
-            self.mode = .sentinel(.init(currentPrimary: .init(nil), sentinelClient: sentinelClient, handler: .default))
+            self.mode = .sentinel(
+                .init(
+                    sentinelClient: sentinelClient,
+                    sentinelUpdatesContinuation: sentinelUpdatesContinuation,
+                    handler: .default
+                )
+            )
         }
         switch configuration.tls.base {
         case .enable(let tlsConfiguration, _):
@@ -90,10 +115,16 @@ package final class ValkeyConnectionFactory: Sendable {
         case .sentinel(let context):
             switch address.value {
             case .sentinel:
-                let address = try await context.sentinelClient.getNodes().primary
+                // Get Sentinel nodes. If the topology has changed pass nodes to sentinel changes continuation
+                let nodes = try await context.sentinelClient.getNodes()
+                let newHashValue = nodes.hashValue
+                let oldHashValue = context.currentTopologyHash.exchange(newHashValue, ordering: .relaxed)
+                if oldHashValue != newHashValue {
+                    context.sentinelUpdatesContinuation.yield(nodes)
+                }
                 return try await self.makeConnection(
                     handler: context.handler,
-                    address: address,
+                    address: nodes.primary,
                     readOnly: readOnly,
                     connectionID: connectionID,
                     eventLoop: eventLoop,

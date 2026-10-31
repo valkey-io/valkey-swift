@@ -47,9 +47,10 @@ public final class ValkeyClient: Sendable {
         case runNodeClient(ValkeyNodeClient)
         case runTimer(ValkeyTimer)
         case runRole
-        case verifyReplicas
         case runSentinelClient(ValkeySentinelClient)
+        case processSentinelUpdates(AsyncStream<ValkeyNodeIDs<ValkeyServerAddress>>)
     }
+
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
 
@@ -115,9 +116,11 @@ public final class ValkeyClient: Sendable {
             eventLoopGroup: eventLoopGroup,
             logger: logger
         )
+        let sentinelUpdates = AsyncStream.makeStream(of: ValkeyNodeIDs<ValkeyServerAddress>.self)
         let connectionFactory = ValkeyConnectionFactory(
             configuration: configuration,
-            sentinelClient: sentinelClient
+            sentinelClient: sentinelClient,
+            sentinelUpdatesContinuation: sentinelUpdates.continuation
         )
         self.init(
             .sentinel,
@@ -127,6 +130,7 @@ public final class ValkeyClient: Sendable {
             logger: logger
         )
         self.queueAction(.runSentinelClient(sentinelClient))
+        self.queueAction(.processSentinelUpdates(sentinelUpdates.stream))
     }
 
     package convenience init(
@@ -145,9 +149,11 @@ public final class ValkeyClient: Sendable {
             eventLoopGroup: eventLoopGroup,
             logger: logger
         )
+        let sentinelUpdates = AsyncStream.makeStream(of: ValkeyNodeIDs<ValkeyServerAddress>.self)
         let connectionFactory = ValkeyConnectionFactory(
             configuration: configuration,
             sentinelClient: sentinelClient,
+            sentinelUpdatesContinuation: sentinelUpdates.continuation,
             customHandler: customHandler
         )
         self.init(
@@ -158,6 +164,7 @@ public final class ValkeyClient: Sendable {
             logger: logger
         )
         self.queueAction(.runSentinelClient(sentinelClient))
+        self.queueAction(.processSentinelUpdates(sentinelUpdates.stream))
     }
 
     package init(
@@ -253,18 +260,17 @@ extension ValkeyClient {
         case .runTimer(let timer):
             await runTimerAction(timer)
 
-        case .verifyReplicas:
-            break
-
         case .runSentinelClient(let sentinelClient):
             await sentinelClient.run()
+
+        case .processSentinelUpdates(let stream):
+            await processSentinelUpdates(stream)
         }
     }
 
     /// Run ROLE command and update topology based on results
     private func runRoleAction() async {
-        struct NotReplicaError: Error {}
-        var topology: StateMachine.TopologyRefreshInput
+        var topology: StateMachine.TopologyUpdateInput
         let nodeClient = self.getNode(readOnly: false)
         do {
             let role = try await nodeClient.execute(ROLE())
@@ -296,10 +302,10 @@ extension ValkeyClient {
             }
 
             let action = self.stateMachine.withLock { $0.topologyRefreshSucceeded(topology) }
-            for node in action.clientsToRun {
+            for node in action.updateActions.clientsToRun {
                 self.queueAction(.runNodeClient(node))
             }
-            for node in action.clientsToShutdown {
+            for node in action.updateActions.clientsToShutdown {
                 node.triggerGracefulShutdown()
             }
             switch action.nextAction {
@@ -315,6 +321,28 @@ extension ValkeyClient {
             if let timer = action.retryTimer {
                 self.queueAction(.runTimer(timer))
             }
+        }
+    }
+
+    private func processSentinelUpdates(_ stream: AsyncStream<ValkeyNodeIDs<ValkeyServerAddress>>) async {
+        for try await nodes in stream {
+            // add nodes primary found
+            let action = self.stateMachine.withLock { $0.addNewNodes(nodes.replicas) }
+            for replicaClient in action.clientsToRun {
+                self.queueAction(.runNodeClient(replicaClient))
+            }
+            // verify all replicas are replicas
+            let verifiedReplicas = await self.verifyReplicas(action.clientsToRun).map(\.serverAddress)
+
+            let updateAction = self.stateMachine.withLock { $0.topologyUpdate(.primary(replicas: verifiedReplicas)) }
+            guard let updateActions = updateAction.updates else { continue }
+            for node in updateActions.clientsToRun {
+                self.queueAction(.runNodeClient(node))
+            }
+            for node in updateActions.clientsToShutdown {
+                node.triggerGracefulShutdown()
+            }
+            self.logger.debug("Sentinel replicas found \(verifiedReplicas)")
         }
     }
 
@@ -373,11 +401,16 @@ extension ValkeyClient {
         await withTaskGroup(of: ValkeyNodeClient?.self) { group in
             for replica in replicas {
                 group.addTask {
-                    let role = try? await replica.execute(ROLE())
-                    guard case .replica = role else {
+                    do {
+                        let role = try await replica.execute(ROLE())
+                        guard case .replica(_) = role else {
+                            return nil
+                        }
+                        return replica
+                    } catch {
+                        print(error)
                         return nil
                     }
-                    return replica
                 }
             }
             var replicas: [ValkeyNodeClient] = []

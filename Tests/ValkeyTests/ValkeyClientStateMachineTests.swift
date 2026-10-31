@@ -49,10 +49,10 @@ struct ValkeyClientStateMachineTests {
             }
             #expect(timer.timerID == 0)
             #expect(timer.useCase == .nextTopologyDiscovery)
-            #expect(refreshAction.clientsToRun.count == 2)
-            #expect(refreshAction.clientsToRun[0].nodeDescription.address == replicas[0])
-            #expect(refreshAction.clientsToRun[1].nodeDescription.address == replicas[1])
-            #expect(refreshAction.clientsToShutdown.count == 0)
+            #expect(refreshAction.updateActions.clientsToRun.count == 2)
+            #expect(refreshAction.updateActions.clientsToRun[0].nodeDescription.address == replicas[0])
+            #expect(refreshAction.updateActions.clientsToRun[1].nodeDescription.address == replicas[1])
+            #expect(refreshAction.updateActions.clientsToShutdown.count == 0)
 
             // register timer cancellation token
             let registerTimer = stateMachine.registerTimerCancellationToken(.init(id: 1), for: timer)
@@ -125,10 +125,10 @@ struct ValkeyClientStateMachineTests {
             .primary(replicas: [.hostname("127.0.0.1", port: 9002), .hostname("127.0.0.1", port: 9003)])
         )
 
-        #expect(refreshAction2.clientsToRun.count == 1)
-        #expect(refreshAction2.clientsToRun[0].nodeDescription.address == .hostname("127.0.0.1", port: 9003))
-        #expect(refreshAction2.clientsToShutdown.count == 1)
-        #expect(refreshAction2.clientsToShutdown[0].nodeDescription.address == .hostname("127.0.0.1", port: 9001))
+        #expect(refreshAction2.updateActions.clientsToRun.count == 1)
+        #expect(refreshAction2.updateActions.clientsToRun[0].nodeDescription.address == .hostname("127.0.0.1", port: 9003))
+        #expect(refreshAction2.updateActions.clientsToShutdown.count == 1)
+        #expect(refreshAction2.updateActions.clientsToShutdown[0].nodeDescription.address == .hostname("127.0.0.1", port: 9001))
 
         #expect(stateMachine.getNode(.primary).nodeDescription.address == .hostname("127.0.0.1", port: 9000))
         #expect(stateMachine.getNode(.cycleReplicas(0)).nodeDescription.address == .hostname("127.0.0.1", port: 9002))
