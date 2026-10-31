@@ -22,9 +22,9 @@ package final class ValkeyConnectionFactory: Sendable {
         struct SentinelContext: ~Copyable {
             let currentPrimary: Mutex<ValkeyServerAddress?>
             let sentinelClient: ValkeySentinelClient
-            let customHandler: Handler
+            let handler: Handler
         }
-        case `default`(Handler)
+        case standalone(Handler)
         case sentinel(SentinelContext)
     }
 
@@ -38,9 +38,9 @@ package final class ValkeyConnectionFactory: Sendable {
     ) {
         self.configuration = configuration
         if let customHandler {
-            self.mode = .custom(customHandler)
+            self.mode = .standalone(.custom(customHandler))
         } else {
-            self.mode = .default
+            self.mode = .standalone(.default)
         }
         switch configuration.tls.base {
         case .enable(let tlsConfiguration, _):
@@ -57,9 +57,9 @@ package final class ValkeyConnectionFactory: Sendable {
     ) {
         self.configuration = configuration
         if let customHandler {
-            self.mode = .sentinel(.init(currentPrimary: .init(nil), sentinelClient: sentinelClient, customFactory: customHandler))
+            self.mode = .sentinel(.init(currentPrimary: .init(nil), sentinelClient: sentinelClient, handler: .custom(customHandler)))
         } else {
-            self.mode = .sentinel(.init(currentPrimary: .init(nil), sentinelClient: sentinelClient, customFactory: nil))
+            self.mode = .sentinel(.init(currentPrimary: .init(nil), sentinelClient: sentinelClient, handler: .default))
         }
         switch configuration.tls.base {
         case .enable(let tlsConfiguration, _):
@@ -77,8 +77,8 @@ package final class ValkeyConnectionFactory: Sendable {
         logger: Logger
     ) async throws -> ValkeyConnection {
         switch self.mode {
-        case .default(let handler):
-            return self.makeConnection(
+        case .standalone(let handler):
+            return try await self.makeConnection(
                 handler: handler,
                 address: address,
                 readOnly: readOnly,
@@ -91,8 +91,8 @@ package final class ValkeyConnectionFactory: Sendable {
             switch address.value {
             case .sentinel:
                 let address = try await context.sentinelClient.getNodes().primary
-                return self.makeConnection(
-                    handler: handler,
+                return try await self.makeConnection(
+                    handler: context.handler,
                     address: address,
                     readOnly: readOnly,
                     connectionID: connectionID,
@@ -101,8 +101,8 @@ package final class ValkeyConnectionFactory: Sendable {
                 )
 
             default:
-                return self.makeConnection(
-                    handler: handler,
+                return try await self.makeConnection(
+                    handler: context.handler,
                     address: address,
                     readOnly: readOnly,
                     connectionID: connectionID,
@@ -113,8 +113,7 @@ package final class ValkeyConnectionFactory: Sendable {
         }
     }
 
-    @inlinable
-    package func makeConnection(
+    func makeConnection(
         handler: Mode.Handler,
         address: ValkeyServerAddress,
         readOnly: Bool,
@@ -122,7 +121,7 @@ package final class ValkeyConnectionFactory: Sendable {
         eventLoop: any EventLoop,
         logger: Logger
     ) async throws -> ValkeyConnection {
-        switch mode {
+        switch handler {
         case .default:
             let connectionConfig = try await self.makeConnectionConfiguration(readOnly: readOnly)
             return try await ValkeyConnection.connect(

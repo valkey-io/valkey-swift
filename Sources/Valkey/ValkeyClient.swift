@@ -46,6 +46,7 @@ public final class ValkeyClient: Sendable {
         case runTimer(ValkeyTimer)
         case runRole
         case verifyReplicas
+        case runSentinelClient(ValkeySentinelClient)
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -81,9 +82,11 @@ public final class ValkeyClient: Sendable {
     ) {
         self.init(
             address,
-            customHandler: customHandler,
             connectionIDGenerator: ConnectionIDGenerator(),
-            connectionFactory: ValkeyConnectionFactory(configuration: configuration),
+            connectionFactory: ValkeyConnectionFactory(
+                configuration: configuration,
+                customHandler: customHandler
+            ),
             eventLoopGroup: eventLoopGroup,
             logger: logger
         )
@@ -103,23 +106,25 @@ public final class ValkeyClient: Sendable {
         eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger
     ) {
+        let sentinelClient = ValkeySentinelClient(
+            primaryName: primaryName,
+            nodeDiscovery: sentinelNodeDiscovery,
+            configuration: .init(clientConfiguration: configuration),
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
         let connectionFactory = ValkeyConnectionFactory(
             configuration: configuration,
-            sentinelClient: .init(
-                primaryName: primaryName,
-                nodeDiscovery: sentinelNodeDiscovery,
-                configuration: .init(configuration: configuration),
-                eventLoopGroup: eventLoopGroup,
-                logger: logger
-            )
+            sentinelClient: sentinelClient
         )
         self.init(
-            .sentinel(name: primaryName),
+            .sentinel,
             connectionIDGenerator: ConnectionIDGenerator(),
             connectionFactory: connectionFactory,
             eventLoopGroup: eventLoopGroup,
             logger: logger
         )
+        self.queueAction(.runSentinelClient(sentinelClient))
     }
 
     package convenience init(
@@ -130,30 +135,31 @@ public final class ValkeyClient: Sendable {
         eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger
     ) {
+        let sentinelClient = ValkeySentinelClient(
+            primaryName: primaryName,
+            nodeDiscovery: sentinelNodeDiscovery,
+            customHandler: customHandler,
+            configuration: .init(clientConfiguration: configuration),
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
         let connectionFactory = ValkeyConnectionFactory(
             configuration: configuration,
-            sentinelClient: .init(
-                primaryName: primaryName,
-                nodeDiscovery: sentinelNodeDiscovery,
-                customHandler: customHandler,
-                configuration: .init(configuration: configuration),
-                eventLoopGroup: eventLoopGroup,
-                logger: logger
-            )
+            sentinelClient: sentinelClient,
+            customHandler: customHandler
         )
         self.init(
-            .sentinel(name: primaryName),
-            customHandler: customHandler,
+            .sentinel,
             connectionIDGenerator: ConnectionIDGenerator(),
             connectionFactory: connectionFactory,
             eventLoopGroup: eventLoopGroup,
             logger: logger
         )
+        self.queueAction(.runSentinelClient(sentinelClient))
     }
 
     package init(
         _ address: ValkeyServerAddress,
-        customHandler: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil,
         connectionIDGenerator: ConnectionIDGenerator,
         connectionFactory: ValkeyConnectionFactory,
         eventLoopGroup: any EventLoopGroup,
@@ -162,10 +168,7 @@ public final class ValkeyClient: Sendable {
         self.nodeClientFactory = ValkeyNodeClientFactory(
             logger: logger,
             configuration: connectionFactory.configuration,
-            connectionFactory: ValkeyConnectionFactory(
-                configuration: connectionFactory.configuration,
-                customHandler: customHandler
-            ),
+            connectionFactory: connectionFactory,
             eventLoopGroup: eventLoopGroup
         )
         self.logger = logger
@@ -250,6 +253,9 @@ extension ValkeyClient {
 
         case .verifyReplicas:
             break
+
+        case .runSentinelClient(let sentinelClient):
+            await sentinelClient.run()
         }
     }
 
