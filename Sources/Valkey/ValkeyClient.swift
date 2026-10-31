@@ -5,6 +5,8 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+
+import AsyncAlgorithms
 import Logging
 import NIOCore
 import NIOPosix
@@ -275,10 +277,10 @@ extension ValkeyClient {
                     self.queueAction(.runNodeClient(replicaClient))
                 }
                 // verify all replicas are replicas
-                guard try await self.verifyReplicas(action.clientsToRun) else { throw NotReplicaError() }
+                let verifiedReplicas = await self.verifyReplicas(action.clientsToRun).map(\.serverAddress)
 
-                topology = .primary(replicas: replicas)
-                self.logger.debug("Found replicas \(replicas)")
+                topology = .primary(replicas: verifiedReplicas)
+                self.logger.debug("Found replicas \(verifiedReplicas)")
 
             case .replica(let replica):
                 if !self.configuration.connectingToReplica {
@@ -367,18 +369,22 @@ extension ValkeyClient {
         }
     }
 
-    private func verifyReplicas(_ replicas: [ValkeyNodeClient]) async throws -> Bool {
-        try await withThrowingTaskGroup(of: Bool.self) { group in
+    private func verifyReplicas(_ replicas: [ValkeyNodeClient]) async -> [ValkeyNodeClient] {
+        await withTaskGroup(of: ValkeyNodeClient?.self) { group in
             for replica in replicas {
                 group.addTask {
-                    let role = try await replica.execute(ROLE())
+                    let role = try? await replica.execute(ROLE())
                     guard case .replica = role else {
-                        return false
+                        return nil
                     }
-                    return true
+                    return replica
                 }
             }
-            return try await group.reduce(true) { $0 && $1 }
+            var replicas: [ValkeyNodeClient] = []
+            for await replica in group.compacted() {
+                replicas.append(replica)
+            }
+            return replicas
         }
     }
 }

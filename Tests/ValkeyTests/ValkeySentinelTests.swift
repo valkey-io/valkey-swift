@@ -322,6 +322,24 @@ struct ValkeySentinelTests {
         }
     }
 
+    /// Wait until client returns a connection with a different address from the primary
+    @available(valkeySwift 1.0, *)
+    func waitForReplicas(_ client: ValkeyClient, function: String = #function) async throws {
+        let primaryAddress = try await client.withConnection(readOnly: false) { $0.address }
+        while true {
+            let foundReplica = try await client.withConnection(readOnly: true) { connection in
+                if connection.address != primaryAddress {
+                    return true
+                }
+                return false
+            }
+            if foundReplica {
+                break
+            }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+    }
+
     @Test
     @available(valkeySwift 1.0, *)
     func testGetNodes() async throws {
@@ -511,7 +529,7 @@ struct ValkeySentinelTests {
                 Issue.record("Expected a primary role")
                 return
             }
-            try await client.set("key", value: "value")
+            try await self.waitForReplicas(client)
             // get list of replicas
             var addresses: Set<String> = []
             // run get multiple times to ensure we get both addresses. Since rotating is done
