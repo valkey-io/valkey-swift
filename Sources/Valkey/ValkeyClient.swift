@@ -98,7 +98,8 @@ public final class ValkeyClient: Sendable {
     /// Creates a new Valkey client
     ///
     /// - Parameters:
-    ///   - address: Valkey database address
+    ///   - primaryName: Sentinel primary name
+    ///   - sentinelNodeDiscovery: Node discovery for sentinel nodes
     ///   - configuration: Valkey client configuration
     ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
     ///   - logger: Logger
