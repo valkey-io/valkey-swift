@@ -490,6 +490,42 @@ struct ValkeySentinelTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testClientGetReplicas() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyThreeSentinelOnePrimaryTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClient(
+            primaryName: "TestPrimary",
+            address: .init(endpoint: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            configuration: .init(readOnlyCommandNodeSelection: .cycleReplicas),
+            logger: logger
+        ) { client in
+            let role = try await client.role()
+            let replicas: Set<String>
+            if case .primary(let primary) = role {
+                replicas = .init(primary.replicas.map { "\($0.ip):\($0.port)" })
+            } else {
+                Issue.record("Expected a primary role")
+                return
+            }
+            try await client.set("key", value: "value")
+            // get list of replicas
+            var addresses: Set<String> = []
+            // run get multiple times to ensure we get both addresses. Since rotating is done
+            // based on global value and tests are running in parallel
+            for _ in 0..<8 {
+                let address = try #require(await client.get("$address").map { String($0) })
+                addresses.insert(String(address))
+            }
+            #expect(replicas == addresses)
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testClientRefresh() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
