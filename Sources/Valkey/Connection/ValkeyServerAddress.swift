@@ -12,7 +12,7 @@ public struct ValkeyServerAddress: Sendable, Equatable, Hashable {
     enum _Internal: Equatable, Hashable {
         case hostname(_ host: String, port: Int)
         case unixDomainSocket(path: String)
-        case sentinel(name: String)
+        case sentinel
     }
 
     let value: _Internal
@@ -25,7 +25,7 @@ public struct ValkeyServerAddress: Sendable, Equatable, Hashable {
     // Address defined by unix domain socket
     public static func unixDomainSocket(path: String) -> Self { .init(.unixDomainSocket(path: path)) }
     // Address defined by sentinel primary name
-    package static func sentinel(name: String) -> Self { .init(.sentinel(name: name)) }
+    package static func sentinel -> Self { .init(.sentinel) }
 }
 
 extension ValkeyServerAddress: CustomStringConvertible {
@@ -33,7 +33,7 @@ extension ValkeyServerAddress: CustomStringConvertible {
         switch self.value {
         case .hostname(let host, let port): "\(host):\(port)"
         case .unixDomainSocket(let path): path
-        case .sentinel(let name): name
+        case .sentinel: "sentinel"
         }
     }
 }

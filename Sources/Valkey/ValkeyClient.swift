@@ -89,6 +89,68 @@ public final class ValkeyClient: Sendable {
         )
     }
 
+    /// Creates a new Valkey client
+    ///
+    /// - Parameters:
+    ///   - address: Valkey database address
+    ///   - configuration: Valkey client configuration
+    ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
+    ///   - logger: Logger
+    public convenience init(
+        primaryName: String,
+        sentinelNodeDiscovery: any ValkeyNodeDiscovery,
+        configuration: ValkeyClientConfiguration = .init(),
+        eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        logger: Logger
+    ) {
+        let connectionFactory = ValkeyConnectionFactory(
+            configuration: configuration,
+            sentinelClient: .init(
+                primaryName: primaryName,
+                nodeDiscovery: sentinelNodeDiscovery,
+                configuration: .init(configuration: configuration),
+                eventLoopGroup: eventLoopGroup,
+                logger: logger
+            )
+        )
+        self.init(
+            .sentinel(name: primaryName),
+            connectionIDGenerator: ConnectionIDGenerator(),
+            connectionFactory: connectionFactory,
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
+    }
+
+    package convenience init(
+        primaryName: String,
+        sentinelNodeDiscovery: any ValkeyNodeDiscovery,
+        customHandler: @escaping @Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel,
+        configuration: ValkeyClientConfiguration = .init(),
+        eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        logger: Logger
+    ) {
+        let connectionFactory = ValkeyConnectionFactory(
+            configuration: configuration,
+            sentinelClient: .init(
+                primaryName: primaryName,
+                nodeDiscovery: sentinelNodeDiscovery,
+                customHandler: customHandler,
+                configuration: .init(configuration: configuration),
+                eventLoopGroup: eventLoopGroup,
+                logger: logger
+            )
+        )
+        self.init(
+            .sentinel(name: primaryName),
+            customHandler: customHandler,
+            connectionIDGenerator: ConnectionIDGenerator(),
+            connectionFactory: connectionFactory,
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
+    }
+
     package init(
         _ address: ValkeyServerAddress,
         customHandler: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil,
