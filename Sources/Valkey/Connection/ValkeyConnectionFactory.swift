@@ -14,8 +14,13 @@ import Synchronization
 @available(valkeySwift 1.0, *)
 package final class ValkeyConnectionFactory: Sendable {
 
-    enum Mode: Sendable {
+    enum Mode: Sendable, ~Copyable {
+        struct SentinelContext: ~Copyable {
+            let currentPrimary: Mutex<ValkeyServerAddress>
+            let sentinelClient: ValkeySentinelClient
+        }
         case `default`
+        case sentinel(SentinelContext)
         case custom(@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)
     }
 
@@ -92,6 +97,30 @@ package final class ValkeyConnectionFactory: Sendable {
             }.get()
             try await connection.waitOnActive()
             return connection
+
+        case .sentinel(let context):
+            switch address.value {
+            case .sentinel:
+                let address = try await context.sentinelClient.getNodes().primary
+                let connectionConfig = try await self.makeConnectionConfiguration(readOnly: readOnly)
+                return try await ValkeyConnection.connect(
+                    address: address,
+                    connectionID: connectionID,
+                    configuration: connectionConfig,
+                    eventLoop: eventLoop,
+                    logger: logger
+                )
+
+            default:
+                let connectionConfig = try await self.makeConnectionConfiguration(readOnly: readOnly)
+                return try await ValkeyConnection.connect(
+                    address: address,
+                    connectionID: connectionID,
+                    configuration: connectionConfig,
+                    eventLoop: eventLoop,
+                    logger: logger
+                )
+            }
         }
     }
 
