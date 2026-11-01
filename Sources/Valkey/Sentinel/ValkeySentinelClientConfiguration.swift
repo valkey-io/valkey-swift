@@ -33,7 +33,11 @@ public struct ValkeySentinelClientConfiguration: Sendable {
 
     public init(
         authentication: ValkeyClientConfiguration.Authentication? = nil,
-        connectionPool: ValkeyClientConfiguration.ConnectionPool = .init(),
+        connectionPool: ValkeyClientConfiguration.ConnectionPool = .init(
+            minimumConnectionCount: 1,
+            maximumConnectionSoftLimit: 2,
+            maximumConnectionHardLimit: 2
+        ),
         keepAliveBehavior: ValkeyClientConfiguration.KeepAliveBehavior = .init(),
         retryParameters: ValkeyClientConfiguration.RetryParameters = .init(),
         tls: ValkeyClientConfiguration.TLS = .disable,
