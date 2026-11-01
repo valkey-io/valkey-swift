@@ -8,7 +8,7 @@
 
 @usableFromInline
 @available(valkeySwift 1.0, *)
-struct ValkeySentinelClientStateMachine<
+package struct ValkeySentinelClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory,
     WaiterToken: Sendable,
@@ -30,6 +30,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         @usableFromInline
         struct HealthyState {
             let nodes: ValkeySentinelNodeList
+            var chosenNode: ValkeyNodeDescription?
         }
         @usableFromInline
         struct DegradedState {
@@ -66,19 +67,30 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         }
     }
 
-    /// Get list of all sentinel clients
-    func getSentinelClients() -> [ConnectionPool] {
+    package enum SentinelClients {
+        case chosen(ConnectionPool)
+        case all([ConnectionPool])
+    }
+    /// Get the list of all sentinel clients or if a sentinel client has been chosen
+    func getSentinelClientsForPrimarySelection() -> SentinelClients {
         switch self.state {
         case .unavailable, .shutdown:
-            return []
+            return .all([])
         case .degraded(let degradedState):
-            return degradedState.nodes.nodes.compactMap { (element) -> ConnectionPool? in
-                self.runningClients[element.id].map { $0.pool }
-            }
+            return .all(
+                degradedState.nodes.nodes.compactMap { (element) -> ConnectionPool? in
+                    self.runningClients[element.id]?.pool
+                }
+            )
         case .healthy(let healthyState):
-            return healthyState.nodes.nodes.compactMap { (element) -> ConnectionPool? in
-                self.runningClients[element.id].map { $0.pool }
+            if let pool = healthyState.chosenNode.flatMap({ self.runningClients[$0.id]?.pool }) {
+                return .chosen(pool)
             }
+            return .all(
+                healthyState.nodes.nodes.compactMap { (element) -> ConnectionPool? in
+                    self.runningClients[element.id]?.pool
+                }
+            )
         }
     }
 
@@ -107,7 +119,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     mutating func topologyDiscoverySucceeded(_ nodes: ValkeySentinelNodeList) -> DiscoverySucceededAction {
         switch self.state {
         case .unavailable(let unavailableState):
-            self.state = .healthy(.init(nodes: nodes))
+            self.state = .healthy(.init(nodes: nodes, chosenNode: nil))
             let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: true)
             return .init(
                 waitersToSucceed: unavailableState.waiters,
@@ -116,7 +128,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             )
 
         case .degraded:
-            self.state = .healthy(.init(nodes: nodes))
+            self.state = .healthy(.init(nodes: nodes, chosenNode: nil))
             let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: true)
             return .init(
                 waitersToSucceed: [],
@@ -124,14 +136,19 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
                 clientsToShutdown: action.poolsToShutdown
             )
 
-        case .healthy:
-            self.state = .healthy(.init(nodes: nodes))
-            let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: true)
-            return .init(
-                waitersToSucceed: [],
-                clientsToRun: action.poolsToRun.map { $0.0 },
-                clientsToShutdown: action.poolsToShutdown
-            )
+        case .healthy(let state):
+            if state.nodes.topologyHashValue != nodes.topologyHashValue {
+                let chosenNode = state.nodes.nodes.first(where: { $0 == state.chosenNode })
+                self.state = .healthy(.init(nodes: nodes, chosenNode: chosenNode))
+                let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: true)
+                return .init(
+                    waitersToSucceed: [],
+                    clientsToRun: action.poolsToRun.map { $0.0 },
+                    clientsToShutdown: action.poolsToShutdown
+                )
+            } else {
+                return .init(waitersToSucceed: [], clientsToRun: [], clientsToShutdown: [])
+            }
         case .shutdown:
             preconditionFailure()
         }
@@ -178,6 +195,30 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             return .complete
         case .shutdown:
             return .fail(.init(.clientIsShutDown))
+        }
+    }
+
+    mutating func setChosenNode(_ node: ValkeyNodeDescription) {
+        switch self.state {
+        case .healthy(var state):
+            state.chosenNode = node
+            self.state = .healthy(state)
+        case .degraded:
+            break
+        case .unavailable, .shutdown:
+            preconditionFailure("Cannot set current sentinel node in state \(self.state)")
+        }
+    }
+
+    mutating func clearChosenNode() {
+        switch self.state {
+        case .healthy(var state):
+            state.chosenNode = nil
+            self.state = .healthy(state)
+        case .degraded:
+            break
+        case .unavailable, .shutdown:
+            preconditionFailure("Cannot set current sentinel node in state \(self.state)")
         }
     }
 }
