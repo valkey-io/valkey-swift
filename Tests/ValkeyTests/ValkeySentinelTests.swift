@@ -9,6 +9,7 @@
 import Logging
 import NIOCore
 import NIOEmbedded
+import Synchronization
 import Testing
 import Valkey
 
@@ -644,6 +645,43 @@ struct ValkeySentinelTests {
                 _ = try await client.get("$address").map { String($0) }
             }
             #expect(error?.errorCode == .connectionCreationCircuitBreakerTripped)
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientWithHighLoad() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyThreeSentinelOnePrimaryTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClient(
+            primaryName: "TestPrimary",
+            address: .init(endpoint: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            clientConfiguration: .init(readOnlyCommandNodeSelection: .cycleReplicas),
+            logger: logger
+        ) { client in
+            let waiter = AsyncStream.makeStream(of: Void.self)
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                let count = Atomic(0)
+                for i in 0..<1000 {
+                    group.addTask {
+                        let key = ValkeyKey("key\(i)")
+                        try await client.set(key, value: "\(i)")
+                        let value = try await client.get(key).map { String($0) }
+                        #expect(value == "\(i)")
+                        // after having processed 100 task trigger a failover
+                        if count.add(1, ordering: .relaxed).newValue == 100 {
+                            waiter.continuation.yield()
+                        }
+                    }
+                }
+                await waiter.stream.first { _ in true }
+                await topology.failover(name: "TestPrimary")
+                try await group.waitForAll()
+            }
         }
     }
 }

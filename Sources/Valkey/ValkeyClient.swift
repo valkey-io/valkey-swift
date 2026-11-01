@@ -767,7 +767,7 @@ extension ValkeyClient {
                     return .dontRetry
                 }
             }
-        case .connectionClosed, .connectionClosing, .connectionClosedDueToCancellation:
+        case .connectionClosed, .connectionClosing, .connectionClosedDueToCancellation, .clientIsShutDown:
             return .tryAgain
         default:
             return .dontRetry
