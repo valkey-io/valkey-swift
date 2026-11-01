@@ -22,7 +22,8 @@ struct SentinelIntegrationTests {
     func withValkeyClient(
         primaryName: String,
         sentinelNodeDiscovery: some ValkeyNodeDiscovery = ValkeyStaticNodeDiscovery([.init(endpoint: sentinelHostname!, port: sentinelPort!)]),
-        configuration: ValkeyClientConfiguration = .init(),
+        clientConfiguration: ValkeyClientConfiguration = .init(),
+        sentinelConfiguration: ValkeySentinelClientConfiguration = .init(),
         logger: Logger,
         operation: @escaping @Sendable (ValkeyClient) async throws -> Void
     ) async throws {
@@ -30,7 +31,8 @@ struct SentinelIntegrationTests {
             let client = ValkeyClient(
                 primaryName: primaryName,
                 sentinelNodeDiscovery: sentinelNodeDiscovery,
-                configuration: configuration,
+                clientConfiguration: clientConfiguration,
+                sentinelConfiguration: sentinelConfiguration,
                 logger: logger
             )
             group.addTask {
@@ -69,7 +71,7 @@ struct SentinelIntegrationTests {
         let sentinelClient = ValkeySentinelClient(
             primaryName: "testprimary",
             nodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: sentinelHostname!, port: sentinelPort!)]),
-            configuration: .init(clientConfiguration: .init()),
+            configuration: .init(),
             logger: logger
         )
         async let _ = sentinelClient.run()
@@ -96,7 +98,7 @@ struct SentinelIntegrationTests {
         let sentinelClient = ValkeySentinelClient(
             primaryName: "unknown-primary",
             nodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: sentinelHostname!, port: sentinelPort!)]),
-            configuration: .init(clientConfiguration: .init()),
+            configuration: .init(),
             logger: logger
         )
         async let _ = sentinelClient.run()
@@ -135,7 +137,7 @@ struct SentinelIntegrationTests {
         }()
         try await self.withValkeyClient(
             primaryName: "testUnknownPrimary",
-            configuration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
+            sentinelConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
             logger: logger
         ) { client in
             let error = await #expect(throws: ValkeyClientError.self) {
@@ -159,7 +161,7 @@ struct SentinelIntegrationTests {
         try await self.withValkeyClient(
             primaryName: "testUnknownPrimary",
             sentinelNodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: "127.0.0.1", port: 16383)]),
-            configuration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
+            sentinelConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
             logger: logger
         ) { client in
             let error = await #expect(throws: ValkeyClientError.self) {
@@ -182,7 +184,8 @@ struct SentinelIntegrationTests {
             logger.logLevel = .trace
             return logger
         }()
-        try await self.withValkeyClient(primaryName: "testprimary", configuration: .init(enableClientCapaRedirect: false), logger: logger) { client in
+        try await self.withValkeyClient(primaryName: "testprimary", logger: logger) {
+            client in
             _ = try await self.withKey(client) { (key: ValkeyKey) in
                 try await client.set(key, value: "testClientSentinelFailover")
                 let sentinelClient = ValkeyClient(.hostname(sentinelHostname!, port: sentinelPort!), logger: logger)

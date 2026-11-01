@@ -125,7 +125,9 @@ struct ValkeyClientStateMachine<
         }
 
         self.state = .healthy(.init(nodes: nodes))
-        if self.configuration.findReplicas, address != .sentinel {
+        // if configuration is flagged as needing replicas and we are not connected to sentinel
+        // then run a regular topology update
+        if self.configuration.findReplicas, address != .sentinelPrimary {
             switch self.topologyRefreshState {
             case .notRefreshing:
                 self.topologyRefreshState = .refreshing(.init())

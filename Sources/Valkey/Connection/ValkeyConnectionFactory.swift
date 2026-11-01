@@ -114,7 +114,7 @@ package final class ValkeyConnectionFactory: Sendable {
 
         case .sentinel(let context):
             switch address.value {
-            case .sentinel:
+            case .sentinelPrimary:
                 // Get Sentinel nodes. If the topology has changed pass nodes to sentinel changes continuation
                 let nodes = try await context.sentinelClient.getNodes()
                 let newHashValue = nodes.hashValue
