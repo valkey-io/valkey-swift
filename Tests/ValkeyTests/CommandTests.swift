@@ -1492,6 +1492,21 @@ struct CommandTests {
             ]),
         ])
 
+        private var geoSearchResponseDistCoords: RESP3Value = .array([
+            .array([
+                .bulkString("Edinburgh"), .bulkString("38.9"),
+                .array([.bulkString("31.23"), .bulkString("56.20")]),
+            ]),
+            .array([
+                .bulkString("Glasgow"), .bulkString("71.2"),
+                .array([.bulkString("35.74"), .bulkString("44.87")]),
+            ]),
+            .array([
+                .bulkString("Dundee"), .bulkString("128.5"),
+                .array([.bulkString("33.62"), .bulkString("48.10")]),
+            ]),
+        ])
+
         @Test
         @available(valkeySwift 1.0, *)
         func geopos() async throws {
@@ -1539,6 +1554,10 @@ struct CommandTests {
                     request: .command(["GEOSEARCH", "Scotland", "BYRADIUS", "500.0", "km", "WITHCOORD", "WITHDIST", "WITHHASH"]),
                     response: geoSearchResponse
                 ),
+                (
+                    request: .command(["GEOSEARCH", "Scotland", "BYPOLYGON", "3", "0.0", "0.0", "0.0", "4.0", "3.0", "0.0", "WITHCOORD", "WITHDIST"]),
+                    response: geoSearchResponseDistCoords
+                ),
             ) { connection in
                 let entries = try await connection.geosearch(
                     "Scotland",
@@ -1550,6 +1569,19 @@ struct CommandTests {
                 try verifyGeoSearchEntries(
                     entries,
                     options: [.withHash, .withDist, .withCoord]
+                )
+                let entries2 = try await connection.geosearch(
+                    "Scotland",
+                    by: .polygon(
+                        .init(vertices: [.init(longitude: 0, latitude: 0), .init(longitude: 0, latitude: 4), .init(longitude: 3, latitude: 0)])
+                    ),
+                    withcoord: true,
+                    withdist: true,
+                    withhash: false
+                )
+                try verifyGeoSearchEntries(
+                    entries2,
+                    options: [.withCoord, .withDist]
                 )
             }
         }
@@ -1605,16 +1637,20 @@ struct CommandTests {
             }
         }
 
-        private func verifyGeoSearchEntries(_ entries: GeoSearchEntries, options: [GeoSearchEntries.Option]) throws {
-            for entry in try entries.decode(options: [
-                .withHash, .withDist, .withCoord,
-            ]) {
+        private func verifyGeoSearchEntries(_ entries: GeoSearchEntries, options: Set<GeoSearchEntries.Option>) throws {
+            for entry in try entries.decode(options: options) {
                 #expect(!entry.member.isEmpty)
-                #expect(entry.distance != nil && entry.distance! >= 0)
-                #expect(entry.hash != nil && entry.hash! > 0)
-                #expect(entry.coordinates != nil)
-                #expect(entry.coordinates!.latitude > 0)
-                #expect(entry.coordinates!.longitude > 0)
+                if options.contains(.withDist) {
+                    #expect(entry.distance != nil && entry.distance! >= 0)
+                }
+                if options.contains(.withHash) {
+                    #expect(entry.hash != nil && entry.hash! > 0)
+                }
+                if options.contains(.withCoord) {
+                    #expect(entry.coordinates != nil)
+                    #expect(entry.coordinates!.latitude > 0)
+                    #expect(entry.coordinates!.longitude > 0)
+                }
             }
         }
 

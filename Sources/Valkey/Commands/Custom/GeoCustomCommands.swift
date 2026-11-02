@@ -160,3 +160,27 @@ public struct GeoSearchEntries: RESPTokenDecodable, Sendable {
         }
     }
 }
+
+// MARK: Backwards compatibility
+
+extension GEOSEARCH.ByPolygon {
+    @inlinable
+    @available(*, deprecated, renamed: "GEOSEARCH.ByPolygon(vertices:)")
+    public init(numVertices: Int, vertices: [GEOSEARCH.ByPolygonVertices]) {
+        self.vertices = vertices
+    }
+
+    @inlinable
+    public var numVertices: Int { self.vertices.count }
+}
+
+extension GEOSEARCHSTORE.ByPolygon {
+    @inlinable
+    @available(*, deprecated, renamed: "GEOSEARCHSTORE.ByPolygon(vertices:)")
+    public init(numVertices: Int, vertices: [GEOSEARCHSTORE.ByPolygonVertices]) {
+        self.vertices = vertices
+    }
+
+    @inlinable
+    public var numVertices: Int { self.vertices.count }
+}
