@@ -169,6 +169,9 @@ extension GEOSEARCH.ByPolygon {
     public init(numVertices: Int, vertices: [GEOSEARCH.ByPolygonVertices]) {
         self.vertices = vertices
     }
+
+    @inlinable
+    public var numVertices: Int { self.vertices.count }
 }
 
 extension GEOSEARCHSTORE.ByPolygon {
@@ -177,4 +180,7 @@ extension GEOSEARCHSTORE.ByPolygon {
     public init(numVertices: Int, vertices: [GEOSEARCHSTORE.ByPolygonVertices]) {
         self.vertices = vertices
     }
+
+    @inlinable
+    public var numVertices: Int { self.vertices.count }
 }
