@@ -3145,14 +3145,14 @@ struct CommandTests {
         func ftDebug() async throws {
             try await testCommandEncodesDecodes(
                 (
-                    request: .command(["FT._DEBUG"]),
+                    request: .command(["FT._DEBUG", "SHOW_INFO"]),
                     response: .array([
                         .bulkString("debug_info"),
                         .bulkString("some debug data"),
                     ])
                 )
             ) { connection in
-                _ = try await connection.ftDebug()
+                _ = try await connection.ftDebug(subcommand: .showInfo)
             }
         }
     }
