@@ -176,7 +176,7 @@ public enum JSON {
         }
     }
 
-    /// Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP
+    /// Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP. KEYTABLE-CORRUPT, KEYTABLE-CLEAR, and KEYTABLE-DISTRIBUTION subcommands require 'json.debug-mode' to be enabled at module load time.
     @_documentation(visibility: internal)
     public struct DEBUG<SubcommandArguments: RESPStringRenderable>: ValkeyCommand {
         @inlinable public static var name: String { "JSON.DEBUG" }
@@ -253,7 +253,7 @@ public enum JSON {
         }
     }
 
-    /// Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.
+    /// Get serialized JSONs at the path from multiple document keys. Return null for nonexistent key or JSON path.
     @_documentation(visibility: internal)
     public struct MGET<Path: RESPStringRenderable>: ValkeyCommand {
         @inlinable public static var name: String { "JSON.MGET" }
@@ -619,7 +619,7 @@ extension ValkeyClientProtocol {
         try await execute(JSON.CLEAR(key, path: path))
     }
 
-    /// Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP
+    /// Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP. KEYTABLE-CORRUPT, KEYTABLE-CLEAR, and KEYTABLE-DISTRIBUTION subcommands require 'json.debug-mode' to be enabled at module load time.
     ///
     /// - Documentation: [JSON.DEBUG](https://valkey.io/commands/json.debug)
     /// - Complexity: O(1)
@@ -665,7 +665,7 @@ extension ValkeyClientProtocol {
         try await execute(JSON.GET(key, indentNewlineSpace: indentNewlineSpace, noescape: noescape, paths: paths))
     }
 
-    /// Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.
+    /// Get serialized JSONs at the path from multiple document keys. Return null for nonexistent key or JSON path.
     ///
     /// - Documentation: [JSON.MGET](https://valkey.io/commands/json.mget)
     /// - Complexity: O(N) where N is the number of keys

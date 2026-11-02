@@ -205,7 +205,7 @@
     ]
   },
   "JSON.DEBUG": {
-    "summary": "Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP",
+    "summary": "Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP. KEYTABLE-CORRUPT, KEYTABLE-CLEAR, and KEYTABLE-DISTRIBUTION subcommands require 'json.debug-mode' to be enabled at module load time.",
     "complexity": "O(1)",
     "group": "json",
     "module_since": "1.0.0",
@@ -286,7 +286,7 @@
     ]
   },
   "JSON.MGET": {
-    "summary": "Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.",
+    "summary": "Get serialized JSONs at the path from multiple document keys. Return null for nonexistent key or JSON path.",
     "complexity": "O(N) where N is the number of keys",
     "group": "json",
     "module_since": "1.0.0",
