@@ -826,24 +826,21 @@ public struct GEOSEARCH: ValkeyCommand {
         }
     }
     public struct ByPolygon: RESPRenderable, Sendable, Hashable {
-        public var numVertices: Int
         public var vertices: [ByPolygonVertices]
 
         @inlinable
-        public init(numVertices: Int, vertices: [ByPolygonVertices]) {
-            self.numVertices = numVertices
+        public init(vertices: [ByPolygonVertices]) {
             self.vertices = vertices
         }
 
         @inlinable
         public var respEntries: Int {
-            RESPWithToken("BYPOLYGON", numVertices).respEntries + vertices.respEntries
+            RESPArrayWithTokenAndCount("BYPOLYGON", vertices).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPWithToken("BYPOLYGON", numVertices).encode(into: &commandEncoder)
-            vertices.encode(into: &commandEncoder)
+            RESPArrayWithTokenAndCount("BYPOLYGON", vertices).encode(into: &commandEncoder)
         }
     }
     public enum By: RESPRenderable, Sendable, Hashable {
@@ -1104,24 +1101,21 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         }
     }
     public struct ByPolygon: RESPRenderable, Sendable, Hashable {
-        public var numVertices: Int
         public var vertices: [ByPolygonVertices]
 
         @inlinable
-        public init(numVertices: Int, vertices: [ByPolygonVertices]) {
-            self.numVertices = numVertices
+        public init(vertices: [ByPolygonVertices]) {
             self.vertices = vertices
         }
 
         @inlinable
         public var respEntries: Int {
-            RESPWithToken("BYPOLYGON", numVertices).respEntries + vertices.respEntries
+            RESPArrayWithTokenAndCount("BYPOLYGON", vertices).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPWithToken("BYPOLYGON", numVertices).encode(into: &commandEncoder)
-            vertices.encode(into: &commandEncoder)
+            RESPArrayWithTokenAndCount("BYPOLYGON", vertices).encode(into: &commandEncoder)
         }
     }
     public enum By: RESPRenderable, Sendable, Hashable {

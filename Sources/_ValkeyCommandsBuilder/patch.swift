@@ -6,7 +6,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-struct ValkeyPatchError: Error {}
+struct ValkeyPatchError: Error, CustomStringConvertible {
+    let message: String
+    let argument: [String]?
+
+    init(message: String, argument: [String]? = nil) {
+        self.message = message
+        self.argument = argument
+    }
+
+    var description: String {
+        "\(message) \(argument?.joined(separator: "/") ?? "")"
+    }
+
+    func addingPathComponent(_ component: String) -> ValkeyPatchError {
+        .init(message: self.message, argument: [component] + (self.argument ?? []))
+    }
+}
 
 /// Patch to apply to argument
 protocol ArgumentPatch {
@@ -25,6 +41,23 @@ struct ReplaceArgumentPatch: ArgumentPatch {
 extension ArgumentPatch where Self == ReplaceArgumentPatch {
     static func replace(_ replacement: ValkeyCommand.Argument) -> ReplaceArgumentPatch {
         .init(replacement: replacement)
+    }
+}
+
+/// Patch that renames argument
+struct RenameArgumentPatch: ArgumentPatch {
+    let name: String
+
+    func apply(to argument: ValkeyCommand.Argument) -> ValkeyCommand.Argument? {
+        var replacement = argument
+        replacement.name = name
+        return replacement
+    }
+}
+
+extension ArgumentPatch where Self == RenameArgumentPatch {
+    static func rename(_ name: String) -> RenameArgumentPatch {
+        .init(name: name)
     }
 }
 
@@ -92,9 +125,12 @@ struct CommandPatch {
 
 extension ValkeyCommand {
     /// Patch arguments of command
-    mutating func patchArguments(_ path: [String], patch: some ArgumentPatch) throws {
-        guard let arguments = self.arguments else { throw ValkeyPatchError() }
-        guard let index = self.arguments?.firstIndex(where: { $0.name == path.first }) else { throw ValkeyPatchError() }
+    mutating func patchArguments(_ path: [String], patch: some ArgumentPatch) throws(ValkeyPatchError) {
+        guard let firstPathComponent = path.first else { preconditionFailure("Cannot call patch with an empty path") }
+        guard let arguments = self.arguments else { throw ValkeyPatchError(message: "Did not find argument", argument: [firstPathComponent]) }
+        guard let index = self.arguments?.firstIndex(where: { $0.name == path.first }) else {
+            throw ValkeyPatchError(message: "Did not find argument", argument: [firstPathComponent])
+        }
         if path.count == 1 {
             if let patchedArgument = patch.apply(to: arguments[index]) {
                 self.arguments?[index] = patchedArgument
@@ -102,16 +138,23 @@ extension ValkeyCommand {
                 self.arguments?.remove(at: index)
             }
         } else {
-            try self.arguments?[index].patch(path.dropFirst(), patch: patch)
+            do {
+                try self.arguments?[index].patch(path.dropFirst(), patch: patch)
+            } catch {
+                throw error.addingPathComponent(firstPathComponent)
+            }
         }
     }
 }
 
 extension ValkeyCommand.Argument {
     /// Patch arguments of argument
-    mutating func patch(_ path: ArraySlice<String>, patch: some ArgumentPatch) throws {
-        guard let arguments = self.arguments else { throw ValkeyPatchError() }
-        guard let index = self.arguments?.firstIndex(where: { $0.name == path.first }) else { throw ValkeyPatchError() }
+    mutating func patch(_ path: ArraySlice<String>, patch: some ArgumentPatch) throws(ValkeyPatchError) {
+        guard let firstPathComponent = path.first else { preconditionFailure("Cannot call patch with an empty path") }
+        guard let arguments = self.arguments else { throw ValkeyPatchError(message: "Did not find argument", argument: [firstPathComponent]) }
+        guard let index = self.arguments?.firstIndex(where: { $0.name == firstPathComponent }) else {
+            throw ValkeyPatchError(message: "Did not find argument", argument: [firstPathComponent])
+        }
         if path.count == 1 {
             if let patchedArgument = patch.apply(to: arguments[index]) {
                 self.arguments?[index] = patchedArgument
@@ -119,7 +162,11 @@ extension ValkeyCommand.Argument {
                 self.arguments?.remove(at: index)
             }
         } else {
-            try self.arguments?[index].patch(path.dropFirst(), patch: patch)
+            do {
+                try self.arguments?[index].patch(path.dropFirst(), patch: patch)
+            } catch {
+                throw error.addingPathComponent(firstPathComponent)
+            }
         }
     }
 }
@@ -128,13 +175,17 @@ extension ValkeyCommands {
     /// Patch commands
     func patch(_ patches: [CommandPatch]) throws {
         for patch in patches {
-            try self.patch(patch.command, path: patch.path, patch: patch.patch)
+            do {
+                try self.patch(patch.command, path: patch.path, patch: patch.patch)
+            } catch {
+                print("WARNING: \(error)")
+            }
         }
     }
 
     /// Patch a single command
-    func patch(_ command: String, path: [String], patch: some ArgumentPatch) throws {
-        guard self.commands[command] != nil else { throw ValkeyPatchError() }
+    func patch(_ command: String, path: [String], patch: some ArgumentPatch) throws(ValkeyPatchError) {
+        guard self.commands[command] != nil else { throw ValkeyPatchError(message: "Cannot patch non-existent command \(command)") }
         try self.commands[command]?.patchArguments(path, patch: patch)
     }
 }
