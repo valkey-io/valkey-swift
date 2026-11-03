@@ -170,18 +170,49 @@ final class ValkeyMetrics: Sendable {
         .now
     }
 
-    /// Record a latency sample for a command if metrics timing was started.
+    /// Record a latency sample for a command.
     ///
     /// - Parameters:
     ///   - commandName: The command name, reported as `db.operation.name`.
-    ///   - start: The instant returned by ``startTiming()``, or `nil` when timing never started.
+    ///   - start: The instant returned by ``startTiming()``.
+    @usableFromInline
+    func record(_ commandName: String, start: ContinuousClock.Instant) {
+        let elapsed = ContinuousClock.now - start
+        self.timer(for: commandName, errorType: nil).recordNanoseconds(elapsed.nanosecondsClamped)
+    }
+
+    /// Record a latency sample for a command that failed.
+    ///
+    /// - Parameters:
+    ///   - commandName: The command name, reported as `db.operation.name`.
+    ///   - start: The instant returned by ``startTiming()``.
     ///   - error: The error the command failed with, or `nil` when it succeeded.
     @usableFromInline
-    func record(_ commandName: String, start: ContinuousClock.Instant?, error: ValkeyClientError?) {
-        guard let start else { return }
+    func recordError(_ commandName: String, start: ContinuousClock.Instant, error: ValkeyClientError) {
         let elapsed = ContinuousClock.now - start
-        let errorType = error.map { $0.metricsErrorType ?? self.dimensions.otherErrorTypeValue }
+        let errorType = error.metricsErrorType ?? self.dimensions.otherErrorTypeValue
         self.timer(for: commandName, errorType: errorType).recordNanoseconds(elapsed.nanosecondsClamped)
+    }
+
+    /// Performa and record a latency sample for a named operation.
+    ///
+    /// - Parameters:
+    ///   - name: The operation name, reported as `db.operation.name`.
+    ///   - operation: Operation closure
+    @usableFromInline
+    func withRecording<Value>(
+        named name: String,
+        _ operation: () async throws(ValkeyClientError) -> Value
+    ) async throws(ValkeyClientError) -> Value {
+        let metricsStart = ContinuousClock.now
+        do {
+            let value = try await operation()
+            self.record(name, start: metricsStart)
+            return value
+        } catch {
+            self.recordError(name, start: metricsStart, error: error)
+            throw error
+        }
     }
 
     /// The timer for a command and outcome, created from the client's factory on first use.
