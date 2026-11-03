@@ -678,24 +678,16 @@ extension ValkeyClient {
         }
     }
 
-    @usableFromInline
+    @inlinable
     func withMetrics<Value>(named name: String, _ operation: () async throws(ValkeyClientError) -> Value) async throws(ValkeyClientError) -> Value {
         #if MetricsSupport
         if let metrics = self.valkeyMetrics {
-            let metricsStart = metrics.startTiming()
-            do {
-                let value = try await operation()
-                metrics.record(name, start: metricsStart, error: nil)
-                return value
-            } catch {
-                metrics.record(name, start: metricsStart, error: error)
-                throw error
-            }
+            try await metrics.withRecording(named: name, operation)
         } else {
-            return try await operation()
+            try await operation()
         }
         #else
-        return try await operation()
+        try await operation()
         #endif
     }
 }

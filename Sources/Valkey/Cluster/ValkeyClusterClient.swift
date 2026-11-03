@@ -166,78 +166,63 @@ public final class ValkeyClusterClient: Sendable {
     ///   - Other errors if the command execution or parsing fails
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
-        #if MetricsSupport
-        let metricsStart = self.valkeyMetrics?.startTiming()
-        var metricsError: ValkeyClientError?
-        defer { self.valkeyMetrics?.record(Command.name, start: metricsStart, error: metricsError) }
-        #endif
-        do {
-            let hashSlot = try self.hashSlot(for: command.keysAffected)
-            let nodeSelection = getNodeSelection(readOnly: command.isReadOnly)
-            var clientSelector: () async throws -> ValkeyNodeClient = {
-                try await self.nodeClient(for: hashSlot.map { [$0] } ?? [], nodeSelection: nodeSelection)
-            }
+        try await withMetrics(named: Command.name) { () throws(ValkeyClientError) in
+            do {
+                let hashSlot = try self.hashSlot(for: command.keysAffected)
+                let nodeSelection = getNodeSelection(readOnly: command.isReadOnly)
+                var clientSelector: () async throws -> ValkeyNodeClient = {
+                    try await self.nodeClient(for: hashSlot.map { [$0] } ?? [], nodeSelection: nodeSelection)
+                }
 
-            var asking = false
-            var redirectAttempt = 0
-            var attempt = 0
-            while !Task.isCancelled {
-                do {
-                    let client = try await clientSelector()
-                    if asking {
-                        asking = false
-                        // if asking we need to call ASKING beforehand otherwise we will get a MOVE error
-                        return try await client.execute(
-                            ASKING(),
-                            command
-                        ).1.get()
-                    } else {
-                        return try await client.execute(command)
-                    }
-                } catch let error as ValkeyClusterError where error == .noNodeToTalkTo {
-                    // TODO: Rerun node discovery!
-                } catch {
-                    let retryAction = self.getRetryAction(from: error)
-                    switch retryAction {
-                    case .redirect(let redirectError):
-                        if redirectAttempt >= self.configuration.maximumRedirects {
+                var asking = false
+                var redirectAttempt = 0
+                var attempt = 0
+                while !Task.isCancelled {
+                    do {
+                        let client = try await clientSelector()
+                        if asking {
+                            asking = false
+                            // if asking we need to call ASKING beforehand otherwise we will get a MOVE error
+                            return try await client.execute(
+                                ASKING(),
+                                command
+                            ).1.get()
+                        } else {
+                            return try await client.execute(command)
+                        }
+                    } catch let error as ValkeyClusterError where error == .noNodeToTalkTo {
+                        // TODO: Rerun node discovery!
+                    } catch {
+                        let retryAction = self.getRetryAction(from: error)
+                        switch retryAction {
+                        case .redirect(let redirectError):
+                            if redirectAttempt >= self.configuration.maximumRedirects {
+                                throw error
+                            }
+                            redirectAttempt += 1
+                            attempt = 0
+                            clientSelector = { try await self.nodeClient(for: redirectError) }
+                            asking = (redirectError.redirection == .ask)
+                        case .tryAgain:
+                            guard let wait = self.configuration.client.retryParameters.calculateWaitTime(attempt: attempt) else {
+                                throw error
+                            }
+                            try await self.clock.sleep(for: wait)
+                            attempt += 1
+                        case .dontRetry:
                             throw error
                         }
-                        redirectAttempt += 1
-                        attempt = 0
-                        clientSelector = { try await self.nodeClient(for: redirectError) }
-                        asking = (redirectError.redirection == .ask)
-                    case .tryAgain:
-                        guard let wait = self.configuration.client.retryParameters.calculateWaitTime(attempt: attempt) else {
-                            throw error
-                        }
-                        try await self.clock.sleep(for: wait)
-                        attempt += 1
-                    case .dontRetry:
-                        throw error
                     }
                 }
+            } catch let error as ValkeyClientError {
+                throw error
+            } catch let error as ValkeyClusterError {
+                throw ValkeyClientError(.clusterError, error: error)
+            } catch {
+                throw ValkeyClientError(.unrecognisedError, error: error)
             }
-        } catch let error as ValkeyClientError {
-            #if MetricsSupport
-            metricsError = error
-            #endif
-            throw error
-        } catch let error as ValkeyClusterError {
-            #if MetricsSupport
-            metricsError = ValkeyClientError(.clusterError, error: error)
-            #endif
-            throw ValkeyClientError(.clusterError, error: error)
-        } catch {
-            #if MetricsSupport
-            metricsError = ValkeyClientError(.unrecognisedError, error: error)
-            #endif
-            throw ValkeyClientError(.unrecognisedError, error: error)
+            throw ValkeyClientError(.cancelled)
         }
-        #if MetricsSupport
-        metricsError = ValkeyClientError(.cancelled)
-        #endif
-        throw ValkeyClientError(.cancelled)
     }
 
     /// Pipeline a series of commands to nodes in the Valkey cluster
@@ -1232,6 +1217,19 @@ public final class ValkeyClusterClient: Sendable {
             // no consensus reached
             throw ValkeyClusterError.clusterIsUnavailable
         }
+    }
+
+    @inlinable
+    func withMetrics<Value>(named name: String, _ operation: () async throws(ValkeyClientError) -> Value) async throws(ValkeyClientError) -> Value {
+        #if MetricsSupport
+        if let metrics = self.valkeyMetrics {
+            try await metrics.withRecording(named: name, operation)
+        } else {
+            try await operation()
+        }
+        #else
+        try await operation()
+        #endif
     }
 }
 
