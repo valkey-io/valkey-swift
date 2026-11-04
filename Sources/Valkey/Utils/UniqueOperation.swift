@@ -8,115 +8,173 @@
 
 import Synchronization
 
+/// A UniqueOperation holds a closure that can only ever have one instance of itself running
 @available(valkeySwift 1.0, *)
-let idGenerator: Atomic<Int> = .init(0)
-
-@available(valkeySwift 1.0, *)
-struct UniqueOperation<Returns: Sendable>: ~Copyable {
-    enum State {
-        typealias WaiterID = Int
-        typealias Waiter = CheckedContinuation<Returns?, any Error>
-
-        struct ProcessingState {
-            var waiters: [WaiterID: Waiter]
-
-            init() {
-                self.waiters = [:]
+package struct UniqueOperation<Returns: Sendable>: ~Copyable {
+    struct StateMachine<Waiter>: ~Copyable {
+        enum State: ~Copyable {
+            struct ProcessingState {
+                var waiters: [Int: Waiter]
             }
+            case idle
+            case processing(ProcessingState)
         }
-        case idle
-        case processing(ProcessingState)
 
-        enum TriggerAction {
-            case perform
+        var state: State
+
+        init() {
+            self.state = .idle
+        }
+
+        private init(state: consuming State) {
+            self.state = state
+        }
+
+        enum RunAction {
+            case run
             case wait
         }
-        mutating func triggerOperation() -> TriggerAction {
-            switch self {
+        mutating func runOperation() -> RunAction {
+            switch consume self.state {
             case .idle:
-                self = .processing(.init())
-                return .perform
-            case .processing:
+                self = .processing(.init(waiters: [:]))
+                return .run
+            case .processing(let state):
+                self = .processing(state)
                 return .wait
             }
         }
 
-        mutating func waitOnOperation(id: WaiterID, waiter: Waiter) {
-            switch self {
+        enum WaitOnOperationAction {
+            case doNothing
+            case takeOverRunningOperation
+        }
+        mutating func waitOnOperation(id: Int, waiter: Waiter) -> WaitOnOperationAction {
+            switch consume self.state {
             case .idle:
-                self = .processing(.init())
-                waiter.resume(returning: nil)
+                self = .processing(.init(waiters: [:]))
+                return .takeOverRunningOperation
             case .processing(var state):
                 state.waiters[id] = waiter
                 self = .processing(state)
+                return .doNothing
             }
         }
 
-        mutating func updateWaiters() -> [WaiterID: Waiter].Values {
-            switch self {
+        mutating func updateWaiters() -> [Int: Waiter].Values {
+            switch consume self.state {
             case .idle:
-                fatalError()
+                preconditionFailure("Cannot update waiters while in idle state")
             case .processing(let state):
                 let waiters = state.waiters.values
                 self = .idle
                 return waiters
             }
         }
+
+        mutating func cancelWaiter(id: Int) -> Waiter? {
+            switch consume self.state {
+            case .idle:
+                preconditionFailure("Cannot cancel waiter in idle state")
+            case .processing(var state):
+                let waiter = state.waiters.removeValue(forKey: id)
+                self = .processing(state)
+                return waiter
+            }
+        }
+
+        mutating func transferProcess() -> Waiter? {
+            switch consume self.state {
+            case .idle:
+                preconditionFailure("Cannot transfer control of process in idle state")
+            case .processing(var state):
+                if let first = state.waiters.first {
+                    state.waiters.remove(at: state.waiters.startIndex)
+                    self = .processing(state)
+                    return first.value
+                } else {
+                    self = .idle
+                    return nil
+                }
+            }
+        }
+
+        static var idle: Self { .init(state: .idle) }
+        static func processing(_ state: State.ProcessingState) -> Self { .init(state: .processing(state)) }
     }
 
-    let state: Mutex<State>
+    let stateMachine: Mutex<StateMachine<CheckedContinuation<Returns?, any Error>>>
     let operation: @Sendable () async throws -> Returns
+    let idGenerator: Atomic<Int> = .init(0)
 
-    init(_ operation: @escaping @Sendable () async throws -> Returns) {
-        self.state = .init(.idle)
+    package init(_ operation: @escaping @Sendable () async throws -> Returns) {
+        self.stateMachine = .init(.init())
         self.operation = operation
     }
 
-    func getResult() async throws -> Returns {
-        let action = self.state.withLock {
-            $0.triggerOperation()
+    package func run() async throws -> Returns {
+        let action = self.stateMachine.withLock {
+            $0.runOperation()
         }
         switch action {
-        case .perform:
-            return try await performOperation()
+        case .run:
+            return try await runOperation()
 
         case .wait:
             let id = idGenerator.add(1, ordering: .relaxed).newValue
             let rt = try await withTaskCancellationHandler {
                 try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Returns?, any Error>) in
-                    self.state.withLock {
-                        $0.waitOnOperation(id: id, waiter: cont)
+                    if Task.isCancelled {
+                        cont.resume(throwing: CancellationError())
+                        return
+                    }
+                    self.stateMachine.withLock {
+                        switch $0.waitOnOperation(id: id, waiter: cont) {
+                        case .takeOverRunningOperation:
+                            cont.resume(returning: nil)
+                        case .doNothing:
+                            break
+                        }
                     }
                 }
             } onCancel: {
-
+                if let waiter = self.stateMachine.withLock({ $0.cancelWaiter(id: id) }) {
+                    waiter.resume(throwing: CancellationError())
+                }
             }
+            // continuation returns result of operation or nil. Nil means control of the process
+            // has been transfered to this task
             if let rt {
                 return rt
             } else {
-                return try await performOperation()
+                return try await runOperation()
             }
         }
     }
 
-    func performOperation() async throws -> Returns {
+    func runOperation() async throws -> Returns {
         do {
             let result = try await self.operation()
-            let waiters = self.state.withLock {
-                $0.updateWaiters()
-            }
-            for waiter in waiters {
-                waiter.resume(returning: result)
-            }
+            self.updateWaiters(.success(result))
             return result
         } catch {
-            let waiters = self.state.withLock {
-                $0.updateWaiters()
-            }
-            for waiter in waiters {
-                waiter.resume(throwing: error)
-            }
+            self.updateWaiters(.failure(error))
             throw error
+        }
+    }
+
+    func updateWaiters(_ result: Result<Returns?, any Error>) {
+        guard !Task.isCancelled else {
+            if let waiter = self.stateMachine.withLock({ $0.transferProcess() }) {
+                waiter.resume(returning: nil)
+            }
+            return
+        }
+        let waiters = self.stateMachine.withLock {
+            $0.updateWaiters()
+        }
+        for waiter in waiters {
+            waiter.resume(with: result)
         }
     }
 }
