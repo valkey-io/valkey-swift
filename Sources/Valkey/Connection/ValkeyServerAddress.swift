@@ -33,3 +33,14 @@ extension ValkeyServerAddress: CustomStringConvertible {
         }
     }
 }
+
+extension ValkeyServerAddress {
+    package var nodeDescription: ValkeyNodeDescription {
+        switch self.value {
+        case .hostname(let host, let port):
+            ValkeyNodeDescription(endpoint: host, port: port)
+        default:
+            preconditionFailure("Cannot get node description for address \(self)")
+        }
+    }
+}

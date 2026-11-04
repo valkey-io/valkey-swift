@@ -389,7 +389,7 @@ struct ValkeySentinelTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func testShutdownSentinel() async throws {
+    func testDisconnectedSentinel() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
         let topology = await self.healthyThreeSentinelOnePrimaryTwoReplicas
@@ -405,8 +405,53 @@ struct ValkeySentinelTests {
             let nodes = try await client.getNodes()
             #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
             #expect(nodes.replicas == [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9002)])
-            let sentinels = try await client.getSentinelClients()
-            #expect(Set(sentinels.map { $0.serverAddress }) == Set([.hostname("127.0.0.1", port: 16000), .hostname("127.0.0.1", port: 16002)]))
+            let expectedSentinelsSet = Set([ValkeyServerAddress.hostname("127.0.0.1", port: 16000), .hostname("127.0.0.1", port: 16002)])
+            let sentinels = try await client.getSentinelClientsForPrimarySelection()
+            switch sentinels {
+            case .all(let sentinels):
+                #expect(Set(sentinels.map { $0.serverAddress }) == expectedSentinelsSet)
+            case .chosen(let sentinel):
+                #expect(expectedSentinelsSet.contains(sentinel.serverAddress))
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testShutdownChosenSentinel() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let topology = await self.healthyThreeSentinelOnePrimaryTwoReplicas
+        let mockConnections = await topology.mock(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeySentinelClient(
+            primaryName: "TestPrimary",
+            address: .hostname("127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            logger: logger
+        ) { client in
+            let nodes = try await client.getNodes()
+            #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
+            #expect(nodes.replicas == [.hostname("127.0.0.1", port: 9001), .hostname("127.0.0.1", port: 9002)])
+            var sentinels = try await client.getSentinelClientsForPrimarySelection()
+            let nodeDescription: ValkeyNodeDescription
+            switch sentinels {
+            case .all:
+                Issue.record()
+                return
+            case .chosen(let sentinel):
+                nodeDescription = sentinel.serverAddress.nodeDescription
+                await topology.shutdownNode(address: .init(host: nodeDescription.endpoint, port: nodeDescription.port))
+                await mockConnections.shutdownServer(sentinel.serverAddress)
+            }
+            _ = try await client.getNodes()
+            sentinels = try await client.getSentinelClientsForPrimarySelection()
+            switch sentinels {
+            case .all:
+                Issue.record()
+            case .chosen(let sentinel):
+                #expect(sentinel.serverAddress.nodeDescription != nodeDescription)
+            }
         }
     }
 
