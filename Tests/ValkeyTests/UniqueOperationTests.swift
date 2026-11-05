@@ -54,7 +54,7 @@ struct UniqueOperationTests {
         let value = Atomic(0)
         let operation = UniqueOperation {
             let value = value.add(1, ordering: .relaxed).newValue
-            try await Task.sleep(for: .milliseconds(50))
+            try await Task.sleep(for: .milliseconds(100))
             return value
         }
         try await withThrowingTaskGroup(of: Int.self) { group in
@@ -70,13 +70,14 @@ struct UniqueOperationTests {
         // verify this is only the second time the operation runs
         await #expect(try operation.run() == 2)
     }
+
     @Test
     @available(valkeySwift 1.0, *)
     func testCancellationOfWaiter() async throws {
         let value = Atomic(0)
         let operation = UniqueOperation {
             let value = value.add(1, ordering: .relaxed).newValue
-            try await Task.sleep(for: .milliseconds(50))
+            try await Task.sleep(for: .milliseconds(100))
             return value
         }
         try await withThrowingTaskGroup(of: Int.self) { group in
@@ -99,6 +100,35 @@ struct UniqueOperationTests {
         // verify this is only the second time the operation runs
         await #expect(try operation.run() == 2)
     }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testCancellationOfAlreadyCancelledWaiter() async throws {
+        let value = Atomic(0)
+        let operation = UniqueOperation {
+            let value = value.add(1, ordering: .relaxed).newValue
+            try await Task.sleep(for: .milliseconds(100))
+            return value
+        }
+        try await withThrowingTaskGroup(of: Int.self) { group in
+            group.addTask {
+                try await operation.run()
+            }
+            await withThrowingTaskGroup(of: Int.self) { group in
+                group.cancelAll()
+                group.addTask {
+                    try await operation.run()
+                }
+            }
+
+            for try await result in group {
+                #expect(result == 1)
+            }
+        }
+        // verify this is only the second time the operation runs
+        await #expect(try operation.run() == 2)
+    }
+
     @Test
     @available(valkeySwift 1.0, *)
     func testTransferOfOperationToWaiter() async throws {
@@ -107,7 +137,7 @@ struct UniqueOperationTests {
         let operation = UniqueOperation {
             let value = value.add(1, ordering: .relaxed).newValue
             barrier.continuation.yield()
-            try await Task.sleep(for: .milliseconds(50))
+            try await Task.sleep(for: .milliseconds(100))
             return value
         }
         try await withThrowingTaskGroup(of: Int.self) { group in
