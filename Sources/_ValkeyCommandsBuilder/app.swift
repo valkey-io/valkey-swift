@@ -13,7 +13,11 @@ import Foundation
 struct App {
     static func main() async throws {
         let app = App()
-        try await app.run()
+        do {
+            try await app.run()
+        } catch {
+            print("ERROR: \(error)")
+        }
     }
 
     func run() async throws {

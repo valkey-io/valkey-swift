@@ -17,7 +17,7 @@ final class ValkeyCommands: Decodable {
 }
 
 struct ValkeyCommand: Decodable {
-    enum ArgumentType: String, Decodable {
+    enum InternalArgumentType: String, Decodable {
         case integer
         case float
         case double
@@ -28,10 +28,13 @@ struct ValkeyCommand: Decodable {
         case pureToken = "pure-token"
         case unixTime = "unix-time"
         case pattern
+        case field
+        case member
+
     }
     struct InternalArgument: Decodable {
         let name: String
-        let type: ArgumentType
+        let type: InternalArgumentType
         let multiple: Bool
         let optional: Bool
         let token: String?
@@ -42,7 +45,7 @@ struct ValkeyCommand: Decodable {
         init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.name = try container.decode(String.self, forKey: .name)
-            self.type = try container.decode(ArgumentType.self, forKey: .type)
+            self.type = try container.decode(InternalArgumentType.self, forKey: .type)
             var multiple = false
             do {
                 multiple = try container.decodeIfPresent(Bool.self, forKey: .multiple) ?? false
@@ -104,20 +107,34 @@ struct ValkeyCommand: Decodable {
                     newArgument.multipleToken = argument.multipleToken || newArgument.multipleToken
                     return newArgument
                 case 2:
-                    // Collapse blocks that consist of a pure token and one other single argument into
-                    // a none block type with a token attribute
-                    guard argument.token == nil else { return argument }
-                    guard arguments[0].type == .pureToken else { return argument }
-                    guard arguments[1].optional == false else { return argument }
-                    guard arguments[1].token == nil else { return argument }
-                    guard !(arguments[1].multiple && argument.multiple) else { return argument }
-                    var newArgument = arguments[1]
-                    newArgument.name = argument.name
-                    newArgument.token = arguments[0].token
-                    newArgument.optional = argument.optional
-                    newArgument.multiple = argument.multiple || newArgument.multiple
-                    newArgument.multipleToken = argument.multiple
-                    return newArgument
+                    switch arguments[0].type {
+                    case .pureToken:
+                        // Collapse blocks that consist of a pure token and one other single argument into
+                        // a none block type with a token attribute
+                        guard argument.token == nil else { return argument }
+                        guard arguments[1].optional == false else { return argument }
+                        guard arguments[1].token == nil else { return argument }
+                        guard !(arguments[1].multiple && argument.multiple) else { return argument }
+                        var newArgument = arguments[1]
+                        newArgument.name = argument.name
+                        newArgument.token = arguments[0].token
+                        newArgument.optional = argument.optional
+                        newArgument.multiple = argument.multiple || newArgument.multiple
+                        newArgument.multipleToken = argument.multiple
+                        return newArgument
+                    case .integer:
+                        // Remove integer from blocks that consist of an integer and and one other single multi argument
+                        guard arguments[1].multiple == true else { return argument }
+                        guard arguments[1].token == nil else { return argument }
+                        var newMultipleArgument = arguments[1]
+                        newMultipleArgument.token = arguments[0].token
+                        newMultipleArgument.combinedWithCount = .itemCount
+                        var newArgument = argument
+                        newArgument.arguments = [newMultipleArgument]
+                        return newArgument
+                    default:
+                        return argument
+                    }
                 default:
                     return argument
                 }
@@ -133,6 +150,36 @@ struct ValkeyCommand: Decodable {
             case multipleToken = "multiple_token"
             case arguments
             case keySpecIndex = "key_spec_index"
+        }
+    }
+    enum ArgumentType {
+        case integer
+        case float
+        case double
+        case string
+        case key
+        case block
+        case oneOf
+        case pureToken
+        case unixTime
+        case pattern
+
+        init(from argumentType: InternalArgumentType) {
+            self =
+                switch argumentType {
+                case .integer: .integer
+                case .float: .float
+                case .double: .double
+                case .string: .string
+                case .key: .key
+                case .block: .block
+                case .oneOf: .oneOf
+                case .pureToken: .pureToken
+                case .unixTime: .unixTime
+                case .pattern: .pattern
+                case .field: .string
+                case .member: .string
+                }
         }
     }
     struct Argument: Decodable {
@@ -173,7 +220,7 @@ struct ValkeyCommand: Decodable {
 
         init(argument: InternalArgument, keySpec: KeySpec?) {
             self.name = argument.name
-            self.type = argument.type
+            self.type = .init(from: argument.type)
             self.multiple = argument.multiple
             self.optional = argument.optional
             self.multipleToken = argument.multipleToken
@@ -190,7 +237,8 @@ struct ValkeyCommand: Decodable {
         init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.name = try container.decode(String.self, forKey: .name)
-            self.type = try container.decode(ArgumentType.self, forKey: .type)
+            let argumentType = try container.decode(InternalArgumentType.self, forKey: .type)
+            self.type = .init(from: argumentType)
             var multiple = false
             do {
                 multiple = try container.decodeIfPresent(Bool.self, forKey: .multiple) ?? false
