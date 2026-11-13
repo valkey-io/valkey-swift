@@ -124,7 +124,7 @@ actor TestStandaloneTopology {
 
 }
 
-@Suite("Test ValkeyClient using mock server array", .serialized)
+@Suite("Test ValkeyClient using mock server array")
 struct ValkeyClientTests {
     var healthyPrimaryWithTwoReplicas: TestStandaloneTopology {
         get async {
