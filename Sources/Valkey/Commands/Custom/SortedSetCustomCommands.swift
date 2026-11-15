@@ -163,3 +163,144 @@ extension ZRANDMEMBER {
         }
     }
 }
+
+// MARK: Backwards compatibility
+
+extension ZINCRBY {
+    @_disfavoredOverload
+    @inlinable public init(_ key: ValkeyKey, increment: Int, member: Member) {
+        self.key = key
+        self.increment = Double(increment)
+        self.member = member
+    }
+}
+
+extension ZINTER {
+    @_disfavoredOverload
+    @inlinable public init(keys: [ValkeyKey], weights: [Int] = [], aggregate: Aggregate? = nil, withscores: Bool = false) {
+        self.keys = keys
+        self.weights = weights.map { Double($0) }
+        self.aggregate = aggregate
+        self.withscores = withscores
+    }
+}
+
+extension ZINTERSTORE {
+    @_disfavoredOverload
+    @inlinable public init(destination: ValkeyKey, keys: [ValkeyKey], weights: [Int] = [], aggregate: Aggregate? = nil) {
+        self.destination = destination
+        self.keys = keys
+        self.weights = weights.map { Double($0) }
+        self.aggregate = aggregate
+    }
+}
+
+extension ZUNION {
+    @_disfavoredOverload
+    @inlinable public init(keys: [ValkeyKey], weights: [Int] = [], aggregate: Aggregate? = nil, withscores: Bool = false) {
+        self.keys = keys
+        self.weights = weights.map { Double($0) }
+        self.aggregate = aggregate
+        self.withscores = withscores
+    }
+}
+
+extension ZUNIONSTORE {
+    @_disfavoredOverload
+    @inlinable public init(destination: ValkeyKey, keys: [ValkeyKey], weights: [Int] = [], aggregate: Aggregate? = nil) {
+        self.destination = destination
+        self.keys = keys
+        self.weights = weights.map { Double($0) }
+        self.aggregate = aggregate
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyClientProtocol {
+    /// Increments the score of a member in a sorted set.
+    ///
+    /// - Documentation: [ZINCRBY](https://valkey.io/commands/zincrby)
+    /// - Available: 1.2.0
+    /// - Complexity: O(log(N)) where N is the number of elements in the sorted set.
+    /// - Returns: The new score of `member`
+    @inlinable
+    @discardableResult
+    @_disfavoredOverload
+    public func zincrby<Member: RESPStringRenderable>(_ key: ValkeyKey, increment: Int, member: Member) async throws(ValkeyClientError) -> Double {
+        try await execute(ZINCRBY(key, increment: increment, member: member))
+    }
+
+    /// Returns the intersect of multiple sorted sets.
+    ///
+    /// - Documentation: [ZINTER](https://valkey.io/commands/zinter)
+    /// - Available: 6.2.0
+    /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
+    /// - Returns: One of the following
+    ///     * Result of intersection, containing only the member names. Returned in case `WITHSCORES` was not used.
+    ///     * Result of intersection, containing members and their scores. Returned in case `WITHSCORES` was used. In RESP2 this is returned as a flat array
+    @inlinable
+    @_disfavoredOverload
+    public func zinter(
+        keys: [ValkeyKey],
+        weights: [Int] = [],
+        aggregate: ZINTER.Aggregate? = nil,
+        withscores: Bool = false
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(ZINTER(keys: keys, weights: weights, aggregate: aggregate, withscores: withscores))
+    }
+
+    /// Stores the intersect of multiple sorted sets in a key.
+    ///
+    /// - Documentation: [ZINTERSTORE](https://valkey.io/commands/zinterstore)
+    /// - Available: 2.0.0
+    /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
+    /// - Returns: Number of elements in the resulting sorted set.
+    @inlinable
+    @discardableResult
+    @_disfavoredOverload
+    public func zinterstore(
+        destination: ValkeyKey,
+        keys: [ValkeyKey],
+        weights: [Int] = [],
+        aggregate: ZINTERSTORE.Aggregate? = nil
+    ) async throws(ValkeyClientError) -> Int {
+        try await execute(ZINTERSTORE(destination: destination, keys: keys, weights: weights, aggregate: aggregate))
+    }
+
+    /// Returns the union of multiple sorted sets.
+    ///
+    /// - Documentation: [ZUNION](https://valkey.io/commands/zunion)
+    /// - Available: 6.2.0
+    /// - Complexity: O(N)+O(M*log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
+    /// - Returns: One of the following
+    ///     * The result of union when 'WITHSCORES' is not used.
+    ///     * The result of union when 'WITHSCORES' is used.
+    @inlinable
+    @_disfavoredOverload
+    public func zunion(
+        keys: [ValkeyKey],
+        weights: [Int] = [],
+        aggregate: ZUNION.Aggregate? = nil,
+        withscores: Bool = false
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(ZUNION(keys: keys, weights: weights, aggregate: aggregate, withscores: withscores))
+    }
+
+    /// Stores the union of multiple sorted sets in a key.
+    ///
+    /// - Documentation: [ZUNIONSTORE](https://valkey.io/commands/zunionstore)
+    /// - Available: 2.0.0
+    /// - Complexity: O(N)+O(M log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
+    /// - Returns: The number of elements in the resulting sorted set.
+    @inlinable
+    @discardableResult
+    @_disfavoredOverload
+    public func zunionstore(
+        destination: ValkeyKey,
+        keys: [ValkeyKey],
+        weights: [Int] = [],
+        aggregate: ZUNIONSTORE.Aggregate? = nil
+    ) async throws(ValkeyClientError) -> Int {
+        try await execute(ZUNIONSTORE(destination: destination, keys: keys, weights: weights, aggregate: aggregate))
+    }
+}

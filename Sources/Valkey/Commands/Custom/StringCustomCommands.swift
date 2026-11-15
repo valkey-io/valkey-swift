@@ -65,3 +65,57 @@ extension LCS {
         }
     }
 }
+
+// MARK: Backwards compatibilty
+
+extension LCS {
+    @available(*, deprecated, renamed: "LCS.init(key1:key2:output:minMatchLen:withmatchlen:)")
+    @inlinable
+    public init(
+        key1: ValkeyKey,
+        key2: ValkeyKey,
+        len: Bool = false,
+        idx: Bool = false,
+        minMatchLen: Int? = nil,
+        withmatchlen: Bool = false
+    ) {
+        self.key1 = key1
+        self.key2 = key2
+        self.output =
+            switch (len, idx) {
+            case (true, false): .len
+            case (false, true): .idx
+            case (false, false): nil
+            case (true, true):
+                preconditionFailure("Cannot set both len and idx in LCS")
+            }
+        self.minMatchLen = minMatchLen
+        self.withmatchlen = withmatchlen
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyClientProtocol {
+
+    /// Finds the longest common substring.
+    ///
+    /// - Documentation: [LCS](https://valkey.io/commands/lcs)
+    /// - Available: 7.0.0
+    /// - Complexity: O(N*M) where N and M are the lengths of s1 and s2, respectively
+    /// - Returns: One of the following
+    ///     * The longest common subsequence.
+    ///     * The length of the longest common subsequence when 'LEN' is given.
+    ///     * Array with the LCS length and all the ranges in both the strings when 'IDX' is given. In RESP2 this is returned as a flat array
+    @inlinable
+    @available(*, deprecated, renamed: "ValkeyClientProtocol.lcs(key1:key2:output:minMatchLen:withmatchlen:)")
+    public func lcs(
+        key1: ValkeyKey,
+        key2: ValkeyKey,
+        len: Bool = false,
+        idx: Bool = false,
+        minMatchLen: Int? = nil,
+        withmatchlen: Bool = false
+    ) async throws(ValkeyClientError) -> LCS.Response {
+        try await execute(LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
+    }
+}
