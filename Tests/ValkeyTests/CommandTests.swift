@@ -757,9 +757,9 @@ struct CommandTests {
             ) { connection in
                 var result = try await connection.lcs(key1: "key1", key2: "key2")
                 #expect(try result.longestMatch() == "mytext")
-                result = try await connection.lcs(key1: "key1", key2: "key2", len: true)
+                result = try await connection.lcs(key1: "key1", key2: "key2", output: .len)
                 #expect(try result.longestMatchLength() == 6)
-                result = try await connection.lcs(key1: "key1", key2: "key2", idx: true)
+                result = try await connection.lcs(key1: "key1", key2: "key2", output: .idx)
                 let matches = try result.matches()
                 #expect(matches.length == 6)
                 #expect(matches.matches[0].first == 4...7)
