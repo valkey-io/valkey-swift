@@ -7,7 +7,7 @@ on:
 jobs:
   soundness:
     name: Soundness
-    uses: swiftlang/github-workflows/.github/workflows/soundness.yml@0.0.11
+    uses: swiftlang/github-workflows/.github/workflows/soundness.yml@0.0.17
     with:
       api_breakage_check_container_image: swift:latest
       api_breakage_pre_build_command: |
