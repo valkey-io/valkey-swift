@@ -583,9 +583,9 @@ public enum SENTINEL {
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .crashAfterElection: "crash-after-election".encode(into: &commandEncoder)
-                case .crashAfterPromotion: "crash-after-promotion".encode(into: &commandEncoder)
-                case .help: "help".encode(into: &commandEncoder)
+                case .crashAfterElection: "CRASH-AFTER-ELECTION".encode(into: &commandEncoder)
+                case .crashAfterPromotion: "CRASH-AFTER-PROMOTION".encode(into: &commandEncoder)
+                case .help: "HELP".encode(into: &commandEncoder)
                 }
             }
         }
@@ -595,7 +595,7 @@ public enum SENTINEL {
 
         public var modes: [Mode]
 
-        @inlinable public init(modes: [Mode] = []) {
+        @inlinable public init(modes: [Mode]) {
             self.modes = modes
         }
 
@@ -943,7 +943,7 @@ extension ValkeyClientProtocol {
     ///     * Supported simulates flags. Returned in case `HELP` was used.
     @inlinable
     @discardableResult
-    public func sentinelSimulateFailure(modes: [SENTINEL.SIMULATEFAILURE.Mode] = []) async throws(ValkeyClientError) -> RESPToken.Array? {
+    public func sentinelSimulateFailure(modes: [SENTINEL.SIMULATEFAILURE.Mode]) async throws(ValkeyClientError) -> RESPToken.Array? {
         try await execute(SENTINEL.SIMULATEFAILURE(modes: modes))
     }
 

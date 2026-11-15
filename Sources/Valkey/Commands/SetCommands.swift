@@ -180,10 +180,12 @@ public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 
     public var key: ValkeyKey
     public var member: Member
+    public var xx: Bool
 
-    @inlinable public init(_ key: ValkeyKey, member: Member) {
+    @inlinable public init(_ key: ValkeyKey, member: Member, xx: Bool = false) {
         self.key = key
         self.member = member
+        self.xx = xx
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
@@ -191,7 +193,7 @@ public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SISMEMBER", key, RESPRenderableBulkString(member))
+        commandEncoder.encodeArray("SISMEMBER", key, RESPRenderableBulkString(member), RESPPureToken("XX", xx))
     }
 }
 
@@ -491,13 +493,16 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SISMEMBER](https://valkey.io/commands/sismember)
     /// - Available: 1.0.0
+    /// - History:
+    ///     * 9.1.0: Added the `XX` options.
     /// - Complexity: O(1)
     /// - Returns: One of the following
-    ///     * 0: The element is not a member of the set, or the key does not exist.
+    ///     * 0: The element is not a member of the set, or the key does not exist (when `XX` option is not specified).
     ///     * 1: The element is a member of the set.
+    ///     * -1: The key does not exist (when `XX` option is specified).
     @inlinable
-    public func sismember<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member) async throws(ValkeyClientError) -> Int {
-        try await execute(SISMEMBER(key, member: member))
+    public func sismember<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member, xx: Bool = false) async throws(ValkeyClientError) -> Int {
+        try await execute(SISMEMBER(key, member: member, xx: xx))
     }
 
     /// Returns all members of a set.

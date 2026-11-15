@@ -38,6 +38,26 @@ public enum ACL {
         }
     }
 
+    /// Deletes one or more ACL roles. Fails if any role is assigned to a user.
+    @_documentation(visibility: internal)
+    public struct DELROLE<Rolename: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = Int
+
+        @inlinable public static var name: String { "ACL DELROLE" }
+
+        public var rolenames: [Rolename]
+
+        @inlinable public init(rolenames: [Rolename]) {
+            self.rolenames = rolenames
+        }
+
+        public var keysAffected: [ValkeyKey] { [] }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "DELROLE", rolenames.map { RESPRenderableBulkString($0) })
+        }
+    }
+
     /// Deletes ACL users, and terminates their connections.
     @_documentation(visibility: internal)
     public struct DELUSER<Username: RESPStringRenderable>: ValkeyCommand {
@@ -55,6 +75,23 @@ public enum ACL {
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "DELUSER", usernames.map { RESPRenderableBulkString($0) })
+        }
+    }
+
+    /// Returns a fingerprint of the ACL rules currently in effect.
+    @_documentation(visibility: internal)
+    public struct DIGEST: ValkeyCommand {
+        public typealias Response = RESPBulkString
+
+        @inlinable public static var name: String { "ACL DIGEST" }
+
+        @inlinable public init() {
+        }
+
+        public var keysAffected: [ValkeyKey] { [] }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "DIGEST")
         }
     }
 
@@ -99,6 +136,26 @@ public enum ACL {
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "GENPASS", bits)
+        }
+    }
+
+    /// Returns the ACL rules of an ACL role.
+    @_documentation(visibility: internal)
+    public struct GETROLE<Rolename: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = RESPToken.Map?
+
+        @inlinable public static var name: String { "ACL GETROLE" }
+
+        public var rolename: Rolename
+
+        @inlinable public init(rolename: Rolename) {
+            self.rolename = rolename
+        }
+
+        public var keysAffected: [ValkeyKey] { [] }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "GETROLE", RESPRenderableBulkString(rolename))
         }
     }
 
@@ -211,6 +268,23 @@ public enum ACL {
         }
     }
 
+    /// Lists all ACL roles.
+    @_documentation(visibility: internal)
+    public struct ROLES: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "ACL ROLES" }
+
+        @inlinable public init() {
+        }
+
+        public var keysAffected: [ValkeyKey] { [] }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "ROLES")
+        }
+    }
+
     /// Saves the effective ACL rules in the configured ACL file.
     @_documentation(visibility: internal)
     public struct SAVE: ValkeyCommand {
@@ -223,6 +297,26 @@ public enum ACL {
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "SAVE")
+        }
+    }
+
+    /// Creates and modifies an ACL role and its rules.
+    @_documentation(visibility: internal)
+    public struct SETROLE<Rolename: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "ACL SETROLE" }
+
+        public var rolename: Rolename
+        public var rules: [String]
+
+        @inlinable public init(rolename: Rolename, rules: [String] = []) {
+            self.rolename = rolename
+            self.rules = rules
+        }
+
+        public var keysAffected: [ValkeyKey] { [] }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "SETROLE", RESPRenderableBulkString(rolename), rules)
         }
     }
 
@@ -617,6 +711,26 @@ public enum CONFIG {
         }
     }
 
+    /// Returns information about configuration parameters matching the given patterns.
+    @_documentation(visibility: internal)
+    public struct INFO<Pattern: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "CONFIG INFO" }
+
+        public var patterns: [Pattern]
+
+        @inlinable public init(patterns: [Pattern]) {
+            self.patterns = patterns
+        }
+
+        public var keysAffected: [ValkeyKey] { [] }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "INFO", patterns.map { RESPRenderableBulkString($0) })
+        }
+    }
+
     /// Resets the server's statistics.
     @_documentation(visibility: internal)
     public struct RESETSTAT: ValkeyCommand {
@@ -683,6 +797,60 @@ public enum CONFIG {
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "SET", data)
+        }
+    }
+
+}
+
+/// A container for hot key commands
+@_documentation(visibility: internal)
+public enum HOTKEYS {
+    /// Get the hottest keys from the last completed window, ordered by estimated QPS descending
+    @_documentation(visibility: internal)
+    public struct GET: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "HOTKEYS GET" }
+
+        @inlinable public init() {
+        }
+
+        public var keysAffected: [ValkeyKey] { [] }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("HOTKEYS", "GET")
+        }
+    }
+
+    /// Shows helpful text about the different subcommands
+    @_documentation(visibility: internal)
+    public struct HELP: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "HOTKEYS HELP" }
+
+        @inlinable public init() {
+        }
+
+        public var keysAffected: [ValkeyKey] { [] }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("HOTKEYS", "HELP")
+        }
+    }
+
+    /// Reset all hot key statistics and history
+    @_documentation(visibility: internal)
+    public struct RESET: ValkeyCommand {
+        @inlinable public static var name: String { "HOTKEYS RESET" }
+
+        @inlinable public init() {
+        }
+
+        public var keysAffected: [ValkeyKey] { [] }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("HOTKEYS", "RESET")
         }
     }
 
@@ -1686,6 +1854,18 @@ extension ValkeyClientProtocol {
         try await execute(ACL.CAT(category: category))
     }
 
+    /// Deletes one or more ACL roles. Fails if any role is assigned to a user.
+    ///
+    /// - Documentation: [ACL DELROLE](https://valkey.io/commands/acl-delrole)
+    /// - Available: 9.2.0
+    /// - Complexity: O(N). Where N is the number of roles to delete.
+    /// - Returns: The number of roles deleted.
+    @inlinable
+    @discardableResult
+    public func aclDelrole<Rolename: RESPStringRenderable>(rolenames: [Rolename]) async throws(ValkeyClientError) -> Int {
+        try await execute(ACL.DELROLE(rolenames: rolenames))
+    }
+
     /// Deletes ACL users, and terminates their connections.
     ///
     /// - Documentation: [ACL DELUSER](https://valkey.io/commands/acl-deluser)
@@ -1696,6 +1876,18 @@ extension ValkeyClientProtocol {
     @discardableResult
     public func aclDeluser<Username: RESPStringRenderable>(usernames: [Username]) async throws(ValkeyClientError) -> Int {
         try await execute(ACL.DELUSER(usernames: usernames))
+    }
+
+    /// Returns a fingerprint of the ACL rules currently in effect.
+    ///
+    /// - Documentation: [ACL DIGEST](https://valkey.io/commands/acl-digest)
+    /// - Available: 9.2.0
+    /// - Complexity: O(N). Where N is the number of configured users and roles.
+    /// - Returns: The hex representation of the digest of the rules currently in effect.
+    @inlinable
+    @discardableResult
+    public func aclDigest() async throws(ValkeyClientError) -> RESPBulkString {
+        try await execute(ACL.DIGEST())
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
@@ -1728,6 +1920,20 @@ extension ValkeyClientProtocol {
         try await execute(ACL.GENPASS(bits: bits))
     }
 
+    /// Returns the ACL rules of an ACL role.
+    ///
+    /// - Documentation: [ACL GETROLE](https://valkey.io/commands/acl-getrole)
+    /// - Available: 9.2.0
+    /// - Complexity: O(N). Where N is the number of rules defined for the role.
+    /// - Returns: One of the following
+    ///     * A set of ACL rule definitions for the role.
+    ///     * nil: Role not found.
+    @inlinable
+    @discardableResult
+    public func aclGetrole<Rolename: RESPStringRenderable>(rolename: Rolename) async throws(ValkeyClientError) -> RESPToken.Map? {
+        try await execute(ACL.GETROLE(rolename: rolename))
+    }
+
     /// Lists the ACL rules of a user.
     ///
     /// - Documentation: [ACL GETUSER](https://valkey.io/commands/acl-getuser)
@@ -1736,6 +1942,7 @@ extension ValkeyClientProtocol {
     ///     * 6.2.0: Added Pub/Sub channel patterns.
     ///     * 7.0.0: Added selectors and changed the format of key and channel patterns from a list to their rule representation.
     ///     * 9.1.0: Added database permission rules.
+    ///     * 9.2.0: Added roles.
     /// - Complexity: O(N). Where N is the number of password, command and pattern rules that the user has.
     /// - Returns: One of the following
     ///     * A set of ACL rule definitions for the user.
@@ -1796,6 +2003,18 @@ extension ValkeyClientProtocol {
         try await execute(ACL.LOG(operation: operation))
     }
 
+    /// Lists all ACL roles.
+    ///
+    /// - Documentation: [ACL ROLES](https://valkey.io/commands/acl-roles)
+    /// - Available: 9.2.0
+    /// - Complexity: O(N). Where N is the number of configured roles.
+    /// - Returns: List of existing ACL roles.
+    @inlinable
+    @discardableResult
+    public func aclRoles() async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(ACL.ROLES())
+    }
+
     /// Saves the effective ACL rules in the configured ACL file.
     ///
     /// - Documentation: [ACL SAVE](https://valkey.io/commands/acl-save)
@@ -1806,6 +2025,16 @@ extension ValkeyClientProtocol {
         _ = try await execute(ACL.SAVE())
     }
 
+    /// Creates and modifies an ACL role and its rules.
+    ///
+    /// - Documentation: [ACL SETROLE](https://valkey.io/commands/acl-setrole)
+    /// - Available: 9.2.0
+    /// - Complexity: O(N+M*C). Where N is the number of rules provided, M the number of users in the role and C the number of connected clients.
+    @inlinable
+    public func aclSetrole<Rolename: RESPStringRenderable>(rolename: Rolename, rules: [String] = []) async throws(ValkeyClientError) {
+        _ = try await execute(ACL.SETROLE(rolename: rolename, rules: rules))
+    }
+
     /// Creates and modifies an ACL user and its rules.
     ///
     /// - Documentation: [ACL SETUSER](https://valkey.io/commands/acl-setuser)
@@ -1814,6 +2043,7 @@ extension ValkeyClientProtocol {
     ///     * 6.2.0: Added Pub/Sub channel patterns.
     ///     * 7.0.0: Added selectors and key based permissions.
     ///     * 9.1.0: Added database permission rules.
+    ///     * 9.2.0: Added the `role=` rule for assigning roles to a user.
     /// - Complexity: O(N). Where N is the number of rules provided.
     @inlinable
     public func aclSetuser<Username: RESPStringRenderable>(username: Username, rules: [String] = []) async throws(ValkeyClientError) {
@@ -2046,6 +2276,18 @@ extension ValkeyClientProtocol {
         try await execute(CONFIG.HELP())
     }
 
+    /// Returns information about configuration parameters matching the given patterns.
+    ///
+    /// - Documentation: [CONFIG INFO](https://valkey.io/commands/config-info)
+    /// - Available: 9.2.0
+    /// - Complexity: O(N) when N is the number of configuration parameters provided
+    /// - Returns: Configuration parameter information.
+    @inlinable
+    @discardableResult
+    public func configInfo<Pattern: RESPStringRenderable>(patterns: [Pattern]) async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(CONFIG.INFO(patterns: patterns))
+    }
+
     /// Resets the server's statistics.
     ///
     /// - Documentation: [CONFIG RESETSTAT](https://valkey.io/commands/config-resetstat)
@@ -2125,6 +2367,40 @@ extension ValkeyClientProtocol {
     @inlinable
     public func flushdb(flushType: FLUSHDB.FlushType? = nil) async throws(ValkeyClientError) {
         _ = try await execute(FLUSHDB(flushType: flushType))
+    }
+
+    /// Get the hottest keys from the last completed window, ordered by estimated QPS descending
+    ///
+    /// - Documentation: [HOTKEYS GET](https://valkey.io/commands/hotkeys-get)
+    /// - Available: 9.2.0
+    /// - Complexity: O(N) where N is the number of hot keys in the history
+    /// - Returns: Hottest keys from the last completed window, ordered by estimated QPS (descending)
+    @inlinable
+    @discardableResult
+    public func hotkeysGet() async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(HOTKEYS.GET())
+    }
+
+    /// Shows helpful text about the different subcommands
+    ///
+    /// - Documentation: [HOTKEYS HELP](https://valkey.io/commands/hotkeys-help)
+    /// - Available: 9.2.0
+    /// - Complexity: O(1)
+    /// - Returns: Helpful text about subcommands.
+    @inlinable
+    @discardableResult
+    public func hotkeysHelp() async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(HOTKEYS.HELP())
+    }
+
+    /// Reset all hot key statistics and history
+    ///
+    /// - Documentation: [HOTKEYS RESET](https://valkey.io/commands/hotkeys-reset)
+    /// - Available: 9.2.0
+    /// - Complexity: O(N) where N is the number of keys to remove from history and statistics
+    @inlinable
+    public func hotkeysReset() async throws(ValkeyClientError) {
+        _ = try await execute(HOTKEYS.RESET())
     }
 
     /// Returns information and statistics about the server.
