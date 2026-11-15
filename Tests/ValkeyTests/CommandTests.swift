@@ -958,6 +958,44 @@ struct CommandTests {
 
         @Test
         @available(valkeySwift 1.0, *)
+        func zrevrange() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["ZREVRANGE", "key", "4", "10", "WITHSCORES", "XX"]),
+                    response: .array([
+                        .array([.bulkString("four"), .double(4.0)])
+                    ])
+                ),
+                (
+                    request: .command(["ZREVRANGE", "key2", "4", "10", "XX"]),
+                    response: .null
+                ),
+                (
+                    request: .command(["ZREVRANGE", "key", "2", "3", "WITHSCORES"]),
+                    response: .array([
+                        .array([.bulkString("three"), .double(3.0)]),
+                        .array([.bulkString("two"), .double(2.0)]),
+                    ])
+                )
+            ) { connection in
+                let optionalResult = try await connection.zrevrange("key", start: 4, stop: 10, withscores: true, xx: true)?
+                    .decode(as: [SortedSetEntry].self)
+                var result = try #require(optionalResult)
+                #expect(result[0].score == 4)
+                #expect(String(result[0].value) == "four")
+                #expect(try await connection.zrevrange("key2", start: 4, stop: 10, xx: true) == nil)
+                result = try await connection.zrevrange("key", start: 2, stop: 3, withscores: true).decode(
+                    as: [SortedSetEntry].self
+                )
+                #expect(result[0].score == 3)
+                #expect(String(result[0].value) == "three")
+                #expect(result[1].score == 2)
+                #expect(String(result[1].value) == "two")
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func zrandmember() async throws {
             try await testCommandEncodesDecodes(
                 // Single member (no COUNT option) - returns one member
