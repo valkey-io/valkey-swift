@@ -100,9 +100,13 @@ var package = Package(
             resources: [.process("Resources")],
             swiftSettings: defaultSwiftSettings
         ),
+        .target(
+            name: "CValkeyEditLine",
+            linkerSettings: [.linkedLibrary("edit")]
+        ),
         .executableTarget(
             name: "ValkeyCLI",
-            dependencies: ["Valkey"],
+            dependencies: ["Valkey", "CValkeyEditLine"],
             path: "Sources/ValkeyCLI",
             swiftSettings: defaultSwiftSettings
         ),
