@@ -108,6 +108,7 @@ public enum FT {
         public enum GroupbyReduceFunction: RESPRenderable, Sendable, Hashable {
             case count
             case countDistinct
+            case countDistinctish
             case sum
             case min
             case max
@@ -116,6 +117,7 @@ public enum FT {
             case tolist
             case firstValue
             case randomSample
+            case quantile
 
             @inlinable
             public var respEntries: Int { 1 }
@@ -125,6 +127,7 @@ public enum FT {
                 switch self {
                 case .count: "COUNT".encode(into: &commandEncoder)
                 case .countDistinct: "COUNT_DISTINCT".encode(into: &commandEncoder)
+                case .countDistinctish: "COUNT_DISTINCTISH".encode(into: &commandEncoder)
                 case .sum: "SUM".encode(into: &commandEncoder)
                 case .min: "MIN".encode(into: &commandEncoder)
                 case .max: "MAX".encode(into: &commandEncoder)
@@ -133,6 +136,7 @@ public enum FT {
                 case .tolist: "TOLIST".encode(into: &commandEncoder)
                 case .firstValue: "FIRST_VALUE".encode(into: &commandEncoder)
                 case .randomSample: "RANDOM_SAMPLE".encode(into: &commandEncoder)
+                case .quantile: "QUANTILE".encode(into: &commandEncoder)
                 }
             }
         }
@@ -165,7 +169,7 @@ public enum FT {
             public var reduces: [GroupbyReduce]
 
             @inlinable
-            public init(fields: [String], reduces: [GroupbyReduce] = []) {
+            public init(fields: [String] = [], reduces: [GroupbyReduce] = []) {
                 self.fields = fields
                 self.reduces = reduces
             }
@@ -297,7 +301,7 @@ public enum FT {
         public var filters: [String]
         public var groupbys: [Groupby]
         public var limits: [Limit]
-        public var sortby: Sortby?
+        public var sortbys: [Sortby]
         public var withcursor: Withcursor?
 
         @inlinable public init(
@@ -316,7 +320,7 @@ public enum FT {
             filters: [String] = [],
             groupbys: [Groupby] = [],
             limits: [Limit] = [],
-            sortby: Sortby? = nil,
+            sortbys: [Sortby] = [],
             withcursor: Withcursor? = nil
         ) {
             self.index = index
@@ -334,7 +338,7 @@ public enum FT {
             self.filters = filters
             self.groupbys = groupbys
             self.limits = limits
-            self.sortby = sortby
+            self.sortbys = sortbys
             self.withcursor = withcursor
         }
 
@@ -358,7 +362,7 @@ public enum FT {
                 RESPArrayWithToken("FILTER", filters),
                 RESPArrayWithToken("GROUPBY", groupbys),
                 RESPArrayWithToken("LIMIT", limits),
-                RESPWithToken("SORTBY", sortby),
+                RESPArrayWithToken("SORTBY", sortbys),
                 RESPWithToken("WITHCURSOR", withcursor)
             )
         }
@@ -379,6 +383,41 @@ public enum FT {
                 switch self {
                 case .hash: "HASH".encode(into: &commandEncoder)
                 case .json: "JSON".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public enum Language: RESPRenderable, Sendable, Hashable {
+            case arabic
+            case dutch
+            case english
+            case french
+            case german
+            case indonesian
+            case italian
+            case portuguese
+            case russian
+            case spanish
+            case swedish
+            case turkish
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .arabic: "ARABIC".encode(into: &commandEncoder)
+                case .dutch: "DUTCH".encode(into: &commandEncoder)
+                case .english: "ENGLISH".encode(into: &commandEncoder)
+                case .french: "FRENCH".encode(into: &commandEncoder)
+                case .german: "GERMAN".encode(into: &commandEncoder)
+                case .indonesian: "INDONESIAN".encode(into: &commandEncoder)
+                case .italian: "ITALIAN".encode(into: &commandEncoder)
+                case .portuguese: "PORTUGUESE".encode(into: &commandEncoder)
+                case .russian: "RUSSIAN".encode(into: &commandEncoder)
+                case .spanish: "SPANISH".encode(into: &commandEncoder)
+                case .swedish: "SWEDISH".encode(into: &commandEncoder)
+                case .turkish: "TURKISH".encode(into: &commandEncoder)
                 }
             }
         }
@@ -533,6 +572,7 @@ public enum FT {
             public var m: Int?
             public var efConstruction: Int?
             public var efRuntime: Int?
+            public var blockSize: Int?
 
             @inlinable
             public init(
@@ -542,7 +582,8 @@ public enum FT {
                 initialCap: Int? = nil,
                 m: Int? = nil,
                 efConstruction: Int? = nil,
-                efRuntime: Int? = nil
+                efRuntime: Int? = nil,
+                blockSize: Int? = nil
             ) {
                 self.type = type
                 self.dim = dim
@@ -551,6 +592,7 @@ public enum FT {
                 self.m = m
                 self.efConstruction = efConstruction
                 self.efRuntime = efRuntime
+                self.blockSize = blockSize
             }
 
             @inlinable
@@ -558,7 +600,7 @@ public enum FT {
                 RESPWithToken("TYPE", type).respEntries + RESPWithToken("DIM", dim).respEntries
                     + RESPWithToken("DISTANCE_METRIC", distanceMetric).respEntries + RESPWithToken("INITIAL_CAP", initialCap).respEntries
                     + RESPWithToken("M", m).respEntries + RESPWithToken("EF_CONSTRUCTION", efConstruction).respEntries
-                    + RESPWithToken("EF_RUNTIME", efRuntime).respEntries
+                    + RESPWithToken("EF_RUNTIME", efRuntime).respEntries + RESPWithToken("BLOCK_SIZE", blockSize).respEntries
             }
 
             @inlinable
@@ -570,6 +612,7 @@ public enum FT {
                 RESPWithToken("M", m).encode(into: &commandEncoder)
                 RESPWithToken("EF_CONSTRUCTION", efConstruction).encode(into: &commandEncoder)
                 RESPWithToken("EF_RUNTIME", efRuntime).encode(into: &commandEncoder)
+                RESPWithToken("BLOCK_SIZE", blockSize).encode(into: &commandEncoder)
             }
         }
         public struct SchemaFieldTypeVector: RESPRenderable, Sendable, Hashable {
@@ -678,9 +721,10 @@ public enum FT {
         public var filter: String?
         public var score: String?
         public var scoreField: String?
-        public var language: String?
+        public var language: Language?
         public var skipinitialscan: Bool
         public var minstemsize: Int?
+        public var nostem: Bool
         public var nohl: Bool
         public var offsets: Offsets?
         public var stopwords: Stopwords?
@@ -694,9 +738,10 @@ public enum FT {
             filter: String? = nil,
             score: String? = nil,
             scoreField: String? = nil,
-            language: String? = nil,
+            language: Language? = nil,
             skipinitialscan: Bool = false,
             minstemsize: Int? = nil,
+            nostem: Bool = false,
             nohl: Bool = false,
             offsets: Offsets? = nil,
             stopwords: Stopwords? = nil,
@@ -712,6 +757,7 @@ public enum FT {
             self.language = language
             self.skipinitialscan = skipinitialscan
             self.minstemsize = minstemsize
+            self.nostem = nostem
             self.nohl = nohl
             self.offsets = offsets
             self.stopwords = stopwords
@@ -733,6 +779,7 @@ public enum FT {
                 RESPWithToken("LANGUAGE", language),
                 RESPPureToken("SKIPINITIALSCAN", skipinitialscan),
                 RESPWithToken("MINSTEMSIZE", minstemsize),
+                RESPPureToken("NOSTEM", nostem),
                 RESPPureToken("NOHL", nohl),
                 offsets,
                 stopwords,
@@ -1230,6 +1277,7 @@ public enum FT {
         public enum GroupbyReduceFunction: RESPRenderable, Sendable, Hashable {
             case count
             case countDistinct
+            case countDistinctish
             case sum
             case min
             case max
@@ -1237,6 +1285,7 @@ public enum FT {
             case stddev
             case tolist
             case firstValue
+            case quantile
             case randomSample
 
             @inlinable
@@ -1247,6 +1296,7 @@ public enum FT {
                 switch self {
                 case .count: "COUNT".encode(into: &commandEncoder)
                 case .countDistinct: "COUNT_DISTINCT".encode(into: &commandEncoder)
+                case .countDistinctish: "COUNT_DISTINCTISH".encode(into: &commandEncoder)
                 case .sum: "SUM".encode(into: &commandEncoder)
                 case .min: "MIN".encode(into: &commandEncoder)
                 case .max: "MAX".encode(into: &commandEncoder)
@@ -1254,6 +1304,7 @@ public enum FT {
                 case .stddev: "STDDEV".encode(into: &commandEncoder)
                 case .tolist: "TOLIST".encode(into: &commandEncoder)
                 case .firstValue: "FIRST_VALUE".encode(into: &commandEncoder)
+                case .quantile: "QUANTILE".encode(into: &commandEncoder)
                 case .randomSample: "RANDOM_SAMPLE".encode(into: &commandEncoder)
                 }
             }
@@ -1287,7 +1338,7 @@ public enum FT {
             public var reduces: [GroupbyReduce]
 
             @inlinable
-            public init(fields: [String], reduces: [GroupbyReduce] = []) {
+            public init(fields: [String] = [], reduces: [GroupbyReduce] = []) {
                 self.fields = fields
                 self.reduces = reduces
             }
@@ -1379,7 +1430,7 @@ public enum FT {
         public var applys: [Apply]
         public var filters: [String]
         public var groupbys: [Groupby]
-        public var sortby: Sortby?
+        public var sortbys: [Sortby]
         public var limits: [Limit]
         public var withcursor: Withcursor?
 
@@ -1395,7 +1446,7 @@ public enum FT {
             applys: [Apply] = [],
             filters: [String] = [],
             groupbys: [Groupby] = [],
-            sortby: Sortby? = nil,
+            sortbys: [Sortby] = [],
             limits: [Limit] = [],
             withcursor: Withcursor? = nil
         ) {
@@ -1410,7 +1461,7 @@ public enum FT {
             self.applys = applys
             self.filters = filters
             self.groupbys = groupbys
-            self.sortby = sortby
+            self.sortbys = sortbys
             self.limits = limits
             self.withcursor = withcursor
         }
@@ -1431,7 +1482,7 @@ public enum FT {
                 RESPArrayWithToken("APPLY", applys),
                 RESPArrayWithToken("FILTER", filters),
                 RESPArrayWithToken("GROUPBY", groupbys),
-                RESPWithToken("SORTBY", sortby),
+                RESPArrayWithToken("SORTBY", sortbys),
                 RESPArrayWithToken("LIMIT", limits),
                 RESPWithToken("WITHCURSOR", withcursor)
             )
@@ -1991,7 +2042,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [FT.AGGREGATE](https://valkey.io/commands/ft.aggregate)
     /// - History:
     ///     * 1.2.0: Added Text Indexing and Search support
-    ///     * 1.3.0-RC1: Added WITHCURSOR, ADDSCORES and SCORER options, TOLIST, FIRST_VALUE and RANDOM_SAMPLE reducers, VECTOR_RANGE queries and HYBRID_POLICY, and LOAD ... AS (with `search.emulate-release 1.3.0`)
+    ///     * 1.3.0: Added WITHCURSOR, ADDSCORES and SCORER options; TOLIST, FIRST_VALUE, RANDOM_SAMPLE, COUNT_DISTINCTISH and QUANTILE reducers; the case() expression function; GROUPBY 0; VECTOR_RANGE queries and HYBRID_POLICY; VERBATIM, INORDER and SLOP are honored. With `search.emulate-release 1.3.0`: LOAD ... AS, Redisearch-compatible default reducer names, SORTBY bounded by an adjacent LIMIT, Redisearch-compatible operator precedence, type-sensitive comparisons and missing-field handling in expressions
     /// - Complexity: O(log N)
     @inlinable
     @discardableResult
@@ -2011,7 +2062,7 @@ extension ValkeyClientProtocol {
         filters: [String] = [],
         groupbys: [FT.AGGREGATE<Query>.Groupby] = [],
         limits: [FT.AGGREGATE<Query>.Limit] = [],
-        sortby: FT.AGGREGATE<Query>.Sortby? = nil,
+        sortbys: [FT.AGGREGATE<Query>.Sortby] = [],
         withcursor: FT.AGGREGATE<Query>.Withcursor? = nil
     ) async throws(ValkeyClientError) -> RESPToken {
         try await execute(
@@ -2031,7 +2082,7 @@ extension ValkeyClientProtocol {
                 filters: filters,
                 groupbys: groupbys,
                 limits: limits,
-                sortby: sortby,
+                sortbys: sortbys,
                 withcursor: withcursor
             )
         )
@@ -2042,7 +2093,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [FT.CREATE](https://valkey.io/commands/ft.create)
     /// - History:
     ///     * 1.2.0: Added Text Indexing and Search support
-    ///     * 1.3.0-RC1: Added FILTER, SCORE_FIELD, NOHL and SORTABLE UNF options, FLOAT16 and BFLOAT16 vector types, and LANGUAGE values beyond ENGLISH, with per-language punctuation, stop words, and stemming
+    ///     * 1.3.0: Added FILTER, SCORE_FIELD, NOHL and SORTABLE UNF options; SCORE accepts values in [0, 1]; FLOAT16 and BFLOAT16 vector types; LANGUAGE values beyond ENGLISH, with per-language punctuation, stop words, and stemming; the same field may be indexed under multiple aliases; PREFIX (like FILTER) may appear anywhere among the options between ON and SCHEMA. With `search.emulate-release` 1.3.0 or later, invalid field data drops the whole key and TAG rejects non-UTF-8 values
     /// - Complexity: Construction time O(N log N), where N is the number of indexed items
     @inlinable
     @discardableResult
@@ -2053,9 +2104,10 @@ extension ValkeyClientProtocol {
         filter: String? = nil,
         score: String? = nil,
         scoreField: String? = nil,
-        language: String? = nil,
+        language: FT.CREATE<IndexName, FieldIdentifier>.Language? = nil,
         skipinitialscan: Bool = false,
         minstemsize: Int? = nil,
+        nostem: Bool = false,
         nohl: Bool = false,
         offsets: FT.CREATE<IndexName, FieldIdentifier>.Offsets? = nil,
         stopwords: FT.CREATE<IndexName, FieldIdentifier>.Stopwords? = nil,
@@ -2073,6 +2125,7 @@ extension ValkeyClientProtocol {
                 language: language,
                 skipinitialscan: skipinitialscan,
                 minstemsize: minstemsize,
+                nostem: nostem,
                 nohl: nohl,
                 offsets: offsets,
                 stopwords: stopwords,
@@ -2106,7 +2159,7 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [FT.HYBRID](https://valkey.io/commands/ft.hybrid)
     /// - History:
-    ///     * 1.3.0-RC1: Hybrid search combining text/filter and vector arms
+    ///     * 1.3.0: Hybrid search combining text/filter and vector arms
     /// - Complexity: O(N+M) where N is the complexity of the SEARCH arm and M is the complexity of the VSIM arm.
     @inlinable
     @discardableResult
@@ -2122,7 +2175,7 @@ extension ValkeyClientProtocol {
         applys: [FT.HYBRID<Query, VectorField, VectorParam>.Apply] = [],
         filters: [String] = [],
         groupbys: [FT.HYBRID<Query, VectorField, VectorParam>.Groupby] = [],
-        sortby: FT.HYBRID<Query, VectorField, VectorParam>.Sortby? = nil,
+        sortbys: [FT.HYBRID<Query, VectorField, VectorParam>.Sortby] = [],
         limits: [FT.HYBRID<Query, VectorField, VectorParam>.Limit] = [],
         withcursor: FT.HYBRID<Query, VectorField, VectorParam>.Withcursor? = nil
     ) async throws(ValkeyClientError) -> RESPToken {
@@ -2139,7 +2192,7 @@ extension ValkeyClientProtocol {
                 applys: applys,
                 filters: filters,
                 groupbys: groupbys,
-                sortby: sortby,
+                sortbys: sortbys,
                 limits: limits,
                 withcursor: withcursor
             )
@@ -2151,7 +2204,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [FT.INFO](https://valkey.io/commands/ft.info)
     /// - History:
     ///     * 1.2.0: Added Text Indexing and Search support
-    ///     * 1.3.0-RC1: Reports the index FILTER, filter_rejected_keys and per-attribute SORTABLE and UNF, and the index SCORE and SCORE_FIELD (with `search.emulate-release 1.3.0`)
+    ///     * 1.3.0: Reports the index FILTER, filter_rejected_keys, and per-attribute SORTABLE and UNF. Reports non-English language values. With `search.emulate-release` 1.3.0 or later, also reports the configured SCORE as a double and SCORE_FIELD
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
@@ -2169,7 +2222,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [FT.SEARCH](https://valkey.io/commands/ft.search)
     /// - History:
     ///     * 1.2.0: Added Text Indexing and Search support
-    ///     * 1.3.0-RC1: Added INKEYS, SCORER, WITHSCORES and WITHCURSOR options, BM25STD scoring, VECTOR_RANGE queries and HYBRID_POLICY
+    ///     * 1.3.0: Added INKEYS, SCORER, WITHSCORES and WITHCURSOR options, BM25STD scoring and the `$weight` query attribute, VECTOR_RANGE queries with `$EPSILON`, HYBRID_POLICY, field-scoped text groups, SORTBY on the KNN distance, `$param` values for the KNN `AS` name, a TIMEOUT limit set by `search.max-timeout-ms`, and (with `search.emulate-release 1.3.0`) last-wins RETURN, typed WITHSORTKEYS values, single-quoted phrases and rejection of invalid UTF-8 queries
     /// - Complexity: O(log N)
     @inlinable
     @discardableResult

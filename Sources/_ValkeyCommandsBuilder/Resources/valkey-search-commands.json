@@ -252,8 +252,8 @@
         "Added Text Indexing and Search support"
       ],
       [
-        "1.3.0-RC1",
-        "Added WITHCURSOR, ADDSCORES and SCORER options, TOLIST, FIRST_VALUE and RANDOM_SAMPLE reducers, VECTOR_RANGE queries and HYBRID_POLICY, and LOAD ... AS (with `search.emulate-release 1.3.0`)"
+        "1.3.0",
+        "Added WITHCURSOR, ADDSCORES and SCORER options; TOLIST, FIRST_VALUE, RANDOM_SAMPLE, COUNT_DISTINCTISH and QUANTILE reducers; the case() expression function; GROUPBY 0; VECTOR_RANGE queries and HYBRID_POLICY; VERBATIM, INORDER and SLOP are honored. With `search.emulate-release 1.3.0`: LOAD ... AS, Redisearch-compatible default reducer names, SORTBY bounded by an adjacent LIMIT, Redisearch-compatible operator precedence, type-sensitive comparisons and missing-field handling in expressions"
       ]
     ],
     "arguments": [
@@ -432,7 +432,8 @@
           {
             "name": "field",
             "type": "string",
-            "multiple": true
+            "multiple": true,
+            "optional": true
           },
           {
             "name": "REDUCE",
@@ -455,6 +456,11 @@
                     "name": "COUNT_DISTINCT",
                     "type": "pure-token",
                     "token": "COUNT_DISTINCT"
+                  },
+                  {
+                    "name": "COUNT_DISTINCTISH",
+                    "type": "pure-token",
+                    "token": "COUNT_DISTINCTISH"
                   },
                   {
                     "name": "SUM",
@@ -495,6 +501,11 @@
                     "name": "RANDOM_SAMPLE",
                     "type": "pure-token",
                     "token": "RANDOM_SAMPLE"
+                  },
+                  {
+                    "name": "QUANTILE",
+                    "type": "pure-token",
+                    "token": "QUANTILE"
                   }
                 ]
               },
@@ -551,6 +562,8 @@
         "token": "SORTBY",
         "type": "block",
         "optional": true,
+        "multiple": true,
+        "multiple_token": true,
         "arguments": [
           {
             "name": "count",
@@ -608,8 +621,8 @@
         "Added Text Indexing and Search support"
       ],
       [
-        "1.3.0-RC1",
-        "Added FILTER, SCORE_FIELD, NOHL and SORTABLE UNF options, FLOAT16 and BFLOAT16 vector types, and LANGUAGE values beyond ENGLISH, with per-language punctuation, stop words, and stemming"
+        "1.3.0",
+        "Added FILTER, SCORE_FIELD, NOHL and SORTABLE UNF options; SCORE accepts values in [0, 1]; FLOAT16 and BFLOAT16 vector types; LANGUAGE values beyond ENGLISH, with per-language punctuation, stop words, and stemming; the same field may be indexed under multiple aliases; PREFIX (like FILTER) may appear anywhere among the options between ON and SCHEMA. With `search.emulate-release` 1.3.0 or later, invalid field data drops the whole key and TAG rejects non-UTF-8 values"
       ]
     ],
     "arguments": [
@@ -686,8 +699,70 @@
       {
         "name": "LANGUAGE",
         "token": "LANGUAGE",
-        "type": "string",
-        "optional": true
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "arabic",
+            "type": "pure-token",
+            "token": "ARABIC"
+          },
+          {
+            "name": "dutch",
+            "type": "pure-token",
+            "token": "DUTCH"
+          },
+          {
+            "name": "english",
+            "type": "pure-token",
+            "token": "ENGLISH"
+          },
+          {
+            "name": "french",
+            "type": "pure-token",
+            "token": "FRENCH"
+          },
+          {
+            "name": "german",
+            "type": "pure-token",
+            "token": "GERMAN"
+          },
+          {
+            "name": "indonesian",
+            "type": "pure-token",
+            "token": "INDONESIAN"
+          },
+          {
+            "name": "italian",
+            "type": "pure-token",
+            "token": "ITALIAN"
+          },
+          {
+            "name": "portuguese",
+            "type": "pure-token",
+            "token": "PORTUGUESE"
+          },
+          {
+            "name": "russian",
+            "type": "pure-token",
+            "token": "RUSSIAN"
+          },
+          {
+            "name": "spanish",
+            "type": "pure-token",
+            "token": "SPANISH"
+          },
+          {
+            "name": "swedish",
+            "type": "pure-token",
+            "token": "SWEDISH"
+          },
+          {
+            "name": "turkish",
+            "type": "pure-token",
+            "token": "TURKISH"
+          }
+        ]
       },
       {
         "name": "SKIPINITIALSCAN",
@@ -700,6 +775,12 @@
         "token": "MINSTEMSIZE",
         "type": "integer",
         "optional": true
+      },
+      {
+        "name": "NOSTEM",
+        "type": "pure-token",
+        "optional": true,
+        "token": "NOSTEM"
       },
       {
         "name": "NOHL",
@@ -887,7 +968,7 @@
                       {
                         "name": "vector-params",
                         "type": "block",
-                        "description": "Vector algorithm parameters (DIM, TYPE, DISTANCE_METRIC, INITIAL_CAP, M, EF_CONSTRUCTION, EF_RUNTIME)",
+                        "description": "Vector algorithm parameters, in any order (DIM, TYPE, DISTANCE_METRIC, INITIAL_CAP; HNSW only: M, EF_CONSTRUCTION, EF_RUNTIME; FLAT only: BLOCK_SIZE)",
                         "arguments": [
                           {
                             "name": "type",
@@ -959,6 +1040,12 @@
                           {
                             "name": "ef_runtime",
                             "token": "EF_RUNTIME",
+                            "type": "integer",
+                            "optional": true
+                          },
+                          {
+                            "name": "block_size",
+                            "token": "BLOCK_SIZE",
                             "type": "integer",
                             "optional": true
                           }
@@ -1050,7 +1137,7 @@
     ],
     "complexity": "O(N) where N is the number of rows returned",
     "group": "search",
-    "module_since": "1.3.0-RC1",
+    "module_since": "1.3.0",
     "summary": "Reads rows from, or deletes, a cursor created by the WITHCURSOR option of FT.AGGREGATE, FT.HYBRID or FT.SEARCH"
   },
   "FT.DROPINDEX": {
@@ -1080,13 +1167,13 @@
     ],
     "history": [
       [
-        "1.3.0-RC1",
+        "1.3.0",
         "Hybrid search combining text/filter and vector arms"
       ]
     ],
     "arity": -7,
     "group": "search",
-    "module_since": "1.3.0-RC1",
+    "module_since": "1.3.0",
     "summary": "Performs hybrid search combining a text/filter arm with a vector arm, fuses results via RRF, LINEAR or a user-supplied FUNCTION, and feeds the fused list through the FT.AGGREGATE post-pipeline.",
     "complexity": "O(N+M) where N is the complexity of the SEARCH arm and M is the complexity of the VSIM arm.",
     "arguments": [
@@ -1665,7 +1752,8 @@
           {
             "name": "field",
             "type": "string",
-            "multiple": true
+            "multiple": true,
+            "optional": true
           },
           {
             "name": "REDUCE",
@@ -1687,6 +1775,11 @@
                     "name": "COUNT_DISTINCT",
                     "type": "pure-token",
                     "token": "COUNT_DISTINCT"
+                  },
+                  {
+                    "name": "COUNT_DISTINCTISH",
+                    "type": "pure-token",
+                    "token": "COUNT_DISTINCTISH"
                   },
                   {
                     "name": "SUM",
@@ -1722,6 +1815,11 @@
                     "name": "FIRST_VALUE",
                     "type": "pure-token",
                     "token": "FIRST_VALUE"
+                  },
+                  {
+                    "name": "QUANTILE",
+                    "type": "pure-token",
+                    "token": "QUANTILE"
                   },
                   {
                     "name": "RANDOM_SAMPLE",
@@ -1767,6 +1865,8 @@
         "type": "block",
         "token": "SORTBY",
         "optional": true,
+        "multiple": true,
+        "multiple_token": true,
         "arguments": [
           {
             "name": "count",
@@ -1837,8 +1937,8 @@
         "Added Text Indexing and Search support"
       ],
       [
-        "1.3.0-RC1",
-        "Reports the index FILTER, filter_rejected_keys and per-attribute SORTABLE and UNF, and the index SCORE and SCORE_FIELD (with `search.emulate-release 1.3.0`)"
+        "1.3.0",
+        "Reports the index FILTER, filter_rejected_keys, and per-attribute SORTABLE and UNF. Reports non-English language values. With `search.emulate-release` 1.3.0 or later, also reports the configured SCORE as a double and SCORE_FIELD"
       ]
     ],
     "arguments": [
@@ -1922,8 +2022,8 @@
         "Added Text Indexing and Search support"
       ],
       [
-        "1.3.0-RC1",
-        "Added INKEYS, SCORER, WITHSCORES and WITHCURSOR options, BM25STD scoring, VECTOR_RANGE queries and HYBRID_POLICY"
+        "1.3.0",
+        "Added INKEYS, SCORER, WITHSCORES and WITHCURSOR options, BM25STD scoring and the `$weight` query attribute, VECTOR_RANGE queries with `$EPSILON`, HYBRID_POLICY, field-scoped text groups, SORTBY on the KNN distance, `$param` values for the KNN `AS` name, a TIMEOUT limit set by `search.max-timeout-ms`, and (with `search.emulate-release 1.3.0`) last-wins RETURN, typed WITHSORTKEYS values, single-quoted phrases and rejection of invalid UTF-8 queries"
       ]
     ],
     "arguments": [
