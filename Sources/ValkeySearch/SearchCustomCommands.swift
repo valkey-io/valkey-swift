@@ -117,6 +117,23 @@ extension FT.CREATE.Language {
     }
 }
 
+extension FT.CREATE.Schema {
+    @inlinable
+    @_disfavoredOverload
+    @available(*, deprecated, message: "Use FT.CREATE.Schema.init with sortable SchemaSortable parameter")
+    public init(
+        fieldIdentifier: FieldIdentifier,
+        alias: String? = nil,
+        fieldType: FT.CREATE<IndexName, FieldIdentifier>.SchemaFieldType,
+        sortable: Bool = false
+    ) {
+        self.fieldIdentifier = fieldIdentifier
+        self.alias = alias
+        self.fieldType = fieldType
+        self.sortable = sortable ? .init(unf: false) : nil
+    }
+}
+
 @available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Performs a search of the specified index. The keys which match the query expression are subjected to further processing as specified
