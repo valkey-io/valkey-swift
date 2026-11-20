@@ -117,12 +117,7 @@ package final class ValkeyConnectionFactory: Sendable {
             case .sentinelPrimary:
                 // Get Sentinel nodes. If the topology has changed pass nodes to sentinel changes continuation
                 let nodes = try await context.sentinelClient.getNodes()
-                let newHashValue = nodes.hashValue
-                let oldHashValue = context.currentTopologyHash.exchange(newHashValue, ordering: .relaxed)
-                if oldHashValue != newHashValue {
-                    context.sentinelUpdatesContinuation.yield(nodes)
-                }
-                return try await self.makeConnection(
+                let connection = try await self.makeConnection(
                     handler: context.handler,
                     address: nodes.primary,
                     readOnly: readOnly,
@@ -130,7 +125,17 @@ package final class ValkeyConnectionFactory: Sendable {
                     eventLoop: eventLoop,
                     logger: logger
                 )
-
+                // verify primary is a primary
+                let role = try await connection.role()
+                guard case .primary = role else {
+                    throw ValkeySentinelError.sentinelNotAPrimary
+                }
+                let newHashValue = nodes.hashValue
+                let oldHashValue = context.currentTopologyHash.exchange(newHashValue, ordering: .relaxed)
+                if oldHashValue != newHashValue {
+                    context.sentinelUpdatesContinuation.yield(nodes)
+                }
+                return connection
             default:
                 return try await self.makeConnection(
                     handler: context.handler,
