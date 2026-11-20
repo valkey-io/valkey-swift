@@ -12,6 +12,7 @@ public struct ValkeySentinelError: Error, Equatable {
         case sentinelIsUnavailable
         case sentinelNoConsensusReached
         case sentinelUnknownPrimary
+        case sentinelNotAPrimary
     }
     private let value: Internal
     private init(_ value: Internal) {
@@ -24,4 +25,6 @@ public struct ValkeySentinelError: Error, Equatable {
     static public var sentinelNoConsensusReached: Self { .init(.sentinelNoConsensusReached) }
     /// Sentinel does not know about requested primary
     static public var sentinelUnknownPrimary: Self { .init(.sentinelUnknownPrimary) }
+    /// Internal error: Primary node returned by sentinel is not a primary
+    static var sentinelNotAPrimary: Self { .init(.sentinelNotAPrimary) }
 }

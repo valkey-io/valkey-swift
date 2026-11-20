@@ -31,6 +31,8 @@ package struct ValkeyNodeIDs<ID: Sendable>: Sendable {
 
 extension ValkeyNodeIDs: Equatable where ID: Equatable {}
 
+extension ValkeyNodeIDs: Hashable where ID: Hashable {}
+
 extension ValkeyNodeIDs: ExpressibleByArrayLiteral {
     @usableFromInline
     package typealias ArrayLiteralElement = ID
