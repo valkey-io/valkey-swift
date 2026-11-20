@@ -140,10 +140,15 @@ actor TestSentinelTopology {
     /// Create Mock servers for cluster
     func mock(logger: Logger) async -> MockServerConnections {
         let mockConnections = MockServerConnections(logger: logger)
-        for address in self.addressMap.keys {
-            await addNode(to: mockConnections, address: address, logger: logger)
-        }
+        await add(to: mockConnections)
         return mockConnections
+    }
+
+    /// Add topology to mock connections
+    func add(to mockConnections: MockServerConnections) async {
+        for address in self.addressMap.keys {
+            await addNode(to: mockConnections, address: address, logger: mockConnections.logger)
+        }
     }
 
     /// Add Valkey node to mock connections
@@ -526,6 +531,7 @@ struct ValkeySentinelTests {
         }
     }
 
+    /// Test we get a primary node from sentinel
     @Test
     @available(valkeySwift 1.0, *)
     func testClientGetPrimary() async throws {
@@ -546,6 +552,7 @@ struct ValkeySentinelTests {
         }
     }
 
+    /// Test we get the replicas from sentinel, and verify the list is the same as is returned by ROLE
     @Test
     @available(valkeySwift 1.0, *)
     func testClientGetReplicas() async throws {
@@ -566,6 +573,7 @@ struct ValkeySentinelTests {
         }
     }
 
+    /// Test topology is updated when the primary node goes down
     @Test
     @available(valkeySwift 1.0, *)
     func testClientRefresh() async throws {
@@ -589,6 +597,7 @@ struct ValkeySentinelTests {
         }
     }
 
+    /// Test replicas after a failover
     @Test
     @available(valkeySwift 1.0, *)
     func testClientFailover() async throws {
@@ -614,6 +623,7 @@ struct ValkeySentinelTests {
         }
     }
 
+    /// Test client fails on an unknown primary name, within circuitBreakerTripAfter
     @Test
     @available(valkeySwift 1.0, *)
     func testClientUnknownPrimaryName() async throws {
@@ -636,6 +646,8 @@ struct ValkeySentinelTests {
         }
     }
 
+    /// Test sentinel fails on an unavailable sentinel address. (Currently failure happens within
+    /// sentinel circuitBreakerTripAfter and not client circuitBreakerTripAfter)
     @Test
     @available(valkeySwift 1.0, *)
     func testClientUnavailableSentinel() async throws {
@@ -645,7 +657,7 @@ struct ValkeySentinelTests {
         let mockConnections = await topology.mock(logger: logger)
         async let _ = mockConnections.run()
         try await withValkeyClient(
-            primaryName: "UnknownPrimary",
+            primaryName: "TestPrimary",
             address: .init(endpoint: "127.0.0.1", port: 16999),
             mockConnections: mockConnections,
             clientConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
@@ -659,6 +671,38 @@ struct ValkeySentinelTests {
         }
     }
 
+    /// Test we get a successful connection if sentinel comes online before circuitBreakerTripAfter
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientSentinelAvailableBeforeCircuitTrip() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let mockConnections = MockServerConnections(logger: logger)
+        async let _ = mockConnections.run()
+        try await withValkeyClient(
+            primaryName: "TestPrimary",
+            address: .init(endpoint: "127.0.0.1", port: 16000),
+            mockConnections: mockConnections,
+            clientConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(30))),
+            sentinelConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(30))),
+            logger: logger
+        ) { client in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    await #expect(throws: Never.self) {
+                        _ = try await client.get("$address").map { String($0) }
+                    }
+                }
+                group.addTask {
+                    try await Task.sleep(for: .seconds(2))
+                    await self.healthyThreeSentinelOnePrimaryTwoReplicas.add(to: mockConnections)
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
+
+    /// Test sentinel failover works during a high load
     @Test
     @available(valkeySwift 1.0, *)
     func testClientWithHighLoad() async throws {
