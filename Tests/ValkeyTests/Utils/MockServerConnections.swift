@@ -49,6 +49,14 @@ actor MockServerConnections {
         }
     }
 
+    func closeConnections(_ address: ValkeyServerAddress) async {
+        for instance in self.serverInstances.values {
+            if instance.address == address {
+                try? await instance.channel.close()
+            }
+        }
+    }
+
     func addValkeyServer(_ address: ValkeyServerAddress, processCommand: @escaping @Sendable ([String]) async throws -> RESP3Value?) {
         self.addServer(address) { channel in
             try await withThrowingTaskGroup { group in

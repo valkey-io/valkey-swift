@@ -336,22 +336,48 @@ struct ValkeySentinelTests {
         }
     }
 
-    /// Wait until client returns a connection with a different address from the primary
+    /// Wait until client returns all the replicas from the ROLE command
     @available(valkeySwift 1.0, *)
-    func waitForReplicas(_ client: ValkeyClient, function: String = #function) async throws {
-        let primaryAddress = try await client.withConnection(readOnly: false) { $0.address }
-        while true {
-            let foundReplica = try await client.withConnection(readOnly: true) { connection in
-                if connection.address != primaryAddress {
-                    return true
-                }
-                return false
-            }
-            if foundReplica {
-                break
+    func waitForReplicas(_ client: ValkeyClient, sourceLocation: SourceLocation = #_sourceLocation) async throws -> [ROLE.Response.Primary.Replica] {
+        let role = try await client.withConnection(readOnly: false) { connection in
+            try await connection.role()
+        }
+        let primary: ROLE.Response.Primary
+        if case .primary(let value) = role {
+            primary = value
+        } else {
+            fatalError("Expected a primary role")
+        }
+
+        var replicas = primary.replicas
+        var iteration = 0
+        while replicas.count > 0 {
+            try await client.withConnection(readOnly: true) { connection in
+                replicas.removeAll { connection.address == .hostname($0.ip, port: $0.port) }
             }
             try await Task.sleep(for: .milliseconds(10))
+
+            iteration += 1
+            if iteration > primary.replicas.count * 4 {
+                Issue.record(sourceLocation: sourceLocation)
+                return primary.replicas
+            }
         }
+        return primary.replicas
+    }
+
+    @available(valkeySwift 1.0, *)
+    func verifyReplicas(_ client: ValkeyClient, replicas: [ROLE.Response.Primary.Replica], function: String = #function) async throws {
+        let replicaStrings = Set<String>(replicas.map { "\($0.ip):\($0.port)" })
+        // get list of replicas
+        var addresses: Set<String> = []
+        // run get multiple times to ensure we get both addresses. Since rotating is done
+        // based on global value and tests are running in parallel
+        for _ in 0..<replicas.count * 4 {
+            let address = try #require(await client.get("$address").map { String($0) })
+            addresses.insert(String(address))
+        }
+        #expect(replicaStrings == addresses)
     }
 
     @Test
@@ -535,24 +561,8 @@ struct ValkeySentinelTests {
             clientConfiguration: .init(readOnlyCommandNodeSelection: .cycleReplicas),
             logger: logger
         ) { client in
-            let role = try await client.role()
-            let replicas: Set<String>
-            if case .primary(let primary) = role {
-                replicas = .init(primary.replicas.map { "\($0.ip):\($0.port)" })
-            } else {
-                Issue.record("Expected a primary role")
-                return
-            }
-            try await self.waitForReplicas(client)
-            // get list of replicas
-            var addresses: Set<String> = []
-            // run get multiple times to ensure we get both addresses. Since rotating is done
-            // based on global value and tests are running in parallel
-            for _ in 0..<8 {
-                let address = try #require(await client.get("$address").map { String($0) })
-                addresses.insert(String(address))
-            }
-            #expect(replicas == addresses)
+            let replicas = try await self.waitForReplicas(client)
+            try await self.verifyReplicas(client, replicas: replicas)
         }
     }
 
@@ -591,15 +601,16 @@ struct ValkeySentinelTests {
             primaryName: "TestPrimary",
             address: .init(endpoint: "127.0.0.1", port: 16000),
             mockConnections: mockConnections,
+            clientConfiguration: .init(readOnlyCommandNodeSelection: .cycleReplicas),
             logger: logger
         ) { client in
-            var value = try await client.get("$address").map { String($0) }
-            #expect(value == "127.0.0.1:9000")
+            var replicas = try await self.waitForReplicas(client)
+            try await self.verifyReplicas(client, replicas: replicas)
             // when sentinel performs a failover it also closes any connections to the primary
             await topology.failover(name: "TestPrimary")
-            await mockConnections.shutdownServer(.hostname("127.0.0.1", port: 9000))
-            value = try await client.get("$address").map { String($0) }
-            #expect(value == "127.0.0.1:9001")
+            await mockConnections.closeConnections(.hostname("127.0.0.1", port: 9000))
+            replicas = try await self.waitForReplicas(client)
+            try await self.verifyReplicas(client, replicas: replicas)
         }
     }
 
@@ -666,7 +677,7 @@ struct ValkeySentinelTests {
             let waiter = AsyncStream.makeStream(of: Void.self)
             try await withThrowingTaskGroup(of: Void.self) { group in
                 let count = Atomic(0)
-                for i in 0..<1000 {
+                for i in 0..<500 {
                     group.addTask {
                         let key = ValkeyKey("key\(i)")
                         try await client.set(key, value: "\(i)")

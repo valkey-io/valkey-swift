@@ -209,28 +209,31 @@ struct ValkeyClientStateMachine<
         }
     }
 
-    struct NewNodesAction {
+    struct NewReplicaNodesAction {
+        /// full list of replica clients
+        var replicaClients: [ConnectionPool]
+        // new replica clients
         var clientsToRun: [ConnectionPool] = []
     }
 
-    mutating func addNewNodes(_ nodes: [ValkeyServerAddress]) -> NewNodesAction {
+    mutating func addNewReplicaNodes(_ nodes: [ValkeyServerAddress]) -> NewReplicaNodesAction {
         // If we are shutdown ignore
         guard case .healthy = self.state else {
-            return .init()
+            return .init(replicaClients: [])
         }
         let nodeDescriptions = nodes.map { ValkeyClientNodeDescription(address: $0) }
         let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: false)
         precondition(action.poolsToShutdown.isEmpty, "There should be no pools to shutdown.")
-        return .init(clientsToRun: action.poolsToRun.map { $0.0 })
+        return .init(replicaClients: nodes.compactMap { self.runningClients[$0]?.pool }, clientsToRun: action.poolsToRun.map { $0.0 })
     }
 
-    mutating func addNewNodesFromRefresh(_ nodes: [ValkeyServerAddress]) -> NewNodesAction {
+    mutating func addNewReplicaNodesFromRefresh(_ nodes: [ValkeyServerAddress]) -> NewReplicaNodesAction {
         switch self.topologyRefreshState {
         case .notRefreshing, .waitingForNextRefresh:
             preconditionFailure("Invalid state: \(self.topologyRefreshState)")
 
         case .refreshing:
-            return addNewNodes(nodes)
+            return addNewReplicaNodes(nodes)
         }
     }
 

@@ -282,12 +282,12 @@ extension ValkeyClient {
             case .primary(let primaryState):
                 let replicas = primaryState.replicas.map { ValkeyServerAddress.hostname($0.ip, port: $0.port) }
                 // add nodes primary found
-                let action = self.stateMachine.withLock { $0.addNewNodesFromRefresh(replicas) }
+                let action = self.stateMachine.withLock { $0.addNewReplicaNodesFromRefresh(replicas) }
                 for replicaClient in action.clientsToRun {
                     self.queueAction(.runNodeClient(replicaClient))
                 }
                 // verify all replicas are replicas
-                let verifiedReplicas = await self.verifyReplicas(action.clientsToRun).map(\.serverAddress)
+                let verifiedReplicas = await self.verifyReplicas(action.replicaClients).map(\.serverAddress)
 
                 topology = .primary(replicas: verifiedReplicas)
                 self.logger.debug("Found replicas \(verifiedReplicas)")
@@ -332,12 +332,12 @@ extension ValkeyClient {
     private func processSentinelUpdates(_ stream: AsyncStream<ValkeyNodeIDs<ValkeyServerAddress>>) async {
         for try await nodes in stream {
             // add nodes primary found
-            let action = self.stateMachine.withLock { $0.addNewNodes(nodes.replicas) }
+            let action = self.stateMachine.withLock { $0.addNewReplicaNodes(nodes.replicas) }
             for replicaClient in action.clientsToRun {
                 self.queueAction(.runNodeClient(replicaClient))
             }
             // verify all replicas are replicas
-            let verifiedReplicas = await self.verifyReplicas(action.clientsToRun).map(\.serverAddress)
+            let verifiedReplicas = await self.verifyReplicas(action.replicaClients).map(\.serverAddress)
 
             let updateAction = self.stateMachine.withLock { $0.topologyUpdate(.primary(replicas: verifiedReplicas)) }
             guard let updateActions = updateAction.updates else { continue }
