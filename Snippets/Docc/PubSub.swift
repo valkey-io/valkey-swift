@@ -49,6 +49,8 @@ func pubsubExamples(_ valkeyClient: ValkeyClient) async throws {
     // snippet.client-tracking
     try await valkeyClient.withConnection { connection in
         try await connection.clientTracking(status: .on)
+        // Read on this connection to register the key for invalidation messages.
+        _ = try await connection.get("object:1")
     }
     // snippet.hide
 

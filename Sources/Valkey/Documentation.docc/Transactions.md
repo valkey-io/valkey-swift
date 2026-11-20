@@ -25,8 +25,8 @@ For example, suppose you want to atomically increment a counter (assuming you do
 
 This isn't a reliable solution because another client can increment the key `counter` between the `GET` and `SET` commands, applying the increment to the wrong value.
 By using `WATCH` and executing the `SET` inside a transaction, you can avoid this race condition.
-If another client edits the key between the `WATCH` and `SET` commands, the transaction fails and throws a `ValkeyClientError(.transactionAborted)` error.
-When this error occurs, you know another client edited the key between these two commands, so you retry the operation.
+If another client edits the key after `WATCH` and before `EXEC`, the transaction fails and throws ``ValkeyTransactionError/transactionAborted``.
+Catch this error and retry the operation, including `WATCH` and `GET`, so the next attempt uses the updated value.
 
 @Snippet(path: "valkey-swift/Snippets/Docc/Transactions", slice: "incr-transaction")
 

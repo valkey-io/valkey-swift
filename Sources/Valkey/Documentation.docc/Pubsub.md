@@ -54,8 +54,10 @@ To enable receiving invalidation events on a connection, call ``ValkeyConnection
 
 @Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "client-tracking")
 
-This tells the server to use the first invalidation method, where the server remembers the keys a connection has accessed.
-To track changes to all keys with a specific prefix, use:
+This enables default tracking: the server tracks keys read by this connection while tracking is enabled.
+In this example, reading `object:1` registers it for invalidation messages. Keys read only by other connections aren't tracked by this connection.
+Use `connection.get` inside the same `withConnection` closure for these reads; `valkeyClient.get` can use a different connection from the pool.
+To track changes to all keys with a specific prefix, even if this connection hasn't read them, use broadcasting mode:
 
 @Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "client-tracking-prefix")
 
@@ -73,6 +75,7 @@ Because the Valkey client uses a persistent connection pool, prefer using a sing
 
 For this to work, you need the ID of the connection subscribed to the key invalidation events.
 Get the connection ID using ``ValkeyConnection/clientId()`` and use it when you set up tracking.
+Enable tracking with this ID on each connection that reads data for the cache. Redirecting invalidation messages doesn't enable tracking on the other connections in the pool.
 
 @Snippet(path: "valkey-swift/Snippets/Docc/PubSub", slice: "client-tracking-redirect")
 
