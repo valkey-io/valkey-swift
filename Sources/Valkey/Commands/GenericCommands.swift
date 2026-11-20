@@ -218,9 +218,7 @@ public struct EXISTS: ValkeyCommand {
 /// Sets the expiration time of a key in seconds.
 @_documentation(visibility: internal)
 public struct EXPIRE: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xx
+    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
         case gt
         case lt
 
@@ -230,10 +228,49 @@ public struct EXPIRE: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
+        public var xx: Bool
+        public var comparison: ConditionXxComparisonComparison?
+
+        @inlinable
+        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
+            self.xx = xx
+            self.comparison = comparison
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPPureToken("XX", xx).respEntries + comparison.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPPureToken("XX", xx).encode(into: &commandEncoder)
+            comparison.encode(into: &commandEncoder)
+        }
+    }
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xxComparison(ConditionXxComparison)
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xxComparison(let xxComparison): xxComparison.respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
@@ -261,9 +298,7 @@ public struct EXPIRE: ValkeyCommand {
 /// Sets the expiration time of a key to a Unix timestamp.
 @_documentation(visibility: internal)
 public struct EXPIREAT: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xx
+    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
         case gt
         case lt
 
@@ -273,10 +308,49 @@ public struct EXPIREAT: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
+        public var xx: Bool
+        public var comparison: ConditionXxComparisonComparison?
+
+        @inlinable
+        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
+            self.xx = xx
+            self.comparison = comparison
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPPureToken("XX", xx).respEntries + comparison.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPPureToken("XX", xx).encode(into: &commandEncoder)
+            comparison.encode(into: &commandEncoder)
+        }
+    }
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xxComparison(ConditionXxComparison)
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xxComparison(let xxComparison): xxComparison.respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
@@ -472,16 +546,18 @@ public struct MOVE: ValkeyCommand {
 
     public var key: ValkeyKey
     public var db: Int
+    public var replace: Bool
 
-    @inlinable public init(_ key: ValkeyKey, db: Int) {
+    @inlinable public init(_ key: ValkeyKey, db: Int, replace: Bool = false) {
         self.key = key
         self.db = db
+        self.replace = replace
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("MOVE", key, db)
+        commandEncoder.encodeArray("MOVE", key, db, RESPPureToken("REPLACE", replace))
     }
 }
 
@@ -508,9 +584,7 @@ public struct PERSIST: ValkeyCommand {
 /// Sets the expiration time of a key in milliseconds.
 @_documentation(visibility: internal)
 public struct PEXPIRE: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xx
+    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
         case gt
         case lt
 
@@ -520,10 +594,49 @@ public struct PEXPIRE: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
+        public var xx: Bool
+        public var comparison: ConditionXxComparisonComparison?
+
+        @inlinable
+        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
+            self.xx = xx
+            self.comparison = comparison
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPPureToken("XX", xx).respEntries + comparison.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPPureToken("XX", xx).encode(into: &commandEncoder)
+            comparison.encode(into: &commandEncoder)
+        }
+    }
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xxComparison(ConditionXxComparison)
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xxComparison(let xxComparison): xxComparison.respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
@@ -551,9 +664,7 @@ public struct PEXPIRE: ValkeyCommand {
 /// Sets the expiration time of a key to a Unix milliseconds timestamp.
 @_documentation(visibility: internal)
 public struct PEXPIREAT: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xx
+    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
         case gt
         case lt
 
@@ -563,10 +674,49 @@ public struct PEXPIREAT: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
+        public var xx: Bool
+        public var comparison: ConditionXxComparisonComparison?
+
+        @inlinable
+        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
+            self.xx = xx
+            self.comparison = comparison
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPPureToken("XX", xx).respEntries + comparison.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPPureToken("XX", xx).encode(into: &commandEncoder)
+            comparison.encode(into: &commandEncoder)
+        }
+    }
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xxComparison(ConditionXxComparison)
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xxComparison(let xxComparison): xxComparison.respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
@@ -699,6 +849,26 @@ public struct RENAMENX: ValkeyCommand {
 /// Creates a key from the serialized representation of a value.
 @_documentation(visibility: internal)
 public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
+    public enum Eviction: RESPRenderable, Sendable, Hashable {
+        case seconds(Int)
+        case frequency(Int)
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("IDLETIME", seconds).respEntries
+            case .frequency(let frequency): RESPWithToken("FREQ", frequency).respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("IDLETIME", seconds).encode(into: &commandEncoder)
+            case .frequency(let frequency): RESPWithToken("FREQ", frequency).encode(into: &commandEncoder)
+            }
+        }
+    }
     @inlinable public static var name: String { "RESTORE" }
 
     public var key: ValkeyKey
@@ -706,8 +876,7 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
     public var serializedValue: SerializedValue
     public var replace: Bool
     public var absttl: Bool
-    public var seconds: Int?
-    public var frequency: Int?
+    public var eviction: Eviction?
 
     @inlinable public init(
         _ key: ValkeyKey,
@@ -715,16 +884,14 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
         serializedValue: SerializedValue,
         replace: Bool = false,
         absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
+        eviction: Eviction? = nil
     ) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
         self.replace = replace
         self.absttl = absttl
-        self.seconds = seconds
-        self.frequency = frequency
+        self.eviction = eviction
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
@@ -737,8 +904,7 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
             RESPRenderableBulkString(serializedValue),
             RESPPureToken("REPLACE", replace),
             RESPPureToken("ABSTTL", absttl),
-            RESPWithToken("IDLETIME", seconds),
-            RESPWithToken("FREQ", frequency)
+            eviction
         )
     }
 }
@@ -1230,14 +1396,16 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [MOVE](https://valkey.io/commands/move)
     /// - Available: 1.0.0
+    /// - History:
+    ///     * 9.2.0: added REPLACE option.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 1: Key was moved.
-    ///     * 0: Key wasn't moved. When key already exists in the destination database, or it does not exist in the source database
+    ///     * 0: Key wasn't moved. When key already exists in the destination database without REPLACE, or it does not exist in the source database
     @inlinable
     @discardableResult
-    public func move(_ key: ValkeyKey, db: Int) async throws(ValkeyClientError) -> Int {
-        try await execute(MOVE(key, db: db))
+    public func move(_ key: ValkeyKey, db: Int, replace: Bool = false) async throws(ValkeyClientError) -> Int {
+        try await execute(MOVE(key, db: db, replace: replace))
     }
 
     /// Returns the internal encoding of an object.
@@ -1430,12 +1598,9 @@ extension ValkeyClientProtocol {
         serializedValue: SerializedValue,
         replace: Bool = false,
         absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
+        eviction: RESTORE<SerializedValue>.Eviction? = nil
     ) async throws(ValkeyClientError) {
-        _ = try await execute(
-            RESTORE(key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency)
-        )
+        _ = try await execute(RESTORE(key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, eviction: eviction))
     }
 
     /// Iterates over the key names in the database.

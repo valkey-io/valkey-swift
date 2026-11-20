@@ -37,9 +37,12 @@ extension ValkeyCommand {
     public var isReadOnly: Bool { false }
 }
 
-/// Wrapper for Valkey command that returns the response as a `RESPToken`
+/// Wrapper for Valkey command that has a difference response from the one specified
 @usableFromInline
-struct ValkeyRawResponseCommand<Command: ValkeyCommand>: ValkeyCommand {
+struct ValkeyCommandCustomResponse<Command: ValkeyCommand, CustomResponse: RESPTokenDecodable & Sendable>: ValkeyCommand {
+    @usableFromInline
+    typealias Response = CustomResponse
+
     @inlinable
     static var name: String { Command.name }
 

@@ -1160,6 +1160,7 @@ extension ValkeyClientProtocol {
     ///     * 8.0.0: Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility.
     ///     * 8.1.0: `ID` option accepts multiple IDs.
     ///     * 9.0.0: Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP.
+    ///     * 9.2.0: Added `H` flag to indicate high priority clients.
     /// - Complexity: O(N) where N is the number of client connections
     /// - Returns: One of the following
     ///     * "OK": When called in 3 argument format.
@@ -1184,6 +1185,7 @@ extension ValkeyClientProtocol {
     ///     * 8.0.0: Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility.
     ///     * 8.1.0: Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE.
     ///     * 9.0.0: Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP.
+    ///     * 9.2.0: Added `H` flag to indicate high priority clients.
     /// - Complexity: O(N) where N is the number of client connections
     /// - Returns: Information and statistics about client connections
     @inlinable

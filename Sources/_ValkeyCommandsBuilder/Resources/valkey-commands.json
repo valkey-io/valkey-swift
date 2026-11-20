@@ -42,6 +42,42 @@
       "SLOW"
     ]
   },
+  "ACL DELROLE": {
+    "summary": "Deletes one or more ACL roles. Fails if any role is assigned to a user.",
+    "complexity": "O(N). Where N is the number of roles to delete.",
+    "group": "server",
+    "since": "9.2.0",
+    "arity": -3,
+    "container": "ACL",
+    "function": "aclCommand",
+    "command_flags": [
+      "ADMIN",
+      "NOSCRIPT",
+      "LOADING",
+      "STALE",
+      "SENTINEL"
+    ],
+    "command_tips": [
+      "REQUEST_POLICY:ALL_NODES",
+      "RESPONSE_POLICY:ALL_SUCCEEDED"
+    ],
+    "reply_schema": {
+      "type": "integer",
+      "description": "The number of roles deleted."
+    },
+    "arguments": [
+      {
+        "name": "rolename",
+        "type": "string",
+        "multiple": true
+      }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
+  },
   "ACL DELUSER": {
     "summary": "Deletes ACL users, and terminates their connections.",
     "complexity": "O(1) amortized time considering the typical user.",
@@ -72,6 +108,31 @@
         "multiple": true
       }
     ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
+  },
+  "ACL DIGEST": {
+    "summary": "Returns a fingerprint of the ACL rules currently in effect.",
+    "complexity": "O(N). Where N is the number of configured users and roles.",
+    "group": "server",
+    "since": "9.2.0",
+    "arity": 2,
+    "container": "ACL",
+    "function": "aclCommand",
+    "command_flags": [
+      "ADMIN",
+      "NOSCRIPT",
+      "LOADING",
+      "STALE",
+      "SENTINEL"
+    ],
+    "reply_schema": {
+      "type": "string",
+      "description": "The hex representation of the digest of the rules currently in effect."
+    },
     "acl_categories": [
       "ADMIN",
       "DANGEROUS",
@@ -156,6 +217,92 @@
       "SLOW"
     ]
   },
+  "ACL GETROLE": {
+    "summary": "Returns the ACL rules of an ACL role.",
+    "complexity": "O(N). Where N is the number of rules defined for the role.",
+    "group": "server",
+    "since": "9.2.0",
+    "arity": 3,
+    "container": "ACL",
+    "function": "aclCommand",
+    "command_flags": [
+      "ADMIN",
+      "NOSCRIPT",
+      "LOADING",
+      "STALE",
+      "SENTINEL"
+    ],
+    "reply_schema": {
+      "oneOf": [
+        {
+          "description": "A set of ACL rule definitions for the role.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "commands": {
+              "description": "Root selector's commands.",
+              "type": "string"
+            },
+            "keys": {
+              "description": "Root selector's keys.",
+              "type": "string"
+            },
+            "channels": {
+              "description": "Root selector's channels.",
+              "type": "string"
+            },
+            "databases": {
+              "description": "Root selector's databases.",
+              "type": "string"
+            },
+            "selectors": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "commands": {
+                    "type": "string"
+                  },
+                  "keys": {
+                    "type": "string"
+                  },
+                  "channels": {
+                    "type": "string"
+                  },
+                  "databases": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "users": {
+              "description": "List of usernames assigned to this role.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "description": "Role not found.",
+          "type": "null"
+        }
+      ]
+    },
+    "arguments": [
+      {
+        "name": "rolename",
+        "type": "string"
+      }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
+  },
   "ACL GETUSER": {
     "summary": "Lists the ACL rules of a user.",
     "complexity": "O(N). Where N is the number of password, command and pattern rules that the user has.",
@@ -176,6 +323,10 @@
       [
         "9.1.0",
         "Added database permission rules."
+      ],
+      [
+        "9.2.0",
+        "Added roles."
       ]
     ],
     "command_flags": [
@@ -245,6 +396,13 @@
                     "type": "string"
                   }
                 }
+              }
+            },
+            "roles": {
+              "description": "List of role names assigned to this user.",
+              "type": "array",
+              "items": {
+                "type": "string"
               }
             }
           }
@@ -430,6 +588,34 @@
       "SLOW"
     ]
   },
+  "ACL ROLES": {
+    "summary": "Lists all ACL roles.",
+    "complexity": "O(N). Where N is the number of configured roles.",
+    "group": "server",
+    "since": "9.2.0",
+    "arity": 2,
+    "container": "ACL",
+    "function": "aclCommand",
+    "command_flags": [
+      "ADMIN",
+      "NOSCRIPT",
+      "LOADING",
+      "STALE",
+      "SENTINEL"
+    ],
+    "reply_schema": {
+      "type": "array",
+      "description": "List of existing ACL roles.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
+  },
   "ACL SAVE": {
     "summary": "Saves the effective ACL rules in the configured ACL file.",
     "complexity": "O(N). Where N is the number of configured users.",
@@ -458,6 +644,46 @@
       "SLOW"
     ]
   },
+  "ACL SETROLE": {
+    "summary": "Creates and modifies an ACL role and its rules.",
+    "complexity": "O(N+M*C). Where N is the number of rules provided, M the number of users in the role and C the number of connected clients.",
+    "group": "server",
+    "since": "9.2.0",
+    "arity": -3,
+    "container": "ACL",
+    "function": "aclCommand",
+    "command_flags": [
+      "ADMIN",
+      "NOSCRIPT",
+      "LOADING",
+      "STALE",
+      "SENTINEL"
+    ],
+    "command_tips": [
+      "REQUEST_POLICY:ALL_NODES",
+      "RESPONSE_POLICY:ALL_SUCCEEDED"
+    ],
+    "reply_schema": {
+      "const": "OK"
+    },
+    "arguments": [
+      {
+        "name": "rolename",
+        "type": "string"
+      },
+      {
+        "name": "rule",
+        "type": "string",
+        "optional": true,
+        "multiple": true
+      }
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ]
+  },
   "ACL SETUSER": {
     "summary": "Creates and modifies an ACL user and its rules.",
     "complexity": "O(N). Where N is the number of rules provided.",
@@ -478,6 +704,10 @@
       [
         "9.1.0",
         "Added database permission rules."
+      ],
+      [
+        "9.2.0",
+        "Added the `role=` rule for assigning roles to a user."
       ]
     ],
     "command_flags": [
@@ -2370,6 +2600,10 @@
       [
         "9.0.0",
         "Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP."
+      ],
+      [
+        "9.2.0",
+        "Added `H` flag to indicate high priority clients."
       ]
     ],
     "command_flags": [
@@ -2735,6 +2969,10 @@
       [
         "9.0.0",
         "Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP."
+      ],
+      [
+        "9.2.0",
+        "Added `H` flag to indicate high priority clients."
       ]
     ],
     "command_flags": [
@@ -4276,6 +4514,23 @@
             "type": "string",
             "pattern": "^[0-9a-fA-F]{40}$",
             "description": "40 character node name of the node to migrate to"
+          },
+          {
+            "token": "AUTH",
+            "name": "auth",
+            "type": "block",
+            "optional": true,
+            "since": "9.2.0",
+            "arguments": [
+              {
+                "name": "username",
+                "type": "string"
+              },
+              {
+                "name": "password",
+                "type": "string"
+              }
+            ]
           }
         ]
       }
@@ -5220,6 +5475,9 @@
                   "const": "module"
                 },
                 {
+                  "const": "pathhash"
+                },
+                {
                   "const": "pubsub"
                 },
                 {
@@ -6052,6 +6310,40 @@
       "SLOW"
     ]
   },
+  "CONFIG INFO": {
+    "summary": "Returns information about configuration parameters matching the given patterns.",
+    "complexity": "O(N) when N is the number of configuration parameters provided",
+    "group": "server",
+    "since": "9.2.0",
+    "arity": -3,
+    "container": "CONFIG",
+    "function": "configInfoCommand",
+    "command_flags": [
+      "ADMIN",
+      "NOSCRIPT",
+      "LOADING",
+      "STALE"
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ],
+    "arguments": [
+      {
+        "name": "pattern",
+        "type": "string",
+        "multiple": true
+      }
+    ],
+    "reply_schema": {
+      "type": "array",
+      "description": "Configuration parameter information.",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
   "CONFIG RESETSTAT": {
     "summary": "Resets the server's statistics.",
     "complexity": "O(1)",
@@ -6460,6 +6752,88 @@
         "type": "key",
         "key_spec_index": 0,
         "multiple": true
+      }
+    ]
+  },
+  "DELEX": {
+    "summary": "Delete a key conditionally based on its value.",
+    "complexity": "O(1)",
+    "group": "string",
+    "since": "9.2.0",
+    "arity": 4,
+    "function": "delexCommand",
+    "command_flags": [
+      "FAST",
+      "WRITE"
+    ],
+    "acl_categories": [
+      "FAST",
+      "STRING",
+      "WRITE"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RM",
+          "DELETE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "oneOf": [
+        {
+          "description": "The key was not deleted.",
+          "const": 0
+        },
+        {
+          "description": "The key was deleted.",
+          "const": 1
+        }
+      ]
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "condition",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "predicate",
+            "type": "oneof",
+            "arguments": [
+              {
+                "name": "IFEQ",
+                "type": "pure-token",
+                "token": "IFEQ"
+              },
+              {
+                "name": "IFNE",
+                "type": "pure-token",
+                "token": "IFNE"
+              }
+            ]
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
       }
     ]
   },
@@ -6899,21 +7273,98 @@
     }
   },
   "EXEC": {
-    "summary": "Executes all commands in a transaction.",
-    "complexity": "Depends on commands in the transaction",
+    "summary": "Executes all commands in a transaction if conditions match.",
+    "complexity": "O(N) for N conditions, plus the complexity of commands in the transaction",
     "group": "transactions",
     "since": "1.2.0",
-    "arity": 1,
+    "arity": -1,
     "function": "execCommand",
+    "get_keys_function": "execGetKeys",
+    "history": [
+      [
+        "9.2.0",
+        "Added the `IFEQ`, `IFNE`, `NX`, and `XX` options."
+      ]
+    ],
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
-      "STALE",
-      "SKIP_COMMANDLOG"
+      "NO_MANDATORY_KEYS",
+      "STALE"
     ],
     "acl_categories": [
       "SLOW",
       "TRANSACTION"
+    ],
+    "key_specs": [
+      {
+        "notes": "Condition keys are determined by EXEC condition tokens.",
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "unknown": null
+        },
+        "find_keys": {
+          "unknown": null
+        }
+      }
+    ],
+    "arguments": [
+      {
+        "name": "condition",
+        "type": "oneof",
+        "since": "9.2.0",
+        "optional": true,
+        "multiple": true,
+        "arguments": [
+          {
+            "token": "IFEQ",
+            "name": "ifeq",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "key",
+                "type": "key",
+                "key_spec_index": 0
+              },
+              {
+                "name": "value",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "token": "IFNE",
+            "name": "ifne",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "key",
+                "type": "key",
+                "key_spec_index": 0
+              },
+              {
+                "name": "value",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "token": "NX",
+            "name": "nonexisting-key",
+            "type": "key",
+            "key_spec_index": 0
+          },
+          {
+            "token": "XX",
+            "name": "existing-key",
+            "type": "key",
+            "key_spec_index": 0
+          }
+        ]
+      }
     ],
     "reply_schema": {
       "oneOf": [
@@ -6922,7 +7373,7 @@
           "type": "array"
         },
         {
-          "description": "The transaction was aborted because a `WATCH`ed key was touched",
+          "description": "The transaction was aborted because a `WATCH`ed key was touched or an EXEC condition did not match",
           "type": "null"
         }
       ]
@@ -7062,19 +7513,33 @@
             "token": "NX"
           },
           {
-            "name": "xx",
-            "type": "pure-token",
-            "token": "XX"
-          },
-          {
-            "name": "gt",
-            "type": "pure-token",
-            "token": "GT"
-          },
-          {
-            "name": "lt",
-            "type": "pure-token",
-            "token": "LT"
+            "name": "xx-comparison",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "xx",
+                "type": "pure-token",
+                "token": "XX",
+                "optional": true
+              },
+              {
+                "name": "comparison",
+                "type": "oneof",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "gt",
+                    "type": "pure-token",
+                    "token": "GT"
+                  },
+                  {
+                    "name": "lt",
+                    "type": "pure-token",
+                    "token": "LT"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -7156,19 +7621,33 @@
             "token": "NX"
           },
           {
-            "name": "xx",
-            "type": "pure-token",
-            "token": "XX"
-          },
-          {
-            "name": "gt",
-            "type": "pure-token",
-            "token": "GT"
-          },
-          {
-            "name": "lt",
-            "type": "pure-token",
-            "token": "LT"
+            "name": "xx-comparison",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "xx",
+                "type": "pure-token",
+                "token": "XX",
+                "optional": true
+              },
+              {
+                "name": "comparison",
+                "type": "oneof",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "gt",
+                    "type": "pure-token",
+                    "token": "GT"
+                  },
+                  {
+                    "name": "lt",
+                    "type": "pure-token",
+                    "token": "LT"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -8091,7 +8570,7 @@
       },
       {
         "name": "member1",
-        "type": "string"
+        "type": "member"
       },
       {
         "name": "member2",
@@ -8182,7 +8661,7 @@
       },
       {
         "name": "member",
-        "type": "string",
+        "type": "member",
         "multiple": true,
         "optional": true
       }
@@ -8238,7 +8717,7 @@
       },
       {
         "name": "member",
-        "type": "string",
+        "type": "member",
         "multiple": true,
         "optional": true
       }
@@ -8791,7 +9270,7 @@
       },
       {
         "name": "member",
-        "type": "string"
+        "type": "member"
       },
       {
         "name": "radius",
@@ -9028,7 +9507,7 @@
       },
       {
         "name": "member",
-        "type": "string"
+        "type": "member"
       },
       {
         "name": "radius",
@@ -10187,7 +10666,7 @@
       },
       {
         "name": "field",
-        "type": "string",
+        "type": "field",
         "multiple": true
       }
     ]
@@ -10364,12 +10843,12 @@
       },
       {
         "name": "field",
-        "type": "string"
+        "type": "field"
       }
     ]
   },
   "HEXPIRE": {
-    "summary": "Sets expiry time on hash fields.",
+    "summary": "Sets the expiration time of one or more hash fields in seconds.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -10450,19 +10929,33 @@
             "token": "NX"
           },
           {
-            "name": "xx",
-            "type": "pure-token",
-            "token": "XX"
-          },
-          {
-            "name": "gt",
-            "type": "pure-token",
-            "token": "GT"
-          },
-          {
-            "name": "lt",
-            "type": "pure-token",
-            "token": "LT"
+            "name": "xx-comparison",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "xx",
+                "type": "pure-token",
+                "token": "XX",
+                "optional": true
+              },
+              {
+                "name": "comparison",
+                "type": "oneof",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "gt",
+                    "type": "pure-token",
+                    "token": "GT"
+                  },
+                  {
+                    "name": "lt",
+                    "type": "pure-token",
+                    "token": "LT"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -10487,7 +10980,7 @@
     ]
   },
   "HEXPIREAT": {
-    "summary": "Sets expiry time on hash fields.",
+    "summary": "Sets the expiration time of one or more hash fields to a Unix timestamp.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -10555,7 +11048,7 @@
       },
       {
         "name": "unix-time-seconds",
-        "type": "integer"
+        "type": "unix-time"
       },
       {
         "name": "condition",
@@ -10569,19 +11062,33 @@
             "token": "NX"
           },
           {
-            "name": "xx",
-            "type": "pure-token",
-            "token": "XX"
-          },
-          {
-            "name": "gt",
-            "type": "pure-token",
-            "token": "GT"
-          },
-          {
-            "name": "lt",
-            "type": "pure-token",
-            "token": "LT"
+            "name": "xx-comparison",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "xx",
+                "type": "pure-token",
+                "token": "XX",
+                "optional": true
+              },
+              {
+                "name": "comparison",
+                "type": "oneof",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "gt",
+                    "type": "pure-token",
+                    "token": "GT"
+                  },
+                  {
+                    "name": "lt",
+                    "type": "pure-token",
+                    "token": "LT"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -10593,7 +11100,6 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
@@ -10678,13 +11184,12 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
           {
             "name": "field",
-            "type": "string",
+            "type": "field",
             "multiple": true
           }
         ]
@@ -10747,7 +11252,7 @@
       },
       {
         "name": "field",
-        "type": "string"
+        "type": "field"
       }
     ]
   },
@@ -10870,13 +11375,12 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
           {
             "name": "field",
-            "type": "string",
+            "type": "field",
             "multiple": true
           }
         ]
@@ -10981,7 +11485,6 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
@@ -11044,7 +11547,7 @@
       },
       {
         "name": "field",
-        "type": "string"
+        "type": "field"
       },
       {
         "name": "increment",
@@ -11102,7 +11605,7 @@
       },
       {
         "name": "field",
-        "type": "string"
+        "type": "field"
       },
       {
         "name": "increment",
@@ -11270,7 +11773,7 @@
       },
       {
         "name": "field",
-        "type": "string",
+        "type": "field",
         "multiple": true
       }
     ]
@@ -11328,7 +11831,7 @@
         "arguments": [
           {
             "name": "field",
-            "type": "string"
+            "type": "field"
           },
           {
             "name": "value",
@@ -11336,6 +11839,102 @@
           }
         ]
       }
+    ]
+  },
+  "HOTKEYS GET": {
+    "summary": "Get the hottest keys from the last completed window, ordered by estimated QPS descending",
+    "complexity": "O(N) where N is the number of hot keys in the history",
+    "group": "server",
+    "since": "9.2.0",
+    "arity": 2,
+    "function": "hotkeysGetCommand",
+    "command_flags": [
+      "ADMIN",
+      "LOADING",
+      "STALE"
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ],
+    "container": "HOTKEYS",
+    "reply_schema": {
+      "description": "Hottest keys from the last completed window, ordered by estimated QPS (descending)",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "description": "Key name",
+            "type": "string"
+          },
+          "db": {
+            "description": "Database id",
+            "type": "integer"
+          },
+          "qps": {
+            "description": "Estimated accesses per second over the last completed window",
+            "type": "integer"
+          }
+        }
+      }
+    }
+  },
+  "HOTKEYS HELP": {
+    "summary": "Shows helpful text about the different subcommands",
+    "complexity": "O(1)",
+    "group": "server",
+    "since": "9.2.0",
+    "arity": 2,
+    "container": "HOTKEYS",
+    "function": "hotkeysHelpCommand",
+    "command_flags": [
+      "LOADING",
+      "STALE"
+    ],
+    "reply_schema": {
+      "type": "array",
+      "description": "Helpful text about subcommands.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acl_categories": [
+      "SLOW"
+    ]
+  },
+  "HOTKEYS RESET": {
+    "summary": "Reset all hot key statistics and history",
+    "complexity": "O(N) where N is the number of keys to remove from history and statistics",
+    "group": "server",
+    "since": "9.2.0",
+    "arity": 2,
+    "function": "hotkeysResetCommand",
+    "command_flags": [
+      "ADMIN",
+      "LOADING",
+      "STALE"
+    ],
+    "acl_categories": [
+      "ADMIN",
+      "DANGEROUS",
+      "SLOW"
+    ],
+    "container": "HOTKEYS",
+    "reply_schema": {
+      "const": "OK"
+    }
+  },
+  "HOTKEYS": {
+    "summary": "A container for hot key commands",
+    "complexity": "Depends on subcommand.",
+    "group": "server",
+    "since": "9.2.0",
+    "arity": -2,
+    "acl_categories": [
+      "SLOW"
     ]
   },
   "HPERSIST": {
@@ -11409,13 +12008,12 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
           {
             "name": "field",
-            "type": "string",
+            "type": "field",
             "multiple": true
           }
         ]
@@ -11423,7 +12021,7 @@
     ]
   },
   "HPEXPIRE": {
-    "summary": "Sets expiry time on hash object.",
+    "summary": "Sets the expiration time of one or more hash fields in milliseconds.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -11505,19 +12103,33 @@
             "token": "NX"
           },
           {
-            "name": "xx",
-            "type": "pure-token",
-            "token": "XX"
-          },
-          {
-            "name": "gt",
-            "type": "pure-token",
-            "token": "GT"
-          },
-          {
-            "name": "lt",
-            "type": "pure-token",
-            "token": "LT"
+            "name": "xx-comparison",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "xx",
+                "type": "pure-token",
+                "token": "XX",
+                "optional": true
+              },
+              {
+                "name": "comparison",
+                "type": "oneof",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "gt",
+                    "type": "pure-token",
+                    "token": "GT"
+                  },
+                  {
+                    "name": "lt",
+                    "type": "pure-token",
+                    "token": "LT"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -11529,7 +12141,6 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
@@ -11543,7 +12154,7 @@
     ]
   },
   "HPEXPIREAT": {
-    "summary": "Sets expiration time on hash field.",
+    "summary": "Sets the expiration time of one or more hash fields to a Unix timestamp in milliseconds.",
     "complexity": "O(N) where N is the number of specified fields.",
     "group": "hash",
     "since": "9.0.0",
@@ -11611,7 +12222,7 @@
       },
       {
         "name": "unix-time-milliseconds",
-        "type": "integer"
+        "type": "unix-time"
       },
       {
         "name": "condition",
@@ -11625,19 +12236,33 @@
             "token": "NX"
           },
           {
-            "name": "xx",
-            "type": "pure-token",
-            "token": "XX"
-          },
-          {
-            "name": "gt",
-            "type": "pure-token",
-            "token": "GT"
-          },
-          {
-            "name": "lt",
-            "type": "pure-token",
-            "token": "LT"
+            "name": "xx-comparison",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "xx",
+                "type": "pure-token",
+                "token": "XX",
+                "optional": true
+              },
+              {
+                "name": "comparison",
+                "type": "oneof",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "gt",
+                    "type": "pure-token",
+                    "token": "GT"
+                  },
+                  {
+                    "name": "lt",
+                    "type": "pure-token",
+                    "token": "LT"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -11649,7 +12274,6 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
@@ -11734,13 +12358,12 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
           {
             "name": "field",
-            "type": "string",
+            "type": "field",
             "multiple": true
           }
         ]
@@ -11819,13 +12442,12 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
           {
             "name": "field",
-            "type": "string",
+            "type": "field",
             "multiple": true
           }
         ]
@@ -12080,7 +12702,7 @@
         "arguments": [
           {
             "name": "field",
-            "type": "string"
+            "type": "field"
           },
           {
             "name": "value",
@@ -12219,7 +12841,6 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
@@ -12299,7 +12920,7 @@
       },
       {
         "name": "field",
-        "type": "string"
+        "type": "field"
       },
       {
         "name": "value",
@@ -12355,7 +12976,7 @@
       },
       {
         "name": "field",
-        "type": "string"
+        "type": "field"
       }
     ]
   },
@@ -12431,13 +13052,12 @@
           {
             "name": "numfields",
             "type": "integer",
-            "key_spec_index": 0,
             "multiple": false,
             "minimum": 1
           },
           {
             "name": "field",
-            "type": "string",
+            "type": "field",
             "multiple": true
           }
         ]
@@ -12654,6 +13274,161 @@
         "type": "double"
       }
     ]
+  },
+  "INCREX": {
+    "summary": "Increments the numeric value of a key with an option to expire. Uses 0 as initial value if the key doesn't exist.",
+    "complexity": "O(1)",
+    "group": "string",
+    "since": "9.2.0",
+    "arity": -2,
+    "function": "increxCommand",
+    "command_flags": [
+      "WRITE",
+      "DENYOOM",
+      "FAST"
+    ],
+    "acl_categories": [
+      "FAST",
+      "STRING",
+      "WRITE"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "ACCESS",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "condition",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "nx",
+            "type": "pure-token",
+            "token": "NX"
+          },
+          {
+            "name": "xx",
+            "type": "pure-token",
+            "token": "XX"
+          }
+        ]
+      },
+      {
+        "name": "expiration",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "ex",
+            "type": "integer",
+            "token": "EX"
+          },
+          {
+            "name": "px",
+            "type": "integer",
+            "token": "PX"
+          },
+          {
+            "name": "unix-time-seconds",
+            "type": "unix-time",
+            "token": "EXAT"
+          },
+          {
+            "name": "unix-time-milliseconds",
+            "type": "unix-time",
+            "token": "PXAT"
+          },
+          {
+            "name": "persist",
+            "type": "pure-token",
+            "token": "PERSIST"
+          }
+        ]
+      },
+      {
+        "name": "enx",
+        "type": "pure-token",
+        "token": "ENX",
+        "optional": true,
+        "summary": "Only set the expiration if the key currently has no TTL. Requires one of EX/PX/EXAT/PXAT; cannot be combined with PERSIST."
+      },
+      {
+        "name": "increment",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "integer",
+            "type": "integer",
+            "token": "BYINT"
+          },
+          {
+            "name": "float",
+            "type": "double",
+            "token": "BYFLOAT"
+          }
+        ]
+      },
+      {
+        "name": "lowerbound",
+        "type": "string",
+        "token": "LBOUND",
+        "optional": true,
+        "summary": "Integer when used with BYINT, floating-point when used with BYFLOAT."
+      },
+      {
+        "name": "upperbound",
+        "type": "string",
+        "token": "UBOUND",
+        "optional": true,
+        "summary": "Integer when used with BYINT, floating-point when used with BYFLOAT."
+      },
+      {
+        "name": "saturate",
+        "type": "pure-token",
+        "token": "SATURATE",
+        "optional": true,
+        "summary": "Saturate the result to LBOUND/UBOUND (or the type limits when no explicit bound is given) when out of bounds. Without this option, out-of-bounds operations are rejected and reply [current_value, 0]."
+      }
+    ],
+    "reply_schema": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "description": "Value after the increment; the current value if the increment was not applied.",
+          "type": "number"
+        },
+        {
+          "description": "Increment actually applied; 0 if skipped.",
+          "type": "number"
+        }
+      ]
+    }
   },
   "INFO": {
     "summary": "Returns information and statistics about the server.",
@@ -13158,16 +13933,21 @@
         "key_spec_index": 0
       },
       {
-        "name": "len",
-        "token": "LEN",
-        "type": "pure-token",
-        "optional": true
-      },
-      {
-        "name": "idx",
-        "token": "IDX",
-        "type": "pure-token",
-        "optional": true
+        "name": "output",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "len",
+            "token": "LEN",
+            "type": "pure-token"
+          },
+          {
+            "name": "idx",
+            "token": "IDX",
+            "type": "pure-token"
+          }
+        ]
       },
       {
         "token": "MINMATCHLEN",
@@ -14887,8 +15667,14 @@
     "complexity": "O(1)",
     "group": "generic",
     "since": "1.0.0",
-    "arity": 3,
+    "arity": -3,
     "function": "moveCommand",
+    "history": [
+      [
+        "9.2.0",
+        "added REPLACE option."
+      ]
+    ],
     "command_flags": [
       "WRITE",
       "FAST"
@@ -14929,6 +15715,13 @@
       {
         "name": "db",
         "type": "integer"
+      },
+      {
+        "name": "replace",
+        "token": "REPLACE",
+        "type": "pure-token",
+        "since": "9.2.0",
+        "optional": true
       }
     ],
     "reply_schema": {
@@ -14938,7 +15731,7 @@
           "const": 1
         },
         {
-          "description": "Key wasn't moved. When key already exists in the destination database, or it does not exist in the source database",
+          "description": "Key wasn't moved. When key already exists in the destination database without REPLACE, or it does not exist in the source database",
           "const": 0
         }
       ]
@@ -15594,19 +16387,33 @@
             "token": "NX"
           },
           {
-            "name": "xx",
-            "type": "pure-token",
-            "token": "XX"
-          },
-          {
-            "name": "gt",
-            "type": "pure-token",
-            "token": "GT"
-          },
-          {
-            "name": "lt",
-            "type": "pure-token",
-            "token": "LT"
+            "name": "xx-comparison",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "xx",
+                "type": "pure-token",
+                "token": "XX",
+                "optional": true
+              },
+              {
+                "name": "comparison",
+                "type": "oneof",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "gt",
+                    "type": "pure-token",
+                    "token": "GT"
+                  },
+                  {
+                    "name": "lt",
+                    "type": "pure-token",
+                    "token": "LT"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -15688,19 +16495,33 @@
             "token": "NX"
           },
           {
-            "name": "xx",
-            "type": "pure-token",
-            "token": "XX"
-          },
-          {
-            "name": "gt",
-            "type": "pure-token",
-            "token": "GT"
-          },
-          {
-            "name": "lt",
-            "type": "pure-token",
-            "token": "LT"
+            "name": "xx-comparison",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "xx",
+                "type": "pure-token",
+                "token": "XX",
+                "optional": true
+              },
+              {
+                "name": "comparison",
+                "type": "oneof",
+                "optional": true,
+                "arguments": [
+                  {
+                    "name": "gt",
+                    "type": "pure-token",
+                    "token": "GT"
+                  },
+                  {
+                    "name": "lt",
+                    "type": "pure-token",
+                    "token": "LT"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -16030,6 +16851,943 @@
       "const": "OK"
     }
   },
+  "PHDEL": {
+    "summary": "Deletes fields or the complete payload at a path in a path hash. Deletes the key if the last path was removed.",
+    "complexity": "O(L + F*U) when deleting specified fields, where L is the path length, F is the number of requested fields, and U is the payload field lookup cost. O(L + S) when deleting the complete payload, where S is the number of stored fields in the payload.",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": -3,
+    "function": "phdelCommand",
+    "command_flags": [
+      "WRITE"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "WRITE",
+      "SLOW"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "ACCESS",
+          "DELETE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "type": "integer"
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "field",
+        "type": "string",
+        "optional": true,
+        "multiple": true
+      }
+    ]
+  },
+  "PHGET": {
+    "summary": "Returns one or more fields from an exact path in a path hash.",
+    "complexity": "O(L + F*U).",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": -4,
+    "function": "phgetCommand",
+    "command_flags": [
+      "READONLY",
+      "FAST"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "READ",
+      "FAST"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "Values in the requested field order, with null for each missing field. Always an array, including for a single field.",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "field",
+        "type": "string",
+        "multiple": true
+      }
+    ]
+  },
+  "PHGETALL": {
+    "summary": "Returns all field-value pairs at an exact path in a path hash.",
+    "complexity": "O(L + O).",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": 3,
+    "function": "phgetallCommand",
+    "command_flags": [
+      "READONLY"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "READ",
+      "SLOW"
+    ],
+    "command_tips": [
+      "NONDETERMINISTIC_OUTPUT_ORDER"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "Field/value pairs stored at the path: a map in RESP3 or a flat array in RESP2. A missing key or path returns an empty map in RESP3 or an empty array in RESP2. Field order is unspecified.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      }
+    ]
+  },
+  "PHMGET": {
+    "summary": "Returns fields from multiple exact paths in a path hash.",
+    "complexity": "O(sum(L) + M*U), where M is the total number of fields across all path groups.",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": -6,
+    "function": "phmgetCommand",
+    "command_flags": [
+      "READONLY",
+      "FAST"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "READ",
+      "FAST"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "Flat array of values in requested path-group and field order, with null for missing fields.",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "data",
+        "type": "block",
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "path",
+            "type": "string"
+          },
+          {
+            "name": "fields",
+            "type": "block",
+            "token": "FIELDS",
+            "arguments": [
+              {
+                "name": "numfields",
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "name": "field",
+                "type": "string",
+                "multiple": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "PHMSET": {
+    "summary": "Atomically sets fields across multiple paths in a path hash.",
+    "complexity": "O(sum(L) + M*U), where M is the total number of fields across all path groups.",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": -7,
+    "function": "phmsetCommand",
+    "command_flags": [
+      "WRITE",
+      "DENYOOM",
+      "FAST"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "WRITE",
+      "FAST"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "const": "OK"
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "data",
+        "type": "block",
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "path",
+            "type": "string"
+          },
+          {
+            "name": "fields",
+            "type": "block",
+            "token": "FIELDS",
+            "arguments": [
+              {
+                "name": "numfields",
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "name": "data",
+                "type": "block",
+                "multiple": true,
+                "arguments": [
+                  {
+                    "name": "field",
+                    "type": "string"
+                  },
+                  {
+                    "name": "value",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "PHPATHCOUNT": {
+    "summary": "Returns the number of paths in a path hash, optionally limited to a prefix.",
+    "complexity": "O(1) without PREFIX or with an empty prefix; otherwise O(L + N), where L is the prefix length and N is the total size of matching paths.",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": -2,
+    "function": "phpathcountCommand",
+    "command_flags": [
+      "READONLY"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "READ",
+      "SLOW"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "type": "integer"
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "prefix",
+        "type": "string",
+        "token": "PREFIX",
+        "optional": true
+      }
+    ]
+  },
+  "PHPATHDEL": {
+    "summary": "Deletes a path in a path hash, optionally including all paths with that byte prefix. Deletes the key if the last path was removed.",
+    "complexity": "O(L + S) when deleting an exact path, where L is the path length and S is the number of fields in its payload. O(L + sum(P_i + F_i)) with WITHSUBPATHS, where P_i is the length of each matched path and F_i is the number of fields in its payload.",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": -3,
+    "function": "phpathdelCommand",
+    "command_flags": [
+      "WRITE"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "WRITE",
+      "SLOW"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "DELETE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "type": "integer"
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "withsubpaths",
+        "type": "pure-token",
+        "token": "WITHSUBPATHS",
+        "optional": true
+      }
+    ]
+  },
+  "PHPATHEXISTS": {
+    "summary": "Tests whether an exact logical path exists in a path hash.",
+    "complexity": "O(L), where L is the path length.",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": 3,
+    "function": "phpathexistsCommand",
+    "command_flags": [
+      "READONLY",
+      "FAST"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "READ",
+      "FAST"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "type": "integer"
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      }
+    ]
+  },
+  "PHPATHSCAN": {
+    "summary": "Incrementally traverses paths in a path hash in lexicographic order.",
+    "complexity": "O(L + C + O) per call.",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": -3,
+    "function": "phpathscanCommand",
+    "command_flags": [
+      "READONLY"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "READ",
+      "SLOW"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "Opaque cursor and stored path names in byte lexicographic order.",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "description": "The next opaque path cursor, or 0 when complete.",
+          "type": "string"
+        },
+        {
+          "description": "Stored path names.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "cursor",
+        "type": "string"
+      },
+      {
+        "name": "prefix",
+        "type": "string",
+        "token": "PREFIX",
+        "optional": true
+      },
+      {
+        "name": "count",
+        "summary": "Maximum number of paths to return; defaults to 10.",
+        "type": "integer",
+        "token": "COUNT",
+        "optional": true
+      }
+    ]
+  },
+  "PHPREFIXES": {
+    "summary": "Returns stored ancestor prefixes of a query in a path hash, from longest to shortest.",
+    "complexity": "O(L + O).",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": -3,
+    "function": "phprefixesCommand",
+    "command_flags": [
+      "READONLY"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "READ",
+      "SLOW"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "Matching ancestor paths in longest-to-shortest order, optionally with values.",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": [
+              {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              {
+                "oneOf": [
+                  {
+                    "description": "The field/value payload when WITHVALUES is used: a map in RESP3 or a flat array in RESP2. Field order is unspecified.",
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "description": "The values aligned to the requested field order when FIELDS is used: an array in both RESP2 and RESP3, with null for each missing field.",
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "query",
+        "type": "string"
+      },
+      {
+        "name": "lengths",
+        "type": "pure-token",
+        "token": "LENGTHS",
+        "optional": true
+      },
+      {
+        "name": "values",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "withvalues",
+            "type": "pure-token",
+            "token": "WITHVALUES"
+          },
+          {
+            "name": "fields",
+            "type": "block",
+            "token": "FIELDS",
+            "arguments": [
+              {
+                "name": "numfields",
+                "type": "integer"
+              },
+              {
+                "name": "field",
+                "type": "string",
+                "multiple": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "count",
+        "summary": "Hard limit on the number of deepest matches, from 1 to LONG_MAX of the server build. Out-of-range values return an error.",
+        "type": "integer",
+        "token": "COUNT",
+        "optional": true
+      },
+      {
+        "name": "max-path-bytes",
+        "summary": "Maximum path length in bytes, from 0 to LONG_MAX of the server build, applied before COUNT. Out-of-range values return an error.",
+        "type": "integer",
+        "token": "MAXPATHLEN",
+        "optional": true
+      },
+      {
+        "name": "excludeself",
+        "summary": "Exclude a path equal to the query, allowing pagination through strict ancestors.",
+        "type": "pure-token",
+        "token": "EXCLUDESELF",
+        "optional": true
+      }
+    ]
+  },
+  "PHSCAN": {
+    "summary": "Iterates over fields and values at an exact path in a path hash.",
+    "complexity": "O(L) for the path lookup plus the cost of HSCAN on its field map; COUNT is a work hint, not a hard result limit.",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": -4,
+    "function": "phscanCommand",
+    "command_flags": [
+      "READONLY"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "READ",
+      "SLOW"
+    ],
+    "command_tips": [
+      "NONDETERMINISTIC_OUTPUT"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "Cursor and field/value pairs, in both RESP2 and RESP3.",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "description": "The next Hash scan cursor, or 0 when complete.",
+          "type": "string"
+        },
+        {
+          "description": "Alternating field names and values.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "cursor",
+        "type": "integer"
+      },
+      {
+        "name": "pattern",
+        "type": "pattern",
+        "token": "MATCH",
+        "optional": true
+      },
+      {
+        "name": "count",
+        "type": "integer",
+        "token": "COUNT",
+        "optional": true
+      }
+    ]
+  },
+  "PHSET": {
+    "summary": "Atomically sets one or more fields at a path in a path hash.",
+    "complexity": "O(L + F*U), where L is the path length, F is the number of fields, and U is the payload field lookup cost.",
+    "group": "pathhash",
+    "since": "9.2.0",
+    "arity": -7,
+    "function": "phsetCommand",
+    "command_flags": [
+      "WRITE",
+      "DENYOOM",
+      "FAST"
+    ],
+    "acl_categories": [
+      "PATHHASH",
+      "WRITE",
+      "FAST"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "condition",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "fnx",
+            "type": "pure-token",
+            "token": "FNX"
+          },
+          {
+            "name": "fxx",
+            "type": "pure-token",
+            "token": "FXX"
+          }
+        ]
+      },
+      {
+        "name": "fields",
+        "type": "block",
+        "token": "FIELDS",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "name": "data",
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "field",
+                "type": "string"
+              },
+              {
+                "name": "value",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "PING": {
     "summary": "Returns the server's liveliness response.",
     "complexity": "O(1)",
@@ -16159,6 +17917,7 @@
     "command_flags": [
       "NO_ASYNC_LOADING",
       "ADMIN",
+      "STALE",
       "NO_MULTI",
       "NOSCRIPT"
     ],
@@ -16940,18 +18699,23 @@
         "since": "5.0.0"
       },
       {
-        "token": "IDLETIME",
-        "name": "seconds",
-        "type": "integer",
+        "name": "eviction",
+        "type": "oneof",
         "optional": true,
-        "since": "5.0.0"
-      },
-      {
-        "token": "FREQ",
-        "name": "frequency",
-        "type": "integer",
-        "optional": true,
-        "since": "5.0.0"
+        "arguments": [
+          {
+            "token": "IDLETIME",
+            "name": "seconds",
+            "type": "integer",
+            "since": "5.0.0"
+          },
+          {
+            "token": "FREQ",
+            "name": "frequency",
+            "type": "integer",
+            "since": "5.0.0"
+          }
+        ]
       }
     ],
     "reply_schema": {
@@ -17041,18 +18805,23 @@
         "since": "5.0.0"
       },
       {
-        "token": "IDLETIME",
-        "name": "seconds",
-        "type": "integer",
+        "name": "eviction",
+        "type": "oneof",
         "optional": true,
-        "since": "5.0.0"
-      },
-      {
-        "token": "FREQ",
-        "name": "frequency",
-        "type": "integer",
-        "optional": true,
-        "since": "5.0.0"
+        "arguments": [
+          {
+            "token": "IDLETIME",
+            "name": "seconds",
+            "type": "integer",
+            "since": "5.0.0"
+          },
+          {
+            "token": "FREQ",
+            "name": "frequency",
+            "type": "integer",
+            "since": "5.0.0"
+          }
+        ]
       }
     ]
   },
@@ -17868,6 +19637,7 @@
     "container": "SCRIPT",
     "function": "scriptCommand",
     "command_flags": [
+      "DENYOOM",
       "NOSCRIPT",
       "STALE"
     ],
@@ -19115,20 +20885,22 @@
       {
         "name": "mode",
         "type": "oneof",
-        "optional": true,
         "multiple": true,
         "arguments": [
           {
             "name": "crash-after-election",
-            "type": "pure-token"
+            "type": "pure-token",
+            "token": "CRASH-AFTER-ELECTION"
           },
           {
             "name": "crash-after-promotion",
-            "type": "pure-token"
+            "type": "pure-token",
+            "token": "CRASH-AFTER-PROMOTION"
           },
           {
             "name": "help",
-            "type": "pure-token"
+            "type": "pure-token",
+            "token": "HELP"
           }
         ]
       }
@@ -19224,6 +20996,10 @@
       [
         "8.1.0",
         "Added the `IFEQ` option."
+      ],
+      [
+        "9.2.0",
+        "Added the `IFNE` option."
       ]
     ],
     "command_flags": [
@@ -19311,6 +21087,13 @@
             "token": "IFEQ",
             "since": "8.1.0",
             "summary": "Sets the key's value only if the current value matches the specified comparison value."
+          },
+          {
+            "name": "comparison-not-equal",
+            "type": "string",
+            "token": "IFNE",
+            "since": "9.2.0",
+            "summary": "Sets the key's value only if the current value does not match the specified comparison value."
           }
         ]
       },
@@ -19892,8 +21675,14 @@
     "complexity": "O(1)",
     "group": "set",
     "since": "1.0.0",
-    "arity": 3,
+    "arity": -3,
     "function": "sismemberCommand",
+    "history": [
+      [
+        "9.1.0",
+        "Added the `XX` options."
+      ]
+    ],
     "command_flags": [
       "READONLY",
       "FAST"
@@ -19926,11 +21715,15 @@
       "oneOf": [
         {
           "const": 0,
-          "description": "The element is not a member of the set, or the key does not exist."
+          "description": "The element is not a member of the set, or the key does not exist (when `XX` option is not specified)."
         },
         {
           "const": 1,
           "description": "The element is a member of the set."
+        },
+        {
+          "const": -1,
+          "description": "The key does not exist (when `XX` option is specified)."
         }
       ]
     },
@@ -19942,7 +21735,14 @@
       },
       {
         "name": "member",
-        "type": "string"
+        "type": "member"
+      },
+      {
+        "name": "xx",
+        "token": "XX",
+        "type": "pure-token",
+        "since": "9.1.0",
+        "optional": true
       }
     ]
   },
@@ -20293,7 +22093,7 @@
       },
       {
         "name": "member",
-        "type": "string",
+        "type": "member",
         "multiple": true
       }
     ]
@@ -20947,7 +22747,7 @@
       },
       {
         "name": "member",
-        "type": "string",
+        "type": "member",
         "multiple": true
       }
     ]
@@ -21420,6 +23220,7 @@
     "command_flags": [
       "NO_ASYNC_LOADING",
       "ADMIN",
+      "STALE",
       "NO_MULTI",
       "NOSCRIPT"
     ],
@@ -21934,6 +23735,103 @@
       "minimum": 0
     }
   },
+  "XACKDEL": {
+    "summary": "Acknowledge and (if possible) delete stream message(s).",
+    "complexity": "O(1) for each single item to delete in the stream, regardless of the stream size",
+    "group": "stream",
+    "since": "9.2.0",
+    "arity": -6,
+    "function": "xackdelCommand",
+    "command_flags": [
+      "WRITE",
+      "FAST"
+    ],
+    "acl_categories": [
+      "FAST",
+      "WRITE",
+      "STREAM"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "group",
+        "type": "string"
+      },
+      {
+        "name": "mode",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "keepref",
+            "type": "pure-token",
+            "token": "KEEPREF"
+          },
+          {
+            "name": "delref",
+            "type": "pure-token",
+            "token": "DELREF"
+          },
+          {
+            "name": "acked",
+            "type": "pure-token",
+            "token": "ACKED"
+          }
+        ]
+      },
+      {
+        "name": "ids",
+        "type": "block",
+        "token": "IDS",
+        "arguments": [
+          {
+            "name": "numids",
+            "type": "integer"
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ],
+    "reply_schema": {
+      "description": "The command returns an integer for each stream message: -1=message not found, 1=acknowledged successfully (stream message deleted or already absent), 2=acked but not deleted.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "description": "Status of the stream message, -1=message not found, 1=acknowledged successfully (stream message deleted or already absent), 2=acked but not deleted.",
+        "type": "integer",
+        "minimum": -1,
+        "maximum": 2
+      }
+    }
+  },
   "XADD": {
     "summary": "Appends a new message to a stream. Creates the key if it doesn't exist.",
     "complexity": "O(1) when adding a new entry, O(N) when trimming where N being the number of entries evicted.",
@@ -22443,6 +24341,99 @@
       "description": "The number of entries actually deleted",
       "type": "integer",
       "minimum": 0
+    }
+  },
+  "XDELEX": {
+    "summary": "Delete stream message(s) with extended options",
+    "complexity": "O(1) for each single item to delete in the stream, regardless of the stream size",
+    "group": "stream",
+    "since": "9.2.0",
+    "arity": -5,
+    "function": "xdelexCommand",
+    "command_flags": [
+      "WRITE",
+      "FAST"
+    ],
+    "acl_categories": [
+      "FAST",
+      "WRITE",
+      "STREAM"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "mode",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "keepref",
+            "type": "pure-token",
+            "token": "KEEPREF"
+          },
+          {
+            "name": "delref",
+            "type": "pure-token",
+            "token": "DELREF"
+          },
+          {
+            "name": "acked",
+            "type": "pure-token",
+            "token": "ACKED"
+          }
+        ]
+      },
+      {
+        "name": "ids",
+        "token": "IDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numids",
+            "type": "integer"
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ],
+    "reply_schema": {
+      "description": "The command returns an integer for each stream message: -1=message not found, 1=message was deleted, 2=message was not deleted due to existing references (ACKED mode).",
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "description": "Status of the stream message, -1=message not found, 1=message was deleted, 2=message was not deleted due to existing references (ACKED mode).",
+        "type": "integer",
+        "minimum": -1,
+        "maximum": 2
+      }
     }
   },
   "XGROUP CREATE": {
@@ -23554,6 +25545,30 @@
               }
             }
           ]
+        },
+        {
+          "description": "Summary form when there are no pending messages.",
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": [
+            {
+              "description": "Total number of pending messages",
+              "const": 0
+            },
+            {
+              "description": "Minimal pending entry ID",
+              "type": "null"
+            },
+            {
+              "description": "Maximal pending entry ID",
+              "type": "null"
+            },
+            {
+              "description": "Consumers with pending messages",
+              "type": "null"
+            }
+          ]
         }
       ]
     },
@@ -24285,27 +26300,34 @@
             "token": "NX"
           },
           {
-            "name": "xx",
-            "type": "pure-token",
-            "token": "XX"
-          }
-        ]
-      },
-      {
-        "name": "comparison",
-        "type": "oneof",
-        "optional": true,
-        "since": "6.2.0",
-        "arguments": [
-          {
-            "name": "gt",
-            "type": "pure-token",
-            "token": "GT"
-          },
-          {
-            "name": "lt",
-            "type": "pure-token",
-            "token": "LT"
+            "name": "xx-comparison",
+            "type": "block",
+            "arguments": [
+              {
+                "name": "xx",
+                "type": "pure-token",
+                "token": "XX",
+                "optional": true
+              },
+              {
+                "name": "comparison",
+                "type": "oneof",
+                "optional": true,
+                "since": "6.2.0",
+                "arguments": [
+                  {
+                    "name": "gt",
+                    "type": "pure-token",
+                    "token": "GT"
+                  },
+                  {
+                    "name": "lt",
+                    "type": "pure-token",
+                    "token": "LT"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -24655,11 +26677,11 @@
       },
       {
         "name": "increment",
-        "type": "integer"
+        "type": "double"
       },
       {
         "name": "member",
-        "type": "string"
+        "type": "member"
       }
     ]
   },
@@ -24743,7 +26765,7 @@
       {
         "token": "WEIGHTS",
         "name": "weight",
-        "type": "integer",
+        "type": "double",
         "optional": true,
         "multiple": true
       },
@@ -24917,7 +26939,7 @@
       {
         "token": "WEIGHTS",
         "name": "weight",
-        "type": "integer",
+        "type": "double",
         "optional": true,
         "multiple": true
       },
@@ -25174,7 +27196,7 @@
       },
       {
         "name": "member",
-        "type": "string",
+        "type": "member",
         "multiple": true
       }
     ]
@@ -25469,6 +27491,10 @@
       [
         "6.2.0",
         "Added the `REV`, `BYSCORE`, `BYLEX` and `LIMIT` options."
+      ],
+      [
+        "9.2.0",
+        "Added the `XX` option."
       ]
     ],
     "command_flags": [
@@ -25501,6 +27527,10 @@
     ],
     "reply_schema": {
       "anyOf": [
+        {
+          "description": "Key does not exist and XX option is specified.",
+          "type": "null"
+        },
         {
           "description": "A list of member elements",
           "type": "array",
@@ -25592,6 +27622,13 @@
         "token": "WITHSCORES",
         "type": "pure-token",
         "optional": true
+      },
+      {
+        "name": "xx",
+        "token": "XX",
+        "type": "pure-token",
+        "optional": true,
+        "since": "9.2.0"
       }
     ]
   },
@@ -25602,85 +27639,10 @@
     "since": "2.8.9",
     "arity": -4,
     "function": "zrangebylexCommand",
-    "command_flags": [
-      "READONLY"
-    ],
-    "acl_categories": [
-      "READ",
-      "SLOW",
-      "SORTEDSET"
-    ],
-    "key_specs": [
-      {
-        "flags": [
-          "RO",
-          "ACCESS"
-        ],
-        "begin_search": {
-          "index": {
-            "pos": 1
-          }
-        },
-        "find_keys": {
-          "range": {
-            "lastkey": 0,
-            "step": 1,
-            "limit": 0
-          }
-        }
-      }
-    ],
-    "reply_schema": {
-      "type": "array",
-      "description": "List of elements in the specified score range.",
-      "uniqueItems": true,
-      "items": {
-        "type": "string"
-      }
-    },
-    "arguments": [
-      {
-        "name": "key",
-        "type": "key",
-        "key_spec_index": 0
-      },
-      {
-        "name": "min",
-        "type": "string"
-      },
-      {
-        "name": "max",
-        "type": "string"
-      },
-      {
-        "token": "LIMIT",
-        "name": "limit",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "offset",
-            "type": "integer"
-          },
-          {
-            "name": "count",
-            "type": "integer"
-          }
-        ]
-      }
-    ]
-  },
-  "ZRANGEBYSCORE": {
-    "summary": "Returns members in a sorted set within a range of scores.",
-    "complexity": "O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).",
-    "group": "sorted_set",
-    "since": "1.0.5",
-    "arity": -4,
-    "function": "zrangebyscoreCommand",
     "history": [
       [
-        "2.0.0",
-        "Added the `WITHSCORES` modifier."
+        "9.2.0",
+        "Added the `XX` option."
       ]
     ],
     "command_flags": [
@@ -25713,6 +27675,110 @@
     ],
     "reply_schema": {
       "anyOf": [
+        {
+          "description": "Key does not exist and XX option is specified.",
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "description": "List of elements in the specified score range.",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "min",
+        "type": "string"
+      },
+      {
+        "name": "max",
+        "type": "string"
+      },
+      {
+        "token": "LIMIT",
+        "name": "limit",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "offset",
+            "type": "integer"
+          },
+          {
+            "name": "count",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "xx",
+        "token": "XX",
+        "type": "pure-token",
+        "optional": true,
+        "since": "9.2.0"
+      }
+    ]
+  },
+  "ZRANGEBYSCORE": {
+    "summary": "Returns members in a sorted set within a range of scores.",
+    "complexity": "O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).",
+    "group": "sorted_set",
+    "since": "1.0.5",
+    "arity": -4,
+    "function": "zrangebyscoreCommand",
+    "history": [
+      [
+        "2.0.0",
+        "Added the `WITHSCORES` modifier."
+      ],
+      [
+        "9.2.0",
+        "Added the `XX` option."
+      ]
+    ],
+    "command_flags": [
+      "READONLY"
+    ],
+    "acl_categories": [
+      "READ",
+      "SLOW",
+      "SORTEDSET"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "anyOf": [
+        {
+          "description": "Key does not exist and XX option is specified.",
+          "type": "null"
+        },
         {
           "type": "array",
           "description": "List of the elements in the specified score range, as not WITHSCORES.",
@@ -25765,6 +27831,13 @@
         "type": "pure-token",
         "optional": true,
         "since": "2.0.0"
+      },
+      {
+        "name": "xx",
+        "token": "XX",
+        "type": "pure-token",
+        "optional": true,
+        "since": "9.2.0"
       },
       {
         "token": "LIMIT",
@@ -25978,7 +28051,7 @@
       },
       {
         "name": "member",
-        "type": "string"
+        "type": "member"
       },
       {
         "name": "withscore",
@@ -26043,7 +28116,7 @@
       },
       {
         "name": "member",
-        "type": "string",
+        "type": "member",
         "multiple": true
       }
     ]
@@ -26220,6 +28293,12 @@
     "since": "1.2.0",
     "arity": -4,
     "function": "zrevrangeCommand",
+    "history": [
+      [
+        "9.2.0",
+        "Added the `XX` option."
+      ]
+    ],
     "command_flags": [
       "READONLY"
     ],
@@ -26250,6 +28329,10 @@
     ],
     "reply_schema": {
       "anyOf": [
+        {
+          "description": "Key does not exist and XX option is specified.",
+          "type": "null"
+        },
         {
           "description": "List of member elements.",
           "type": "array",
@@ -26299,6 +28382,13 @@
         "token": "WITHSCORES",
         "type": "pure-token",
         "optional": true
+      },
+      {
+        "name": "xx",
+        "token": "XX",
+        "type": "pure-token",
+        "optional": true,
+        "since": "9.2.0"
       }
     ]
   },
@@ -26309,85 +28399,10 @@
     "since": "2.8.9",
     "arity": -4,
     "function": "zrevrangebylexCommand",
-    "command_flags": [
-      "READONLY"
-    ],
-    "acl_categories": [
-      "READ",
-      "SLOW",
-      "SORTEDSET"
-    ],
-    "key_specs": [
-      {
-        "flags": [
-          "RO",
-          "ACCESS"
-        ],
-        "begin_search": {
-          "index": {
-            "pos": 1
-          }
-        },
-        "find_keys": {
-          "range": {
-            "lastkey": 0,
-            "step": 1,
-            "limit": 0
-          }
-        }
-      }
-    ],
-    "reply_schema": {
-      "type": "array",
-      "description": "List of the elements in the specified score range.",
-      "uniqueItems": true,
-      "items": {
-        "type": "string"
-      }
-    },
-    "arguments": [
-      {
-        "name": "key",
-        "type": "key",
-        "key_spec_index": 0
-      },
-      {
-        "name": "max",
-        "type": "string"
-      },
-      {
-        "name": "min",
-        "type": "string"
-      },
-      {
-        "token": "LIMIT",
-        "name": "limit",
-        "type": "block",
-        "optional": true,
-        "arguments": [
-          {
-            "name": "offset",
-            "type": "integer"
-          },
-          {
-            "name": "count",
-            "type": "integer"
-          }
-        ]
-      }
-    ]
-  },
-  "ZREVRANGEBYSCORE": {
-    "summary": "Returns members in a sorted set within a range of scores in reverse order.",
-    "complexity": "O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).",
-    "group": "sorted_set",
-    "since": "2.2.0",
-    "arity": -4,
-    "function": "zrevrangebyscoreCommand",
     "history": [
       [
-        "2.1.6",
-        "`min` and `max` can be exclusive."
+        "9.2.0",
+        "Added the `XX` option."
       ]
     ],
     "command_flags": [
@@ -26420,6 +28435,110 @@
     ],
     "reply_schema": {
       "anyOf": [
+        {
+          "description": "Key does not exist and XX option is specified.",
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "description": "List of the elements in the specified score range.",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "max",
+        "type": "string"
+      },
+      {
+        "name": "min",
+        "type": "string"
+      },
+      {
+        "token": "LIMIT",
+        "name": "limit",
+        "type": "block",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "offset",
+            "type": "integer"
+          },
+          {
+            "name": "count",
+            "type": "integer"
+          }
+        ]
+      },
+      {
+        "name": "xx",
+        "token": "XX",
+        "type": "pure-token",
+        "optional": true,
+        "since": "9.2.0"
+      }
+    ]
+  },
+  "ZREVRANGEBYSCORE": {
+    "summary": "Returns members in a sorted set within a range of scores in reverse order.",
+    "complexity": "O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).",
+    "group": "sorted_set",
+    "since": "2.2.0",
+    "arity": -4,
+    "function": "zrevrangebyscoreCommand",
+    "history": [
+      [
+        "2.1.6",
+        "`min` and `max` can be exclusive."
+      ],
+      [
+        "9.2.0",
+        "Added the `XX` option."
+      ]
+    ],
+    "command_flags": [
+      "READONLY"
+    ],
+    "acl_categories": [
+      "READ",
+      "SLOW",
+      "SORTEDSET"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "anyOf": [
+        {
+          "description": "Key does not exist and XX option is specified.",
+          "type": "null"
+        },
         {
           "type": "array",
           "description": "List of the elements in the specified score range, as not WITHSCORES.",
@@ -26471,6 +28590,13 @@
         "token": "WITHSCORES",
         "type": "pure-token",
         "optional": true
+      },
+      {
+        "name": "xx",
+        "token": "XX",
+        "type": "pure-token",
+        "optional": true,
+        "since": "9.2.0"
       },
       {
         "token": "LIMIT",
@@ -26566,7 +28692,7 @@
       },
       {
         "name": "member",
-        "type": "string"
+        "type": "member"
       },
       {
         "name": "withscore",
@@ -26725,7 +28851,7 @@
       },
       {
         "name": "member",
-        "type": "string"
+        "type": "member"
       }
     ]
   },
@@ -26809,7 +28935,7 @@
       {
         "token": "WEIGHTS",
         "name": "weight",
-        "type": "integer",
+        "type": "double",
         "optional": true,
         "multiple": true
       },
@@ -26922,7 +29048,7 @@
       {
         "token": "WEIGHTS",
         "name": "weight",
-        "type": "integer",
+        "type": "double",
         "optional": true,
         "multiple": true
       },

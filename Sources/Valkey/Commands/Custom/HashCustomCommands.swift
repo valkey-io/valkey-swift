@@ -7,6 +7,12 @@
 //
 import NIOCore
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 // MARK: Custom responses
 
 /// Sorted set entry
@@ -175,9 +181,16 @@ extension HEXPIREAT {
     @available(*, deprecated, message: "Use init with `fields: [Field]` parameter")
     public init(_ key: ValkeyKey, unixTimeSeconds: Int, condition: Condition? = nil, fields: Fields) {
         self.key = key
-        self.unixTimeSeconds = unixTimeSeconds
+        self.unixTimeSeconds = Date(timeIntervalSince1970: .init(unixTimeSeconds))
         self.condition = condition
         self.fields = fields.fields
+    }
+
+    @inlinable public init(_ key: ValkeyKey, unixTimeSeconds: Int, condition: Condition? = nil, fields: [Field]) {
+        self.key = key
+        self.unixTimeSeconds = Date(timeIntervalSince1970: .init(unixTimeSeconds))
+        self.condition = condition
+        self.fields = fields
     }
 }
 
@@ -234,9 +247,16 @@ extension HPEXPIREAT {
     @available(*, deprecated, message: "Use init with `fields: [Field]` parameter")
     public init(_ key: ValkeyKey, unixTimeMilliseconds: Int, condition: Condition? = nil, fields: Fields) {
         self.key = key
-        self.unixTimeMilliseconds = unixTimeMilliseconds
+        self.unixTimeMilliseconds = Date(timeIntervalSince1970: Double(unixTimeMilliseconds) / 1000.0)
         self.condition = condition
         self.fields = fields.fields
+    }
+
+    @inlinable public init(_ key: ValkeyKey, unixTimeMilliseconds: Int, condition: Condition? = nil, fields: [Field]) {
+        self.key = key
+        self.unixTimeMilliseconds = Date(timeIntervalSince1970: Double(unixTimeMilliseconds) / 1000.0)
+        self.condition = condition
+        self.fields = fields
     }
 }
 

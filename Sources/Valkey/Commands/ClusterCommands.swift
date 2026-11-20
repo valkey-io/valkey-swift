@@ -457,19 +457,43 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
+        public struct MigrationGroupAuth: RESPRenderable, Sendable, Hashable {
+            public var username: String
+            public var password: String
+
+            @inlinable
+            public init(username: String, password: String) {
+                self.username = username
+                self.password = password
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                username.respEntries + password.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                username.encode(into: &commandEncoder)
+                password.encode(into: &commandEncoder)
+            }
+        }
         public struct MigrationGroup: RESPRenderable, Sendable, Hashable {
             public var ranges: [MigrationGroupRange]
             public var nodeId: NodeId
+            public var auth: MigrationGroupAuth?
 
             @inlinable
-            public init(ranges: [MigrationGroupRange], nodeId: NodeId) {
+            public init(ranges: [MigrationGroupRange], nodeId: NodeId, auth: MigrationGroupAuth? = nil) {
                 self.ranges = ranges
                 self.nodeId = nodeId
+                self.auth = auth
             }
 
             @inlinable
             public var respEntries: Int {
                 "SLOTSRANGE".respEntries + ranges.respEntries + "NODE".respEntries + RESPRenderableBulkString(nodeId).respEntries
+                    + RESPWithToken("AUTH", auth).respEntries
             }
 
             @inlinable
@@ -478,6 +502,7 @@ public enum CLUSTER {
                 ranges.encode(into: &commandEncoder)
                 "NODE".encode(into: &commandEncoder)
                 RESPRenderableBulkString(nodeId).encode(into: &commandEncoder)
+                RESPWithToken("AUTH", auth).encode(into: &commandEncoder)
             }
         }
         @inlinable public static var name: String { "CLUSTER MIGRATESLOTS" }
