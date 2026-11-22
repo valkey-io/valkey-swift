@@ -735,6 +735,7 @@ struct ValkeySentinelTests {
                 }
                 await waiter.stream.first { _ in true }
                 await topology.failover(name: "TestPrimary")
+                await mockConnections.closeConnections(.hostname("127.0.0.1", port: 9000))
                 try await group.waitForAll()
             }
         }

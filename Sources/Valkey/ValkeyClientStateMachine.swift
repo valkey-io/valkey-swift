@@ -109,6 +109,16 @@ struct ValkeyClientStateMachine<
     }
     @usableFromInline
     mutating func setPrimary(_ address: ValkeyServerAddress) -> SetPrimaryAction {
+        switch self.state {
+        case .uninitialized:
+            break
+        case .healthy(let healthyContext):
+            if healthyContext.nodes.primary == .sentinelPrimary {
+                return .init(nextAction: .doNothing, nodeToRun: nil)
+            }
+        case .shutdown:
+            return .init(nextAction: .doNothing, nodeToRun: nil)
+        }
         let nodes = ValkeyNodeIDs(primary: address)
         let action = self.runningClients.addNode(.init(address: address))
         let client: ConnectionPool?
