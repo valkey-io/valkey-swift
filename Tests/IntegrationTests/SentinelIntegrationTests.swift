@@ -137,6 +137,7 @@ struct SentinelIntegrationTests {
         }()
         try await self.withValkeyClient(
             primaryName: "testUnknownPrimary",
+            clientConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
             sentinelConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
             logger: logger
         ) { client in
@@ -161,6 +162,7 @@ struct SentinelIntegrationTests {
         try await self.withValkeyClient(
             primaryName: "testUnknownPrimary",
             sentinelNodeDiscovery: ValkeyStaticNodeDiscovery([.init(endpoint: "127.0.0.1", port: 16383)]),
+            clientConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
             sentinelConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
             logger: logger
         ) { client in
@@ -204,6 +206,41 @@ struct SentinelIntegrationTests {
                 try await client.set(key, value: "testClientSentinelFailover2")
                 let value = try await client.get(key).map { String($0) }
                 #expect(value == "testClientSentinelFailover2")
+            }
+        }
+    }
+
+    /// Test sentinel failover works during a high load
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientWithHighLoad() async throws {
+        let logger = {
+            var logger = Logger(label: "testClientWithHighLoad")
+            logger.logLevel = .trace
+            return logger
+        }()
+        try await self.withValkeyClient(primaryName: "testprimary", logger: logger) { client in
+            let waiter = AsyncStream.makeStream(of: Void.self)
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                let sentinelClient = ValkeyClient(.hostname(sentinelHostname!, port: sentinelPort!), logger: logger)
+                async let _ = sentinelClient.run()
+                let count = Atomic(0)
+                for i in 0..<1000 {
+                    group.addTask {
+                        let key = ValkeyKey("key\(i)")
+                        try await client.set(key, value: "\(i)")
+                        // after having processed 100 task trigger a failover
+                        if count.add(1, ordering: .relaxed).newValue == 100 {
+                            waiter.continuation.yield()
+                        }
+                        let value = try await client.get(key).map { String($0) }
+                        try await client.del(keys: [key])
+                        #expect(value == "\(i)")
+                    }
+                }
+                await waiter.stream.first { _ in true }
+                try await sentinelClient.sentinelFailover(primaryName: "testprimary", coordinated: true)
+                try await group.waitForAll()
             }
         }
     }
