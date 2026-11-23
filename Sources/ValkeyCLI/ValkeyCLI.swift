@@ -35,7 +35,7 @@ struct App {
         print("Connecting to \(host):\(port)")
         let valkeyClient = ValkeyClient(
             .hostname(host, port: port),
-            configuration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(5))),
+            configuration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(5)), enableClientCapaRedirect: false),
             logger: Logger(label: "ValkeyCLI")
         )
         async let _ = valkeyClient.run()
