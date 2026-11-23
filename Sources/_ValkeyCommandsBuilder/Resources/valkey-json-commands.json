@@ -285,6 +285,33 @@
       }
     ]
   },
+  "JSON.MERGE": {
+    "summary": "Merge JSON values at the specified path. Creates a new key if it does not exist, or merges new values with existing values if the key already exists.",
+    "complexity": "O(M+N) when path evaluates to a single value, where M is the size of the original value and N is the size of the new value. O(P*(M_avg+N)) when path evaluates to multiple values, where P is the number of matched paths, M_avg is the average size of original values, and N is the size of the new value.",
+    "group": "json",
+    "module_since": "1.1.0",
+    "arity": 4,
+    "acl_categories": [
+      "WRITE",
+      "SLOW",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "json",
+        "type": "string"
+      }
+    ]
+  },
   "JSON.MGET": {
     "summary": "Get serialized JSONs at the path from multiple document keys. Return null for nonexistent key or JSON path.",
     "complexity": "O(N) where N is the number of keys",
