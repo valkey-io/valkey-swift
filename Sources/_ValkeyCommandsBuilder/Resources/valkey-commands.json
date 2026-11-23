@@ -4222,7 +4222,7 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "link_name": {
+          "name": {
             "type": "string",
             "description": "A 40-byte randomly generated hex string representing the migration.",
             "pattern": "^[0-9a-fA-F]{40}$"
@@ -4275,6 +4275,11 @@
           "cow_size": {
             "description": "Copy on write bytes during slot migration fork.",
             "type": "integer"
+          },
+          "remaining_repl_size": {
+            "description": "Bytes pending in the source slot export client's reply buffer. Zero for imports or when no export client is attached.",
+            "type": "integer",
+            "minimum": 0
           }
         }
       }
@@ -8670,7 +8675,16 @@
       "description": "An array where each element is the Geohash corresponding to each member name passed as argument to the command.",
       "type": "array",
       "items": {
-        "type": "string"
+        "oneOf": [
+          {
+            "description": "The Geohash corresponding to the member.",
+            "type": "string"
+          },
+          {
+            "description": "The member does not exist.",
+            "type": "null"
+          }
+        ]
       }
     }
   },
@@ -15806,6 +15820,7 @@
     "since": "9.1.0",
     "arity": -4,
     "function": "msetexCommand",
+    "get_keys_function": "msetexGetKeys",
     "command_flags": [
       "WRITE",
       "DENYOOM"
@@ -16117,8 +16132,16 @@
       }
     ],
     "reply_schema": {
-      "description": "The counter's value.",
-      "type": "integer"
+      "oneOf": [
+        {
+          "description": "The counter's value.",
+          "type": "integer"
+        },
+        {
+          "description": "The key does not exist.",
+          "type": "null"
+        }
+      ]
     }
   },
   "OBJECT HELP": {
@@ -16191,8 +16214,16 @@
       }
     ],
     "reply_schema": {
-      "description": "The idle time in seconds.",
-      "type": "integer"
+      "oneOf": [
+        {
+          "description": "The idle time in seconds.",
+          "type": "integer"
+        },
+        {
+          "description": "The key does not exist.",
+          "type": "null"
+        }
+      ]
     }
   },
   "OBJECT REFCOUNT": {
@@ -16241,8 +16272,16 @@
       }
     ],
     "reply_schema": {
-      "description": "The number of references.",
-      "type": "integer"
+      "oneOf": [
+        {
+          "description": "The number of references.",
+          "type": "integer"
+        },
+        {
+          "description": "The key does not exist.",
+          "type": "null"
+        }
+      ]
     }
   },
   "OBJECT": {
@@ -20141,18 +20180,27 @@
       "ONLY_SENTINEL"
     ],
     "reply_schema": {
-      "type": "array",
-      "minItems": 2,
-      "maxItems": 2,
-      "items": [
+      "oneOf": [
         {
-          "type": "string",
-          "description": "IP addr or hostname."
+          "description": "The address of the primary.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "type": "string",
+              "description": "IP addr or hostname."
+            },
+            {
+              "type": "string",
+              "description": "Port.",
+              "pattern": "[0-9]+"
+            }
+          ]
         },
         {
-          "type": "string",
-          "description": "Port.",
-          "pattern": "[0-9]+"
+          "description": "No primary with the given name is monitored.",
+          "type": "null"
         }
       ]
     },
@@ -20182,18 +20230,27 @@
       "ONLY_SENTINEL"
     ],
     "reply_schema": {
-      "type": "array",
-      "minItems": 2,
-      "maxItems": 2,
-      "items": [
+      "oneOf": [
         {
-          "type": "string",
-          "description": "IP addr or hostname."
+          "description": "The address of the primary.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "type": "string",
+              "description": "IP addr or hostname."
+            },
+            {
+              "type": "string",
+              "description": "Port.",
+              "pattern": "[0-9]+"
+            }
+          ]
         },
         {
-          "type": "string",
-          "description": "Port.",
-          "pattern": "[0-9]+"
+          "description": "No primary with the given name is monitored.",
+          "type": "null"
         }
       ]
     },
@@ -21679,8 +21736,8 @@
     "function": "sismemberCommand",
     "history": [
       [
-        "9.1.0",
-        "Added the `XX` options."
+        "9.2.0",
+        "Added the `XX` option."
       ]
     ],
     "command_flags": [
@@ -21741,7 +21798,7 @@
         "name": "xx",
         "token": "XX",
         "type": "pure-token",
-        "since": "9.1.0",
+        "since": "9.2.0",
         "optional": true
       }
     ]

@@ -178,7 +178,7 @@ public enum SENTINEL {
     /// Returns the port and address of a primary instance.
     @_documentation(visibility: internal)
     public struct GETMASTERADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Array
+        public typealias Response = RESPToken.Array?
 
         @inlinable public static var name: String { "SENTINEL GET-MASTER-ADDR-BY-NAME" }
 
@@ -198,7 +198,7 @@ public enum SENTINEL {
     /// Returns the port and address of a primary instance.
     @_documentation(visibility: internal)
     public struct GETPRIMARYADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Array
+        public typealias Response = RESPToken.Array?
 
         @inlinable public static var name: String { "SENTINEL GET-PRIMARY-ADDR-BY-NAME" }
 
@@ -701,12 +701,14 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.4
     /// - Deprecated since: 8.0.0. Replaced by `SENTINEL GET-PRIMARY-ADDR-BY-NAME`.
     /// - Complexity: O(1)
-    /// - Returns: IP addr or hostname.
+    /// - Returns: One of the following
+    ///     * The address of the primary.
+    ///     * nil: No primary with the given name is monitored.
     @inlinable
     @discardableResult
     public func sentinelGetMasterAddrByName<PrimaryName: RESPStringRenderable>(
         primaryName: PrimaryName
-    ) async throws(ValkeyClientError) -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array? {
         try await execute(SENTINEL.GETMASTERADDRBYNAME(primaryName: primaryName))
     }
 
@@ -715,12 +717,14 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL GET-PRIMARY-ADDR-BY-NAME](https://valkey.io/commands/sentinel-get-primary-addr-by-name)
     /// - Available: 8.0.0
     /// - Complexity: O(1)
-    /// - Returns: IP addr or hostname.
+    /// - Returns: One of the following
+    ///     * The address of the primary.
+    ///     * nil: No primary with the given name is monitored.
     @inlinable
     @discardableResult
     public func sentinelGetPrimaryAddrByName<PrimaryName: RESPStringRenderable>(
         primaryName: PrimaryName
-    ) async throws(ValkeyClientError) -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array? {
         try await execute(SENTINEL.GETPRIMARYADDRBYNAME(primaryName: primaryName))
     }
 

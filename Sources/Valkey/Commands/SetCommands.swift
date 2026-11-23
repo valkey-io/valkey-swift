@@ -494,7 +494,7 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SISMEMBER](https://valkey.io/commands/sismember)
     /// - Available: 1.0.0
     /// - History:
-    ///     * 9.1.0: Added the `XX` options.
+    ///     * 9.2.0: Added the `XX` option.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 0: The element is not a member of the set, or the key does not exist (when `XX` option is not specified).

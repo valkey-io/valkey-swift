@@ -43,7 +43,7 @@ public enum OBJECT {
     /// Returns the logarithmic access frequency counter of an object.
     @_documentation(visibility: internal)
     public struct FREQ: ValkeyCommand {
-        public typealias Response = Int
+        public typealias Response = Int?
 
         @inlinable public static var name: String { "OBJECT FREQ" }
 
@@ -82,7 +82,7 @@ public enum OBJECT {
     /// Returns the time since the last access to an object.
     @_documentation(visibility: internal)
     public struct IDLETIME: ValkeyCommand {
-        public typealias Response = Int
+        public typealias Response = Int?
 
         @inlinable public static var name: String { "OBJECT IDLETIME" }
 
@@ -104,7 +104,7 @@ public enum OBJECT {
     /// Returns the reference count of a value of a key.
     @_documentation(visibility: internal)
     public struct REFCOUNT: ValkeyCommand {
-        public typealias Response = Int
+        public typealias Response = Int?
 
         @inlinable public static var name: String { "OBJECT REFCOUNT" }
 
@@ -1426,9 +1426,11 @@ extension ValkeyClientProtocol {
     /// - Documentation: [OBJECT FREQ](https://valkey.io/commands/object-freq)
     /// - Available: 4.0.0
     /// - Complexity: O(1)
-    /// - Returns: The counter's value.
+    /// - Returns: One of the following
+    ///     * The counter's value.
+    ///     * nil: The key does not exist.
     @inlinable
-    public func objectFreq(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
+    public func objectFreq(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int? {
         try await execute(OBJECT.FREQ(key))
     }
 
@@ -1449,9 +1451,11 @@ extension ValkeyClientProtocol {
     /// - Documentation: [OBJECT IDLETIME](https://valkey.io/commands/object-idletime)
     /// - Available: 2.2.3
     /// - Complexity: O(1)
-    /// - Returns: The idle time in seconds.
+    /// - Returns: One of the following
+    ///     * The idle time in seconds.
+    ///     * nil: The key does not exist.
     @inlinable
-    public func objectIdletime(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
+    public func objectIdletime(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int? {
         try await execute(OBJECT.IDLETIME(key))
     }
 
@@ -1460,9 +1464,11 @@ extension ValkeyClientProtocol {
     /// - Documentation: [OBJECT REFCOUNT](https://valkey.io/commands/object-refcount)
     /// - Available: 2.2.3
     /// - Complexity: O(1)
-    /// - Returns: The number of references.
+    /// - Returns: One of the following
+    ///     * The number of references.
+    ///     * nil: The key does not exist.
     @inlinable
-    public func objectRefcount(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
+    public func objectRefcount(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int? {
         try await execute(OBJECT.REFCOUNT(key))
     }
 
