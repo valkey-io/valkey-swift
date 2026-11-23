@@ -40,6 +40,7 @@ var package = Package(
         .default(enabledTraits: ["ServiceLifecycleSupport", "DistributedTracingSupport"]),
     ],
     dependencies: [
+        .package(url: "https://github.com/apple/swift-async-algorithms.git", from: "1.1.7"),
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.4"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.14.0"),
@@ -54,6 +55,7 @@ var package = Package(
             name: "Valkey",
             dependencies: [
                 .byName(name: "_ValkeyConnectionPool"),
+                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
                 .product(name: "DequeModule", package: "swift-collections"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Tracing", package: "swift-distributed-tracing", condition: .when(traits: ["DistributedTracingSupport"])),

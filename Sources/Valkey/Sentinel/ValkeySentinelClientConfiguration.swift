@@ -64,7 +64,9 @@ public struct ValkeySentinelClientConfiguration: Sendable {
             enableClientCapaRedirect: false,
             connectingToReplica: false
         )
+        #if DistributedTracingSupport
         configuration.tracing = self.tracing
+        #endif
         return configuration
     }
 
