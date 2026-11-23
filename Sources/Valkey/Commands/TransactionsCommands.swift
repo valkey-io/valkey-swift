@@ -30,20 +30,91 @@ public struct DISCARD: ValkeyCommand {
     }
 }
 
-/// Executes all commands in a transaction.
+/// Executes all commands in a transaction if conditions match.
 @_documentation(visibility: internal)
 public struct EXEC: ValkeyCommand {
+    public struct ConditionIfeq: RESPRenderable, Sendable, Hashable {
+        public var key: ValkeyKey
+        public var value: String
+
+        @inlinable
+        public init(key: ValkeyKey, value: String) {
+            self.key = key
+            self.value = value
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            key.respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            key.encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
+        }
+    }
+    public struct ConditionIfne: RESPRenderable, Sendable, Hashable {
+        public var key: ValkeyKey
+        public var value: String
+
+        @inlinable
+        public init(key: ValkeyKey, value: String) {
+            self.key = key
+            self.value = value
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            key.respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            key.encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
+        }
+    }
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case ifeq(ConditionIfeq)
+        case ifne(ConditionIfne)
+        case nonexistingKey(ValkeyKey)
+        case existingKey(ValkeyKey)
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .ifeq(let ifeq): RESPWithToken("IFEQ", ifeq).respEntries
+            case .ifne(let ifne): RESPWithToken("IFNE", ifne).respEntries
+            case .nonexistingKey(let nonexistingKey): RESPWithToken("NX", nonexistingKey).respEntries
+            case .existingKey(let existingKey): RESPWithToken("XX", existingKey).respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .ifeq(let ifeq): RESPWithToken("IFEQ", ifeq).encode(into: &commandEncoder)
+            case .ifne(let ifne): RESPWithToken("IFNE", ifne).encode(into: &commandEncoder)
+            case .nonexistingKey(let nonexistingKey): RESPWithToken("NX", nonexistingKey).encode(into: &commandEncoder)
+            case .existingKey(let existingKey): RESPWithToken("XX", existingKey).encode(into: &commandEncoder)
+            }
+        }
+    }
     public typealias Response = RESPToken.Array?
 
     @inlinable public static var name: String { "EXEC" }
 
-    @inlinable public init() {
+    public var conditions: [Condition]
+
+    @inlinable public init(conditions: [Condition] = []) {
+        self.conditions = conditions
     }
 
     public var keysAffected: [ValkeyKey] { [] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("EXEC")
+        commandEncoder.encodeArray("EXEC", conditions)
     }
 }
 
@@ -107,18 +178,20 @@ extension ValkeyConnection {
         _ = try await execute(DISCARD())
     }
 
-    /// Executes all commands in a transaction.
+    /// Executes all commands in a transaction if conditions match.
     ///
     /// - Documentation: [EXEC](https://valkey.io/commands/exec)
     /// - Available: 1.2.0
-    /// - Complexity: Depends on commands in the transaction
+    /// - History:
+    ///     * 9.2.0: Added the `IFEQ`, `IFNE`, `NX`, and `XX` options.
+    /// - Complexity: O(N) for N conditions, plus the complexity of commands in the transaction
     /// - Returns: One of the following
     ///     * Each element being the reply to each of the commands in the atomic transaction.
-    ///     * nil: The transaction was aborted because a `WATCH`ed key was touched
+    ///     * nil: The transaction was aborted because a `WATCH`ed key was touched or an EXEC condition did not match
     @inlinable
     @discardableResult
-    public func exec() async throws(ValkeyClientError) -> RESPToken.Array? {
-        try await execute(EXEC())
+    public func exec(conditions: [EXEC.Condition] = []) async throws(ValkeyClientError) -> RESPToken.Array? {
+        try await execute(EXEC(conditions: conditions))
     }
 
     /// Starts a transaction.

@@ -289,6 +289,15 @@ extension [CommandPatch] {
                 path: ["fields"],
                 patch: .replace(.init(name: "field", type: .string, multiple: true, token: "FIELDS", combinedWithCount: .itemCount))
             ),
+            // expire patches
+            .init("EXPIRE", path: ["condition"], patch: .replace(.expire)),
+            .init("EXPIREAT", path: ["condition"], patch: .replace(.expire)),
+            .init("HEXPIRE", path: ["condition"], patch: .replace(.expire)),
+            .init("HEXPIREAT", path: ["condition"], patch: .replace(.expire)),
+            .init("HPEXPIRE", path: ["condition"], patch: .replace(.expire)),
+            .init("HPEXPIREAT", path: ["condition"], patch: .replace(.expire)),
+            .init("PEXPIRE", path: ["condition"], patch: .replace(.expire)),
+            .init("PEXPIREAT", path: ["condition"], patch: .replace(.expire)),
         ]
     }
 
@@ -351,5 +360,22 @@ extension [CommandPatch] {
                 )
             ),
         ]
+    }
+}
+
+extension ValkeyCommand.Argument {
+    /// Replacement for a number of expiration values
+    static var expire: ValkeyCommand.Argument {
+        .init(
+            name: "condition",
+            type: .oneOf,
+            optional: true,
+            arguments: [
+                .init(name: "nx", type: .pureToken, token: "NX"),
+                .init(name: "xx", type: .pureToken, token: "XX"),
+                .init(name: "gt", type: .pureToken, token: "GT"),
+                .init(name: "lt", type: .pureToken, token: "LT"),
+            ]
+        )
     }
 }

@@ -336,6 +336,67 @@ public struct XACK<Group: RESPStringRenderable, Id: RESPStringRenderable>: Valke
     }
 }
 
+/// Acknowledge and (if possible) delete stream message(s).
+@_documentation(visibility: internal)
+public struct XACKDEL<Group: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand {
+    public enum Mode: RESPRenderable, Sendable, Hashable {
+        case keepref
+        case delref
+        case acked
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .keepref: "KEEPREF".encode(into: &commandEncoder)
+            case .delref: "DELREF".encode(into: &commandEncoder)
+            case .acked: "ACKED".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct Ids: RESPRenderable, Sendable, Hashable {
+        public var ids: [Id]
+
+        @inlinable
+        public init(ids: [Id]) {
+            self.ids = ids
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPArrayWithCount(ids.map { RESPRenderableBulkString($0) }).respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPArrayWithCount(ids.map { RESPRenderableBulkString($0) }).encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = [Int]
+
+    @inlinable public static var name: String { "XACKDEL" }
+
+    public var key: ValkeyKey
+    public var group: Group
+    public var mode: Mode?
+    public var ids: Ids
+
+    @inlinable public init(_ key: ValkeyKey, group: Group, mode: Mode? = nil, ids: Ids) {
+        self.key = key
+        self.group = group
+        self.mode = mode
+        self.ids = ids
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("XACKDEL", key, RESPRenderableBulkString(group), mode, RESPWithToken("IDS", ids))
+    }
+}
+
 /// Appends a new message to a stream. Creates the key if it doesn't exist.
 @_documentation(visibility: internal)
 public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
@@ -595,6 +656,65 @@ public struct XDEL<Id: RESPStringRenderable>: ValkeyCommand {
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("XDEL", key, ids.map { RESPRenderableBulkString($0) })
+    }
+}
+
+/// Delete stream message(s) with extended options
+@_documentation(visibility: internal)
+public struct XDELEX<Id: RESPStringRenderable>: ValkeyCommand {
+    public enum Mode: RESPRenderable, Sendable, Hashable {
+        case keepref
+        case delref
+        case acked
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .keepref: "KEEPREF".encode(into: &commandEncoder)
+            case .delref: "DELREF".encode(into: &commandEncoder)
+            case .acked: "ACKED".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct Ids: RESPRenderable, Sendable, Hashable {
+        public var ids: [Id]
+
+        @inlinable
+        public init(ids: [Id]) {
+            self.ids = ids
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPArrayWithCount(ids.map { RESPRenderableBulkString($0) }).respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPArrayWithCount(ids.map { RESPRenderableBulkString($0) }).encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = [Int]
+
+    @inlinable public static var name: String { "XDELEX" }
+
+    public var key: ValkeyKey
+    public var mode: Mode?
+    public var ids: Ids
+
+    @inlinable public init(_ key: ValkeyKey, mode: Mode? = nil, ids: Ids) {
+        self.key = key
+        self.mode = mode
+        self.ids = ids
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("XDELEX", key, mode, RESPWithToken("IDS", ids))
     }
 }
 
@@ -986,6 +1106,23 @@ extension ValkeyClientProtocol {
         try await execute(XACK(key, group: group, ids: ids))
     }
 
+    /// Acknowledge and (if possible) delete stream message(s).
+    ///
+    /// - Documentation: [XACKDEL](https://valkey.io/commands/xackdel)
+    /// - Available: 9.2.0
+    /// - Complexity: O(1) for each single item to delete in the stream, regardless of the stream size
+    /// - Returns: The command returns an integer for each stream message: -1=message not found, 1=acknowledged successfully (stream message deleted or already absent), 2=acked but not deleted.
+    @inlinable
+    @discardableResult
+    public func xackdel<Group: RESPStringRenderable, Id: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        group: Group,
+        mode: XACKDEL<Group, Id>.Mode? = nil,
+        ids: XACKDEL<Group, Id>.Ids
+    ) async throws(ValkeyClientError) -> [Int] {
+        try await execute(XACKDEL(key, group: group, mode: mode, ids: ids))
+    }
+
     /// Appends a new message to a stream. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [XADD](https://valkey.io/commands/xadd)
@@ -1086,6 +1223,22 @@ extension ValkeyClientProtocol {
     @discardableResult
     public func xdel<Id: RESPStringRenderable>(_ key: ValkeyKey, ids: [Id]) async throws(ValkeyClientError) -> Int {
         try await execute(XDEL(key, ids: ids))
+    }
+
+    /// Delete stream message(s) with extended options
+    ///
+    /// - Documentation: [XDELEX](https://valkey.io/commands/xdelex)
+    /// - Available: 9.2.0
+    /// - Complexity: O(1) for each single item to delete in the stream, regardless of the stream size
+    /// - Returns: The command returns an integer for each stream message: -1=message not found, 1=message was deleted, 2=message was not deleted due to existing references (ACKED mode).
+    @inlinable
+    @discardableResult
+    public func xdelex<Id: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        mode: XDELEX<Id>.Mode? = nil,
+        ids: XDELEX<Id>.Ids
+    ) async throws(ValkeyClientError) -> [Int] {
+        try await execute(XDELEX(key, mode: mode, ids: ids))
     }
 
     /// Creates a consumer group.
@@ -1254,6 +1407,7 @@ extension ValkeyClientProtocol {
     /// - Returns: One of the following
     ///     * Extended form, in case `start` was given.
     ///     * Summary form, in case `start` was not given.
+    ///     * Summary form when there are no pending messages.
     @inlinable
     public func xpending<Group: RESPStringRenderable>(
         _ key: ValkeyKey,

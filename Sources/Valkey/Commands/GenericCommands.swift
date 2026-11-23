@@ -43,7 +43,7 @@ public enum OBJECT {
     /// Returns the logarithmic access frequency counter of an object.
     @_documentation(visibility: internal)
     public struct FREQ: ValkeyCommand {
-        public typealias Response = Int
+        public typealias Response = Int?
 
         @inlinable public static var name: String { "OBJECT FREQ" }
 
@@ -82,7 +82,7 @@ public enum OBJECT {
     /// Returns the time since the last access to an object.
     @_documentation(visibility: internal)
     public struct IDLETIME: ValkeyCommand {
-        public typealias Response = Int
+        public typealias Response = Int?
 
         @inlinable public static var name: String { "OBJECT IDLETIME" }
 
@@ -104,7 +104,7 @@ public enum OBJECT {
     /// Returns the reference count of a value of a key.
     @_documentation(visibility: internal)
     public struct REFCOUNT: ValkeyCommand {
-        public typealias Response = Int
+        public typealias Response = Int?
 
         @inlinable public static var name: String { "OBJECT REFCOUNT" }
 
@@ -472,16 +472,18 @@ public struct MOVE: ValkeyCommand {
 
     public var key: ValkeyKey
     public var db: Int
+    public var replace: Bool
 
-    @inlinable public init(_ key: ValkeyKey, db: Int) {
+    @inlinable public init(_ key: ValkeyKey, db: Int, replace: Bool = false) {
         self.key = key
         self.db = db
+        self.replace = replace
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("MOVE", key, db)
+        commandEncoder.encodeArray("MOVE", key, db, RESPPureToken("REPLACE", replace))
     }
 }
 
@@ -699,6 +701,26 @@ public struct RENAMENX: ValkeyCommand {
 /// Creates a key from the serialized representation of a value.
 @_documentation(visibility: internal)
 public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
+    public enum Eviction: RESPRenderable, Sendable, Hashable {
+        case seconds(Int)
+        case frequency(Int)
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("IDLETIME", seconds).respEntries
+            case .frequency(let frequency): RESPWithToken("FREQ", frequency).respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("IDLETIME", seconds).encode(into: &commandEncoder)
+            case .frequency(let frequency): RESPWithToken("FREQ", frequency).encode(into: &commandEncoder)
+            }
+        }
+    }
     @inlinable public static var name: String { "RESTORE" }
 
     public var key: ValkeyKey
@@ -706,8 +728,7 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
     public var serializedValue: SerializedValue
     public var replace: Bool
     public var absttl: Bool
-    public var seconds: Int?
-    public var frequency: Int?
+    public var eviction: Eviction?
 
     @inlinable public init(
         _ key: ValkeyKey,
@@ -715,16 +736,14 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
         serializedValue: SerializedValue,
         replace: Bool = false,
         absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
+        eviction: Eviction? = nil
     ) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
         self.replace = replace
         self.absttl = absttl
-        self.seconds = seconds
-        self.frequency = frequency
+        self.eviction = eviction
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
@@ -737,8 +756,7 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
             RESPRenderableBulkString(serializedValue),
             RESPPureToken("REPLACE", replace),
             RESPPureToken("ABSTTL", absttl),
-            RESPWithToken("IDLETIME", seconds),
-            RESPWithToken("FREQ", frequency)
+            eviction
         )
     }
 }
@@ -1230,14 +1248,16 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [MOVE](https://valkey.io/commands/move)
     /// - Available: 1.0.0
+    /// - History:
+    ///     * 9.2.0: added REPLACE option.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 1: Key was moved.
-    ///     * 0: Key wasn't moved. When key already exists in the destination database, or it does not exist in the source database
+    ///     * 0: Key wasn't moved. When key already exists in the destination database without REPLACE, or it does not exist in the source database
     @inlinable
     @discardableResult
-    public func move(_ key: ValkeyKey, db: Int) async throws(ValkeyClientError) -> Int {
-        try await execute(MOVE(key, db: db))
+    public func move(_ key: ValkeyKey, db: Int, replace: Bool = false) async throws(ValkeyClientError) -> Int {
+        try await execute(MOVE(key, db: db, replace: replace))
     }
 
     /// Returns the internal encoding of an object.
@@ -1258,9 +1278,11 @@ extension ValkeyClientProtocol {
     /// - Documentation: [OBJECT FREQ](https://valkey.io/commands/object-freq)
     /// - Available: 4.0.0
     /// - Complexity: O(1)
-    /// - Returns: The counter's value.
+    /// - Returns: One of the following
+    ///     * The counter's value.
+    ///     * nil: The key does not exist.
     @inlinable
-    public func objectFreq(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
+    public func objectFreq(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int? {
         try await execute(OBJECT.FREQ(key))
     }
 
@@ -1281,9 +1303,11 @@ extension ValkeyClientProtocol {
     /// - Documentation: [OBJECT IDLETIME](https://valkey.io/commands/object-idletime)
     /// - Available: 2.2.3
     /// - Complexity: O(1)
-    /// - Returns: The idle time in seconds.
+    /// - Returns: One of the following
+    ///     * The idle time in seconds.
+    ///     * nil: The key does not exist.
     @inlinable
-    public func objectIdletime(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
+    public func objectIdletime(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int? {
         try await execute(OBJECT.IDLETIME(key))
     }
 
@@ -1292,9 +1316,11 @@ extension ValkeyClientProtocol {
     /// - Documentation: [OBJECT REFCOUNT](https://valkey.io/commands/object-refcount)
     /// - Available: 2.2.3
     /// - Complexity: O(1)
-    /// - Returns: The number of references.
+    /// - Returns: One of the following
+    ///     * The number of references.
+    ///     * nil: The key does not exist.
     @inlinable
-    public func objectRefcount(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int {
+    public func objectRefcount(_ key: ValkeyKey) async throws(ValkeyClientError) -> Int? {
         try await execute(OBJECT.REFCOUNT(key))
     }
 
@@ -1430,12 +1456,9 @@ extension ValkeyClientProtocol {
         serializedValue: SerializedValue,
         replace: Bool = false,
         absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
+        eviction: RESTORE<SerializedValue>.Eviction? = nil
     ) async throws(ValkeyClientError) {
-        _ = try await execute(
-            RESTORE(key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency)
-        )
+        _ = try await execute(RESTORE(key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, eviction: eviction))
     }
 
     /// Iterates over the key names in the database.

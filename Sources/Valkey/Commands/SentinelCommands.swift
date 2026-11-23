@@ -178,7 +178,7 @@ public enum SENTINEL {
     /// Returns the port and address of a primary instance.
     @_documentation(visibility: internal)
     public struct GETMASTERADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Array
+        public typealias Response = RESPToken.Array?
 
         @inlinable public static var name: String { "SENTINEL GET-MASTER-ADDR-BY-NAME" }
 
@@ -198,7 +198,7 @@ public enum SENTINEL {
     /// Returns the port and address of a primary instance.
     @_documentation(visibility: internal)
     public struct GETPRIMARYADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Array
+        public typealias Response = RESPToken.Array?
 
         @inlinable public static var name: String { "SENTINEL GET-PRIMARY-ADDR-BY-NAME" }
 
@@ -583,9 +583,9 @@ public enum SENTINEL {
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .crashAfterElection: "crash-after-election".encode(into: &commandEncoder)
-                case .crashAfterPromotion: "crash-after-promotion".encode(into: &commandEncoder)
-                case .help: "help".encode(into: &commandEncoder)
+                case .crashAfterElection: "CRASH-AFTER-ELECTION".encode(into: &commandEncoder)
+                case .crashAfterPromotion: "CRASH-AFTER-PROMOTION".encode(into: &commandEncoder)
+                case .help: "HELP".encode(into: &commandEncoder)
                 }
             }
         }
@@ -595,7 +595,7 @@ public enum SENTINEL {
 
         public var modes: [Mode]
 
-        @inlinable public init(modes: [Mode] = []) {
+        @inlinable public init(modes: [Mode]) {
             self.modes = modes
         }
 
@@ -701,12 +701,14 @@ extension ValkeyClientProtocol {
     /// - Available: 2.8.4
     /// - Deprecated since: 8.0.0. Replaced by `SENTINEL GET-PRIMARY-ADDR-BY-NAME`.
     /// - Complexity: O(1)
-    /// - Returns: IP addr or hostname.
+    /// - Returns: One of the following
+    ///     * The address of the primary.
+    ///     * nil: No primary with the given name is monitored.
     @inlinable
     @discardableResult
     public func sentinelGetMasterAddrByName<PrimaryName: RESPStringRenderable>(
         primaryName: PrimaryName
-    ) async throws(ValkeyClientError) -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array? {
         try await execute(SENTINEL.GETMASTERADDRBYNAME(primaryName: primaryName))
     }
 
@@ -715,12 +717,14 @@ extension ValkeyClientProtocol {
     /// - Documentation: [SENTINEL GET-PRIMARY-ADDR-BY-NAME](https://valkey.io/commands/sentinel-get-primary-addr-by-name)
     /// - Available: 8.0.0
     /// - Complexity: O(1)
-    /// - Returns: IP addr or hostname.
+    /// - Returns: One of the following
+    ///     * The address of the primary.
+    ///     * nil: No primary with the given name is monitored.
     @inlinable
     @discardableResult
     public func sentinelGetPrimaryAddrByName<PrimaryName: RESPStringRenderable>(
         primaryName: PrimaryName
-    ) async throws(ValkeyClientError) -> RESPToken.Array {
+    ) async throws(ValkeyClientError) -> RESPToken.Array? {
         try await execute(SENTINEL.GETPRIMARYADDRBYNAME(primaryName: primaryName))
     }
 
@@ -943,7 +947,7 @@ extension ValkeyClientProtocol {
     ///     * Supported simulates flags. Returned in case `HELP` was used.
     @inlinable
     @discardableResult
-    public func sentinelSimulateFailure(modes: [SENTINEL.SIMULATEFAILURE.Mode] = []) async throws(ValkeyClientError) -> RESPToken.Array? {
+    public func sentinelSimulateFailure(modes: [SENTINEL.SIMULATEFAILURE.Mode]) async throws(ValkeyClientError) -> RESPToken.Array? {
         try await execute(SENTINEL.SIMULATEFAILURE(modes: modes))
     }
 

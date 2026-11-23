@@ -79,6 +79,64 @@ public struct DECRBY: ValkeyCommand {
     }
 }
 
+/// Delete a key conditionally based on its value.
+@_documentation(visibility: internal)
+public struct DELEX<Value: RESPStringRenderable>: ValkeyCommand {
+    public enum ConditionPredicate: RESPRenderable, Sendable, Hashable {
+        case ifeq
+        case ifne
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .ifeq: "IFEQ".encode(into: &commandEncoder)
+            case .ifne: "IFNE".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct Condition: RESPRenderable, Sendable, Hashable {
+        public var predicate: ConditionPredicate
+        public var value: Value
+
+        @inlinable
+        public init(predicate: ConditionPredicate, value: Value) {
+            self.predicate = predicate
+            self.value = value
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            predicate.respEntries + RESPRenderableBulkString(value).respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            predicate.encode(into: &commandEncoder)
+            RESPRenderableBulkString(value).encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = Int
+
+    @inlinable public static var name: String { "DELEX" }
+
+    public var key: ValkeyKey
+    public var condition: Condition
+
+    @inlinable public init(_ key: ValkeyKey, condition: Condition) {
+        self.key = key
+        self.condition = condition
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("DELEX", key, condition)
+    }
+}
+
 /// Delete key if value matches string.
 @_documentation(visibility: internal)
 public struct DELIFEQ<Value: RESPStringRenderable>: ValkeyCommand {
@@ -309,30 +367,156 @@ public struct INCRBYFLOAT: ValkeyCommand {
     }
 }
 
+/// Increments the numeric value of a key with an option to expire. Uses 0 as initial value if the key doesn't exist.
+@_documentation(visibility: internal)
+public struct INCREX: ValkeyCommand {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public enum Expiration: RESPRenderable, Sendable, Hashable {
+        case ex(Int)
+        case px(Int)
+        case unixTimeSeconds(Date)
+        case unixTimeMilliseconds(Date)
+        case persist
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .ex(let ex): RESPWithToken("EX", ex).respEntries
+            case .px(let px): RESPWithToken("PX", px).respEntries
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).respEntries
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
+            case .persist: "PERSIST".respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .ex(let ex): RESPWithToken("EX", ex).encode(into: &commandEncoder)
+            case .px(let px): RESPWithToken("PX", px).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds):
+                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .persist: "PERSIST".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public enum Increment: RESPRenderable, Sendable, Hashable {
+        case integer(Int)
+        case float(Double)
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .integer(let integer): RESPWithToken("BYINT", integer).respEntries
+            case .float(let float): RESPWithToken("BYFLOAT", float).respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .integer(let integer): RESPWithToken("BYINT", integer).encode(into: &commandEncoder)
+            case .float(let float): RESPWithToken("BYFLOAT", float).encode(into: &commandEncoder)
+            }
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "INCREX" }
+
+    public var key: ValkeyKey
+    public var condition: Condition?
+    public var expiration: Expiration?
+    public var enx: Bool
+    public var increment: Increment?
+    public var lowerbound: String?
+    public var upperbound: String?
+    public var saturate: Bool
+
+    @inlinable public init(
+        _ key: ValkeyKey,
+        condition: Condition? = nil,
+        expiration: Expiration? = nil,
+        enx: Bool = false,
+        increment: Increment? = nil,
+        lowerbound: String? = nil,
+        upperbound: String? = nil,
+        saturate: Bool = false
+    ) {
+        self.key = key
+        self.condition = condition
+        self.expiration = expiration
+        self.enx = enx
+        self.increment = increment
+        self.lowerbound = lowerbound
+        self.upperbound = upperbound
+        self.saturate = saturate
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray(
+            "INCREX",
+            key,
+            condition,
+            expiration,
+            RESPPureToken("ENX", enx),
+            increment,
+            RESPWithToken("LBOUND", lowerbound),
+            RESPWithToken("UBOUND", upperbound),
+            RESPPureToken("SATURATE", saturate)
+        )
+    }
+}
+
 /// Finds the longest common substring.
 @_documentation(visibility: internal)
 public struct LCS: ValkeyCommand {
+    public enum Output: RESPRenderable, Sendable, Hashable {
+        case len
+        case idx
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .len: "LEN".encode(into: &commandEncoder)
+            case .idx: "IDX".encode(into: &commandEncoder)
+            }
+        }
+    }
     @inlinable public static var name: String { "LCS" }
 
     public var key1: ValkeyKey
     public var key2: ValkeyKey
-    public var len: Bool
-    public var idx: Bool
+    public var output: Output?
     public var minMatchLen: Int?
     public var withmatchlen: Bool
 
-    @inlinable public init(
-        key1: ValkeyKey,
-        key2: ValkeyKey,
-        len: Bool = false,
-        idx: Bool = false,
-        minMatchLen: Int? = nil,
-        withmatchlen: Bool = false
-    ) {
+    @inlinable public init(key1: ValkeyKey, key2: ValkeyKey, output: Output? = nil, minMatchLen: Int? = nil, withmatchlen: Bool = false) {
         self.key1 = key1
         self.key2 = key2
-        self.len = len
-        self.idx = idx
+        self.output = output
         self.minMatchLen = minMatchLen
         self.withmatchlen = withmatchlen
     }
@@ -342,15 +526,7 @@ public struct LCS: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray(
-            "LCS",
-            key1,
-            key2,
-            RESPPureToken("LEN", len),
-            RESPPureToken("IDX", idx),
-            RESPWithToken("MINMATCHLEN", minMatchLen),
-            RESPPureToken("WITHMATCHLEN", withmatchlen)
-        )
+        commandEncoder.encodeArray("LCS", key1, key2, output, RESPWithToken("MINMATCHLEN", minMatchLen), RESPPureToken("WITHMATCHLEN", withmatchlen))
     }
 }
 
@@ -577,6 +753,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
         case nx
         case xx
         case comparisonValue(String)
+        case comparisonNotEqual(String)
 
         @inlinable
         public var respEntries: Int {
@@ -584,6 +761,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             case .nx: "NX".respEntries
             case .xx: "XX".respEntries
             case .comparisonValue(let comparisonValue): RESPWithToken("IFEQ", comparisonValue).respEntries
+            case .comparisonNotEqual(let comparisonNotEqual): RESPWithToken("IFNE", comparisonNotEqual).respEntries
             }
         }
 
@@ -593,6 +771,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
             case .comparisonValue(let comparisonValue): RESPWithToken("IFEQ", comparisonValue).encode(into: &commandEncoder)
+            case .comparisonNotEqual(let comparisonNotEqual): RESPWithToken("IFNE", comparisonNotEqual).encode(into: &commandEncoder)
             }
         }
     }
@@ -807,6 +986,20 @@ extension ValkeyClientProtocol {
         try await execute(DECRBY(key, decrement: decrement))
     }
 
+    /// Delete a key conditionally based on its value.
+    ///
+    /// - Documentation: [DELEX](https://valkey.io/commands/delex)
+    /// - Available: 9.2.0
+    /// - Complexity: O(1)
+    /// - Returns: One of the following
+    ///     * 0: The key was not deleted.
+    ///     * 1: The key was deleted.
+    @inlinable
+    @discardableResult
+    public func delex<Value: RESPStringRenderable>(_ key: ValkeyKey, condition: DELEX<Value>.Condition) async throws(ValkeyClientError) -> Int {
+        try await execute(DELEX(key, condition: condition))
+    }
+
     /// Delete key if value matches string.
     ///
     /// - Documentation: [DELIFEQ](https://valkey.io/commands/delifeq)
@@ -923,6 +1116,38 @@ extension ValkeyClientProtocol {
         try await execute(INCRBYFLOAT(key, increment: increment))
     }
 
+    /// Increments the numeric value of a key with an option to expire. Uses 0 as initial value if the key doesn't exist.
+    ///
+    /// - Documentation: [INCREX](https://valkey.io/commands/increx)
+    /// - Available: 9.2.0
+    /// - Complexity: O(1)
+    /// - Returns: Value after the increment; the current value if the increment was not applied.
+    @inlinable
+    @discardableResult
+    public func increx(
+        _ key: ValkeyKey,
+        condition: INCREX.Condition? = nil,
+        expiration: INCREX.Expiration? = nil,
+        enx: Bool = false,
+        increment: INCREX.Increment? = nil,
+        lowerbound: String? = nil,
+        upperbound: String? = nil,
+        saturate: Bool = false
+    ) async throws(ValkeyClientError) -> RESPToken.Array {
+        try await execute(
+            INCREX(
+                key,
+                condition: condition,
+                expiration: expiration,
+                enx: enx,
+                increment: increment,
+                lowerbound: lowerbound,
+                upperbound: upperbound,
+                saturate: saturate
+            )
+        )
+    }
+
     /// Finds the longest common substring.
     ///
     /// - Documentation: [LCS](https://valkey.io/commands/lcs)
@@ -936,12 +1161,11 @@ extension ValkeyClientProtocol {
     public func lcs(
         key1: ValkeyKey,
         key2: ValkeyKey,
-        len: Bool = false,
-        idx: Bool = false,
+        output: LCS.Output? = nil,
         minMatchLen: Int? = nil,
         withmatchlen: Bool = false
     ) async throws(ValkeyClientError) -> LCS.Response {
-        try await execute(LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
+        try await execute(LCS(key1: key1, key2: key2, output: output, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
     }
 
     /// Atomically returns the string values of one or more keys.
@@ -1017,6 +1241,7 @@ extension ValkeyClientProtocol {
     ///     * 6.2.0: Added the `GET`, `EXAT` and `PXAT` option.
     ///     * 7.0.0: Allowed the `NX` and `GET` options to be used together.
     ///     * 8.1.0: Added the `IFEQ` option.
+    ///     * 9.2.0: Added the `IFNE` option.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * nil: `GET` not given: Operation was aborted (conflict with one of the `XX`/`NX` options).

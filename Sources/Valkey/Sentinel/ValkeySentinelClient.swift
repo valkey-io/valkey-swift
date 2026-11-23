@@ -85,7 +85,9 @@ package final class ValkeySentinelClient: Sendable {
                         SENTINEL.GETPRIMARYADDRBYNAME(primaryName: self.primaryName),
                         SENTINEL.REPLICAS(primaryName: self.primaryName)
                     )
-                    let (primaryHost, primaryPort) = try primaryResult.get().decodeElements(as: (String, Int).self)
+                    guard let (primaryHost, primaryPort) = try primaryResult.get()?.decodeElements(as: (String, Int).self) else {
+                        throw ValkeySentinelError.sentinelUnknownPrimary
+                    }
                     let replicas = try replicaResults.get()
                         .decode(as: [SentinelInstance].self)
                         .compactMap {
