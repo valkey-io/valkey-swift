@@ -64,7 +64,9 @@ public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
 /// Sets the expiration time of one or more hash fields in seconds.
 @_documentation(visibility: internal)
 public struct HEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
-    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
         case gt
         case lt
 
@@ -74,49 +76,10 @@ public struct HEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
-        public var xx: Bool
-        public var comparison: ConditionXxComparisonComparison?
-
-        @inlinable
-        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
-            self.xx = xx
-            self.comparison = comparison
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            RESPPureToken("XX", xx).respEntries + comparison.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPPureToken("XX", xx).encode(into: &commandEncoder)
-            comparison.encode(into: &commandEncoder)
-        }
-    }
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xxComparison(ConditionXxComparison)
-
-        @inlinable
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xxComparison(let xxComparison): xxComparison.respEntries
-            }
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
@@ -152,7 +115,9 @@ public struct HEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
 /// Sets the expiration time of one or more hash fields to a Unix timestamp.
 @_documentation(visibility: internal)
 public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
-    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
         case gt
         case lt
 
@@ -162,49 +127,10 @@ public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
-        public var xx: Bool
-        public var comparison: ConditionXxComparisonComparison?
-
-        @inlinable
-        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
-            self.xx = xx
-            self.comparison = comparison
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            RESPPureToken("XX", xx).respEntries + comparison.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPPureToken("XX", xx).encode(into: &commandEncoder)
-            comparison.encode(into: &commandEncoder)
-        }
-    }
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xxComparison(ConditionXxComparison)
-
-        @inlinable
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xxComparison(let xxComparison): xxComparison.respEntries
-            }
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
@@ -567,7 +493,9 @@ public struct HPERSIST<Field: RESPStringRenderable>: ValkeyCommand {
 /// Sets the expiration time of one or more hash fields in milliseconds.
 @_documentation(visibility: internal)
 public struct HPEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
-    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
         case gt
         case lt
 
@@ -577,49 +505,10 @@ public struct HPEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
-        public var xx: Bool
-        public var comparison: ConditionXxComparisonComparison?
-
-        @inlinable
-        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
-            self.xx = xx
-            self.comparison = comparison
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            RESPPureToken("XX", xx).respEntries + comparison.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPPureToken("XX", xx).encode(into: &commandEncoder)
-            comparison.encode(into: &commandEncoder)
-        }
-    }
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xxComparison(ConditionXxComparison)
-
-        @inlinable
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xxComparison(let xxComparison): xxComparison.respEntries
-            }
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
@@ -655,7 +544,9 @@ public struct HPEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
 /// Sets the expiration time of one or more hash fields to a Unix timestamp in milliseconds.
 @_documentation(visibility: internal)
 public struct HPEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
-    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
         case gt
         case lt
 
@@ -665,49 +556,10 @@ public struct HPEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
-        public var xx: Bool
-        public var comparison: ConditionXxComparisonComparison?
-
-        @inlinable
-        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
-            self.xx = xx
-            self.comparison = comparison
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            RESPPureToken("XX", xx).respEntries + comparison.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPPureToken("XX", xx).encode(into: &commandEncoder)
-            comparison.encode(into: &commandEncoder)
-        }
-    }
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xxComparison(ConditionXxComparison)
-
-        @inlinable
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xxComparison(let xxComparison): xxComparison.respEntries
-            }
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }

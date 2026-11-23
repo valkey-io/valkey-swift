@@ -218,7 +218,9 @@ public struct EXISTS: ValkeyCommand {
 /// Sets the expiration time of a key in seconds.
 @_documentation(visibility: internal)
 public struct EXPIRE: ValkeyCommand {
-    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
         case gt
         case lt
 
@@ -228,49 +230,10 @@ public struct EXPIRE: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
-        public var xx: Bool
-        public var comparison: ConditionXxComparisonComparison?
-
-        @inlinable
-        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
-            self.xx = xx
-            self.comparison = comparison
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            RESPPureToken("XX", xx).respEntries + comparison.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPPureToken("XX", xx).encode(into: &commandEncoder)
-            comparison.encode(into: &commandEncoder)
-        }
-    }
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xxComparison(ConditionXxComparison)
-
-        @inlinable
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xxComparison(let xxComparison): xxComparison.respEntries
-            }
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
@@ -298,7 +261,9 @@ public struct EXPIRE: ValkeyCommand {
 /// Sets the expiration time of a key to a Unix timestamp.
 @_documentation(visibility: internal)
 public struct EXPIREAT: ValkeyCommand {
-    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
         case gt
         case lt
 
@@ -308,49 +273,10 @@ public struct EXPIREAT: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
-        public var xx: Bool
-        public var comparison: ConditionXxComparisonComparison?
-
-        @inlinable
-        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
-            self.xx = xx
-            self.comparison = comparison
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            RESPPureToken("XX", xx).respEntries + comparison.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPPureToken("XX", xx).encode(into: &commandEncoder)
-            comparison.encode(into: &commandEncoder)
-        }
-    }
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xxComparison(ConditionXxComparison)
-
-        @inlinable
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xxComparison(let xxComparison): xxComparison.respEntries
-            }
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
@@ -584,7 +510,9 @@ public struct PERSIST: ValkeyCommand {
 /// Sets the expiration time of a key in milliseconds.
 @_documentation(visibility: internal)
 public struct PEXPIRE: ValkeyCommand {
-    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
         case gt
         case lt
 
@@ -594,49 +522,10 @@ public struct PEXPIRE: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
-        public var xx: Bool
-        public var comparison: ConditionXxComparisonComparison?
-
-        @inlinable
-        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
-            self.xx = xx
-            self.comparison = comparison
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            RESPPureToken("XX", xx).respEntries + comparison.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPPureToken("XX", xx).encode(into: &commandEncoder)
-            comparison.encode(into: &commandEncoder)
-        }
-    }
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xxComparison(ConditionXxComparison)
-
-        @inlinable
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xxComparison(let xxComparison): xxComparison.respEntries
-            }
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
@@ -664,7 +553,9 @@ public struct PEXPIRE: ValkeyCommand {
 /// Sets the expiration time of a key to a Unix milliseconds timestamp.
 @_documentation(visibility: internal)
 public struct PEXPIREAT: ValkeyCommand {
-    public enum ConditionXxComparisonComparison: RESPRenderable, Sendable, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
         case gt
         case lt
 
@@ -674,49 +565,10 @@ public struct PEXPIREAT: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public struct ConditionXxComparison: RESPRenderable, Sendable, Hashable {
-        public var xx: Bool
-        public var comparison: ConditionXxComparisonComparison?
-
-        @inlinable
-        public init(xx: Bool = false, comparison: ConditionXxComparisonComparison? = nil) {
-            self.xx = xx
-            self.comparison = comparison
-        }
-
-        @inlinable
-        public var respEntries: Int {
-            RESPPureToken("XX", xx).respEntries + comparison.respEntries
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPPureToken("XX", xx).encode(into: &commandEncoder)
-            comparison.encode(into: &commandEncoder)
-        }
-    }
-    public enum Condition: RESPRenderable, Sendable, Hashable {
-        case nx
-        case xxComparison(ConditionXxComparison)
-
-        @inlinable
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xxComparison(let xxComparison): xxComparison.respEntries
-            }
-        }
-
-        @inlinable
-        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            switch self {
-            case .nx: "NX".encode(into: &commandEncoder)
-            case .xxComparison(let xxComparison): xxComparison.encode(into: &commandEncoder)
             }
         }
     }
