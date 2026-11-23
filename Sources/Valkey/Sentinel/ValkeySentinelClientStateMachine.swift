@@ -138,7 +138,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
 
         case .healthy(let state):
             if state.nodes.topologyHashValue != nodes.topologyHashValue {
-                let chosenNode = state.nodes.nodes.first(where: { $0 == state.chosenNode })
+                let chosenNode = nodes.nodes.first(where: { $0 == state.chosenNode })
                 self.state = .healthy(.init(nodes: nodes, chosenNode: chosenNode))
                 let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: true)
                 return .init(
