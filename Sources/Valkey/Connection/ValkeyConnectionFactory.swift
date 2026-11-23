@@ -128,6 +128,7 @@ package final class ValkeyConnectionFactory: Sendable {
                 // verify primary is a primary
                 let role = try await connection.role()
                 guard case .primary = role else {
+                    connection.close()
                     throw ValkeySentinelError.sentinelNotAPrimary
                 }
                 let newHashValue = nodes.hashValue
