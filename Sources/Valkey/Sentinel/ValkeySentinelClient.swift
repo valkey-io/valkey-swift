@@ -140,6 +140,9 @@ package final class ValkeySentinelClient: Sendable {
     package func getSentinelClients() async throws -> [ValkeyNodeClient] {
         let id = self.nextRequestID()
         try await withTaskCancellationHandler {
+            if Task.isCancelled {
+                throw ValkeyClientError(.cancelled)
+            }
             try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
                 switch self.stateMachine.withLock({ $0.waitForDiscovery(waiterID: id, successNotification: cont) }) {
                 case .complete:
