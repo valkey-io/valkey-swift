@@ -731,14 +731,12 @@ private func getGenericParameterArguments(_ arguments: [ValkeyCommand.Argument]?
 /// construct the generic parameters for a command type
 private func genericTypeParameters(_ arguments: [ValkeyCommand.Argument]?) -> String {
     let stringArguments = getGenericParameterArguments(arguments)
-    //let stringArguments = arguments?.filter { $0.type == .string && !$0.optional } ?? []
     guard stringArguments.count > 0 else { return "" }
     return "<\(stringArguments.map { "\($0.name.swiftTypename): RESPStringRenderable"}.joined(separator: ", "))>"
 }
 /// construct the generic parameters for a command type
 private func genericParameters(_ arguments: [ValkeyCommand.Argument]?) -> String {
     let stringArguments = getGenericParameterArguments(arguments)
-    //    let stringArguments = arguments?.filter { $0.type == .string && !$0.optional } ?? []
     guard stringArguments.count > 0 else { return "" }
     return "<\(stringArguments.map { $0.name.swiftTypename }.joined(separator: ", "))>"
 }

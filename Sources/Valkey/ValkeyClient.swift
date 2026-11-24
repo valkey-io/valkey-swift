@@ -43,6 +43,12 @@ public final class ValkeyClient: Sendable {
     /// running atomic
     let runningAtomic: Atomic<Bool>
 
+    #if MetricsSupport
+    /// Metric handles created from the configured factory, or `nil` when metrics are disabled
+    @usableFromInline
+    let valkeyMetrics: ValkeyMetrics?
+    #endif
+
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
         case runTimer(ValkeyTimer)
@@ -186,6 +192,12 @@ public final class ValkeyClient: Sendable {
         )
         self.logger = logger
         self.runningAtomic = .init(false)
+        #if MetricsSupport
+        self.valkeyMetrics = ValkeyMetrics(
+            configuration: connectionFactory.configuration.metrics,
+            databaseNumber: connectionFactory.configuration.databaseNumber
+        )
+        #endif
         self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: connectionFactory.configuration))
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.setPrimary(address)
@@ -219,6 +231,8 @@ extension ValkeyClient {
     }
 
     /// Get connection from connection pool and run operation using connection
+    ///
+    /// Commands run via the supplied `withConnection` do not emit metrics
     ///
     /// - Parameters:
     ///   - readOnly: Are operations in closure are read only
@@ -437,6 +451,11 @@ extension ValkeyClient: ValkeyClientProtocol {
     /// - Returns: Response from Valkey command
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws(ValkeyClientError) -> Command.Response {
+        #if MetricsSupport
+        let metricsStart = self.valkeyMetrics?.startTiming()
+        var metricsError: ValkeyClientError?
+        defer { self.valkeyMetrics?.record(Command.name, start: metricsStart, error: metricsError) }
+        #endif
         var attempt = 0
         repeat {
             do {
@@ -447,6 +466,9 @@ extension ValkeyClient: ValkeyClientProtocol {
                 switch self.getRetryAction(from: error) {
                 case .redirect(let redirectError):
                     guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                        #if MetricsSupport
+                        metricsError = error
+                        #endif
                         throw error
                     }
                     try? await Task.sleep(for: wait)
@@ -454,18 +476,30 @@ extension ValkeyClient: ValkeyClientProtocol {
                     self.setPrimary(redirectError.address)
                 case .tryAgain:
                     guard let wait = self.configuration.retryParameters.calculateWaitTime(attempt: attempt) else {
+                        #if MetricsSupport
+                        metricsError = error
+                        #endif
                         throw error
                     }
                     try? await Task.sleep(for: wait)
                     attempt += 1
 
                 case .dontRetry:
+                    #if MetricsSupport
+                    metricsError = error
+                    #endif
                     throw error
                 }
             } catch {
+                #if MetricsSupport
+                metricsError = ValkeyClientError(.unrecognisedError, error: error)
+                #endif
                 throw ValkeyClientError(.unrecognisedError, error: error)
             }
         } while !Task.isCancelled
+        #if MetricsSupport
+        metricsError = ValkeyClientError(.cancelled)
+        #endif
         throw ValkeyClientError(.cancelled)
     }
 }

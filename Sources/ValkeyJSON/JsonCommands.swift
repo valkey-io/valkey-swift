@@ -176,7 +176,7 @@ public enum JSON {
         }
     }
 
-    /// Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP
+    /// Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP. KEYTABLE-CORRUPT, KEYTABLE-CLEAR, and KEYTABLE-DISTRIBUTION subcommands require 'json.debug-mode' to be enabled at module load time.
     @_documentation(visibility: internal)
     public struct DEBUG<SubcommandArguments: RESPStringRenderable>: ValkeyCommand {
         @inlinable public static var name: String { "JSON.DEBUG" }
@@ -253,7 +253,29 @@ public enum JSON {
         }
     }
 
-    /// Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.
+    /// Merge JSON values at the specified path. Creates a new key if it does not exist, or merges new values with existing values if the key already exists.
+    @_documentation(visibility: internal)
+    public struct MERGE<Path: RESPStringRenderable, Json: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.MERGE" }
+
+        public var key: ValkeyKey
+        public var path: Path
+        public var json: Json
+
+        @inlinable public init(_ key: ValkeyKey, path: Path, json: Json) {
+            self.key = key
+            self.path = path
+            self.json = json
+        }
+
+        public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("JSON.MERGE", key, RESPRenderableBulkString(path), RESPRenderableBulkString(json))
+        }
+    }
+
+    /// Get serialized JSONs at the path from multiple document keys. Return null for nonexistent key or JSON path.
     @_documentation(visibility: internal)
     public struct MGET<Path: RESPStringRenderable>: ValkeyCommand {
         @inlinable public static var name: String { "JSON.MGET" }
@@ -619,7 +641,7 @@ extension ValkeyClientProtocol {
         try await execute(JSON.CLEAR(key, path: path))
     }
 
-    /// Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP
+    /// Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP. KEYTABLE-CORRUPT, KEYTABLE-CLEAR, and KEYTABLE-DISTRIBUTION subcommands require 'json.debug-mode' to be enabled at module load time.
     ///
     /// - Documentation: [JSON.DEBUG](https://valkey.io/commands/json.debug)
     /// - Complexity: O(1)
@@ -665,7 +687,21 @@ extension ValkeyClientProtocol {
         try await execute(JSON.GET(key, indentNewlineSpace: indentNewlineSpace, noescape: noescape, paths: paths))
     }
 
-    /// Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.
+    /// Merge JSON values at the specified path. Creates a new key if it does not exist, or merges new values with existing values if the key already exists.
+    ///
+    /// - Documentation: [JSON.MERGE](https://valkey.io/commands/json.merge)
+    /// - Complexity: O(M+N) when path evaluates to a single value, where M is the size of the original value and N is the size of the new value. O(P*(M_avg+N)) when path evaluates to multiple values, where P is the number of matched paths, M_avg is the average size of original values, and N is the size of the new value.
+    @inlinable
+    @discardableResult
+    public func jsonMerge<Path: RESPStringRenderable, Json: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        path: Path,
+        json: Json
+    ) async throws(ValkeyClientError) -> RESPToken {
+        try await execute(JSON.MERGE(key, path: path, json: json))
+    }
+
+    /// Get serialized JSONs at the path from multiple document keys. Return null for nonexistent key or JSON path.
     ///
     /// - Documentation: [JSON.MGET](https://valkey.io/commands/json.mget)
     /// - Complexity: O(N) where N is the number of keys

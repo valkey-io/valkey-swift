@@ -3841,7 +3841,8 @@
     "command_flags": [
       "WRITE",
       "NO_ASYNC_LOADING",
-      "ADMIN"
+      "ADMIN",
+      "ALL_DBS"
     ],
     "acl_categories": [
       "ADMIN",
@@ -8519,7 +8520,8 @@
       {
         "flags": [
           "OW",
-          "UPDATE"
+          "UPDATE",
+          "VARIABLE_FLAGS"
         ],
         "begin_search": {
           "keyword": {
@@ -8538,7 +8540,8 @@
       {
         "flags": [
           "OW",
-          "UPDATE"
+          "UPDATE",
+          "VARIABLE_FLAGS"
         ],
         "begin_search": {
           "keyword": {
@@ -8979,7 +8982,8 @@
       {
         "flags": [
           "OW",
-          "UPDATE"
+          "UPDATE",
+          "VARIABLE_FLAGS"
         ],
         "begin_search": {
           "keyword": {
@@ -8998,7 +9002,8 @@
       {
         "flags": [
           "OW",
-          "UPDATE"
+          "UPDATE",
+          "VARIABLE_FLAGS"
         ],
         "begin_search": {
           "keyword": {
@@ -10898,7 +10903,8 @@
       {
         "flags": [
           "RW",
-          "ACCESS"
+          "ACCESS",
+          "UPDATE"
         ],
         "begin_search": {
           "index": {

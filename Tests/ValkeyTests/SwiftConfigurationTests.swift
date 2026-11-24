@@ -267,6 +267,30 @@ struct SwiftConfigurationTests {
         #expect(config.commandTimeout == .milliseconds(60000))
         #expect(config.blockingCommandTimeout == .milliseconds(300000))
     }
+
+    #if MetricsSupport
+    /// External configuration can only switch metrics on, in which case they are emitted through the
+    /// factory bootstrapped into `MetricsSystem`.
+    @Test
+    @available(valkeySwift 1.0, *)
+    func metricsConfiguration() throws {
+        // Metrics are opt-in: a default configuration emits nothing.
+        #expect(ValkeyClientConfiguration().metrics.factory == nil)
+
+        let enabled = try ValkeyClientConfiguration(
+            configReader: ConfigReader(provider: InMemoryProvider(values: ["metrics.enabled": true]))
+        )
+        #expect(enabled.metrics.factory != nil)
+
+        let explicitlyDisabled = try ValkeyClientConfiguration(
+            configReader: ConfigReader(provider: InMemoryProvider(values: ["metrics.enabled": false]))
+        )
+        #expect(explicitlyDisabled.metrics.factory == nil)
+
+        let unset = try ValkeyClientConfiguration(configReader: ConfigReader(provider: InMemoryProvider(values: [:])))
+        #expect(unset.metrics.factory == nil)
+    }
+    #endif
 }
 
 #endif
