@@ -225,13 +225,14 @@ struct SentinelIntegrationTests {
                 let sentinelClient = ValkeyClient(.hostname(sentinelHostname!, port: sentinelPort!), logger: logger)
                 async let _ = sentinelClient.run()
                 let count = Atomic(0)
+                let waiterContinuation = waiter.continuation
                 for i in 0..<1000 {
                     group.addTask {
                         let key = ValkeyKey("key\(i)")
                         try await client.set(key, value: "\(i)")
                         // after having processed 100 task trigger a failover
                         if count.add(1, ordering: .relaxed).newValue == 100 {
-                            waiter.continuation.yield()
+                            waiterContinuation.yield()
                         }
                         let value = try await client.get(key).map { String($0) }
                         try await client.del(keys: [key])
