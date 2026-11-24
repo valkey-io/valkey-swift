@@ -24,7 +24,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     enum State {
         @usableFromInline
         struct UnavailableState {
-            var waiters: [WaiterToken]
+            var waiters: [Int: WaiterToken]
             let error: ValkeyClientError?
         }
         @usableFromInline
@@ -46,7 +46,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     var runningClients: ValkeyRunningClientsStateMachine<ConnectionPool, ConnectionPoolFactory>
 
     init(poolFactory: ConnectionPoolFactory, configuration: Configuration) {
-        self.state = .unavailable(.init(waiters: [], error: nil))
+        self.state = .unavailable(.init(waiters: [:], error: nil))
         self.runningClients = .init(poolFactory: poolFactory)
     }
 
@@ -110,7 +110,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             self.state = .healthy(.init(nodes: nodes))
             let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: true)
             return .init(
-                waitersToSucceed: unavailableState.waiters,
+                waitersToSucceed: .init(unavailableState.waiters.values),
                 clientsToRun: action.poolsToRun.map { $0.0 },
                 clientsToShutdown: action.poolsToShutdown
             )
@@ -148,7 +148,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             if unavailableState.error == nil {
                 self.state = .unavailable(.init(waiters: unavailableState.waiters, error: error))
             }
-            return .init(waitersToFail: unavailableState.waiters)
+            return .init(waitersToFail: .init(unavailableState.waiters.values))
         case .degraded:
             return .init(waitersToFail: [])
 
@@ -166,10 +166,10 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         case fail(ValkeyClientError)
         case doNothing
     }
-    mutating func waitForDiscovery(_ waiter: WaiterToken) -> WaitForDiscoveryAction {
+    mutating func waitForDiscovery(waiterID: Int, successNotification: WaiterToken) -> WaitForDiscoveryAction {
         switch self.state {
         case .unavailable(var unavailableState):
-            unavailableState.waiters.append(waiter)
+            unavailableState.waiters[waiterID] = successNotification
             self.state = .unavailable(unavailableState)
             if let error = unavailableState.error {
                 return .fail(error)
@@ -182,6 +182,21 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             return .complete
         case .shutdown:
             return .fail(.init(.clientIsShutDown))
+        }
+    }
+
+    mutating func cancelWaitForDiscovery(waiterID: Int) -> WaiterToken? {
+        switch self.state {
+        case .unavailable(var unavailableState):
+            let token = unavailableState.waiters.removeValue(forKey: waiterID)
+            self.state = .unavailable(unavailableState)
+            return token
+        case .degraded:
+            return nil
+        case .healthy:
+            return nil
+        case .shutdown:
+            return nil
         }
     }
 }
