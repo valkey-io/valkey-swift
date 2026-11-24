@@ -528,6 +528,7 @@ struct ValkeySentinelTests {
             let nodes = try await client.getNodes()
             #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
             #expect(nodes.replicas == [.hostname("127.0.0.1", port: 9002)])
+            try await Task.sleep(for: .seconds(12))
         }
     }
 
