@@ -17,7 +17,7 @@ import Valkey
 @Suite(
     "Sentinel Integration Tests",
     .serialized,
-    //.disabled(if: sentinelHostname == nil || sentinelPort == nil, "VALKEY_SENTINEL_HOSTNAME or VALKEY_SENTINEL_PORT environment variable is not set.")
+    .disabled(if: sentinelHostname == nil || sentinelPort == nil, "VALKEY_SENTINEL_HOSTNAME or VALKEY_SENTINEL_PORT environment variable is not set.")
 )
 struct SentinelIntegrationTests {
     @available(valkeySwift 1.0, *)
