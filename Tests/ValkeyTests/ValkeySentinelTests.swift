@@ -743,6 +743,7 @@ struct ValkeySentinelTests {
 }
 
 // TODO: Need this class for compilation on 6.3 and earlier, remove when we no longer support 6.3
+@available(valkeySwift 1.0, *)
 private final class SentinelTestCounter: Sendable {
     let value: Atomic<Int>
 
