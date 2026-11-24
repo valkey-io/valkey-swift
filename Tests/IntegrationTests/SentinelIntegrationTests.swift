@@ -5,17 +5,19 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+
 import Foundation
 import Logging
 import Synchronization
 import Testing
+import Valkey
 
 @testable import Valkey
 
 @Suite(
     "Sentinel Integration Tests",
     .serialized,
-    .disabled(if: sentinelHostname == nil || sentinelPort == nil, "VALKEY_SENTINEL_HOSTNAME or VALKEY_SENTINEL_PORT environment variable is not set.")
+    //.disabled(if: sentinelHostname == nil || sentinelPort == nil, "VALKEY_SENTINEL_HOSTNAME or VALKEY_SENTINEL_PORT environment variable is not set.")
 )
 struct SentinelIntegrationTests {
     @available(valkeySwift 1.0, *)
@@ -220,18 +222,18 @@ struct SentinelIntegrationTests {
             return logger
         }()
         try await self.withValkeyClient(primaryName: "testprimary", logger: logger) { client in
-            let waiter = AsyncStream.makeStream(of: Void.self)
             try await withThrowingTaskGroup(of: Void.self) { group in
+                let waiter = AsyncStream.makeStream(of: Void.self)
                 let sentinelClient = ValkeyClient(.hostname(sentinelHostname!, port: sentinelPort!), logger: logger)
                 async let _ = sentinelClient.run()
-                let count = Atomic(0)
+                let count = SentinelTestCounter(0)
                 let waiterContinuation = waiter.continuation
                 for i in 0..<1000 {
                     group.addTask {
                         let key = ValkeyKey("key\(i)")
                         try await client.set(key, value: "\(i)")
                         // after having processed 100 task trigger a failover
-                        if count.add(1, ordering: .relaxed).newValue == 100 {
+                        if count.value.add(1, ordering: .relaxed).newValue == 100 {
                             waiterContinuation.yield()
                         }
                         let value = try await client.get(key).map { String($0) }
@@ -244,6 +246,15 @@ struct SentinelIntegrationTests {
                 try await group.waitForAll()
             }
         }
+    }
+}
+
+// TODO: Need this class for compilation on 6.3 and earlier, remove when we no longer support 6.3
+private final class SentinelTestCounter: Sendable {
+    let value: Atomic<Int>
+
+    init(_ value: Int) {
+        self.value = .init(value)
     }
 }
 

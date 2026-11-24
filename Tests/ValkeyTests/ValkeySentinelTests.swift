@@ -720,7 +720,7 @@ struct ValkeySentinelTests {
         ) { client in
             let waiter = AsyncStream.makeStream(of: Void.self)
             try await withThrowingTaskGroup(of: Void.self) { group in
-                let count = Atomic(0)
+                let count = SentinelTestCounter(0)
                 for i in 0..<500 {
                     group.addTask {
                         let key = ValkeyKey("key\(i)")
@@ -728,7 +728,7 @@ struct ValkeySentinelTests {
                         let value = try await client.get(key).map { String($0) }
                         #expect(value == "\(i)")
                         // after having processed 100 task trigger a failover
-                        if count.add(1, ordering: .relaxed).newValue == 100 {
+                        if count.value.add(1, ordering: .relaxed).newValue == 100 {
                             waiter.continuation.yield()
                         }
                     }
@@ -739,5 +739,14 @@ struct ValkeySentinelTests {
                 try await group.waitForAll()
             }
         }
+    }
+}
+
+// TODO: Need this class for compilation on 6.3 and earlier, remove when we no longer support 6.3
+private final class SentinelTestCounter: Sendable {
+    let value: Atomic<Int>
+
+    init(_ value: Int) {
+        self.value = .init(value)
     }
 }
