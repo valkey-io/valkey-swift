@@ -18,9 +18,6 @@ services:
       - valkey_primary
       - valkey_replica_1
       - valkey_replica_2
-      - valkey_sentinel_1
-      - valkey_sentinel_2
-      - valkey_sentinel_3
     cap_add:
       - SYS_PTRACE
     security_opt:
@@ -64,24 +61,3 @@ services:
     depends_on:
       - valkey
     command: valkey-server --port 9002 --replicaof 127.0.0.1 9000
-
-  valkey_sentinel_1:
-    image: 'valkey/valkey:latest'
-    network_mode: "host"
-    volumes:
-      - ../valkey:/valkey
-    command: valkey-sentinel /valkey/sentinel/sentinel1.conf --port 10000
-
-  valkey_sentinel_2:
-    image: 'valkey/valkey:latest'
-    network_mode: "host"
-    volumes:
-      - ../valkey:/valkey
-    command: valkey-sentinel /valkey/sentinel/sentinel2.conf --port 10001
-
-  valkey_sentinel_3:
-    image: 'valkey/valkey:latest'
-    network_mode: "host"
-    volumes:
-      - ../valkey:/valkey
-    command: valkey-sentinel /valkey/sentinel/sentinel3.conf --port 10002
