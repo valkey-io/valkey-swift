@@ -15,7 +15,7 @@ import Synchronization
 package final class ValkeySentinelClient: Sendable {
     @usableFromInline
     typealias StateMachine = ValkeySentinelClientStateMachine<
-        ValkeyNodeClient, ValkeyClusterNodeClientFactory, CheckedContinuation<Void, any Error>, AsyncStream<Void>.Continuation
+        ValkeyNodeClient, ValkeyClusterNodeClientFactory, ContinuousClock, CheckedContinuation<Void, any Error>, AsyncStream<Void>.Continuation
     >
 
     let primaryName: String
@@ -56,7 +56,16 @@ package final class ValkeySentinelClient: Sendable {
             ),
             eventLoopGroup: eventLoopGroup
         )
-        self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: .init()))
+        self.stateMachine = .init(
+            .init(
+                poolFactory: self.nodeClientFactory,
+                configuration: .init(
+                    defaultSentinelRefreshInterval: configuration.defaultSentinelRefreshInterval,
+                    circuitBreakerTripAfter: configuration.circuitBreakerTripAfter
+                ),
+                clock: self.clock
+            )
+        )
         self.primaryName = primaryName
         self.logger = logger
         self.nodeDiscovery = nodeDiscovery

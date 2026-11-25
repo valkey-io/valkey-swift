@@ -15,6 +15,7 @@ struct ValkeySentinelStateMachineTests {
     typealias TestStateMachine = ValkeySentinelClientStateMachine<
         MockClient<ValkeyNodeDescription>,
         MockClientFactory<ValkeyNodeDescription>,
+        MockClock,
         SuccessNotifier,
         TimerCancellationToken
     >
@@ -23,13 +24,42 @@ struct ValkeySentinelStateMachineTests {
         .init()
     }
 
+    func setupStateMachine() throws -> (stateMachine: TestStateMachine, clock: MockClock, timer: ValkeySentinelTimer) {
+        let factory = MockClientFactory<ValkeyNodeDescription>()
+        let clock = MockClock()
+        var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(), clock: clock)
+        let initialNodes = (9000..<9002).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
+        let additionalNodes = (9002..<9004).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
+
+        stateMachine.start()
+
+        let updateAction = stateMachine.updateSentinelNodes(.init(initialNodes))
+        #expect(Set(updateAction.clientsToRun.map { $0.nodeDescription.id }) == Set(initialNodes.map { $0.id }))
+        #expect(updateAction.clientsToShutdown.isEmpty)
+        #expect(Set(updateAction.voters.map { $0.nodeID }) == Set(initialNodes.map { $0.id }))
+
+        let succeededAction = stateMachine.topologyDiscoverySucceeded(.init(initialNodes + additionalNodes))
+        #expect(Set(succeededAction.clientsToRun.map { $0.nodeDescription.id }) == Set(additionalNodes.map { $0.id }))
+        #expect(succeededAction.clientsToShutdown.isEmpty)
+        let refreshTimer = try #require(succeededAction.timerToRun)
+
+        let timerCancellationToken = TimerCancellationToken()
+        let unusedCancellationToken = stateMachine.registerTimerCancellationToken(timerCancellationToken, for: refreshTimer)
+        #expect(unusedCancellationToken === nil)
+
+        return (stateMachine, clock, refreshTimer)
+    }
+
     @Test
     @available(valkeySwift 1.0, *)
     func runDiscoveryAfterStartup() throws {
         let factory = MockClientFactory<ValkeyNodeDescription>()
-        var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init())
+        let clock = MockClock()
+        var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(), clock: clock)
         let initialNodes = (9000..<9002).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
         let additionalNodes = (9002..<9004).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
+
+        stateMachine.start()
 
         let updateAction = stateMachine.updateSentinelNodes(.init(initialNodes))
         #expect(Set(updateAction.clientsToRun.map { $0.nodeDescription.id }) == Set(initialNodes.map { $0.id }))
@@ -60,9 +90,12 @@ struct ValkeySentinelStateMachineTests {
     @available(valkeySwift 1.0, *)
     func cancelWaitForDiscovery() throws {
         let factory = MockClientFactory<ValkeyNodeDescription>()
-        var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init())
+        let clock = MockClock()
+        var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(), clock: clock)
         let initialNodes = (9000..<9002).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
         let additionalNodes = (9002..<9004).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
+
+        stateMachine.start()
 
         let updateAction = stateMachine.updateSentinelNodes(.init(initialNodes))
         #expect(Set(updateAction.clientsToRun.map { $0.nodeDescription.id }) == Set(initialNodes.map { $0.id }))
@@ -83,6 +116,228 @@ struct ValkeySentinelStateMachineTests {
         #expect(Set(succeededAction.clientsToRun.map { $0.nodeDescription.id }) == Set(additionalNodes.map { $0.id }))
         #expect(succeededAction.clientsToShutdown.isEmpty)
         #expect(succeededAction.waitersToSucceed.isEmpty)
+    }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func runRefresh() throws {
+        let factory = MockClientFactory<ValkeyNodeDescription>()
+        let clock = MockClock()
+        var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(defaultSentinelRefreshInterval: .seconds(30)), clock: clock)
+        let initialNodes = (9000..<9002).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
+        let additionalNodes = (9002..<9004).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
+
+        stateMachine.start()
+
+        let updateAction = stateMachine.updateSentinelNodes(.init(initialNodes))
+        #expect(Set(updateAction.clientsToRun.map { $0.nodeDescription.id }) == Set(initialNodes.map { $0.id }))
+        #expect(updateAction.clientsToShutdown.isEmpty)
+        #expect(Set(updateAction.voters.map { $0.nodeID }) == Set(initialNodes.map { $0.id }))
+
+        let succeededAction = stateMachine.topologyDiscoverySucceeded(.init(initialNodes + additionalNodes))
+        #expect(Set(succeededAction.clientsToRun.map { $0.nodeDescription.id }) == Set(additionalNodes.map { $0.id }))
+        #expect(succeededAction.clientsToShutdown.isEmpty)
+        #expect(succeededAction.waitersToSucceed.isEmpty)
+        let discoveryTimer = try #require(succeededAction.timerToRun)
+        #expect(discoveryTimer == .init(timerID: 0, useCase: .nextDiscovery, duration: .seconds(30)))
+
+        let timerCancellationToken = TimerCancellationToken()
+        let unusedCancellationToken = stateMachine.registerTimerCancellationToken(timerCancellationToken, for: discoveryTimer)
+        #expect(unusedCancellationToken === nil)
+
+        let timerFiredAction = stateMachine.timerFired(discoveryTimer)
+        if case .runDiscovery(let runDiscoveryContext) = timerFiredAction {
+            #expect(runDiscoveryContext.runNodeDiscoveryFirst == false)
+        } else {
+            Issue.record()
+        }
+        let succeededAction2 = stateMachine.topologyDiscoverySucceeded(.init(initialNodes + additionalNodes))
+        #expect(succeededAction2.clientsToRun.isEmpty)
+        #expect(succeededAction2.clientsToShutdown.isEmpty)
+        #expect(succeededAction2.waitersToSucceed.isEmpty)
+        #expect(succeededAction2.timerToRun == .init(timerID: 1, useCase: .nextDiscovery, duration: .seconds(30)))
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func failedThenSucessfulDiscovery() throws {
+        let factory = MockClientFactory<ValkeyNodeDescription>()
+        let clock = MockClock()
+        var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(defaultSentinelRefreshInterval: .seconds(30)), clock: clock)
+        let initialNodes = (9000..<9002).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
+        let additionalNodes = (9002..<9004).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
+
+        stateMachine.start()
+
+        let updateAction = stateMachine.updateSentinelNodes(.init(initialNodes))
+        #expect(Set(updateAction.clientsToRun.map { $0.nodeDescription.id }) == Set(initialNodes.map { $0.id }))
+        #expect(updateAction.clientsToShutdown.isEmpty)
+        #expect(Set(updateAction.voters.map { $0.nodeID }) == Set(initialNodes.map { $0.id }))
+
+        let failedAction = stateMachine.topologyDiscoveryFailed(error: .init(.unrecognisedError))
+        let discoveryTimer = try #require(failedAction.timerToRun)
+        #expect(discoveryTimer.timerID == 0)
+        #expect(discoveryTimer.useCase == .nextDiscovery)
+        #expect(discoveryTimer.duration > .seconds(0) && discoveryTimer.duration < .seconds(1))
+
+        let timerCancellationToken = TimerCancellationToken()
+        let unusedCancellationToken = stateMachine.registerTimerCancellationToken(timerCancellationToken, for: discoveryTimer)
+        #expect(unusedCancellationToken === nil)
+
+        let timerFiredAction = stateMachine.timerFired(discoveryTimer)
+        if case .runDiscovery(let runDiscoveryContext) = timerFiredAction {
+            #expect(runDiscoveryContext.runNodeDiscoveryFirst == false)
+        } else {
+            Issue.record()
+        }
+
+        let succeededAction = stateMachine.topologyDiscoverySucceeded(.init(initialNodes + additionalNodes))
+        #expect(Set(succeededAction.clientsToRun.map { $0.nodeDescription.id }) == Set(additionalNodes.map { $0.id }))
+        #expect(succeededAction.clientsToShutdown.isEmpty)
+        #expect(succeededAction.waitersToSucceed.isEmpty)
+        #expect(succeededAction.timerToRun == .init(timerID: 1, useCase: .nextDiscovery, duration: .seconds(30)))
+    }
+
+    /// Test triggering circuit breaker during startup
+    @Test
+    @available(valkeySwift 1.0, *)
+    func tripCircuitBreakerAtStartup() throws {
+        let factory = MockClientFactory<ValkeyNodeDescription>()
+        let clock = MockClock()
+        var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(circuitBreakerTripAfter: .seconds(30)), clock: clock)
+        let initialNodes = (9000..<9002).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
+
+        stateMachine.start()
+
+        let successNotifier = SuccessNotifier()
+        let waitAction = stateMachine.waitForDiscovery(waiterID: 0, successNotification: successNotifier)
+        switch waitAction {
+        case .doNothing: break
+        default: Issue.record("Expected to do nothing")
+        }
+
+        let updateAction = stateMachine.updateSentinelNodes(.init(initialNodes))
+        #expect(Set(updateAction.clientsToRun.map { $0.nodeDescription.id }) == Set(initialNodes.map { $0.id }))
+        #expect(updateAction.clientsToShutdown.isEmpty)
+        #expect(Set(updateAction.voters.map { $0.nodeID }) == Set(initialNodes.map { $0.id }))
+
+        let failedAction = stateMachine.topologyDiscoveryFailed(error: .init(.unrecognisedError))
+        #expect(failedAction.waitersToFail.isEmpty)
+        let discoveryTimer = try #require(failedAction.timerToRun)
+        #expect(discoveryTimer.timerID == 0)
+        #expect(discoveryTimer.useCase == .nextDiscovery)
+        #expect(discoveryTimer.duration > .seconds(0) && discoveryTimer.duration < .seconds(1))
+
+        let timerCancellationToken = TimerCancellationToken()
+        let unusedCancellationToken = stateMachine.registerTimerCancellationToken(timerCancellationToken, for: discoveryTimer)
+        #expect(unusedCancellationToken === nil)
+
+        let timerFiredAction = stateMachine.timerFired(discoveryTimer)
+        if case .runDiscovery(let runDiscoveryContext) = timerFiredAction {
+            #expect(runDiscoveryContext.runNodeDiscoveryFirst == false)
+        } else {
+            Issue.record()
+        }
+
+        clock.advance(to: clock.now.advanced(by: .seconds(40)))
+        let failedAction2 = stateMachine.topologyDiscoveryFailed(error: .init(.unrecognisedError))
+        #expect(failedAction2.waitersToFail.first === successNotifier)
+        let discoveryTimer2 = try #require(failedAction2.timerToRun)
+        #expect(discoveryTimer2.timerID == 1)
+        #expect(discoveryTimer2.useCase == .nextDiscovery)
+        #expect(discoveryTimer2.duration > .seconds(0) && discoveryTimer.duration < .seconds(1))
+    }
+
+    /// Test moving from healthy to degraded state and back with a waitForDiscovery call during the degraded state
+    @Test
+    @available(valkeySwift 1.0, *)
+    func degradeAndRevive() throws {
+        var (stateMachine, _, timer) = try self.setupStateMachine()
+
+        let timerFiredAction = stateMachine.timerFired(timer)
+        if case .runDiscovery(let runDiscoveryContext) = timerFiredAction {
+            #expect(runDiscoveryContext.runNodeDiscoveryFirst == false)
+        } else {
+            Issue.record()
+        }
+
+        let failedAction = stateMachine.topologyDiscoveryFailed(error: .init(.unrecognisedError))
+        let discoveryTimer = try #require(failedAction.timerToRun)
+        #expect(discoveryTimer.timerID == 1)
+        #expect(discoveryTimer.useCase == .nextDiscovery)
+        #expect(discoveryTimer.duration > .seconds(0) && discoveryTimer.duration < .seconds(1))
+
+        let timerCancellationToken = TimerCancellationToken()
+        let unusedCancellationToken = stateMachine.registerTimerCancellationToken(timerCancellationToken, for: discoveryTimer)
+        #expect(unusedCancellationToken === nil)
+
+        let successNotifier = SuccessNotifier()
+        let waitAction = stateMachine.waitForDiscovery(waiterID: 0, successNotification: successNotifier)
+        switch waitAction {
+        case .doNothing: break
+        default: Issue.record("Expected to do nothing")
+        }
+
+        let timerFiredAction2 = stateMachine.timerFired(discoveryTimer)
+        if case .runDiscovery(let runDiscoveryContext) = timerFiredAction2 {
+            #expect(runDiscoveryContext.runNodeDiscoveryFirst == false)
+        } else {
+            Issue.record()
+        }
+
+        let succeededAction = stateMachine.topologyDiscoverySucceeded(
+            .init((9000..<9003).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) })
+        )
+        #expect(succeededAction.clientsToRun.isEmpty)
+        #expect(succeededAction.clientsToShutdown.map { $0.nodeDescription.id } == [.init(endpoint: "127.0.0.1", port: 9003)])
+        #expect(succeededAction.waitersToSucceed.first === successNotifier)
+        #expect(succeededAction.timerToRun == .init(timerID: 2, useCase: .nextDiscovery, duration: .seconds(30)))
+    }
+
+    /// Test moving from healthy to degraded to unavailable
+    @Test
+    @available(valkeySwift 1.0, *)
+    func triggerCircuitBreaker() throws {
+        var (stateMachine, clock, timer) = try self.setupStateMachine()
+
+        let timerFiredAction = stateMachine.timerFired(timer)
+        if case .runDiscovery(let runDiscoveryContext) = timerFiredAction {
+            #expect(runDiscoveryContext.runNodeDiscoveryFirst == false)
+        } else {
+            Issue.record()
+        }
+
+        let failedAction = stateMachine.topologyDiscoveryFailed(error: .init(.unrecognisedError))
+        let discoveryTimer = try #require(failedAction.timerToRun)
+        #expect(discoveryTimer.timerID == 1)
+        #expect(discoveryTimer.useCase == .nextDiscovery)
+        #expect(discoveryTimer.duration > .seconds(0) && discoveryTimer.duration < .seconds(1))
+
+        let timerCancellationToken = TimerCancellationToken()
+        let unusedCancellationToken = stateMachine.registerTimerCancellationToken(timerCancellationToken, for: discoveryTimer)
+        #expect(unusedCancellationToken === nil)
+
+        let successNotifier = SuccessNotifier()
+        let waitAction = stateMachine.waitForDiscovery(waiterID: 0, successNotification: successNotifier)
+        switch waitAction {
+        case .doNothing: break
+        default: Issue.record("Expected to do nothing")
+        }
+
+        let timerFiredAction2 = stateMachine.timerFired(discoveryTimer)
+        if case .runDiscovery(let runDiscoveryContext) = timerFiredAction2 {
+            #expect(runDiscoveryContext.runNodeDiscoveryFirst == false)
+        } else {
+            Issue.record()
+        }
+
+        clock.advance(to: clock.now.advanced(by: .seconds(40)))
+
+        let failedAction2 = stateMachine.topologyDiscoveryFailed(error: ValkeyClientError(.unrecognisedError))
+        #expect(failedAction2.waitersToFail.first === successNotifier)
+        let discoveryTimer2 = try #require(failedAction2.timerToRun)
+        #expect(discoveryTimer2.timerID == 2)
+        #expect(discoveryTimer2.useCase == .nextDiscovery)
+        #expect(discoveryTimer2.duration > .seconds(0) && discoveryTimer2.duration < .seconds(1))
     }
 }

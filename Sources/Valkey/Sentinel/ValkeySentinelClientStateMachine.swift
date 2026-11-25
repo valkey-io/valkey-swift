@@ -36,17 +36,29 @@ package struct ValkeySentinelTimer: Sendable, Hashable {
 struct ValkeySentinelClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory,
+    Clock: _Concurrency.Clock,
     WaiterToken: Sendable,
     TimerCancellationToken: Sendable
 >
-where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription == ValkeyClusterNodeClientFactory.NodeDescription
+where
+    ConnectionPoolFactory.ConnectionPool == ConnectionPool,
+    ConnectionPoolFactory.NodeDescription == ValkeyClusterNodeClientFactory.NodeDescription,
+    Clock.Duration == Duration
 {
     /// Configuration
     @usableFromInline
     struct Configuration {
         /// Default interval before we attempt to refresh the sentinel list, if the previous refresh was
         /// successful
-        let defaultSentinelRefreshInterval: Duration = .seconds(30)
+        let defaultSentinelRefreshInterval: Duration
+
+        /// Time after which the circuit breaker trips
+        let circuitBreakerTripAfter: Duration
+
+        init(defaultSentinelRefreshInterval: Duration = .seconds(30), circuitBreakerTripAfter: Duration = .seconds(30)) {
+            self.defaultSentinelRefreshInterval = defaultSentinelRefreshInterval
+            self.circuitBreakerTripAfter = circuitBreakerTripAfter
+        }
     }
     @usableFromInline
     struct Timer {
@@ -58,8 +70,9 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     enum State {
         @usableFromInline
         struct UnavailableState {
+            let start: Clock.Instant
             var waiters: [Int: WaiterToken]
-            let error: ValkeyClientError?
+            var error: ValkeyClientError?
         }
         @usableFromInline
         struct HealthyState {
@@ -67,9 +80,15 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         }
         @usableFromInline
         struct DegradedState {
+            let start: Clock.Instant
+            var waiters: [Int: WaiterToken]
             let nodes: ValkeySentinelNodeList
         }
+        /// There is no list of sentinels, all requests for the list will fail immediately and when
+        /// we attempt to refresh the list we run the node discovery to get the initial list.
         case unavailable(UnavailableState)
+        /// The last attempt at refreshing the sentinel list failed. Requests for the sentinel list are
+        /// stored and these requests will be completed when we either move out of this state.
         case degraded(DegradedState)
         case healthy(HealthyState)
         case shutdown
@@ -87,6 +106,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     }
 
     let configuration: Configuration
+    let clock: Clock
     @usableFromInline
     var state: State
     var refreshState: RefreshState
@@ -95,9 +115,10 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
 
     private var _nextTimerID: Int = 0
 
-    init(poolFactory: ConnectionPoolFactory, configuration: Configuration) {
+    init(poolFactory: ConnectionPoolFactory, configuration: Configuration, clock: Clock) {
         self.configuration = configuration
-        self.state = .unavailable(.init(waiters: [:], error: nil))
+        self.clock = clock
+        self.state = .unavailable(.init(start: clock.now, waiters: [:], error: nil))
         self.refreshState = .notRefreshing
         self.runningClients = .init(poolFactory: poolFactory)
     }
@@ -137,10 +158,8 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         switch self.state {
         case .unavailable, .shutdown:
             return []
-        case .degraded(let degradedState):
-            return degradedState.nodes.nodes.compactMap { (element) -> ConnectionPool? in
-                self.runningClients[element.id].map { $0.pool }
-            }
+        case .degraded:
+            return []
         case .healthy(let healthyState):
             return healthyState.nodes.nodes.compactMap { (element) -> ConnectionPool? in
                 self.runningClients[element.id].map { $0.pool }
@@ -155,6 +174,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     }
     /// Update list of sentinels during election process
     mutating func updateSentinelNodes(_ nodes: ValkeySentinelNodeList) -> UpdateNodesAction {
+        guard case .refreshing = self.refreshState else { preconditionFailure("Can only update sentinel nodes during election") }
         let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: false)
         return .init(
             clientsToRun: action.poolsToRun.map { $0.0 },
@@ -206,8 +226,9 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             action.waitersToSucceed = Array(unavailableState.waiters.values)
             return action
 
-        case .degraded:
+        case .degraded(let degradedState):
             self.state = .healthy(.init(nodes: nodes))
+            action.waitersToSucceed = Array(degradedState.waiters.values)
             return action
 
         case .healthy:
@@ -239,15 +260,23 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             )
 
             switch self.state {
-            case .unavailable(let unavailableState):
-                self.state = .unavailable(.init(waiters: [:], error: error))
-                action.waitersToFail = Array(unavailableState.waiters.values)
+            case .unavailable(var unavailableState):
+                unavailableState.error = error
+                if unavailableState.start.advanced(by: self.configuration.circuitBreakerTripAfter) < clock.now {
+                    action.waitersToFail = Array(unavailableState.waiters.values)
+                    unavailableState.waiters = [:]
+                }
+                self.state = .unavailable(unavailableState)
                 return action
-            case .degraded:
+            case .degraded(let degradedState):
+                if degradedState.start.advanced(by: self.configuration.circuitBreakerTripAfter) < clock.now {
+                    action.waitersToFail = Array(degradedState.waiters.values)
+                    self.state = .unavailable(.init(start: degradedState.start, waiters: [:], error: error))
+                }
                 return action
 
             case .healthy(let healthyState):
-                self.state = .degraded(.init(nodes: healthyState.nodes))
+                self.state = .degraded(.init(start: clock.now, waiters: [:], nodes: healthyState.nodes))
                 return action
 
             case .shutdown:
@@ -266,15 +295,17 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     mutating func waitForDiscovery(waiterID: Int, successNotification: WaiterToken) -> WaitForDiscoveryAction {
         switch self.state {
         case .unavailable(var unavailableState):
-            if let error = unavailableState.error {
+            if let error = unavailableState.error, unavailableState.start.advanced(by: self.configuration.circuitBreakerTripAfter) < clock.now {
                 return .fail(error)
             } else {
                 unavailableState.waiters[waiterID] = successNotification
                 self.state = .unavailable(unavailableState)
                 return .doNothing
             }
-        case .degraded:
-            return .complete
+        case .degraded(var degradedState):
+            degradedState.waiters[waiterID] = successNotification
+            self.state = .degraded(degradedState)
+            return .doNothing
         case .healthy:
             return .complete
         case .shutdown:
@@ -288,8 +319,10 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             let token = unavailableState.waiters.removeValue(forKey: waiterID)
             self.state = .unavailable(unavailableState)
             return token
-        case .degraded:
-            return nil
+        case .degraded(var degradedState):
+            let token = degradedState.waiters.removeValue(forKey: waiterID)
+            self.state = .degraded(degradedState)
+            return token
         case .healthy:
             return nil
         case .shutdown:
@@ -326,8 +359,15 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             case .healthy:
                 runNodeDiscoveryFirst = false
 
-            case .degraded, .unavailable:
-                runNodeDiscoveryFirst = true
+            case .degraded:
+                runNodeDiscoveryFirst = false
+
+            case .unavailable(let unavailableState):
+                if unavailableState.start.advanced(by: self.configuration.circuitBreakerTripAfter) < clock.now {
+                    runNodeDiscoveryFirst = true
+                } else {
+                    runNodeDiscoveryFirst = false
+                }
             }
 
             switch self.refreshState {

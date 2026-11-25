@@ -25,6 +25,12 @@ public struct ValkeySentinelClientConfiguration: Sendable {
     /// The connection is considered dead if a response isn't received within this time.
     public var commandTimeout: Duration
 
+    /// Default interval before refreshing sentinel list again after a successful refresh
+    public var defaultSentinelRefreshInterval: Duration
+
+    /// How long before Sentinel circuit breaker trips
+    public var circuitBreakerTripAfter: Duration
+
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for the Valkey connection.
     /// Defaults to using the globally bootstrapped tracer with OpenTelemetry semantic conventions.
@@ -41,7 +47,9 @@ public struct ValkeySentinelClientConfiguration: Sendable {
         keepAliveBehavior: ValkeyClientConfiguration.KeepAliveBehavior = .init(),
         retryParameters: ValkeyClientConfiguration.RetryParameters = .init(),
         tls: ValkeyClientConfiguration.TLS = .disable,
-        commandTimeout: Duration = .seconds(30)
+        commandTimeout: Duration = .seconds(30),
+        defaultSentinelRefreshInterval: Duration = .seconds(30),
+        circuitBreakerTripAfter: Duration = .seconds(30)
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
@@ -49,6 +57,8 @@ public struct ValkeySentinelClientConfiguration: Sendable {
         self.retryParameters = retryParameters
         self.tls = tls
         self.commandTimeout = commandTimeout
+        self.defaultSentinelRefreshInterval = defaultSentinelRefreshInterval
+        self.circuitBreakerTripAfter = circuitBreakerTripAfter
     }
 
     var clientConfiguration: ValkeyClientConfiguration {
