@@ -5,6 +5,8 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+
+import CValkeyEditLine
 import Logging
 import Valkey
 
@@ -33,7 +35,7 @@ struct App {
         print("Connecting to \(host):\(port)")
         let valkeyClient = ValkeyClient(
             .hostname(host, port: port),
-            configuration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(5))),
+            configuration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(5)), enableClientCapaRedirect: false),
             logger: Logger(label: "ValkeyCLI")
         )
         async let _ = valkeyClient.run()
@@ -46,12 +48,14 @@ struct App {
             print("\(error)")
             return
         }
+        let editLine = editLineCreate()
+        defer {
+            editLineDestroy(editLine)
+        }
         while true {
-            print("> ", terminator: "")
-            guard let input = readLine() else {
-                print("")
-                return
-            }
+            //print("> ", terminator: "")
+            guard let line = editLineGetLine(editLine) else { return }
+            let input = String(cString: line).dropLast()
             let split = input.splitWithSpeechMarks(separator: " ")
             guard let commandName = split.first else { continue }
             let command = ValkeyRawCommand(String(commandName), parameters: split.dropFirst().map { String($0) })

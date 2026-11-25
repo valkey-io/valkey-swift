@@ -31,10 +31,10 @@ jobs:
         volumes:
           - ${{ github.workspace }}/valkey:/valkey
     steps:
-      - name: Install jemalloc
+      - name: Install jemalloc, curl and libedit
         run: |
           apt-get update
-          apt-get install -y libjemalloc-dev
+          apt-get install -y libjemalloc-dev libedit-dev
           apt-get install -y curl
       - name: Checkout
         uses: actions/checkout@v6
