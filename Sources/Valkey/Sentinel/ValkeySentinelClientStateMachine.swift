@@ -240,9 +240,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
 
             switch self.state {
             case .unavailable(let unavailableState):
-                if unavailableState.error == nil {
-                    self.state = .unavailable(.init(waiters: unavailableState.waiters, error: error))
-                }
+                self.state = .unavailable(.init(waiters: [:], error: error))
                 action.waitersToFail = Array(unavailableState.waiters.values)
                 return action
             case .degraded:
@@ -268,11 +266,11 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     mutating func waitForDiscovery(waiterID: Int, successNotification: WaiterToken) -> WaitForDiscoveryAction {
         switch self.state {
         case .unavailable(var unavailableState):
-            unavailableState.waiters[waiterID] = successNotification
-            self.state = .unavailable(unavailableState)
             if let error = unavailableState.error {
                 return .fail(error)
             } else {
+                unavailableState.waiters[waiterID] = successNotification
+                self.state = .unavailable(unavailableState)
                 return .doNothing
             }
         case .degraded:
