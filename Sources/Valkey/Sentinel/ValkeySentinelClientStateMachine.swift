@@ -25,7 +25,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         @usableFromInline
         struct UnavailableState {
             var waiters: [WaiterToken]
-            let error: (any Error)?
+            let error: ValkeyClientError?
         }
         @usableFromInline
         struct HealthyState {
@@ -142,7 +142,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     }
 
     /// Topology discovery failed, update state and return waiters to fail
-    mutating func topologyDiscoveryFailed(error: any Error) -> DiscoveryFailedAction {
+    mutating func topologyDiscoveryFailed(error: ValkeyClientError) -> DiscoveryFailedAction {
         switch self.state {
         case .unavailable(let unavailableState):
             if unavailableState.error == nil {
@@ -171,7 +171,11 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         case .unavailable(var unavailableState):
             unavailableState.waiters.append(waiter)
             self.state = .unavailable(unavailableState)
-            return .doNothing
+            if let error = unavailableState.error {
+                return .fail(error)
+            } else {
+                return .doNothing
+            }
         case .degraded:
             return .complete
         case .healthy:
