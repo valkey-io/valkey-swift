@@ -25,6 +25,8 @@ package final class ValkeySentinelClient: Sendable {
     let stateMachine: Mutex<StateMachine>
     let logger: Logger
     private let nodeDiscovery: any ValkeyNodeDiscovery
+    @usableFromInline
+    /* private */ let nextRequestIDGenerator = Atomic(0)
 
     private enum RunAction {
         case runSentinelDiscovery(runNodeDiscovery: Bool)
@@ -136,17 +138,35 @@ package final class ValkeySentinelClient: Sendable {
 
     // get sentinel clients from statemachine
     package func getSentinelClients() async throws -> [ValkeyNodeClient] {
-        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
-            switch self.stateMachine.withLock({ $0.waitForDiscovery(cont) }) {
-            case .complete:
-                cont.resume()
-            case .fail(let error):
-                cont.resume(throwing: error)
-            case .doNothing:
-                break
+        let id = self.nextRequestID()
+        try await withTaskCancellationHandler {
+            if Task.isCancelled {
+                throw ValkeyClientError(.cancelled)
+            }
+            try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
+                switch self.stateMachine.withLock({ $0.waitForDiscovery(waiterID: id, successNotification: cont) }) {
+                case .complete:
+                    cont.resume()
+                case .fail(let error):
+                    cont.resume(throwing: error)
+                case .doNothing:
+                    break
+                }
+            }
+        } onCancel: {
+            if let cont = self.stateMachine.withLock({ $0.cancelWaitForDiscovery(waiterID: id) }) {
+                cont.resume(throwing: ValkeyClientError(.cancelled))
             }
         }
         return self.stateMachine.withLock({ $0.getSentinelClients() })
+    }
+
+    /// Generates a new unique request ID for tracking internal operations.
+    ///
+    /// - Returns: A unique integer ID for tracking requests and waiters.
+    @inlinable
+    /* private */ func nextRequestID() -> Int {
+        self.nextRequestIDGenerator.wrappingAdd(1, ordering: .relaxed).oldValue
     }
 
     /// Run operation with the valkey subscription connection
