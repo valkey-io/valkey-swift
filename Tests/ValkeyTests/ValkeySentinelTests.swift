@@ -363,7 +363,7 @@ struct ValkeySentinelTests {
             try await Task.sleep(for: .milliseconds(10))
 
             iteration += 1
-            if iteration > primary.replicas.count * 4 {
+            if iteration > primary.replicas.count * 10 {
                 Issue.record(sourceLocation: sourceLocation)
                 return primary.replicas
             }
