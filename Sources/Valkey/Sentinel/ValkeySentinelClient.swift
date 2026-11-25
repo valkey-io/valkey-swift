@@ -74,8 +74,9 @@ package final class ValkeySentinelClient: Sendable {
 
     /// Run ValkeySentinelClient connection pool, and other supporting processes
     package func run() async {
-        self.stateMachine.withLock { $0.start() }
+        let timer = self.stateMachine.withLock { $0.start() }
         self.queueAction(.runSentinelDiscovery(runNodeDiscovery: true))
+        self.queueAction(.runTimer(timer))
 
         #if ServiceLifecycleSupport
         await cancelWhenGracefulShutdown {
@@ -282,6 +283,10 @@ extension ValkeySentinelClient {
         switch action {
         case .runDiscovery(let discovery):
             self.queueAction(.runSentinelDiscovery(runNodeDiscovery: discovery.runNodeDiscoveryFirst))
+        case .failWaiters(let failWaiters):
+            for waiter in failWaiters.waiters {
+                waiter.resume(throwing: failWaiters.error)
+            }
         case .doNothing:
             break
         }
@@ -325,12 +330,15 @@ extension ValkeySentinelClient {
                 ]
             )
             let action = self.stateMachine.withLock {
-                $0.topologyDiscoveryFailed(error: ValkeyClientError(.sentinelError, error: error))
+                $0.topologyDiscoveryFailed(error: error)
             }
             for waiter in action.waitersToFail {
                 waiter.resume(throwing: error)
             }
-            if let timer = action.timerToRun {
+            if let timer = action.retryTimer {
+                self.queueAction(.runTimer(timer))
+            }
+            if let timer = action.circuitBreakerTimer {
                 self.queueAction(.runTimer(timer))
             }
         }

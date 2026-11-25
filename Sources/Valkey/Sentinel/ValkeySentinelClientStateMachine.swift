@@ -18,6 +18,7 @@ import Musl
 package struct ValkeySentinelTimer: Sendable, Hashable {
     package enum UseCase: Hashable {
         case nextDiscovery
+        case circuitBreaker
     }
 
     package var useCase: UseCase
@@ -72,7 +73,8 @@ where
         struct UnavailableState {
             let start: Clock.Instant
             var waiters: [Int: WaiterToken]
-            var error: ValkeyClientError?
+            var circuitBreakerTimer: Timer?
+            var error: any Error
         }
         @usableFromInline
         struct HealthyState {
@@ -82,6 +84,8 @@ where
         struct DegradedState {
             let start: Clock.Instant
             var waiters: [Int: WaiterToken]
+            var circuitBreakerTimer: Timer
+            var error: any Error
             let nodes: ValkeySentinelNodeList
         }
         /// There is no list of sentinels, all requests for the list will fail immediately and when
@@ -118,17 +122,23 @@ where
     init(poolFactory: ConnectionPoolFactory, configuration: Configuration, clock: Clock) {
         self.configuration = configuration
         self.clock = clock
-        self.state = .unavailable(.init(start: clock.now, waiters: [:], error: nil))
+        self.state = .unavailable(
+            .init(start: clock.now, waiters: [:], circuitBreakerTimer: nil, error: ValkeySentinelError.sentinelNoConsensusReached)
+        )
         self.refreshState = .notRefreshing
         self.runningClients = .init(poolFactory: poolFactory)
     }
 
-    mutating func start() {
+    mutating func start() -> ValkeySentinelTimer {
         switch self.refreshState {
         case .notRefreshing:
             switch self.state {
-            case .unavailable:
+            case .unavailable(var unavailableState):
+                let timerID = self.nextTimerID()
+                unavailableState.circuitBreakerTimer = .init(id: timerID)
+                self.state = .unavailable(unavailableState)
                 self.refreshState = .refreshing(.init(consecutiveFailures: 0, lastError: nil))
+                return .init(timerID: timerID, useCase: .circuitBreaker, duration: self.configuration.circuitBreakerTripAfter)
             case .degraded, .healthy, .shutdown:
                 preconditionFailure("Invalid state \(self.state)")
             }
@@ -242,11 +252,12 @@ where
 
     struct DiscoveryFailedAction {
         var waitersToFail: [WaiterToken]
-        var timerToRun: ValkeySentinelTimer?
+        var retryTimer: ValkeySentinelTimer?
+        var circuitBreakerTimer: ValkeySentinelTimer?
     }
 
     /// Topology discovery failed, update state and return waiters to fail
-    mutating func topologyDiscoveryFailed(error: ValkeyClientError) -> DiscoveryFailedAction {
+    mutating func topologyDiscoveryFailed(error: any Error) -> DiscoveryFailedAction {
         switch self.refreshState {
         case .refreshing(var refreshContext):
             refreshContext.consecutiveFailures += 1
@@ -256,7 +267,7 @@ where
             self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: refreshContext)
             var action = DiscoveryFailedAction(
                 waitersToFail: [],
-                timerToRun: .init(timerID: refreshTimerID, useCase: .nextDiscovery, duration: waitTillNextTry)
+                retryTimer: .init(timerID: refreshTimerID, useCase: .nextDiscovery, duration: waitTillNextTry)
             )
 
             switch self.state {
@@ -276,11 +287,15 @@ where
                 return action
 
             case .healthy(let healthyState):
-                self.state = .degraded(.init(start: clock.now, waiters: [:], nodes: healthyState.nodes))
+                let timerID = self.nextTimerID()
+                action.circuitBreakerTimer = .init(timerID: timerID, useCase: .circuitBreaker, duration: self.configuration.circuitBreakerTripAfter)
+                self.state = .degraded(
+                    .init(start: clock.now, waiters: [:], circuitBreakerTimer: .init(id: timerID), error: error, nodes: healthyState.nodes)
+                )
                 return action
 
             case .shutdown:
-                return .init(waitersToFail: [], timerToRun: nil)
+                return .init(waitersToFail: [])
             }
         case .notRefreshing, .waitingForRefresh:
             preconditionFailure("Invalid refresh state \(self.refreshState)")
@@ -289,14 +304,14 @@ where
 
     enum WaitForDiscoveryAction {
         case complete
-        case fail(ValkeyClientError)
+        case fail(any Error)
         case doNothing
     }
     mutating func waitForDiscovery(waiterID: Int, successNotification: WaiterToken) -> WaitForDiscoveryAction {
         switch self.state {
         case .unavailable(var unavailableState):
-            if let error = unavailableState.error, unavailableState.start.advanced(by: self.configuration.circuitBreakerTripAfter) < clock.now {
-                return .fail(error)
+            if unavailableState.start.advanced(by: self.configuration.circuitBreakerTripAfter) < clock.now {
+                return .fail(unavailableState.error)
             } else {
                 unavailableState.waiters[waiterID] = successNotification
                 self.state = .unavailable(unavailableState)
@@ -309,7 +324,7 @@ where
         case .healthy:
             return .complete
         case .shutdown:
-            return .fail(.init(.clientIsShutDown))
+            return .fail(ValkeyClientError(.clientIsShutDown))
         }
     }
 
@@ -344,7 +359,13 @@ where
             }
         }
 
+        package struct FailWaiters {
+            package let waiters: [WaiterToken]
+            package let error: any Error
+        }
+
         case runDiscovery(RunDiscovery)
+        case failWaiters(FailWaiters)
         case doNothing
     }
 
@@ -383,6 +404,34 @@ where
                 self.refreshState = .refreshing(previousRefresh)
                 return .runDiscovery(.init(runNodeDiscoveryFirst: runNodeDiscoveryFirst))
             }
+
+        case .circuitBreaker:
+            switch self.state {
+            case .unavailable(var unavailableState):
+                guard unavailableState.circuitBreakerTimer?.id == timer.timerID else {
+                    // race condition. the timer that fired isn't interesting anymore
+                    return .doNothing
+                }
+                let action = TimerFiredAction.failWaiters(.init(waiters: Array(unavailableState.waiters.values), error: unavailableState.error))
+                unavailableState.waiters = [:]
+                self.state = .unavailable(unavailableState)
+                return action
+
+            case .healthy:
+                return .doNothing
+
+            case .degraded(let degradedState):
+                guard degradedState.circuitBreakerTimer.id == timer.timerID else {
+                    // race condition. the timer that fired isn't interesting anymore
+                    return .doNothing
+                }
+                let action = TimerFiredAction.failWaiters(.init(waiters: Array(degradedState.waiters.values), error: degradedState.error))
+                self.state = .unavailable(.init(start: degradedState.start, waiters: [:], error: degradedState.error))
+                return action
+
+            case .shutdown:
+                return .doNothing
+            }
         }
     }
 
@@ -402,6 +451,26 @@ where
                     self.refreshState = .waitingForRefresh(timerState, previousRefresh: previousRefresh)
                     return nil
                 }
+                return token
+            }
+
+        case .circuitBreaker:
+            switch self.state {
+            case .unavailable(var unavailableState):
+                if unavailableState.circuitBreakerTimer?.id == timer.timerID {
+                    unavailableState.circuitBreakerTimer!.cancellationToken = token
+                    self.state = .unavailable(unavailableState)
+                    return nil
+                }
+                return token
+            case .degraded(var degradedState):
+                if degradedState.circuitBreakerTimer.id == timer.timerID {
+                    degradedState.circuitBreakerTimer.cancellationToken = token
+                    self.state = .degraded(degradedState)
+                    return nil
+                }
+                return token
+            case .healthy, .shutdown:
                 return token
             }
         }
