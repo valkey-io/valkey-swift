@@ -1,6 +1,6 @@
 {
     "name": "Swift",
-    "dockerComposeFile": "docker-compose-cluster.yml",
+    "dockerComposeFile": "docker-compose-replica.yml",
     "service": "app",
     "workspaceFolder": "/workspace",
     "features": {

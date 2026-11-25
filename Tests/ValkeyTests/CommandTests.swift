@@ -2347,12 +2347,14 @@ struct CommandTests {
                 let result = try await connection.ftAggregate(
                     index: "idx:testIndex",
                     query: "hello",
-                    sortby: .init(
-                        expressions: [
-                            .init(expression: "@foo", direction: .asc),
-                            .init(expression: "@bar", direction: .desc),
-                        ]
-                    )
+                    sortbys: [
+                        .init(
+                            expressions: [
+                                .init(expression: "@foo", direction: .asc),
+                                .init(expression: "@bar", direction: .desc),
+                            ]
+                        )
+                    ]
                 )
 
                 guard case .array(let arr) = result.value else {
@@ -2385,10 +2387,12 @@ struct CommandTests {
                 let result = try await connection.ftAggregate(
                     index: "idx:testIndex",
                     query: "hello",
-                    sortby: .init(
-                        expressions: [.init(expression: "@foo", direction: .desc)],
-                        max: 100
-                    )
+                    sortbys: [
+                        .init(
+                            expressions: [.init(expression: "@foo", direction: .desc)],
+                            max: 100
+                        )
+                    ]
                 )
 
                 guard case .array(let arr) = result.value else {
@@ -2606,6 +2610,7 @@ struct CommandTests {
                         "idx:testIndex",
                         "ON", "JSON",
                         "PREFIX", "1", "item:",
+                        "LANGUAGE", "ARABIC",
                         "SCHEMA",
                         "$.name", "AS", "name", "TEXT",
                     ]),
@@ -2616,6 +2621,7 @@ struct CommandTests {
                     indexName: "idx:testIndex",
                     on: .json,
                     prefixes: ["item:"],
+                    language: .arabic,
                     schemas: [
                         .init(fieldIdentifier: "$.name", alias: "name", fieldType: .text(.init()))
                     ]
@@ -3145,14 +3151,14 @@ struct CommandTests {
         func ftDebug() async throws {
             try await testCommandEncodesDecodes(
                 (
-                    request: .command(["FT._DEBUG"]),
+                    request: .command(["FT._DEBUG", "SHOW_INFO"]),
                     response: .array([
                         .bulkString("debug_info"),
                         .bulkString("some debug data"),
                     ])
                 )
             ) { connection in
-                _ = try await connection.ftDebug()
+                _ = try await connection.ftDebug(subcommand: .showInfo)
             }
         }
     }
