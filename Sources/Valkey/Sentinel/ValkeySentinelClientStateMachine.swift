@@ -198,18 +198,21 @@ where
             waitersToSucceed: [WaiterToken] = [],
             clientsToRun: [ConnectionPool] = [],
             clientsToShutdown: [ConnectionPool] = [],
-            timerToRun: ValkeySentinelTimer? = nil
+            timerToRun: ValkeySentinelTimer? = nil,
+            timerToCancel: TimerCancellationToken? = nil
         ) {
             self.waitersToSucceed = waitersToSucceed
             self.clientsToRun = clientsToRun
             self.clientsToShutdown = clientsToShutdown
             self.timerToRun = timerToRun
+            self.timerToCancel = timerToCancel
         }
 
         var waitersToSucceed: [WaiterToken]
         var clientsToRun: [ConnectionPool]
         var clientsToShutdown: [ConnectionPool]
         var timerToRun: ValkeySentinelTimer?
+        var timerToCancel: TimerCancellationToken?
     }
 
     /// Topology successfully discovered, update state
@@ -234,11 +237,13 @@ where
         case .unavailable(let unavailableState):
             self.state = .healthy(.init(nodes: nodes))
             action.waitersToSucceed = Array(unavailableState.waiters.values)
+            action.timerToCancel = unavailableState.circuitBreakerTimer?.cancellationToken
             return action
 
         case .degraded(let degradedState):
             self.state = .healthy(.init(nodes: nodes))
             action.waitersToSucceed = Array(degradedState.waiters.values)
+            action.timerToCancel = degradedState.circuitBreakerTimer.cancellationToken
             return action
 
         case .healthy:
@@ -251,7 +256,6 @@ where
     }
 
     struct DiscoveryFailedAction {
-        var waitersToFail: [WaiterToken]
         var retryTimer: ValkeySentinelTimer?
         var circuitBreakerTimer: ValkeySentinelTimer?
     }
@@ -266,24 +270,18 @@ where
             let waitTillNextTry = Self.calculateBackoff(failedAttempt: refreshContext.consecutiveFailures)
             self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: refreshContext)
             var action = DiscoveryFailedAction(
-                waitersToFail: [],
                 retryTimer: .init(timerID: refreshTimerID, useCase: .nextDiscovery, duration: waitTillNextTry)
             )
 
             switch self.state {
             case .unavailable(var unavailableState):
                 unavailableState.error = error
-                if unavailableState.start.advanced(by: self.configuration.circuitBreakerTripAfter) < clock.now {
-                    action.waitersToFail = Array(unavailableState.waiters.values)
-                    unavailableState.waiters = [:]
-                }
                 self.state = .unavailable(unavailableState)
                 return action
-            case .degraded(let degradedState):
-                if degradedState.start.advanced(by: self.configuration.circuitBreakerTripAfter) < clock.now {
-                    action.waitersToFail = Array(degradedState.waiters.values)
-                    self.state = .unavailable(.init(start: degradedState.start, waiters: [:], error: error))
-                }
+
+            case .degraded(var degradedState):
+                degradedState.error = error
+                self.state = .degraded(degradedState)
                 return action
 
             case .healthy(let healthyState):
@@ -295,7 +293,7 @@ where
                 return action
 
             case .shutdown:
-                return .init(waitersToFail: [])
+                return .init()
             }
         case .notRefreshing, .waitingForRefresh:
             preconditionFailure("Invalid refresh state \(self.refreshState)")

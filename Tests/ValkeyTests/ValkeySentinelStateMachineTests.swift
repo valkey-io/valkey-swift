@@ -24,6 +24,7 @@ struct ValkeySentinelStateMachineTests {
         .init()
     }
 
+    @available(valkeySwift 1.0, *)
     func setupStateMachine() throws -> (stateMachine: TestStateMachine, clock: MockClock, timer: ValkeySentinelTimer) {
         let factory = MockClientFactory<ValkeyNodeDescription>()
         let clock = MockClock()
@@ -214,7 +215,7 @@ struct ValkeySentinelStateMachineTests {
         var stateMachine = TestStateMachine(poolFactory: factory, configuration: .init(circuitBreakerTripAfter: .seconds(30)), clock: clock)
         let initialNodes = (9000..<9002).map { ValkeyNodeDescription(endpoint: "127.0.0.1", port: $0) }
 
-        _ = stateMachine.start()
+        let circuitBreakerTimer = stateMachine.start()
 
         let successNotifier = SuccessNotifier()
         let waitAction = stateMachine.waitForDiscovery(waiterID: 0, successNotification: successNotifier)
@@ -229,7 +230,6 @@ struct ValkeySentinelStateMachineTests {
         #expect(Set(updateAction.voters.map { $0.nodeID }) == Set(initialNodes.map { $0.id }))
 
         let failedAction = stateMachine.topologyDiscoveryFailed(error: ValkeyClientError(.unrecognisedError))
-        #expect(failedAction.waitersToFail.isEmpty)
         let discoveryTimer = try #require(failedAction.retryTimer)
         #expect(discoveryTimer.timerID == 1)
         #expect(discoveryTimer.useCase == .nextDiscovery)
@@ -247,12 +247,13 @@ struct ValkeySentinelStateMachineTests {
         }
 
         clock.advance(to: clock.now.advanced(by: .seconds(40)))
-        let failedAction2 = stateMachine.topologyDiscoveryFailed(error: ValkeyClientError(.unrecognisedError))
-        #expect(failedAction2.waitersToFail.first === successNotifier)
-        let discoveryTimer2 = try #require(failedAction2.retryTimer)
-        #expect(discoveryTimer2.timerID == 2)
-        #expect(discoveryTimer2.useCase == .nextDiscovery)
-        #expect(discoveryTimer2.duration > .seconds(0) && discoveryTimer.duration < .seconds(1))
+
+        let timerFiredAction3 = stateMachine.timerFired(circuitBreakerTimer)
+        if case .failWaiters(let failWaiter) = timerFiredAction3 {
+            #expect(failWaiter.waiters.first === successNotifier)
+        } else {
+            Issue.record()
+        }
     }
 
     /// Test moving from healthy to degraded state and back with a waitForDiscovery call during the degraded state
@@ -320,7 +321,8 @@ struct ValkeySentinelStateMachineTests {
         #expect(discoveryTimer.timerID == 2)
         #expect(discoveryTimer.useCase == .nextDiscovery)
         #expect(discoveryTimer.duration > .seconds(0) && discoveryTimer.duration < .seconds(1))
-        #expect(failedAction.circuitBreakerTimer == .init(timerID: 3, useCase: .circuitBreaker, duration: .seconds(30)))
+        let circuitBreakerTimer = try #require(failedAction.circuitBreakerTimer)
+        #expect(circuitBreakerTimer == .init(timerID: 3, useCase: .circuitBreaker, duration: .seconds(30)))
 
         let timerCancellationToken = TimerCancellationToken()
         let unusedCancellationToken = stateMachine.registerTimerCancellationToken(timerCancellationToken, for: discoveryTimer)
@@ -342,12 +344,11 @@ struct ValkeySentinelStateMachineTests {
 
         clock.advance(to: clock.now.advanced(by: .seconds(40)))
 
-        let failedAction2 = stateMachine.topologyDiscoveryFailed(error: ValkeyClientError(.unrecognisedError))
-        #expect(failedAction2.waitersToFail.first === successNotifier)
-        let discoveryTimer2 = try #require(failedAction2.retryTimer)
-        #expect(discoveryTimer2.timerID == 4)
-        #expect(discoveryTimer2.useCase == .nextDiscovery)
-        #expect(discoveryTimer2.duration > .seconds(0) && discoveryTimer2.duration < .seconds(1))
-        #expect(failedAction2.circuitBreakerTimer == nil)
+        let timerFiredAction3 = stateMachine.timerFired(circuitBreakerTimer)
+        if case .failWaiters(let failWaiter) = timerFiredAction3 {
+            #expect(failWaiter.waiters.first === successNotifier)
+        } else {
+            Issue.record()
+        }
     }
 }

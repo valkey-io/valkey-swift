@@ -305,19 +305,7 @@ extension ValkeySentinelClient {
             let action = self.stateMachine.withLock {
                 $0.topologyDiscoverySucceeded(sentinelNodes)
             }
-            for node in action.clientsToRun {
-                self.queueAction(.runNodeClient(node))
-            }
-            for node in action.clientsToShutdown {
-                node.triggerGracefulShutdown()
-            }
-            for waiter in action.waitersToSucceed {
-                waiter.resume()
-            }
-            if let timer = action.timerToRun {
-                self.queueAction(.runTimer(timer))
-            }
-
+            self.runDiscoverySucceededAction(action)
             self.logger.debug(
                 "Discovered nodes",
                 metadata: ["node_count": "\(sentinelNodes.nodes.count)"]
@@ -332,15 +320,34 @@ extension ValkeySentinelClient {
             let action = self.stateMachine.withLock {
                 $0.topologyDiscoveryFailed(error: error)
             }
-            for waiter in action.waitersToFail {
-                waiter.resume(throwing: error)
-            }
-            if let timer = action.retryTimer {
-                self.queueAction(.runTimer(timer))
-            }
-            if let timer = action.circuitBreakerTimer {
-                self.queueAction(.runTimer(timer))
-            }
+            self.runDiscoveryFailedAction(action, error: error)
+        }
+    }
+
+    private func runDiscoverySucceededAction(_ action: StateMachine.DiscoverySucceededAction) {
+        for node in action.clientsToRun {
+            self.queueAction(.runNodeClient(node))
+        }
+        for node in action.clientsToShutdown {
+            node.triggerGracefulShutdown()
+        }
+        for waiter in action.waitersToSucceed {
+            waiter.resume()
+        }
+        if let timer = action.timerToRun {
+            self.queueAction(.runTimer(timer))
+        }
+        if let timerCancellationToken = action.timerToCancel {
+            timerCancellationToken.finish()
+        }
+    }
+
+    private func runDiscoveryFailedAction(_ action: StateMachine.DiscoveryFailedAction, error: any Error) {
+        if let timer = action.retryTimer {
+            self.queueAction(.runTimer(timer))
+        }
+        if let timer = action.circuitBreakerTimer {
+            self.queueAction(.runTimer(timer))
         }
     }
 
