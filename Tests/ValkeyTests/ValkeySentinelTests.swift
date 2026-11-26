@@ -427,6 +427,7 @@ struct ValkeySentinelTests {
             primaryName: "UnknownPrimary",
             address: .init(endpoint: "127.0.0.1", port: 16000),
             mockConnections: mockConnections,
+            configuration: .init(circuitBreakerTripAfter: .seconds(1)),
             logger: logger
         ) { client in
             await #expect(throws: ValkeySentinelError.sentinelUnknownPrimary) {
@@ -528,6 +529,7 @@ struct ValkeySentinelTests {
             let nodes = try await client.getNodes()
             #expect(nodes.primary == .hostname("127.0.0.1", port: 9000))
             #expect(nodes.replicas == [.hostname("127.0.0.1", port: 9002)])
+            try await Task.sleep(for: .seconds(12))
         }
     }
 
@@ -637,6 +639,7 @@ struct ValkeySentinelTests {
             address: .init(endpoint: "127.0.0.1", port: 16000),
             mockConnections: mockConnections,
             clientConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
+            sentinelConfiguration: .init(circuitBreakerTripAfter: .seconds(1)),
             logger: logger
         ) { client in
             let error = await #expect(throws: ValkeyClientError.self) {
@@ -661,7 +664,7 @@ struct ValkeySentinelTests {
             address: .init(endpoint: "127.0.0.1", port: 16999),
             mockConnections: mockConnections,
             clientConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
-            sentinelConfiguration: .init(connectionPool: .init(circuitBreakerTripAfter: .seconds(1))),
+            sentinelConfiguration: .init(circuitBreakerTripAfter: .seconds(1)),
             logger: logger
         ) { client in
             let error = await #expect(throws: ValkeyClientError.self) {

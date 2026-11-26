@@ -6,26 +6,75 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Musl)
+import Musl
+#endif
+
+@available(valkeySwift 1.0, *)
+package struct ValkeySentinelTimer: Sendable, Hashable {
+    package enum UseCase: Hashable {
+        case nextDiscovery
+        case circuitBreaker
+    }
+
+    package var useCase: UseCase
+    package var duration: Duration
+    package var timerID: Int
+
+    package init(timerID: Int, useCase: UseCase, duration: Duration) {
+        self.useCase = useCase
+        self.timerID = timerID
+        self.duration = duration
+    }
+}
+
 @usableFromInline
 @available(valkeySwift 1.0, *)
 struct ValkeySentinelClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory,
+    Clock: _Concurrency.Clock,
     WaiterToken: Sendable,
     TimerCancellationToken: Sendable
 >
-where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription == ValkeyClusterNodeClientFactory.NodeDescription
+where
+    ConnectionPoolFactory.ConnectionPool == ConnectionPool,
+    ConnectionPoolFactory.NodeDescription == ValkeyClusterNodeClientFactory.NodeDescription,
+    Clock.Duration == Duration
 {
     /// Configuration
     @usableFromInline
-    struct Configuration {}
+    struct Configuration {
+        /// Default interval before we attempt to refresh the sentinel list, if the previous refresh was
+        /// successful
+        let defaultSentinelRefreshInterval: Duration
+
+        /// Time after which the circuit breaker trips
+        let circuitBreakerTripAfter: Duration
+
+        init(defaultSentinelRefreshInterval: Duration = .seconds(30), circuitBreakerTripAfter: Duration = .seconds(30)) {
+            self.defaultSentinelRefreshInterval = defaultSentinelRefreshInterval
+            self.circuitBreakerTripAfter = circuitBreakerTripAfter
+        }
+    }
+    @usableFromInline
+    struct Timer {
+        var id: Int
+        var cancellationToken: TimerCancellationToken?
+    }
     /// current state
     @usableFromInline
     enum State {
         @usableFromInline
         struct UnavailableState {
+            let start: Clock.Instant
             var waiters: [Int: WaiterToken]
-            let error: ValkeyClientError?
+            var circuitBreakerTimer: Timer?
+            var error: any Error
         }
         @usableFromInline
         struct HealthyState {
@@ -33,21 +82,69 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         }
         @usableFromInline
         struct DegradedState {
+            let start: Clock.Instant
+            var waiters: [Int: WaiterToken]
+            var circuitBreakerTimer: Timer
+            var error: any Error
             let nodes: ValkeySentinelNodeList
         }
+        /// There is no list of sentinels, all requests for the list will fail immediately and when
+        /// we attempt to refresh the list we run the node discovery to get the initial list.
         case unavailable(UnavailableState)
+        /// The last attempt at refreshing the sentinel list failed. Requests for the sentinel list are
+        /// stored and these requests will be completed when we either move out of this state.
         case degraded(DegradedState)
         case healthy(HealthyState)
         case shutdown
     }
+
+    enum RefreshState {
+        struct RefreshContext {
+            var consecutiveFailures: Int
+            var lastError: (any Error)?
+        }
+
+        case notRefreshing
+        case refreshing(RefreshContext)
+        case waitingForRefresh(Timer, previousRefresh: RefreshContext)
+    }
+
+    let configuration: Configuration
+    let clock: Clock
     @usableFromInline
     var state: State
+    var refreshState: RefreshState
     @usableFromInline
     var runningClients: ValkeyRunningClientsStateMachine<ConnectionPool, ConnectionPoolFactory>
 
-    init(poolFactory: ConnectionPoolFactory, configuration: Configuration) {
-        self.state = .unavailable(.init(waiters: [:], error: nil))
+    private var _nextTimerID: Int = 0
+
+    init(poolFactory: ConnectionPoolFactory, configuration: Configuration, clock: Clock) {
+        self.configuration = configuration
+        self.clock = clock
+        self.state = .unavailable(
+            .init(start: clock.now, waiters: [:], circuitBreakerTimer: nil, error: ValkeySentinelError.sentinelNoConsensusReached)
+        )
+        self.refreshState = .notRefreshing
         self.runningClients = .init(poolFactory: poolFactory)
+    }
+
+    mutating func start() -> ValkeySentinelTimer {
+        switch self.refreshState {
+        case .notRefreshing:
+            switch self.state {
+            case .unavailable(var unavailableState):
+                let timerID = self.nextTimerID()
+                unavailableState.circuitBreakerTimer = .init(id: timerID)
+                self.state = .unavailable(unavailableState)
+                self.refreshState = .refreshing(.init(consecutiveFailures: 0, lastError: nil))
+                return .init(timerID: timerID, useCase: .circuitBreaker, duration: self.configuration.circuitBreakerTripAfter)
+            case .degraded, .healthy, .shutdown:
+                preconditionFailure("Invalid state \(self.state)")
+            }
+        case .refreshing, .waitingForRefresh:
+            preconditionFailure("Invalid refresh state \(self.refreshState)")
+        }
     }
 
     /// Get initial list of voters for election process
@@ -71,10 +168,8 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
         switch self.state {
         case .unavailable, .shutdown:
             return []
-        case .degraded(let degradedState):
-            return degradedState.nodes.nodes.compactMap { (element) -> ConnectionPool? in
-                self.runningClients[element.id].map { $0.pool }
-            }
+        case .degraded:
+            return []
         case .healthy(let healthyState):
             return healthyState.nodes.nodes.compactMap { (element) -> ConnectionPool? in
                 self.runningClients[element.id].map { $0.pool }
@@ -89,6 +184,7 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     }
     /// Update list of sentinels during election process
     mutating func updateSentinelNodes(_ nodes: ValkeySentinelNodeList) -> UpdateNodesAction {
+        guard case .refreshing = self.refreshState else { preconditionFailure("Can only update sentinel nodes during election") }
         let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: false)
         return .init(
             clientsToRun: action.poolsToRun.map { $0.0 },
@@ -98,90 +194,135 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
     }
 
     struct DiscoverySucceededAction {
-        let waitersToSucceed: [WaiterToken]
-        let clientsToRun: [ConnectionPool]
-        let clientsToShutdown: [ConnectionPool]
+        internal init(
+            waitersToSucceed: [WaiterToken] = [],
+            clientsToRun: [ConnectionPool] = [],
+            clientsToShutdown: [ConnectionPool] = [],
+            timerToRun: ValkeySentinelTimer? = nil,
+            timerToCancel: TimerCancellationToken? = nil
+        ) {
+            self.waitersToSucceed = waitersToSucceed
+            self.clientsToRun = clientsToRun
+            self.clientsToShutdown = clientsToShutdown
+            self.timerToRun = timerToRun
+            self.timerToCancel = timerToCancel
+        }
+
+        var waitersToSucceed: [WaiterToken]
+        var clientsToRun: [ConnectionPool]
+        var clientsToShutdown: [ConnectionPool]
+        var timerToRun: ValkeySentinelTimer?
+        var timerToCancel: TimerCancellationToken?
     }
 
     /// Topology successfully discovered, update state
     mutating func topologyDiscoverySucceeded(_ nodes: ValkeySentinelNodeList) -> DiscoverySucceededAction {
+        switch self.refreshState {
+        case .refreshing:
+            break
+        case .notRefreshing, .waitingForRefresh:
+            preconditionFailure("Invalid refresh state \(self.refreshState)")
+        }
+        let refreshTimerID = self.nextTimerID()
+        self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: .init(consecutiveFailures: 0))
+        let updateAction = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: true)
+
+        var action = DiscoverySucceededAction(
+            waitersToSucceed: [],
+            clientsToRun: updateAction.poolsToRun.map { $0.0 },
+            clientsToShutdown: updateAction.poolsToShutdown,
+            timerToRun: .init(timerID: refreshTimerID, useCase: .nextDiscovery, duration: self.configuration.defaultSentinelRefreshInterval)
+        )
         switch self.state {
         case .unavailable(let unavailableState):
             self.state = .healthy(.init(nodes: nodes))
-            let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: true)
-            return .init(
-                waitersToSucceed: .init(unavailableState.waiters.values),
-                clientsToRun: action.poolsToRun.map { $0.0 },
-                clientsToShutdown: action.poolsToShutdown
-            )
+            action.waitersToSucceed = Array(unavailableState.waiters.values)
+            action.timerToCancel = unavailableState.circuitBreakerTimer?.cancellationToken
+            return action
 
-        case .degraded:
+        case .degraded(let degradedState):
             self.state = .healthy(.init(nodes: nodes))
-            let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: true)
-            return .init(
-                waitersToSucceed: [],
-                clientsToRun: action.poolsToRun.map { $0.0 },
-                clientsToShutdown: action.poolsToShutdown
-            )
+            action.waitersToSucceed = Array(degradedState.waiters.values)
+            action.timerToCancel = degradedState.circuitBreakerTimer.cancellationToken
+            return action
 
         case .healthy:
             self.state = .healthy(.init(nodes: nodes))
-            let action = self.runningClients.updateNodes(nodes.nodes, removeUnmentionedPools: true)
-            return .init(
-                waitersToSucceed: [],
-                clientsToRun: action.poolsToRun.map { $0.0 },
-                clientsToShutdown: action.poolsToShutdown
-            )
+            return action
+
         case .shutdown:
-            preconditionFailure()
+            return .init()
         }
     }
 
     struct DiscoveryFailedAction {
-        let waitersToFail: [WaiterToken]
+        var retryTimer: ValkeySentinelTimer?
+        var circuitBreakerTimer: ValkeySentinelTimer?
     }
 
     /// Topology discovery failed, update state and return waiters to fail
-    mutating func topologyDiscoveryFailed(error: ValkeyClientError) -> DiscoveryFailedAction {
-        switch self.state {
-        case .unavailable(let unavailableState):
-            if unavailableState.error == nil {
-                self.state = .unavailable(.init(waiters: unavailableState.waiters, error: error))
+    mutating func topologyDiscoveryFailed(error: any Error) -> DiscoveryFailedAction {
+        switch self.refreshState {
+        case .refreshing(var refreshContext):
+            refreshContext.consecutiveFailures += 1
+            refreshContext.lastError = error
+            let refreshTimerID = self.nextTimerID()
+            let waitTillNextTry = Self.calculateBackoff(failedAttempt: refreshContext.consecutiveFailures)
+            self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: refreshContext)
+            var action = DiscoveryFailedAction(
+                retryTimer: .init(timerID: refreshTimerID, useCase: .nextDiscovery, duration: waitTillNextTry)
+            )
+
+            switch self.state {
+            case .unavailable(var unavailableState):
+                unavailableState.error = error
+                self.state = .unavailable(unavailableState)
+                return action
+
+            case .degraded(var degradedState):
+                degradedState.error = error
+                self.state = .degraded(degradedState)
+                return action
+
+            case .healthy(let healthyState):
+                let timerID = self.nextTimerID()
+                action.circuitBreakerTimer = .init(timerID: timerID, useCase: .circuitBreaker, duration: self.configuration.circuitBreakerTripAfter)
+                self.state = .degraded(
+                    .init(start: clock.now, waiters: [:], circuitBreakerTimer: .init(id: timerID), error: error, nodes: healthyState.nodes)
+                )
+                return action
+
+            case .shutdown:
+                return .init()
             }
-            return .init(waitersToFail: .init(unavailableState.waiters.values))
-        case .degraded:
-            return .init(waitersToFail: [])
-
-        case .healthy(let healthyState):
-            self.state = .degraded(.init(nodes: healthyState.nodes))
-            return .init(waitersToFail: [])
-
-        case .shutdown:
-            return .init(waitersToFail: [])
+        case .notRefreshing, .waitingForRefresh:
+            preconditionFailure("Invalid refresh state \(self.refreshState)")
         }
     }
 
     enum WaitForDiscoveryAction {
         case complete
-        case fail(ValkeyClientError)
+        case fail(any Error)
         case doNothing
     }
     mutating func waitForDiscovery(waiterID: Int, successNotification: WaiterToken) -> WaitForDiscoveryAction {
         switch self.state {
         case .unavailable(var unavailableState):
-            unavailableState.waiters[waiterID] = successNotification
-            self.state = .unavailable(unavailableState)
-            if let error = unavailableState.error {
-                return .fail(error)
+            if unavailableState.start.advanced(by: self.configuration.circuitBreakerTripAfter) < clock.now {
+                return .fail(unavailableState.error)
             } else {
+                unavailableState.waiters[waiterID] = successNotification
+                self.state = .unavailable(unavailableState)
                 return .doNothing
             }
-        case .degraded:
-            return .complete
+        case .degraded(var degradedState):
+            degradedState.waiters[waiterID] = successNotification
+            self.state = .degraded(degradedState)
+            return .doNothing
         case .healthy:
             return .complete
         case .shutdown:
-            return .fail(.init(.clientIsShutDown))
+            return .fail(ValkeyClientError(.clientIsShutDown))
         }
     }
 
@@ -191,12 +332,186 @@ where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFact
             let token = unavailableState.waiters.removeValue(forKey: waiterID)
             self.state = .unavailable(unavailableState)
             return token
-        case .degraded:
-            return nil
+        case .degraded(var degradedState):
+            let token = degradedState.waiters.removeValue(forKey: waiterID)
+            self.state = .degraded(degradedState)
+            return token
         case .healthy:
             return nil
         case .shutdown:
             return nil
         }
+    }
+
+    private mutating func nextTimerID() -> Int {
+        defer { self._nextTimerID += 1 }
+        return self._nextTimerID
+    }
+
+    package enum TimerFiredAction {
+        package struct RunDiscovery {
+            package var runNodeDiscoveryFirst: Bool
+
+            package init(runNodeDiscoveryFirst: Bool) {
+                self.runNodeDiscoveryFirst = runNodeDiscoveryFirst
+            }
+        }
+
+        package struct FailWaiters {
+            package let waiters: [WaiterToken]
+            package let error: any Error
+        }
+
+        case runDiscovery(RunDiscovery)
+        case failWaiters(FailWaiters)
+        case doNothing
+    }
+
+    package mutating func timerFired(_ timer: ValkeySentinelTimer) -> TimerFiredAction {
+        switch timer.useCase {
+        case .nextDiscovery:
+            let runNodeDiscoveryFirst: Bool
+            switch self.state {
+            case .shutdown:
+                return .doNothing
+
+            case .healthy:
+                runNodeDiscoveryFirst = false
+
+            case .degraded:
+                runNodeDiscoveryFirst = false
+
+            case .unavailable(let unavailableState):
+                if unavailableState.start.advanced(by: self.configuration.circuitBreakerTripAfter) < clock.now {
+                    runNodeDiscoveryFirst = true
+                } else {
+                    runNodeDiscoveryFirst = false
+                }
+            }
+
+            switch self.refreshState {
+            case .refreshing, .notRefreshing:
+                // race condition. we are already refreshing
+                return .doNothing
+
+            case .waitingForRefresh(let storedTimer, let previousRefresh):
+                guard storedTimer.id == timer.timerID else {
+                    // race condition. the timer that fired isn't interesting anymore
+                    return .doNothing
+                }
+                self.refreshState = .refreshing(previousRefresh)
+                return .runDiscovery(.init(runNodeDiscoveryFirst: runNodeDiscoveryFirst))
+            }
+
+        case .circuitBreaker:
+            switch self.state {
+            case .unavailable(var unavailableState):
+                guard unavailableState.circuitBreakerTimer?.id == timer.timerID else {
+                    // race condition. the timer that fired isn't interesting anymore
+                    return .doNothing
+                }
+                let action = TimerFiredAction.failWaiters(.init(waiters: Array(unavailableState.waiters.values), error: unavailableState.error))
+                unavailableState.waiters = [:]
+                self.state = .unavailable(unavailableState)
+                return action
+
+            case .healthy:
+                return .doNothing
+
+            case .degraded(let degradedState):
+                guard degradedState.circuitBreakerTimer.id == timer.timerID else {
+                    // race condition. the timer that fired isn't interesting anymore
+                    return .doNothing
+                }
+                let action = TimerFiredAction.failWaiters(.init(waiters: Array(degradedState.waiters.values), error: degradedState.error))
+                self.state = .unavailable(.init(start: degradedState.start, waiters: [:], error: degradedState.error))
+                return action
+
+            case .shutdown:
+                return .doNothing
+            }
+        }
+    }
+
+    package mutating func registerTimerCancellationToken(
+        _ token: TimerCancellationToken,
+        for timer: ValkeySentinelTimer
+    ) -> TimerCancellationToken? {
+        switch timer.useCase {
+        case .nextDiscovery:
+            switch self.refreshState {
+            case .notRefreshing, .refreshing:
+                return token
+
+            case .waitingForRefresh(var timerState, let previousRefresh):
+                if timerState.id == timer.timerID {
+                    timerState.cancellationToken = token
+                    self.refreshState = .waitingForRefresh(timerState, previousRefresh: previousRefresh)
+                    return nil
+                }
+                return token
+            }
+
+        case .circuitBreaker:
+            switch self.state {
+            case .unavailable(var unavailableState):
+                if unavailableState.circuitBreakerTimer?.id == timer.timerID {
+                    unavailableState.circuitBreakerTimer!.cancellationToken = token
+                    self.state = .unavailable(unavailableState)
+                    return nil
+                }
+                return token
+            case .degraded(var degradedState):
+                if degradedState.circuitBreakerTimer.id == timer.timerID {
+                    degradedState.circuitBreakerTimer.cancellationToken = token
+                    self.state = .degraded(degradedState)
+                    return nil
+                }
+                return token
+            case .healthy, .shutdown:
+                return token
+            }
+        }
+    }
+
+    package mutating func shutdown() -> [ConnectionPool] {
+        switch self.state {
+        case .unavailable, .degraded, .healthy:
+            self.state = .shutdown
+            let existingNodes = self.runningClients
+            self.runningClients.removeAll()
+            return existingNodes.clients.lazy.map { $0.pool }
+
+        case .shutdown:
+            return []
+        }
+    }
+
+    @usableFromInline
+    static func calculateBackoff(failedAttempt attempts: Int) -> Duration {
+        // Our backoff formula is: 100ms * 1.25^(attempts - 1) that is capped of at 1minute
+        // This means for:
+        //   -  1 failed attempt :  100ms
+        //   -  5 failed attempts: ~300ms
+        //   - 10 failed attempts: ~930ms
+        //   - 15 failed attempts: ~2.84s
+        //   - 20 failed attempts: ~8.67s
+        //   - 25 failed attempts: ~26s
+        //   - 29 failed attempts: ~60s (max out)
+
+        let start = Double(100_000_000)
+        let backoffNanosecondsDouble = start * pow(1.25, Double(attempts - 1))
+
+        // Cap to 60s _before_ we convert to Int64, to avoid trapping in the Int64 initializer.
+        let backoffNanoseconds = Int64(min(backoffNanosecondsDouble, Double(60_000_000_000)))
+
+        let backoff = Duration.nanoseconds(backoffNanoseconds)
+
+        // Calculate a 10% jitter range
+        let jitterRange = (backoffNanoseconds / 100) * 10
+        // Pick a random element from the range +/- jitter range.
+        let jitter: Duration = .nanoseconds((-jitterRange...jitterRange).randomElement()!)
+        let jitteredBackoff = backoff + jitter
+        return jitteredBackoff
     }
 }

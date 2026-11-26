@@ -15,7 +15,7 @@ import Synchronization
 package final class ValkeySentinelClient: Sendable {
     @usableFromInline
     typealias StateMachine = ValkeySentinelClientStateMachine<
-        ValkeyNodeClient, ValkeyClusterNodeClientFactory, CheckedContinuation<Void, any Error>, AsyncStream<Void>.Continuation
+        ValkeyNodeClient, ValkeyClusterNodeClientFactory, ContinuousClock, CheckedContinuation<Void, any Error>, AsyncStream<Void>.Continuation
     >
 
     let primaryName: String
@@ -23,6 +23,8 @@ package final class ValkeySentinelClient: Sendable {
     /// single node
     @usableFromInline
     let stateMachine: Mutex<StateMachine>
+    @usableFromInline
+    /* private */ let clock = ContinuousClock()
     let logger: Logger
     private let nodeDiscovery: any ValkeyNodeDiscovery
     @usableFromInline
@@ -31,6 +33,7 @@ package final class ValkeySentinelClient: Sendable {
     private enum RunAction {
         case runSentinelDiscovery(runNodeDiscovery: Bool)
         case runNodeClient(ValkeyNodeClient)
+        case runTimer(ValkeySentinelTimer)
     }
     private let actionStream: AsyncStream<RunAction>
     private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -53,7 +56,16 @@ package final class ValkeySentinelClient: Sendable {
             ),
             eventLoopGroup: eventLoopGroup
         )
-        self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory, configuration: .init()))
+        self.stateMachine = .init(
+            .init(
+                poolFactory: self.nodeClientFactory,
+                configuration: .init(
+                    defaultSentinelRefreshInterval: configuration.defaultSentinelRefreshInterval,
+                    circuitBreakerTripAfter: configuration.circuitBreakerTripAfter
+                ),
+                clock: self.clock
+            )
+        )
         self.primaryName = primaryName
         self.logger = logger
         self.nodeDiscovery = nodeDiscovery
@@ -62,14 +74,32 @@ package final class ValkeySentinelClient: Sendable {
 
     /// Run ValkeySentinelClient connection pool, and other supporting processes
     package func run() async {
+        let timer = self.stateMachine.withLock { $0.start() }
         self.queueAction(.runSentinelDiscovery(runNodeDiscovery: true))
+        self.queueAction(.runTimer(timer))
 
-        /// Run discarding task group running actions
-        await withDiscardingTaskGroup { group in
-            for await action in self.actionStream {
-                group.addTask {
-                    await self.runAction(action)
+        #if ServiceLifecycleSupport
+        await cancelWhenGracefulShutdown {
+            await self._withTaskGroup()
+        }
+        #else
+        await self._withTaskGroup()
+        #endif
+    }
+
+    private func _withTaskGroup() async {
+        await withTaskCancellationHandler {
+            /// Run discarding task group running actions
+            await withDiscardingTaskGroup { group in
+                for await action in self.actionStream {
+                    group.addTask {
+                        await self.runAction(action)
+                    }
                 }
+            }
+        } onCancel: {
+            _ = self.stateMachine.withLock {
+                $0.shutdown()
             }
         }
     }
@@ -212,6 +242,53 @@ extension ValkeySentinelClient {
 
         case .runSentinelDiscovery(let runNodeDiscoveryFirst):
             await runSentinelDiscoveryAction(runNodeDiscoveryFirst: runNodeDiscoveryFirst)
+
+        case .runTimer(let timer):
+            await withTaskGroup(of: Void.self) { taskGroup in
+                taskGroup.addTask {
+                    do {
+                        try await self.clock.sleep(for: timer.duration)
+                        // timer has hit
+                        let timerFiredAction = self.stateMachine.withLock {
+                            $0.timerFired(timer)
+                        }
+                        self.runTimerFiredAction(timerFiredAction)
+                    } catch {
+                        // do nothing
+                    }
+                }
+
+                let (stream, continuation) = AsyncStream.makeStream(of: Void.self)
+                taskGroup.addTask {
+                    var iterator = stream.makeAsyncIterator()
+                    await iterator.next()
+                }
+
+                let token = self.stateMachine.withLock {
+                    $0.registerTimerCancellationToken(continuation, for: timer)
+                }
+
+                token?.finish()
+
+                await taskGroup.next()
+                taskGroup.cancelAll()
+            }
+        }
+    }
+
+    /// Handles timer fired actions from the state machine.
+    ///
+    /// - Parameter action: The action to execute after a timer fires.
+    private func runTimerFiredAction(_ action: StateMachine.TimerFiredAction) {
+        switch action {
+        case .runDiscovery(let discovery):
+            self.queueAction(.runSentinelDiscovery(runNodeDiscovery: discovery.runNodeDiscoveryFirst))
+        case .failWaiters(let failWaiters):
+            for waiter in failWaiters.waiters {
+                waiter.resume(throwing: failWaiters.error)
+            }
+        case .doNothing:
+            break
         }
     }
 
@@ -228,16 +305,7 @@ extension ValkeySentinelClient {
             let action = self.stateMachine.withLock {
                 $0.topologyDiscoverySucceeded(sentinelNodes)
             }
-            for node in action.clientsToRun {
-                self.queueAction(.runNodeClient(node))
-            }
-            for node in action.clientsToShutdown {
-                node.triggerGracefulShutdown()
-            }
-            for waiter in action.waitersToSucceed {
-                waiter.resume()
-            }
-
+            self.runDiscoverySucceededAction(action)
             self.logger.debug(
                 "Discovered nodes",
                 metadata: ["node_count": "\(sentinelNodes.nodes.count)"]
@@ -250,11 +318,36 @@ extension ValkeySentinelClient {
                 ]
             )
             let action = self.stateMachine.withLock {
-                $0.topologyDiscoveryFailed(error: ValkeyClientError(.sentinelError, error: error))
+                $0.topologyDiscoveryFailed(error: error)
             }
-            for waiter in action.waitersToFail {
-                waiter.resume(throwing: error)
-            }
+            self.runDiscoveryFailedAction(action, error: error)
+        }
+    }
+
+    private func runDiscoverySucceededAction(_ action: StateMachine.DiscoverySucceededAction) {
+        for node in action.clientsToRun {
+            self.queueAction(.runNodeClient(node))
+        }
+        for node in action.clientsToShutdown {
+            node.triggerGracefulShutdown()
+        }
+        for waiter in action.waitersToSucceed {
+            waiter.resume()
+        }
+        if let timer = action.timerToRun {
+            self.queueAction(.runTimer(timer))
+        }
+        if let timerCancellationToken = action.timerToCancel {
+            timerCancellationToken.finish()
+        }
+    }
+
+    private func runDiscoveryFailedAction(_ action: StateMachine.DiscoveryFailedAction, error: any Error) {
+        if let timer = action.retryTimer {
+            self.queueAction(.runTimer(timer))
+        }
+        if let timer = action.circuitBreakerTimer {
+            self.queueAction(.runTimer(timer))
         }
     }
 
