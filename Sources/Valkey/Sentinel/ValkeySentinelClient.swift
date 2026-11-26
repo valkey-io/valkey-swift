@@ -14,7 +14,7 @@ import Synchronization
 @available(valkeySwift 1.0, *)
 package final class ValkeySentinelClient: Sendable {
     @usableFromInline
-    typealias StateMachine = ValkeySentinelClientStateMachine<
+    package typealias StateMachine = ValkeySentinelClientStateMachine<
         ValkeyNodeClient, ValkeyClusterNodeClientFactory, CheckedContinuation<Void, any Error>, AsyncStream<Void>.Continuation
     >
 
@@ -74,39 +74,50 @@ package final class ValkeySentinelClient: Sendable {
 
     /// Get primary and replica nodes from sentinel
     package func getNodes() async throws -> ValkeyNodeIDs<ValkeyServerAddress> {
-        // get list of sentinel clients
-        let sentinels = try await self.getSentinelClients()
-        return try await withThrowingTaskGroup(of: (index: Int, address: ValkeyNodeIDs<ValkeyServerAddress>).self) { group in
+        while true {
+            // get list of sentinel clients
+            switch try await self.getSentinelClientsForPrimarySelection() {
+            case .all(let sentinels):
+                // if no sentinel has been chosen then attempt to get nodes from all sentinels
+                return try await getNodesWithTimeout(sentinels, timeout: .milliseconds(500))
+            case .chosen(let sentinel):
+                // if a sentinel has been chosen then only get the nodes from that sentinel. If it
+                // fails the chosen sentinel will be cleared and we attempt to get from all the sentinels
+                // again
+                guard let nodes = await getNodesWithTimeout(sentinel, timeout: .milliseconds(500)) else {
+                    self.stateMachine.withLock { $0.clearChosenNode() }
+                    continue
+                }
+                return nodes
+            }
+        }
+    }
+
+    /// Attempt to get primary and replica nodes from all sentinels.
+    ///
+    /// The first sentinel that returns valid nodes is also cached and following
+    /// attempts to get the nodes will only use that sentinel
+    func getNodesWithTimeout(_ sentinels: [ValkeyNodeClient], timeout: Duration) async throws -> ValkeyNodeIDs<ValkeyServerAddress> {
+        try await withThrowingTaskGroup(of: (index: Int, address: ValkeyNodeIDs<ValkeyServerAddress>).self) { group in
             // For each sentinel add a task to get primary and replica nodes. The first node that returns
             // values will be accepted
             for index in 0..<sentinels.count {
                 group.addTask {
-                    let (primaryResult, replicaResults) = await sentinels[index].execute(
-                        SENTINEL.GETPRIMARYADDRBYNAME(primaryName: self.primaryName),
-                        SENTINEL.REPLICAS(primaryName: self.primaryName)
-                    )
-                    let (primaryHost, primaryPort) = try primaryResult.get().decodeElements(as: (String, Int).self)
-                    let replicas = try replicaResults.get()
-                        .decode(as: [SentinelInstance].self)
-                        .compactMap {
-                            if $0.flags.intersection([.disconnected, .o_down, .s_down]).isEmpty {
-                                ValkeyServerAddress.hostname($0.endpoint, port: $0.port)
-                            } else {
-                                nil
-                            }
-                        }
-                    return (index, .init(primary: .hostname(primaryHost, port: primaryPort), replicas: replicas))
+                    try await (index, self.getNodes(sentinel: sentinels[index]))
                 }
             }
             // Add a timeout task
             group.addTask {
-                try await Task.sleep(for: .milliseconds(500))
+                try await Task.sleep(for: timeout)
                 throw CancellationError()
             }
             var count = sentinels.count
             while let result = await group.nextResult() {
                 switch result {
                 case .success(let successfulResult):
+                    let successfulSentinel = sentinels[successfulResult.index].serverAddress.nodeDescription
+                    self.stateMachine.withLock { $0.setChosenNode(successfulSentinel) }
+                    group.cancelAll()
                     return successfulResult.address
                 case .failure(let error):
                     switch error {
@@ -114,7 +125,7 @@ package final class ValkeySentinelClient: Sendable {
                         throw ValkeyClientError(.timeout)
                     default:
                         count -= 1
-                        self.logger.debug("Sentinel get primary address failed", metadata: ["error": .string("\(error)")])
+                        self.logger.trace("Sentinel get primary address failed", metadata: ["error": .string("\(error)")])
                         if count == 0 {
                             throw ValkeySentinelError.sentinelIsUnavailable
                         }
@@ -123,6 +134,50 @@ package final class ValkeySentinelClient: Sendable {
             }
             throw ValkeySentinelError.sentinelIsUnavailable
         }
+    }
+
+    /// Get primary and replica nodes from sentinel within timeout.
+    func getNodesWithTimeout(_ sentinel: ValkeyNodeClient, timeout: Duration) async -> ValkeyNodeIDs<ValkeyServerAddress>? {
+        await withThrowingTaskGroup(of: ValkeyNodeIDs<ValkeyServerAddress>.self) { group in
+            // For each sentinel add a task to get primary and replica nodes. The first node that returns
+            // values will be accepted
+            group.addTask {
+                try await self.getNodes(sentinel: sentinel)
+            }
+            // Add a timeout task
+            group.addTask {
+                try await Task.sleep(for: timeout)
+                throw CancellationError()
+            }
+            let result: ValkeyNodeIDs<ValkeyServerAddress>? =
+                switch await group.nextResult() {
+                case .success(let address):
+                    address
+                case .failure, .none:
+                    nil
+                }
+            group.cancelAll()
+            return result
+        }
+    }
+
+    /// Get primary and replica nodes from sentinel.
+    func getNodes(sentinel: ValkeyNodeClient) async throws -> ValkeyNodeIDs<ValkeyServerAddress> {
+        let (primaryResult, replicaResults) = await sentinel.execute(
+            SENTINEL.GETPRIMARYADDRBYNAME(primaryName: self.primaryName),
+            SENTINEL.REPLICAS(primaryName: self.primaryName)
+        )
+        let (primaryHost, primaryPort) = try primaryResult.get().decodeElements(as: (String, Int).self)
+        let replicas = try replicaResults.get()
+            .decode(as: [SentinelInstance].self)
+            .compactMap {
+                if $0.flags.intersection([.disconnected, .o_down, .s_down]).isEmpty {
+                    ValkeyServerAddress.hostname($0.endpoint, port: $0.port)
+                } else {
+                    nil
+                }
+            }
+        return .init(primary: .hostname(primaryHost, port: primaryPort), replicas: replicas)
     }
 
     /// Subscribe to sentinel events
@@ -135,7 +190,7 @@ package final class ValkeySentinelClient: Sendable {
     }
 
     // get sentinel clients from statemachine
-    package func getSentinelClients() async throws -> [ValkeyNodeClient] {
+    package func getSentinelClientsForPrimarySelection() async throws -> StateMachine.SentinelClients {
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
             switch self.stateMachine.withLock({ $0.waitForDiscovery(cont) }) {
             case .complete:
@@ -146,7 +201,7 @@ package final class ValkeySentinelClient: Sendable {
                 break
             }
         }
-        return self.stateMachine.withLock({ $0.getSentinelClients() })
+        return self.stateMachine.withLock({ $0.getSentinelClientsForPrimarySelection() })
     }
 
     /// Run operation with the valkey subscription connection
@@ -157,7 +212,14 @@ package final class ValkeySentinelClient: Sendable {
     func withSubscriptionConnection<Value>(
         _ operation: (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
-        guard let node = try await self.getSentinelClients().randomElement() else {
+        let node =
+            switch try await self.getSentinelClientsForPrimarySelection() {
+            case .all(let sentinels):
+                sentinels.randomElement()
+            case .chosen(let sentinel):
+                sentinel
+            }
+        guard let node else {
             throw ValkeySentinelError.sentinelIsUnavailable
         }
         let id = node.subscriptionConnectionIDGenerator.next()
